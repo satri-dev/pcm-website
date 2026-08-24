@@ -4,6 +4,8 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
         protocol: "https",
         hostname: "api.qrserver.com",
         pathname: "/v1/create-qr-code/**",
