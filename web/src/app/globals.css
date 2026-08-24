@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -226,4 +227,52 @@
   100% {
     transform: translateX(-50%);
   }
+}
+
+/* Hide scrollbar for horizontal tabs */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Dark Mode Overrides for PCM Colors */
+.dark {
+  /* Keep PCM brand colors vibrant in dark mode */
+  --color-pcm-navy: #2e54b8;
+  --color-pcm-blue: #4167c9;
+  --color-pcm-dark: #1a1a1a;
+}
+
+.dark body {
+  background-color: #1a1a1a;
+  color: #e5e5e5;
+}
+
+.dark header {
+  background-color: #1a1a1a !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .bg-white {
+  background-color: #262626 !important;
+}
+
+.dark .text-pcm-navy {
+  color: #e5e5e5 !important;
+}
+
+.dark .bg-secondary {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.dark .border-border {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .text-muted-foreground {
+  color: #a3a3a3 !important;
 }

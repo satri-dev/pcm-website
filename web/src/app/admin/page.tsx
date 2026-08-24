@@ -3,6 +3,7 @@ import DashboardHeader from "./_components/dashboard/dashboard-header";
 import SummaryCards from "./_components/dashboard/summary-cards";
 import ContentByCollection from "./_components/dashboard/content-by-collection";
 import GalleryByCategory from "./_components/dashboard/gallery-by-category";
+import SiteVisits from "./_components/dashboard/site-visits";
 import SeoMetaPanel from "./_components/dashboard/seo-meta-panel";
 import RecentActivity from "./_components/dashboard/recent-activity";
 import QuickActions from "./_components/dashboard/quick-actions";
@@ -21,6 +22,8 @@ export default function AdminDashboard() {
           <ContentByCollection />
           <GalleryByCategory />
         </div>
+
+        <SiteVisits />
 
         <div className="admin-charts">
           <SeoMetaPanel />

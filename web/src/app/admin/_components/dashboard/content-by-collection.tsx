@@ -1,36 +1,72 @@
-import { contentByCollection } from "../../data";
+"use client"
+
+import * as React from "react"
+import { Bar, BarChart, XAxis, YAxis } from "recharts"
+import { contentByCollection } from "../../data"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart"
+
+const chartData = contentByCollection.map((item) => ({
+  name: item.label,
+  count: item.value,
+}))
+
+const chartConfig = {
+  count: {
+    label: "Items",
+    color: "#21409a",
+  },
+} satisfies ChartConfig
 
 export default function ContentByCollection() {
-  const max = Math.max(...contentByCollection.map((i) => i.value));
-
   return (
-    <div className="admin-panel">
-      <div className="admin-panel__head">
-        <div>
-          <h3>Content by Collection</h3>
-          <p>Items across all content types</p>
-        </div>
-        <span className="admin-badge admin-badge--blue">
-          {contentByCollection.reduce((sum, i) => sum + i.value, 0)} total
-        </span>
-      </div>
-      <div className="admin-panel__body">
-        {contentByCollection.map((item) => (
-          <div key={item.label} className="admin-bar-row">
-            <div className="admin-bar-row__label">{item.label}</div>
-            <div className="admin-bar-row__track">
-              <div
-                className="admin-bar-row__fill"
-                style={{
-                  width: `${Math.max(3, (item.value / max) * 100)}%`,
-                  background: item.color,
-                }}
-              />
-            </div>
-            <div className="admin-bar-row__value">{item.value}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+    <Card>
+      <CardHeader>
+        <CardTitle>Content by Collection</CardTitle>
+        <CardDescription>
+          {contentByCollection.length} content types &middot; {contentByCollection.reduce((sum, i) => sum + i.value, 0)} total items
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ChartContainer config={chartConfig} className="h-[400px] w-full">
+          <BarChart
+            accessibilityLayer
+            data={chartData}
+            layout="vertical"
+            margin={{
+              left: 20,
+            }}
+          >
+            <YAxis
+              dataKey="name"
+              type="category"
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+              tickFormatter={(value) =>
+                value.length > 16 ? value.slice(0, 16) + "..." : value
+              }
+            />
+            <XAxis type="number" tickLine={false} axisLine={false} />
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent hideLabel />}
+            />
+            <Bar dataKey="count" fill="var(--color-count)" radius={5} />
+          </BarChart>
+        </ChartContainer>
+      </CardContent>
+    </Card>
+  )
 }

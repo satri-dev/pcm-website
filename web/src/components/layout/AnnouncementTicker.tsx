@@ -9,7 +9,7 @@ const announcements = [
 
 export default function AnnouncementTicker() {
   return (
-    <div className="bg-pcm-navy text-white/90 overflow-hidden py-2" aria-label="Announcement">
+    <div className="bg-pcm-navy text-white/90 overflow-hidden py-2 relative z-[103]" aria-label="Announcement">
       <div className="ticker-inner animate-scroll">
         {announcements.map((announcement, index) => (
           <span key={index} className="ticker-item">

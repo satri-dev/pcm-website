@@ -110,7 +110,7 @@ export default function NewsSection() {
   return (
     <section className="py-[clamp(4rem,8vw,6rem)] bg-secondary/30">
       <div className="container">
-        <div className="grid lg:grid-cols-[1fr,400px] gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-8 lg:gap-12">
           <div>
             <div className="max-w-2xl mb-8">
               <span className="inline-block px-4 py-2 rounded-full bg-pcm-blue/10 text-pcm-blue text-sm font-mono uppercase tracking-wider mb-4">
@@ -124,7 +124,7 @@ export default function NewsSection() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {newsData.slice(0, 3).map((news) => (
                 <Link key={news.slug} href={`/news/${news.slug}`} className="group bg-card border border-border rounded-2xl overflow-hidden shadow-pcm-sm hover:shadow-pcm-md transition-all hover:-translate-y-1">
                   <div className="relative aspect-[16/10]">
