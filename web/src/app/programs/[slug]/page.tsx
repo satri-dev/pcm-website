@@ -10,17 +10,20 @@ export function generateStaticParams() {
   return programs.map((p) => ({ slug: p.slug }));
 }
 
-export function generateMetadata({ params }: { params: { slug: string } }) {
-  const program = getProgramBySlug(params.slug);
-  if (!program) return {};
-  return {
-    title: `${program.title} | Pokhara College of Management`,
-    description: program.summary,
-  };
+export function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  return params.then(({ slug }) => {
+    const program = getProgramBySlug(slug);
+    if (!program) return {};
+    return {
+      title: `${program.title} | Pokhara College of Management`,
+      description: program.summary,
+    };
+  });
 }
 
-export default function ProgramDetailPage({ params }: { params: { slug: string } }) {
-  const program = getProgramBySlug(params.slug);
+export default async function ProgramDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const program = getProgramBySlug(slug);
   if (!program) notFound();
 
   return (

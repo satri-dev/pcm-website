@@ -7,14 +7,17 @@ export function generateStaticParams() {
   return newsData.map((n) => ({ slug: n.slug }));
 }
 
-export function generateMetadata({ params }: { params: { slug: string } }) {
-  const post = getNewsBySlug(params.slug);
-  if (!post) return {};
-  return { title: `${post.title} | PCM News`, description: post.excerpt };
+export function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  return params.then(({ slug }) => {
+    const post = getNewsBySlug(slug);
+    if (!post) return {};
+    return { title: `${post.title} | PCM News`, description: post.excerpt };
+  });
 }
 
-export default function NewsDetailPage({ params }: { params: { slug: string } }) {
-  const post = getNewsBySlug(params.slug);
+export default async function NewsDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const post = getNewsBySlug(slug);
   if (!post) notFound();
 
   return (

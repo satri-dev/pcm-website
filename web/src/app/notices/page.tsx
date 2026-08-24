@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
-import ProgramsClient from "./ProgramsClient";
+import NoticesClient from "./NoticesClient";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700", "800"],
@@ -10,16 +10,16 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Programs | BBA, BBA-Finance & BCSIT at PCM Pokhara",
+  title: "Notices | Pokhara College of Management",
   description:
-    "Explore BBA, BBA-Finance and BCSIT degrees at Pokhara College of Management, affiliated to Pokhara University.",
-  alternates: { canonical: "/programs" },
+    "Official notices from PCM — admission announcements, entrance exam schedules, results, scholarships and events.",
+  alternates: { canonical: "/notices" },
 };
 
-export default function ProgramsPage() {
+export default function NoticesPage() {
   return (
     <div className={poppins.variable}>
-      <ProgramsClient />
+      <NoticesClient />
     </div>
   );
 }

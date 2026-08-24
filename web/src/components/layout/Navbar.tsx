@@ -6,10 +6,10 @@ import { buttonVariants } from "@/components/ui/button";
 
 const aboutLinks = [
   { label: "About PCM", href: "/about" },
-  { label: "Words from our leaders", href: "/about-message" },
-  { label: "Board of Directors", href: "/about-board" },
-  { label: "Faculty & Staff", href: "/faculty" },
-  { label: "Campus & Facilities", href: "/facilities" },
+  { label: "Words from our leaders", href: "/about/message" },
+  { label: "Board of Directors", href: "/about/board" },
+  { label: "Faculty & Staff", href: "/about/faculty" },
+  { label: "Campus & Facilities", href: "/about/facility" },
 ];
 
 const programLinks = [
