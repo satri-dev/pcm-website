@@ -9,14 +9,17 @@ export function generateStaticParams() {
   return blogsData.map((n) => ({ slug: n.slug }));
 }
 
-export function generateMetadata({ params }: { params: { slug: string } }) {
-  const post = getBlogBySlug(params.slug);
-  if (!post) return {};
-  return { title: `${post.title} | PCM Blog`, description: post.excerpt };
+export function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  return params.then(({ slug }) => {
+    const post = getBlogBySlug(slug);
+    if (!post) return {};
+    return { title: `${post.title} | PCM Blog`, description: post.excerpt };
+  });
 }
 
-export default function BlogDetailPage({ params }: { params: { slug: string } }) {
-  const post = getBlogBySlug(params.slug);
+export default async function BlogDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const post = getBlogBySlug(slug);
   if (!post) notFound();
 
   return (

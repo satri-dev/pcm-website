@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
-import NewsClient from "./NewsClient";
+import NoticesClient from "./NoticesClient";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700", "800"],
@@ -10,16 +10,16 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "News & Notices | Pokhara College of Management",
+  title: "Notices | Pokhara College of Management",
   description:
-    "Achievements, events and official announcements from across the PCM campus in Pokhara.",
-  alternates: { canonical: "/news" },
+    "Official notices from PCM — admission announcements, entrance exam schedules, results, scholarships and events.",
+  alternates: { canonical: "/notices" },
 };
 
-export default function NewsPage() {
+export default function NoticesPage() {
   return (
     <div className={poppins.variable}>
-      <NewsClient />
+      <NoticesClient />
     </div>
   );
 }
