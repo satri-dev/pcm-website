@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
     // /assets/[...path] route handler (which streams files from ../assets/)
     remotePatterns: [
       {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
         protocol: "https",
         hostname: "api.qrserver.com",
         pathname: "/v1/create-qr-code/**",

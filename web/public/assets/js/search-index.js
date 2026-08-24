@@ -1,0 +1,47 @@
+/* ============================================================
+   PCMC — assets/js/search-index.js
+   Static site search index. Add one entry per page (and for any
+   searchable item) with: t = title, u = url, s = section,
+   k = keywords, x = short excerpt. Loaded BEFORE main.js.
+   ============================================================ */
+window.PCM_SEARCH = [
+  { t: "Home", u: "index.html", s: "College", k: "pokhara college management pcm bba bcsit admissions home", x: "Affordable, quality management and IT education in Pokhara since 2002." },
+  { t: "About PCM", u: "about.html", s: "College", k: "about who we are history mission vision pokhara college", x: "Established in 2002, PCM develops confident, creative and adaptive graduates." },
+  { t: "Words from our leaders", u: "about-message.html", s: "College", k: "principal chairman message welcome leadership coordinator", x: "Personal words from the leadership of Pokhara College of Management." },
+  { t: "Board of Directors", u: "about-board.html", s: "College", k: "board directors governance management team", x: "The governing board that guides PCM's strategic direction." },
+  { t: "Faculty & Staff", u: "faculty.html", s: "College", k: "faculty staff teachers professors lecturers", x: "Qualified management and IT faculty behind every PCM program." },
+  { t: "Programs", u: "programs.html", s: "Academics", k: "programs bba bcsit finance courses degrees pokhara university", x: "Three Pokhara University degrees: BBA, BBA-Finance and BCSIT." },
+  { t: "BBA Program", u: "program-bba.html", s: "Academics", k: "bba bachelor business administration program curriculum semester", x: "Bachelor in Business Administration — four-year professional management degree." },
+  { t: "BBA-Finance Program", u: "program-bba-finance.html", s: "Academics", k: "bba finance banking investment corporate financial analysis", x: "Business Administration in Finance — deep expertise in financial analysis and investment." },
+  { t: "BCSIT Program", u: "program-bcsit.html", s: "Academics", k: "bcsit computer system information technology software", x: "Computer System and Information Technology — IT merged with business management." },
+  { t: "Admission", u: "admission.html", s: "Admissions", k: "admission apply application entrance form deadline 2083", x: "Apply online or in person for the 2083 intake across all three programs." },
+  { t: "Scholarships", u: "scholarship.html", s: "Admissions", k: "scholarship merit need based financial aid award", x: "Merit and need-based scholarships for eligible new students." },
+  { t: "GPA Converter", u: "gpa-converter.html", s: "Tools", k: "gpa converter grade point average calculator bba bcsit result", x: "Calculate your GPA for BBA, BBA-Finance and BCSIT with the official grade scale." },
+  { t: "Nepali-English Converter", u: "np-en-converter.html", s: "Tools", k: "nepali english converter transliterate devanagari roman nepali to english", x: "Convert Nepali (Devanagari) text to romanized English and back." },
+  { t: "News & Notices", u: "news.html", s: "News", k: "news notices achievements events announcements campus", x: "Achievements, events and official announcements from across the PCM campus." },
+  { t: "Notices", u: "notice.html", s: "News", k: "notices notice official announcements admission exam results", x: "Official announcements from the administration — admissions, exams, results and events." },
+  { t: "Results", u: "results.html", s: "News", k: "results result exam semester routine grade sheet transcripts", x: "Semester exam results, grade sheets and published result notices." },
+  { t: "Events & Workshops", u: "events.html", s: "News", k: "events workshops seminars fests tours competitions calendar", x: "Fests, seminars, workshops, tours and competitions at PCM." },
+  { t: "Downloads", u: "downloads.html", s: "College", k: "downloads prospectus admission form syllabus scholarship form documents pdf", x: "Prospectus, admission forms, syllabi and official documents." },
+  { t: "Placements & Careers", u: "placements.html", s: "College", k: "placements careers internship jobs recruitment recruiters career guidance hiring", x: "Career support, recruitment partners and graduate placement outcomes at PCM." },
+  { t: "Careers at PCM", u: "career.html", s: "College", k: "careers jobs openings faculty staff positions apply join pcm", x: "Job openings and careers at Pokhara College of Management - faculty, staff and administrative roles." },
+  { t: "Virtual Tour", u: "virtual-tour.html", s: "College", k: "virtual tour campus 360 classrooms labs library explore nadipur pokhara", x: "Explore the PCM campus virtually - classrooms, IT labs, library and facilities." },
+  { t: "Student Testimonials", u: "testimonials.html", s: "College", k: "testimonials reviews student stories alumni voices achievements success", x: "What students, graduates and parents say about Pokhara College of Management." },
+  { t: "Campus & Facilities", u: "facilities.html", s: "College", k: "facilities campus classrooms library labs seminar hall sports cafeteria smart classes", x: "Smart classrooms, IT labs, library, seminar hall and sports at the PCM Nadipur campus." },
+  { t: "Campus Map", u: "campus-map.html", s: "College", k: "campus map directions location nadipur buildings landmarks how to find", x: "Interactive campus map — find your way around the PCM Nadipur campus." },
+  { t: "Gallery", u: "gallery.html", s: "Life", k: "gallery photos campus events fest tours sports seminars", x: "Photos and moments from campus life, fests, tours and workshops." },
+  { t: "Articles", u: "blogs.html", s: "Blogs", k: "blogs articles stories insight perspectives", x: "Articles and perspectives from the PCM community." },
+  { t: "Student Blogs", u: "blogs-student.html", s: "Blogs", k: "student blogs stories experiences life at pcm", x: "Stories and experiences written by PCM students." },
+  { t: "Clubs", u: "clubs.html", s: "Life", k: "clubs student clubs society events activities", x: "Student clubs that turn classmates into a community." },
+  { t: "Alumni", u: "alumni.html", s: "Life", k: "alumni graduates network success stories", x: "The growing PCM alumni network and graduate success stories." },
+  { t: "Life at PCM", u: "life.html", s: "Life", k: "life campus fests tours workshops culture typical day daily routine classrooms cafeteria study community", x: "A typical day on campus, fests, tours, workshops, facilities and clubs — the moments that define life at PCM." },
+  { t: "Contact", u: "contact.html", s: "College", k: "contact phone email address location map pokhara nadipur", x: "Get in touch — call, email or visit us at Gyan Marg, Nadipur, Pokhara." },
+  { t: "FAQ", u: "faq.html", s: "College", k: "faq questions answers help admission programs fees", x: "Frequently asked questions about admissions, programs and life at PCM." },
+  { t: "Annual Fest 2026", u: "news-details.html?a=annual-fest-2026", s: "News", k: "annual fest 2026 event celebration campus", x: "Annual Fest 2026 lights up the PCM campus." },
+  { t: "Prabhat entrepreneurship grant", u: "news-details.html?a=prabhat-grant", s: "News", k: "prabhat grant entrepreneurship achievement award bba", x: "BBA student Prabhat awarded Rs. 12 lakh entrepreneurship grant." },
+  { t: "Model press conference", u: "news-details.html?a=mock-press", s: "News", k: "model press conference communication public speaking", x: "Model press conference sharpens student communication skills." },
+  { t: "Industry visit", u: "news-details.html?a=industry-visit", s: "News", k: "industry visit bcsit tech company kathmandu tour", x: "BCSIT cohort tours a leading tech company in Kathmandu." },
+  { t: "Blood donation drive", u: "news-details.html?a=blood-donation", s: "News", k: "blood donation red cross community clubs", x: "PCM clubs organise a blood-donation drive." },
+  { t: "Entrance examination schedule", u: "notice.html", s: "News", k: "entrance examination schedule 2083 admit card", x: "Entrance examination schedule for the 2083 intake." },
+  { t: "Admission form deadline", u: "notice.html", s: "News", k: "admission form deadline apply 2083 bba bcsit", x: "Applications close on Ashar 26, 2083." }
+];
