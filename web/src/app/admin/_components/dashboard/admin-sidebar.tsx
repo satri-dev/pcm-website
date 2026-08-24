@@ -52,7 +52,7 @@ const navigation: NavSection[] = [
   {
     title: "Content",
     items: [
-      { label: "News", href: "/admin/news", icon: Newspaper, badge: "4" },
+      { label: "News", href: "/admin/content//news", icon: Newspaper, badge: "4" },
       { label: "Notices", href: "/admin/notices", icon: AlertCircle, badge: "5" },
       { label: "Results", href: "/admin/results", icon: BarChart3, badge: "8" },
       { label: "Events & Workshops", href: "/admin/events", icon: Calendar, badge: "5" },
