@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { newsData } from "@/data/news";
 import Pagination from "../Pagination";
-import "../pcm-pages.css";
+import "../pcm-pages.css"
 
 const featured = newsData[0];
 const stories = newsData.slice(1);
