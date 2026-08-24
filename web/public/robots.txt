@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://www.pcm.edu.np
+
+# Sitemaps
+Sitemap: https://www.pcm.edu.np/sitemap.xml
