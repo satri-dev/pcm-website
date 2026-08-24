@@ -35,7 +35,7 @@ export default function SeoMetaPanel() {
       <div className="admin-panel__body admin-seo-health">
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[0.82rem] font-semibold text-[var(--admin-ink)]">Overall Score</span>
+            <span className="text-[0.82rem] font-semibold text-(--admin-ink)">Overall Score</span>
             <span className="text-[0.82rem] font-bold" style={{ color: getScoreColor(overall) }}>
               {overall}/100
             </span>

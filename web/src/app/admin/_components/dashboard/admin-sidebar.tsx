@@ -1,5 +1,7 @@
+"use client";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   FileText,
@@ -52,7 +54,7 @@ const navigation: NavSection[] = [
   {
     title: "Content",
     items: [
-      { label: "News", href: "/admin/content//news", icon: Newspaper, badge: "4" },
+      { label: "News", href: "/admin/content/news", icon: Newspaper, badge: "4" },
       { label: "Notices", href: "/admin/notices", icon: AlertCircle, badge: "5" },
       { label: "Results", href: "/admin/results", icon: BarChart3, badge: "8" },
       { label: "Events & Workshops", href: "/admin/events", icon: Calendar, badge: "5" },
@@ -99,8 +101,9 @@ const navigation: NavSection[] = [
   },
 ];
 
-export default function AdminSidebar({ activePath }: { activePath?: string }) {
-  const current = activePath || "/admin";
+export default function AdminSidebar() {
+  const pathname = usePathname();
+  const current = pathname || "/admin";
 
   function isActive(href: string) {
     if (href === "/admin") return current === "/admin";
