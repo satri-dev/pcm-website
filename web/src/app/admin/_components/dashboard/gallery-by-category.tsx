@@ -1,4 +1,4 @@
-import { galleryByCategory } from "../data";
+import { galleryByCategory } from "../../data";
 
 export default function GalleryByCategory() {
   const total = galleryByCategory.reduce((sum, i) => sum + i.count, 0);

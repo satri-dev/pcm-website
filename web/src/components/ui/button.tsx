@@ -9,9 +9,6 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/80",
-        primary: "bg-pcm-blue text-white hover:bg-pcm-blue-700 transition-colors",
-        gold: "bg-pcm-green text-pcm-navy font-bold hover:bg-pcm-green/90 transition-colors",
-        ghostOnDark: "text-white border border-white/20 hover:bg-white/10 transition-colors",
         outline:
           "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
         secondary:
