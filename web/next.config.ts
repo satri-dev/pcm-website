@@ -29,6 +29,14 @@ const nextConfig: NextConfig = {
         // Allows next/image to serve /assets/** from the same origin
         pathname: "/assets/**",
       },
+      {
+        // Public images used across the app (hero slides, news, programs, logo)
+        pathname: "/images/**",
+      },
+      {
+        // Root-level logo used by auth pages
+        pathname: "/logo-pcm.png",
+      },
     ],
   },
 };
