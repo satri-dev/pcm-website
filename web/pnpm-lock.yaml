@@ -26,6 +26,9 @@ importers:
       better-auth:
         specifier: ^1.7.1
         version: 1.7.1(mongodb@7.5.0)(next@16.3.2(@babel/core@7.29.7)(@types/node@20.19.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      lucide-react:
+        specifier: ^1.33.0
+        version: 1.33.0(react@19.2.8)
       mongodb:
         specifier: ^7.5.0
         version: 7.5.0
