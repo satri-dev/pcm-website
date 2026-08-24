@@ -15,8 +15,6 @@ export async function proxy(request: NextRequest) {
 
   const isPublicPath =
     pathname === "/login" ||
-    pathname === "/enable-2fa" ||
-    pathname === "/two-factor" ||
     pathname === "/" ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/test-2fa") ||
@@ -49,6 +47,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  runtime: "nodejs",
-  matcher: ["/admin/:path*", "/editor/:path*", "/viewer/:path*"],
+  matcher: ["/admin/:path*", "/editor/:path*", "/viewer/:path*", "/enable-2fa"],
 }

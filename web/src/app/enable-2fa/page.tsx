@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { authClient } from "@/core/lib/auth-client"
 import Image from "next/image"
@@ -13,6 +13,16 @@ export default function Enable2FAPage() {
   const [verifyCode, setVerifyCode] = useState("")
   const [status, setStatus] = useState("")
   const [isPending, setIsPending] = useState(false)
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await authClient.getSession()
+      if (data?.user?.twoFactorEnabled) {
+        router.push("/admin")
+      }
+    }
+    checkSession()
+  }, [router])
 
   const handleEnable = async () => {
     setIsPending(true)

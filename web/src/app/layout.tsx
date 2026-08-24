@@ -1,12 +1,6 @@
 import type { Metadata } from "next";
 import { Poppins, Geist } from "next/font/google";
 import "./globals.css";
-import AnnouncementTicker from "@/components/layout/AnnouncementTicker";
-import TopBar from "@/components/layout/TopBar";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import AdmissionModal from "@/components/shared/AdmissionModal";
-import ChatWidget from "@/components/shared/ChatWidget";
 import { cn } from "@/lib/utils";
 import { OrganizationSchema, WebSiteSchema } from "./structured-data";
 
@@ -47,15 +41,7 @@ export default function RootLayout({
         <OrganizationSchema />
         <WebSiteSchema />
       </head>
-      <body>
-        <AnnouncementTicker />
-        <TopBar />
-        <Navbar />
-        <main id="main">{children}</main>
-        <Footer />
-        <ChatWidget />
-        <AdmissionModal />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
