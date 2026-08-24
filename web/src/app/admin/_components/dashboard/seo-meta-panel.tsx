@@ -1,4 +1,4 @@
-import { seoHealth } from "../data";
+import { seoHealth } from "../../data";
 
 function getScoreColor(score: number) {
   if (score >= 80) return "var(--admin-green)";

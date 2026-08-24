@@ -1,4 +1,4 @@
-import { recentActivity } from "../data";
+import { recentActivity } from "../../data";
 
 export default function RecentActivity() {
   return (

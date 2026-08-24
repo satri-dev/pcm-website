@@ -11,7 +11,7 @@ import GallerySection from "@/components/home/GallerySection";
 import BlogsSection from "@/components/home/BlogsSection";
 import TestimonialsSection from "@/components/home/TestimonialsSection";
 import CTASection from "@/components/home/CTASection";
-import { BreadcrumbSchema, EducationalOrganizationSchema } from "./structured-data";
+import { BreadcrumbSchema, EducationalOrganizationSchema } from "../structured-data";
 
 export const metadata: Metadata = {
   title: "Pokhara College of Management | BBA, BCSIT in Pokhara",

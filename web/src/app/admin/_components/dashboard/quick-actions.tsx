@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { quickActions } from "../data";
+import { quickActions } from "../../data";
 import {
   Pencil,
   ImageIcon,

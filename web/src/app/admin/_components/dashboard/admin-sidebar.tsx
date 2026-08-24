@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   LayoutDashboard,
   FileText,
@@ -109,7 +110,13 @@ export default function AdminSidebar({ activePath }: { activePath?: string }) {
   return (
     <aside className="admin-sidebar" id="sidebar">
       <Link href="/admin" className="admin-sidebar__brand">
-        <div className="admin-sidebar__brand-icon">P</div>
+        <Image
+          src="/logo-pcm.png"
+          alt="PCM Logo"
+          width={40}
+          height={40}
+          className="admin-sidebar__brand-img"
+        />
         <div>
           <b>PCM Admin</b>
           <span>Content Manager</span>

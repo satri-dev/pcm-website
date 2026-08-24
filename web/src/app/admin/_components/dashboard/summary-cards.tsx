@@ -1,4 +1,4 @@
-import { summaryStats } from "../data";
+import { summaryStats } from "../../data";
 import {
   FileText,
   Pencil,
