@@ -7,8 +7,10 @@ import SiteVisits from "./_components/dashboard/site-visits";
 import SeoMetaPanel from "./_components/dashboard/seo-meta-panel";
 import RecentActivity from "./_components/dashboard/recent-activity";
 import QuickActions from "./_components/dashboard/quick-actions";
+import { getSiteVisits } from "@/core/lib/analytics/stats";
 
-export default function AdminDashboard() {
+export default async function AdminDashboard() {
+  const siteVisits = await getSiteVisits(60);
   return (
     <>
       <PageHeader title="Dashboard" subtitle="Analytics & overview" />
@@ -23,7 +25,14 @@ export default function AdminDashboard() {
           <GalleryByCategory />
         </div>
 
-        <SiteVisits />
+        <SiteVisits
+          data={siteVisits.map((item) => ({
+            date: item.date,
+            desktop: item.desktop,
+            mobile: item.mobile,
+            tablet: item.tablet,
+          }))}
+        />
 
         <div className="admin-charts">
           <SeoMetaPanel />

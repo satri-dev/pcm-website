@@ -3,6 +3,7 @@ import { Poppins, Geist } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { OrganizationSchema, WebSiteSchema } from "./structured-data";
+import AnalyticsTracker from "./admin/_components/analytics/AnalyticsTracker";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -36,12 +37,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={cn("font-sans", geist.variable, poppins.variable)}>
+    <html
+      lang="en"
+      className={cn("font-sans", geist.variable, poppins.variable)}
+    >
       <head>
         <OrganizationSchema />
         <WebSiteSchema />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <AnalyticsTracker />
+      </body>
     </html>
   );
 }
