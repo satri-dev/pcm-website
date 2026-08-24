@@ -20,7 +20,7 @@ export default function HeroSlider() {
   return (
     <section
       aria-label="Highlights"
-      className="relative bg-pcm-navy text-white/85 overflow-hidden min-h-[calc(100dvh-74px)] flex flex-col"
+      className="relative bg-pcm-navy text-white/85 overflow-hidden min-h-[calc(100dvh-104px)] sm:min-h-[calc(100dvh-114px)] flex flex-col"
     >
       <div
         className="flex flex-1 transition-transform duration-[600ms] ease-[cubic-bezier(0.22,0.61,0.36,1)]"

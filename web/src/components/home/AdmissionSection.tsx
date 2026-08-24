@@ -45,9 +45,9 @@ export default function AdmissionSection() {
         </div>
 
         {/* 3-column grid: image | steps | details */}
-        <div className="grid lg:grid-cols-[200px_minmax(0,1fr)_320px] gap-[clamp(1.5rem,3vw,2.5rem)] items-start mt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[200px_minmax(0,1fr)_320px] gap-[clamp(1.5rem,3vw,2.5rem)] items-start mt-6">
           {/* Left: Admission Poster */}
-          <div className="relative w-full aspect-[4/5] rounded-lg overflow-hidden shadow-md">
+          <div className="relative w-full max-w-[200px] mx-auto lg:mx-0 aspect-[4/5] rounded-lg overflow-hidden shadow-md">
             <Image
               src="/images/admission-open-2026.png"
               alt="Admissions open for 2083 intake"
@@ -77,7 +77,7 @@ export default function AdmissionSection() {
           </div>
 
           {/* Right: Admission Details Card */}
-          <aside className="bg-white border border-border rounded-lg p-5 shadow-sm">
+          <aside className="bg-white border border-border rounded-lg p-5 shadow-sm w-full lg:w-auto">
             <h3 className="text-base font-semibold text-pcm-navy mb-4">
               Admission details
             </h3>

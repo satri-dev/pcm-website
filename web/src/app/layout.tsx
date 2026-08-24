@@ -5,8 +5,8 @@ import AnnouncementTicker from "@/components/layout/AnnouncementTicker";
 import TopBar from "@/components/layout/TopBar";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import FloatingButtons from "@/components/shared/FloatingButtons";
 import AdmissionModal from "@/components/shared/AdmissionModal";
+import ChatWidget from "@/components/shared/ChatWidget";
 import { cn } from "@/lib/utils";
 import { OrganizationSchema, WebSiteSchema } from "./structured-data";
 
@@ -53,7 +53,7 @@ export default function RootLayout({
         <Navbar />
         <main id="main">{children}</main>
         <Footer />
-        <FloatingButtons />
+        <ChatWidget />
         <AdmissionModal />
       </body>
     </html>

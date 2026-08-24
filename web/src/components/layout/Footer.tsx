@@ -55,8 +55,8 @@ export default function Footer() {
       </svg>
 
       <div className="relative z-[2]">
-        <div className="container">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr] gap-[clamp(2rem,4vw,3rem)] py-[clamp(2.5rem,5vw,4rem)] pb-12">
+        <div className="container px-4 sm:px-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr] gap-8 sm:gap-10 lg:gap-[clamp(2rem,4vw,3rem)] py-8 sm:py-10 lg:py-[clamp(2.5rem,5vw,4rem)] pb-10 sm:pb-12">
             {/* Brand Column */}
             <div className="grid gap-4 content-start">
               <Link href="/" className="inline-flex items-center gap-3 w-fit">
@@ -75,39 +75,40 @@ export default function Footer() {
                 </span>
               </Link>
 
-              <p className="text-[0.92rem] leading-relaxed max-w-[34ch]">
+              <p className="text-sm sm:text-[0.92rem] leading-relaxed max-w-[34ch]">
                 Enter to Learn — Go Forth to Serve. Affordable, quality management &amp; IT education in the heart of Pokhara since 2002.
               </p>
 
               {/* Newsletter */}
-              <div className="grid gap-[0.85rem] content-start">
-                <h4 className="text-white font-mono font-semibold text-[0.82rem] tracking-[0.08em] uppercase">
+              <div className="grid gap-3 sm:gap-[0.85rem] content-start">
+                <h4 className="text-white font-mono font-semibold text-xs sm:text-[0.82rem] tracking-[0.08em] uppercase">
                   Stay in the Loop
                 </h4>
-                <form className="grid grid-cols-[1fr_auto] gap-[0.55rem] mt-[0.2rem]">
+                <form className="grid grid-cols-[1fr_auto] gap-2 sm:gap-[0.55rem] mt-[0.2rem]">
                   <input 
                     type="email" 
                     name="email"
                     placeholder="Your email address"
                     aria-label="Email address"
                     required
-                    className="w-full min-w-0 px-4 py-[0.72rem] border border-white/[0.22] rounded-xl bg-white/[0.06] text-white text-[0.9rem] placeholder:text-white/45 outline-none transition-all focus:border-pcm-green focus:bg-white/10"
+                    className="w-full min-w-0 px-3 sm:px-4 py-2.5 sm:py-[0.72rem] border border-white/[0.22] rounded-lg sm:rounded-xl bg-white/[0.06] text-white text-sm sm:text-[0.9rem] placeholder:text-white/45 outline-none transition-all focus:border-pcm-green focus:bg-white/10"
                   />
                   <button 
                     type="submit"
                     aria-label="Subscribe to newsletter"
-                    className="inline-flex items-center gap-[0.45rem] px-[1.15rem] py-[0.72rem] rounded-xl bg-pcm-green text-pcm-navy font-bold text-[0.9rem] transition-all hover:bg-pcm-green-500 hover:-translate-y-0.5"
+                    className="inline-flex items-center gap-[0.45rem] px-3 sm:px-[1.15rem] py-2.5 sm:py-[0.72rem] rounded-lg sm:rounded-xl bg-pcm-green text-pcm-navy font-bold text-sm sm:text-[0.9rem] transition-all hover:bg-pcm-green-500 hover:-translate-y-0.5"
                   >
-                    Subscribe <Send className="w-4 h-4" />
+                    <span className="hidden sm:inline">Subscribe</span>
+                    <Send className="w-4 h-4" />
                   </button>
                 </form>
-                <p className="text-[0.8rem] text-white/55 leading-relaxed">
+                <p className="text-xs sm:text-[0.8rem] text-white/55 leading-relaxed">
                   Monthly highlights — events, scholarships and results. No spam, unsubscribe anytime.
                 </p>
               </div>
 
               {/* Contact Info */}
-              <div className="grid gap-[0.65rem] text-[0.9rem]">
+              <div className="grid gap-2 sm:gap-[0.65rem] text-sm sm:text-[0.9rem]">
                 <a 
                   href="https://maps.google.com/?q=Pokhara+College+of+Management+Nadipur" 
                   target="_blank" 
@@ -134,59 +135,59 @@ export default function Footer() {
               </div>
 
               {/* Social Links */}
-              <div className="flex gap-[0.6rem] mt-1">
+              <div className="flex gap-2 sm:gap-[0.6rem] mt-1">
                 <a
                   href="https://www.facebook.com/239069093193587"
                   target="_blank"
                   rel="noopener"
                   aria-label="Facebook"
-                  className="w-10 h-10 grid place-items-center rounded-full border border-white/[0.18] text-white transition-all hover:bg-pcm-green hover:border-pcm-green hover:text-pcm-navy hover:-translate-y-[3px]"
+                  className="w-9 h-9 sm:w-10 sm:h-10 grid place-items-center rounded-full border border-white/[0.18] text-white transition-all hover:bg-pcm-green hover:border-pcm-green hover:text-pcm-navy hover:-translate-y-[3px]"
                 >
-                  <FaFacebook className="w-[1.05rem] h-[1.05rem]" />
+                  <FaFacebook className="w-4 h-4 sm:w-[1.05rem] sm:h-[1.05rem]" />
                 </a>
                 <a
                   href="https://www.instagram.com/"
                   target="_blank"
                   rel="noopener"
                   aria-label="Instagram"
-                  className="w-10 h-10 grid place-items-center rounded-full border border-white/[0.18] text-white transition-all hover:bg-pcm-green hover:border-pcm-green hover:text-pcm-navy hover:-translate-y-[3px]"
+                  className="w-9 h-9 sm:w-10 sm:h-10 grid place-items-center rounded-full border border-white/[0.18] text-white transition-all hover:bg-pcm-green hover:border-pcm-green hover:text-pcm-navy hover:-translate-y-[3px]"
                 >
-                  <FaInstagram className="w-[1.05rem] h-[1.05rem]" />
+                  <FaInstagram className="w-4 h-4 sm:w-[1.05rem] sm:h-[1.05rem]" />
                 </a>
                 <a
                   href="https://www.linkedin.com/"
                   target="_blank"
                   rel="noopener"
                   aria-label="LinkedIn"
-                  className="w-10 h-10 grid place-items-center rounded-full border border-white/[0.18] text-white transition-all hover:bg-pcm-green hover:border-pcm-green hover:text-pcm-navy hover:-translate-y-[3px]"
+                  className="w-9 h-9 sm:w-10 sm:h-10 grid place-items-center rounded-full border border-white/[0.18] text-white transition-all hover:bg-pcm-green hover:border-pcm-green hover:text-pcm-navy hover:-translate-y-[3px]"
                 >
-                  <FaLinkedin className="w-[1.05rem] h-[1.05rem]" />
+                  <FaLinkedin className="w-4 h-4 sm:w-[1.05rem] sm:h-[1.05rem]" />
                 </a>
                 <a
                   href="https://wa.me/97761544761"
                   target="_blank"
                   rel="noopener"
                   aria-label="WhatsApp"
-                  className="w-10 h-10 grid place-items-center rounded-full border border-white/[0.18] text-white transition-all hover:bg-pcm-green hover:border-pcm-green hover:text-pcm-navy hover:-translate-y-[3px]"
+                  className="w-9 h-9 sm:w-10 sm:h-10 grid place-items-center rounded-full border border-white/[0.18] text-white transition-all hover:bg-pcm-green hover:border-pcm-green hover:text-pcm-navy hover:-translate-y-[3px]"
                 >
-                  <FaWhatsapp className="w-[1.05rem] h-[1.05rem]" />
+                  <FaWhatsapp className="w-4 h-4 sm:w-[1.05rem] sm:h-[1.05rem]" />
                 </a>
               </div>
             </div>
 
             {/* Quick Links */}
             <div>
-              <h4 className="text-white font-mono font-semibold text-[0.82rem] tracking-[0.08em] uppercase mb-4">
+              <h4 className="text-white font-mono font-semibold text-xs sm:text-[0.82rem] tracking-[0.08em] uppercase mb-3 sm:mb-4">
                 Quick Links
               </h4>
-              <div className="grid gap-[0.55rem]">
+              <div className="grid gap-2 sm:gap-[0.55rem]">
                 {quickLinks.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="inline-flex items-center gap-2 text-[0.92rem] text-white/70 transition-all hover:text-pcm-green hover:pl-[0.35rem]"
+                    className="inline-flex items-center gap-2 text-sm sm:text-[0.92rem] text-white/70 transition-all hover:text-pcm-green hover:pl-[0.35rem]"
                   >
-                    <ChevronRight className="w-[0.85rem] h-[0.85rem] text-pcm-green" />
+                    <ChevronRight className="w-3 h-3 sm:w-[0.85rem] sm:h-[0.85rem] text-pcm-green shrink-0" />
                     {link.label}
                   </Link>
                 ))}
@@ -195,17 +196,17 @@ export default function Footer() {
 
             {/* Get in Touch */}
             <div>
-              <h4 className="text-white font-mono font-semibold text-[0.82rem] tracking-[0.08em] uppercase mb-4">
+              <h4 className="text-white font-mono font-semibold text-xs sm:text-[0.82rem] tracking-[0.08em] uppercase mb-3 sm:mb-4">
                 Get in Touch
               </h4>
-              <div className="grid gap-[0.55rem]">
+              <div className="grid gap-2 sm:gap-[0.55rem]">
                 {getInTouchLinks.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="inline-flex items-center gap-2 text-[0.92rem] text-white/70 transition-all hover:text-pcm-green hover:pl-[0.35rem]"
+                    className="inline-flex items-center gap-2 text-sm sm:text-[0.92rem] text-white/70 transition-all hover:text-pcm-green hover:pl-[0.35rem]"
                   >
-                    <ChevronRight className="w-[0.85rem] h-[0.85rem] text-pcm-green" />
+                    <ChevronRight className="w-3 h-3 sm:w-[0.85rem] sm:h-[0.85rem] text-pcm-green shrink-0" />
                     {link.label}
                   </Link>
                 ))}
@@ -214,19 +215,19 @@ export default function Footer() {
 
             {/* Useful Links */}
             <div>
-              <h4 className="text-white font-mono font-semibold text-[0.82rem] tracking-[0.08em] uppercase mb-4">
+              <h4 className="text-white font-mono font-semibold text-xs sm:text-[0.82rem] tracking-[0.08em] uppercase mb-3 sm:mb-4">
                 Useful Links
               </h4>
-              <div className="grid gap-[0.55rem]">
+              <div className="grid gap-2 sm:gap-[0.55rem]">
                 {usefulLinks.map((link) => (
                   <a
                     key={link.href}
                     href={link.href}
                     target="_blank"
                     rel="noopener"
-                    className="inline-flex items-center gap-2 text-[0.92rem] text-white/70 transition-all hover:text-pcm-green hover:pl-[0.35rem]"
+                    className="inline-flex items-center gap-2 text-sm sm:text-[0.92rem] text-white/70 transition-all hover:text-pcm-green hover:pl-[0.35rem]"
                   >
-                    <ChevronRight className="w-[0.85rem] h-[0.85rem] text-pcm-green" />
+                    <ChevronRight className="w-3 h-3 sm:w-[0.85rem] sm:h-[0.85rem] text-pcm-green shrink-0" />
                     {link.label}
                   </a>
                 ))}
@@ -235,30 +236,30 @@ export default function Footer() {
 
             {/* Opening Hours */}
             <div>
-              <h4 className="text-white font-mono font-semibold text-[0.82rem] tracking-[0.08em] uppercase mb-4">
+              <h4 className="text-white font-mono font-semibold text-xs sm:text-[0.82rem] tracking-[0.08em] uppercase mb-3 sm:mb-4">
                 Opening Hours
               </h4>
-              <div className="grid gap-1 text-[0.88rem]">
-                <div className="flex items-center justify-between gap-4 py-[0.55rem] border-b border-white/[0.14]">
-                  <span className="text-white/60 font-mono text-[0.72rem] uppercase tracking-[0.1em]">
+              <div className="grid gap-1 text-xs sm:text-[0.88rem]">
+                <div className="flex items-center justify-between gap-4 py-2 sm:py-[0.55rem] border-b border-white/[0.14]">
+                  <span className="text-white/60 font-mono text-[0.65rem] sm:text-[0.72rem] uppercase tracking-[0.1em]">
                     Sunday – Friday
                   </span>
-                  <b className="text-white font-semibold">6:00 AM – 4:00 PM</b>
+                  <b className="text-white font-semibold text-xs sm:text-sm">6:00 AM – 4:00 PM</b>
                 </div>
-                <div className="flex items-center justify-between gap-4 py-[0.55rem]">
-                  <span className="text-white/60 font-mono text-[0.72rem] uppercase tracking-[0.1em]">
+                <div className="flex items-center justify-between gap-4 py-2 sm:py-[0.55rem]">
+                  <span className="text-white/60 font-mono text-[0.65rem] sm:text-[0.72rem] uppercase tracking-[0.1em]">
                     Saturday
                   </span>
-                  <b className="text-white font-semibold">Closed</b>
+                  <b className="text-white font-semibold text-xs sm:text-sm">Closed</b>
                 </div>
               </div>
 
               {/* Affiliation Badge */}
-              <div className="mt-5 flex items-center gap-3 pt-4 border-t border-white/10">
-                <span className="inline-flex items-center justify-center w-11 h-11 shrink-0 border border-pcm-green rounded-md font-display font-bold text-base text-pcm-green">
+              <div className="mt-4 sm:mt-5 flex items-center gap-3 pt-4 border-t border-white/10">
+                <span className="inline-flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 shrink-0 border border-pcm-green rounded-md font-display font-bold text-base text-pcm-green">
                   PU
                 </span>
-                <div className="text-[0.78rem] text-white/55 leading-tight">
+                <div className="text-xs sm:text-[0.78rem] text-white/55 leading-tight">
                   Affiliated to<br />
                   <b className="text-white font-semibold">Pokhara University</b>
                 </div>
@@ -270,8 +271,8 @@ export default function Footer() {
 
       {/* Footer Bottom */}
       <div className="relative z-[2] border-t border-white/10">
-        <div className="container py-5">
-          <div className="flex flex-wrap items-center justify-between gap-3 text-[0.82rem] text-white/50">
+        <div className="container px-4 sm:px-6 py-4 sm:py-5">
+          <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center sm:justify-between gap-3 text-xs sm:text-[0.82rem] text-white/50 text-center sm:text-left">
             <span>
               © <span>{new Date().getFullYear()}</span> Pokhara College of Management. All rights reserved.
             </span>
