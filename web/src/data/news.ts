@@ -58,6 +58,150 @@ export const newsData: NewsPost[] = [
       "We are proud of our graduates' achievements and confident that they will contribute meaningfully to their chosen fields and society as a whole.",
     ],
   },
+  {
+    slug: "prabhat-grant",
+    title: "BBA student Prabhat awarded Rs. 12 lakh entrepreneurship grant",
+    excerpt:
+      "BBA student Prabhat has secured a Rs. 12 lakh entrepreneurship grant to bring his startup idea to life - a proud milestone for PCM's culture of enterprise and innovation.",
+    image: "/images/hero-2.jpg",
+    date: "24 Jul 2026",
+    tag: "Achievement",
+    body: [
+      "BBA student Prabhat has secured a Rs. 12 lakh entrepreneurship grant to bring his startup idea to life - a proud milestone for PCM's culture of enterprise and innovation.",
+    ],
+  },
+  {
+    slug: "annual-fest-2026",
+    title: "Annual Fest 2026 lights up the PCM campus",
+    excerpt:
+      "Music, dance, food stalls and friendly competition brought the whole college together for Annual Fest 2026 - one of the most anticipated events on the PCM calendar.",
+    image: "/images/hero-4.jpg",
+    date: "17 Jul 2026",
+    tag: "Campus Life",
+    body: [
+      "Music, dance, food stalls and friendly competition brought the whole college together for Annual Fest 2026 - one of the most anticipated events on the PCM calendar.",
+    ],
+  },
+  {
+    slug: "annual-fest-nepali",
+    title: "PCM Annual Fest celebration",
+    excerpt:
+      "The much-loved annual festival returned to PCM with vibrant performances, inter-batch contests and a celebration of student creativity and community.",
+    image: "/images/hero-3.jpg",
+    date: "17 Jul 2026",
+    tag: "Event",
+    body: [
+      "The much-loved annual festival returned to PCM with vibrant performances, inter-batch contests and a celebration of student creativity and community.",
+    ],
+  },
+  {
+    slug: "mock-press",
+    title: "Model press conference sharpens student communication skills",
+    excerpt:
+      "Students staged a model press conference, stepping into the roles of journalists and spokespersons to build confidence, critical thinking and public-speaking skills.",
+    image: "/images/hero-6.jpg",
+    date: "17 Jul 2026",
+    tag: "Academics",
+    body: [
+      "Students staged a model press conference, stepping into the roles of journalists and spokespersons to build confidence, critical thinking and public-speaking skills.",
+    ],
+  },
+  {
+    slug: "industry-visit",
+    title: "BCSIT cohort tours leading tech company in Kathmandu",
+    excerpt:
+      "The BCSIT cohort travelled to a leading technology company for a hands-on industry visit, connecting classroom concepts with real-world software engineering practice.",
+    image: "/images/about-2.jpg",
+    date: "28 Jun 2026",
+    tag: "Field Visit",
+    body: [
+      "The BCSIT cohort travelled to a leading technology company for a hands-on industry visit, connecting classroom concepts with real-world software engineering practice.",
+    ],
+  },
+  {
+    slug: "blood-donation",
+    title: "PCM clubs organise blood-donation drive",
+    excerpt:
+      "In partnership with the local Red Cross, PCM student clubs hosted a blood-donation drive that drew enthusiastic participation from students and staff alike.",
+    image: "/images/hero-1.jpg",
+    date: "12 Jun 2026",
+    tag: "Community",
+    body: [
+      "In partnership with the local Red Cross, PCM student clubs hosted a blood-donation drive that drew enthusiastic participation from students and staff alike.",
+    ],
+  },
+  {
+    slug: "scholarship-winners",
+    title: "Scholarship winners announced for the 2083 intake",
+    excerpt:
+      "Merit and need-based scholarship awards for the 2083 intake have been finalised after a transparent selection process involving faculty and administration.",
+    image: "/images/hero-3.jpg",
+    date: "02 Aug 2026",
+    tag: "Scholarship",
+    body: [
+      "Merit and need-based scholarship awards for the 2083 intake have been finalised after a transparent selection process involving faculty and administration.",
+    ],
+  },
+  {
+    slug: "startup-hackathon",
+    title: "PCM hosts inter-college startup hackathon",
+    excerpt:
+      "Student teams from colleges across Pokhara gathered for a 24-hour hackathon to pitch ideas, build prototypes and compete for seed funding.",
+    image: "/images/about-1.jpg",
+    date: "30 Jul 2026",
+    tag: "Campus Life",
+    body: [
+      "Student teams from colleges across Pokhara gathered for a 24-hour hackathon to pitch ideas, build prototypes and compete for seed funding.",
+    ],
+  },
+  {
+    slug: "alumni-meet",
+    title: "Alumni meet brings PCM graduates together",
+    excerpt:
+      "Graduates from across the past two decades returned to campus to share career stories, reconnect with faculty and advise current students.",
+    image: "/images/about-graduation.jpg",
+    date: "21 Jul 2026",
+    tag: "Alumni",
+    body: [
+      "Graduates from across the past two decades returned to campus to share career stories, reconnect with faculty and advise current students.",
+    ],
+  },
+  {
+    slug: "campus-tree-planting",
+    title: "Green PCM: students lead tree-planting drive",
+    excerpt:
+      "The Green PCM initiative saw students and staff plant dozens of native saplings across the campus as part of the college's sustainability pledge.",
+    image: "/images/hero-5.jpg",
+    date: "14 Jul 2026",
+    tag: "Community",
+    body: [
+      "The Green PCM initiative saw students and staff plant dozens of native saplings across the campus as part of the college's sustainability pledge.",
+    ],
+  },
+  {
+    slug: "pu-visit",
+    title: "Pokhara University officials visit PCM campus",
+    excerpt:
+      "Delegates from Pokhara University toured PCM classrooms and labs, reviewing academic facilities ahead of the new intake cycle.",
+    image: "/images/hero-2.jpg",
+    date: "08 Jul 2026",
+    tag: "Academics",
+    body: [
+      "Delegates from Pokhara University toured PCM classrooms and labs, reviewing academic facilities ahead of the new intake cycle.",
+    ],
+  },
+  {
+    slug: "career-day",
+    title: "Career day connects students with industry mentors",
+    excerpt:
+      "Professionals from banking, technology and consulting joined PCM students for panel talks, resume reviews and one-on-one mentoring sessions.",
+    image: "/images/about-2.jpg",
+    date: "05 Jul 2026",
+    tag: "Career",
+    body: [
+      "Professionals from banking, technology and consulting joined PCM students for panel talks, resume reviews and one-on-one mentoring sessions.",
+    ],
+  },
 ];
 
 export const blogsData: BlogPost[] = [
