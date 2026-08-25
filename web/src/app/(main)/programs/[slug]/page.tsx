@@ -98,7 +98,7 @@ export default async function ProgramPage({
             <span className="eyebrow">Program overview</span>
             <h2 className="section-title" style={{ marginTop: "0.5rem" }}>{program.overviewTitle}</h2>
             {program.overviewBody.map((para, i) => (
-              <p key={i} style={{ marginTop: i === 0 ? "1rem" : "0.75rem", color: "var(--body)" }}>{para}</p>
+              <p key={i} style={{ marginTop: i === 0 ? "1rem" : "0.75rem", color: "var(--body-c)" }}>{para}</p>
             ))}
 
             {/* Concentrations */}
@@ -109,7 +109,7 @@ export default async function ProgramPage({
                   <div className="program-icon-ic"><StarIcon /></div>
                   <div>
                     <h4 style={{ fontSize: "1rem", color: "var(--navy)" }}>{c.title}</h4>
-                    <p style={{ fontSize: "0.9rem", color: "var(--muted)", marginTop: "0.2rem" }}>{c.description}</p>
+                    <p style={{ fontSize: "0.9rem", color: "var(--muted-c)", marginTop: "0.2rem" }}>{c.description}</p>
                   </div>
                 </li>
               ))}
@@ -117,7 +117,7 @@ export default async function ProgramPage({
 
             {/* Careers */}
             <h3 className="program-section-h3">Career opportunities</h3>
-            <p style={{ color: "var(--muted)" }}>Graduates move into a wide range of professional roles, including:</p>
+            <p style={{ color: "var(--muted-c)" }}>Graduates move into a wide range of professional roles, including:</p>
             <div className="pill-row" style={{ marginTop: "0.6rem" }}>
               {program.careers.map((career) => (
                 <span key={career} className="pill">{career}</span>
@@ -138,7 +138,7 @@ export default async function ProgramPage({
                   <div className="program-icon-ic"><CheckIcon /></div>
                   <div>
                     <h4 style={{ fontSize: "1rem", color: "var(--navy)" }}>{req.title}</h4>
-                    <p style={{ fontSize: "0.9rem", color: "var(--muted)", marginTop: "0.2rem" }}>{req.detail}</p>
+                    <p style={{ fontSize: "0.9rem", color: "var(--muted-c)", marginTop: "0.2rem" }}>{req.detail}</p>
                   </div>
                 </li>
               ))}

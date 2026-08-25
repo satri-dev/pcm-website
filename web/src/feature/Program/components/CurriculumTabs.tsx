@@ -38,36 +38,38 @@ export default function CurriculumTabs({ semesters, totalCredits }: Props) {
             hidden={i !== active}
           >
             {sem.courses.length === 0 ? (
-              <p style={{ color: "var(--muted)", padding: "1rem 0" }}>
+              <p style={{ color: "var(--muted-c)", padding: "1rem 0" }}>
                 No courses listed for this semester.
               </p>
             ) : (
-              <table className="ctable">
-                <thead>
-                  <tr>
-                    <th>Code</th>
-                    <th>Course Description</th>
-                    <th>Credit Hours</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sem.courses.map((course) => (
-                    <tr key={`${course.code}-${course.description}`}>
-                      <td>{course.code}</td>
-                      <td
-                        style={{
-                          fontFamily: "var(--ff-body)",
-                          color: "var(--body)",
-                          textAlign: "left",
-                        }}
-                      >
-                        {course.description}
-                      </td>
-                      <td>{course.credits}</td>
+              <div className="ctable-wrap">
+                <table className="ctable">
+                  <thead>
+                    <tr>
+                      <th>Code</th>
+                      <th>Course Description</th>
+                      <th>Credit Hours</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {sem.courses.map((course) => (
+                      <tr key={`${course.code}-${course.description}`}>
+                        <td>{course.code}</td>
+                        <td
+                          style={{
+                            fontFamily: "var(--ff-body)",
+                            color: "var(--body-c)",
+                            textAlign: "left",
+                          }}
+                        >
+                          {course.description}
+                        </td>
+                        <td>{course.credits}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         ))}
