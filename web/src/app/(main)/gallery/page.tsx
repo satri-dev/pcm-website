@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import GalleryClient from "./GalleryClient";
 
+// Gallery albums are added from the admin panel.
+// ISR: serve the cached page instantly, revalidate in the background
+// every 60 seconds so new uploads appear quickly without a full redeploy.
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: "Campus Gallery | Pokhara College of Management",
   description:
