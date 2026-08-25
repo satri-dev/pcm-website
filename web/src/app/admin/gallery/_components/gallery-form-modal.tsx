@@ -10,7 +10,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Gallery, GalleryPhoto, GALLERY_CATEGORIES } from "@/types/gallery";
-import { Save, X, Upload, Plus, Trash2 } from "lucide-react";
+import { Save, X, Plus, Trash2 } from "lucide-react";
+import ImageUpload from "@/components/cloudinary/ImageUpload";
 
 const gallerySchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters").max(200),
@@ -18,15 +19,14 @@ const gallerySchema = z.object({
   image: z.string().optional(),
   photos: z.array(z.object({
     url: z.string().min(1, "Photo URL is required"),
-    caption: z.string().optional(),
+    title: z.string().optional(),
+    tags: z.array(z.string()).optional(),
   })),
   date: z.string().min(1, "Date is required"),
   photoCount: z.number().min(0, "Photo count must be a positive number"),
 });
 
 type GallerySchema = z.infer<typeof gallerySchema>;
-
-const IMAGE_URL_RE = /^(data:image\/|https?:\/\/.+\.(png|jpe?g|gif|webp|svg|avif)(\?.*)?$)/i;
 
 interface GalleryFormModalProps {
   open: boolean;
@@ -47,7 +47,6 @@ export default function GalleryFormModal({
   onSave,
   saving = false,
 }: GalleryFormModalProps) {
-  const coverFileRef = useRef<HTMLInputElement>(null);
   const [coverError, setCoverError] = useState("");
   const [photoRows, setPhotoRows] = useState<GalleryPhoto[]>([]);
 
@@ -103,35 +102,17 @@ export default function GalleryFormModal({
     setValue("photoCount", photoRows.length);
   }, [photoRows, setValue]);
 
-  const handleCoverFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-    const limitBytes = 5 * 1048576;
-    if (file.size > limitBytes) {
-      setCoverError("File too large — max 5MB");
-      e.target.value = "";
-      return;
-    }
-    if (file.type.indexOf("image/") !== 0) {
-      setCoverError("Please choose an image file");
-      e.target.value = "";
-      return;
-    }
+  const handleCoverUpload = (result: { secure_url: string }) => {
     setCoverError("");
-    const reader = new FileReader();
-    reader.onload = () => {
-      setValue("image", String(reader.result));
-    };
-    reader.readAsDataURL(file);
+    setValue("image", result.secure_url);
   };
 
-  const removeCoverImage = () => {
+  const handleCoverRemove = () => {
     setValue("image", "");
-    if (coverFileRef.current) coverFileRef.current.value = "";
   };
 
   const addPhotoRow = () => {
-    setPhotoRows((prev) => [...prev, { url: "", caption: "" }]);
+    setPhotoRows((prev) => [...prev, { url: "", title: "", tags: [] }]);
   };
 
   const removePhotoRow = (index: number) => {
@@ -146,25 +127,8 @@ export default function GalleryFormModal({
     });
   };
 
-  const handlePhotoFileChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-    const limitBytes = 5 * 1048576;
-    if (file.size > limitBytes) {
-      alert("File too large — max 5MB");
-      e.target.value = "";
-      return;
-    }
-    if (file.type.indexOf("image/") !== 0) {
-      alert("Please choose an image file");
-      e.target.value = "";
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      updatePhotoRow(index, "url", String(reader.result));
-    };
-    reader.readAsDataURL(file);
+  const handlePhotoUpload = (index: number) => (result: { secure_url: string }) => {
+    updatePhotoRow(index, "url", result.secure_url);
   };
 
   const onSubmit = async (data: GallerySchema) => {
@@ -275,49 +239,31 @@ export default function GalleryFormModal({
               >
                 <label>Cover Image</label>
                 <div className="file-field">
-                  <input
-                    ref={coverFileRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleCoverFileChange}
-                  />
-                  <button
-                    type="button"
-                    className="admin-btn admin-btn--sm cursor-pointer flex-none"
-                    onClick={() => coverFileRef.current?.click()}
-                  >
-                    <Upload size={14} />
-                    Choose file · max 5MB image
-                  </button>
+                  <ImageUpload onUpload={handleCoverUpload} />
                   <input
                     type="text"
                     {...register("image")}
-                    placeholder="…or paste a URL to an existing file"
+                    placeholder="…or paste a Cloudinary URL"
+                    className="mt-2"
                   />
                 </div>
                 {image && (
                   <div className="img-prev">
-                    {IMAGE_URL_RE.test(image) ? (
-                      <img src={image} alt="" />
-                    ) : (
-                      <span className="badge badge--blue">
-                        {image.split("/").pop()}
-                      </span>
-                    )}
+                    <img src={image} alt="" />
                   </div>
                 )}
                 {image && (
                   <button
                     type="button"
                     className="admin-btn admin-btn--sm admin-btn--ghost text-[var(--admin-red)] border-[rgba(214,69,69,0.3)] hover:border-[rgba(214,69,69,0.3)]"
-                    onClick={removeCoverImage}
+                    onClick={handleCoverRemove}
                   >
                     <X size={13} />
                     Remove
                   </button>
                 )}
                 <span className="hint">
-                  Upload cover image (max 5MB) or paste a URL
+                  Upload cover image via Cloudinary or paste an existing URL
                 </span>
                 {coverError && <div className="field__err">{coverError}</div>}
               </div>
@@ -334,33 +280,16 @@ export default function GalleryFormModal({
                       <div className="list-field__cell">
                         <label>Photo URL</label>
                         <div className="file-field">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => handlePhotoFileChange(e, index)}
-                          />
-                          <button
-                            type="button"
-                            className="admin-btn admin-btn--sm cursor-pointer flex-none"
-                            onClick={() => {
-                              const input = document.createElement("input");
-                              input.type = "file";
-                              input.accept = "image/*";
-                              input.onchange = (e) => handlePhotoFileChange(e as unknown as React.ChangeEvent<HTMLInputElement>, index);
-                              input.click();
-                            }}
-                          >
-                            <Upload size={14} />
-                            Choose
-                          </button>
+                          <ImageUpload onUpload={handlePhotoUpload(index)} />
                           <input
                             type="text"
                             value={photo.url}
                             onChange={(e) => updatePhotoRow(index, "url", e.target.value)}
-                            placeholder="…or paste a URL"
+                            placeholder="…or paste a Cloudinary URL"
+                            className="mt-2"
                           />
                         </div>
-                        {photo.url && IMAGE_URL_RE.test(photo.url) && (
+                        {photo.url && (
                           <div className="img-prev">
                             <img src={photo.url} alt="" />
                           </div>
