@@ -276,53 +276,104 @@
 
 /* ── Map ── */
 .pcm-contact .map-wrap {
-  position:relative; width:100%;
-  aspect-ratio:16/6;
-  border-radius:var(--r-lg); overflow:hidden;
-  box-shadow:var(--shadow-md);
-  background:var(--surface-tint);
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/6;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  background: var(--surface-tint);
 }
-@media (max-width:600px) { .pcm-contact .map-wrap { aspect-ratio:4/3; } }
+@media (max-width: 600px) {
+  .pcm-contact .map-wrap { aspect-ratio: 4/3; }
+}
 
 .pcm-contact .map-iframe {
-  position:absolute; inset:0;
-  width:100%; height:100%; border:0;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
 }
 
-/* Map placeholder */
-.pcm-contact .map-placeholder {
-  position:absolute; inset:0;
-  display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  gap:.75rem; padding:1.5rem;
-  background:var(--surface-tint); text-align:center;
+/* Address overlay bar */
+.pcm-contact .map-overlay {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .6rem 1rem;
+  padding: .85rem 1.25rem;
+  background: rgba(255,255,255,.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-top: 1px solid rgba(0,0,0,.06);
 }
-.pcm-contact .map-placeholder__icon {
-  width:56px; height:56px; display:grid; place-items:center;
-  background:var(--surface); color:var(--brand-600);
-  border-radius:50%; box-shadow:var(--shadow-sm);
+.dark .pcm-contact .map-overlay {
+  background: rgba(14,20,36,.92);
+  border-top-color: rgba(255,255,255,.08);
 }
-.pcm-contact .map-placeholder__icon svg { width:1.4rem; height:1.4rem; }
-.pcm-contact .map-placeholder__label {
-  font-size:1rem; font-weight:600; color:var(--navy);
+.pcm-contact .map-overlay__left {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  flex: 1;
+  min-width: 0;
 }
-.pcm-contact .map-placeholder__btn {
-  padding:.65rem 1.6rem;
-  background:var(--brand-600); color:#fff;
-  border:none; border-radius:var(--r-sm);
-  font-size:.92rem; font-weight:700; font-family:inherit; cursor:pointer;
+.pcm-contact .map-overlay__icon {
+  flex: none;
+  width: 34px; height: 34px;
+  display: grid; place-items: center;
+  background: rgba(33,64,154,.1);
+  color: var(--brand-600);
+  border-radius: 50%;
+}
+.pcm-contact .map-overlay__icon svg { width: 1rem; height: 1rem; }
+.dark .pcm-contact .map-overlay__icon { background: rgba(109,138,240,.15); }
+
+.pcm-contact .map-overlay__name {
+  display: block;
+  font-size: .9rem;
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1.3;
+}
+.pcm-contact .map-overlay__address {
+  display: block;
+  font-size: .78rem;
+  color: var(--muted-c);
+  margin-top: .1rem;
+}
+.pcm-contact .map-overlay__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .48rem 1rem;
+  border-radius: var(--r-sm);
+  font-size: .82rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  border: none;
+  text-decoration: none;
   transition: background .2s var(--ease), transform .2s var(--ease);
 }
-.pcm-contact .map-placeholder__btn:hover { background:var(--brand-700); transform:translateY(-2px); }
-.pcm-contact .map-placeholder__note {
-  font-size:.78rem; color:var(--muted-c); max-width:34ch;
+.pcm-contact .map-overlay__btn--directions {
+  background: var(--brand-600);
+  color: #fff;
 }
-.pcm-contact .map-placeholder__note a { color:var(--brand-600); text-decoration:underline; }
-.pcm-contact .map-placeholder__directions {
-  font-size:.85rem; font-weight:700; color:var(--brand-600);
-  text-decoration:underline; text-underline-offset:3px;
+.pcm-contact .map-overlay__btn--directions:hover {
+  background: var(--brand-700);
+  transform: translateY(-1px);
 }
-.pcm-contact .map-placeholder__directions:hover { color:var(--brand-700); }
+@media (max-width: 560px) {
+  .pcm-contact .map-overlay { flex-direction: column; align-items: flex-start; }
+  .pcm-contact .map-overlay__btn { width: 100%; justify-content: center; }
+}
 
 /* ── CTA band ── */
 .pcm-contact .cta-band {

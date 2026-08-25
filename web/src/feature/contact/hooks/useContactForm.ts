@@ -13,9 +13,14 @@ const EMPTY: ContactFormData = {
 
 export interface FieldErrors {
   fullName?: string;
+  phone?: string;
   email?: string;
   message?: string;
 }
+
+// Nepali mobile: starts with 98/97/96 (10 digits), or landline 06x (7 digits),
+// or international +977-xxx format. We allow spaces, hyphens, parens, + prefix.
+const PHONE_RE = /^[+]?[\d\s\-().]{7,15}$/;
 
 function validate(data: ContactFormData): FieldErrors {
   const errors: FieldErrors = {};
@@ -24,6 +29,9 @@ function validate(data: ContactFormData): FieldErrors {
     errors.email = "Email address is required.";
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
     errors.email = "Please enter a valid email address.";
+  }
+  if (data.phone.trim() && !PHONE_RE.test(data.phone.trim())) {
+    errors.phone = "Enter a valid phone number (digits, spaces, + or - only).";
   }
   if (!data.message.trim()) errors.message = "Message is required.";
   return errors;
