@@ -1,5 +1,6 @@
 import PageHeader from "../_components/dashboard/page-header";
 import GalleryManager from "./_components/gallery-manager";
+import { listGallery } from "@/repositories/gallery.repository";
 
 export const metadata = {
   title: "Gallery Management",
@@ -8,11 +9,13 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function GalleryPage() {
+export default async function GalleryPage() {
+  const { items } = await listGallery({ pageSize: 50 });
+
   return (
     <>
       <PageHeader title="Gallery" subtitle="Media · Photos" />
-      <GalleryManager />
+      <GalleryManager initialData={items} />
     </>
   );
 }

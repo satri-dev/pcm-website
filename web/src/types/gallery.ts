@@ -22,7 +22,7 @@ export interface Gallery {
   id: string;
   title: string;
   category: GalleryCategory;
-  image: string;
+  image?: string;
   photos: GalleryPhoto[];
   date: string;
   photoCount: number;
@@ -35,7 +35,7 @@ export interface GalleryDocument {
   _id?: import("mongodb").ObjectId;
   title: string;
   category: GalleryCategory;
-  image: string;
+  image?: string;
   photos: GalleryPhoto[];
   date: string;
   photoCount: number;
@@ -47,10 +47,10 @@ export interface GalleryDocument {
 export interface GalleryCreateInput {
   title: string;
   category: GalleryCategory;
-  image: string;
-  photos: GalleryPhoto[];
+  image?: string;
+  photos?: GalleryPhoto[];
   date: string;
-  photoCount: number;
+  photoCount?: number;
   views?: number;
 }
 
