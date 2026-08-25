@@ -695,3 +695,299 @@
     transition: none;
   }
 }
+
+/* ── Slug page extras ── */
+
+/* Two-column content + aside */
+.pcm-programs .program-with-aside {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: clamp(2rem, 4vw, 3rem);
+  align-items: start;
+}
+
+@media (max-width: 1000px) {
+  .pcm-programs .program-with-aside {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Hero image */
+.pcm-programs .program-hero-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  border-radius: var(--r);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  margin-bottom: 1.8rem;
+}
+
+/* Sub-headings inside content */
+.pcm-programs .program-section-h3 {
+  font-size: 1.4rem;
+  margin: 2.4rem 0 1rem;
+  color: var(--navy);
+}
+
+/* Icon list */
+.pcm-programs .program-icon-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pcm-programs .program-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.2rem;
+}
+
+@media (max-width: 640px) {
+  .pcm-programs .program-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pcm-programs .program-icon-item {
+  display: flex;
+  gap: 0.9rem;
+  align-items: flex-start;
+}
+
+.pcm-programs .program-icon-ic {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  background: var(--surface-tint);
+  color: var(--brand-600);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+}
+
+.pcm-programs .program-icon-ic svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+/* Career pills */
+.pcm-programs .pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.pcm-programs .pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.95rem;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--r-full);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+/* Aside cards */
+.pcm-programs .program-aside-card {
+  padding: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.pcm-programs .program-aside-card h3 {
+  font-size: 1.15rem;
+  margin-bottom: 1rem;
+}
+
+/* Quick facts rows */
+.pcm-programs .program-facts-list {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.pcm-programs .program-fact-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--line-2);
+  font-size: 0.9rem;
+}
+
+.pcm-programs .program-fact-row.last {
+  border-bottom: 0;
+}
+
+.pcm-programs .program-fact-row span {
+  color: var(--muted);
+}
+
+.pcm-programs .program-fact-row b {
+  color: var(--navy-800, #1d3577);
+  font-weight: 700;
+}
+
+/* Aside buttons */
+.pcm-programs .program-aside-btn {
+  width: 100%;
+  margin-top: 0.5rem;
+  justify-content: center;
+}
+
+/* Aside nav — other programs links */
+.pcm-programs .program-aside-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.pcm-programs .program-aside-nav a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--navy);
+  transition: color 0.2s var(--ease);
+}
+
+.pcm-programs .program-aside-nav a:last-child {
+  border-bottom: 0;
+}
+
+.pcm-programs .program-aside-nav a:hover {
+  color: var(--brand-600);
+}
+
+.pcm-programs .program-aside-nav a svg {
+  width: 0.9rem;
+  height: 0.9rem;
+  flex: none;
+}
+
+/* Tabs — scoped for slug page */
+.pcm-programs .tabs__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.35rem;
+  background: var(--surface-tint);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  margin-bottom: 1.5rem;
+}
+
+.pcm-programs .tabs__btn {
+  padding: 0.6rem 1.2rem;
+  border-radius: calc(var(--r) - 6px);
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--muted);
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  transition: all 0.25s var(--ease);
+}
+
+.pcm-programs .tabs__btn:hover {
+  color: var(--brand-600);
+}
+
+.pcm-programs .tabs__btn.active,
+.pcm-programs .tabs__btn[aria-selected="true"] {
+  background: var(--navy);
+  color: #fff;
+}
+
+.pcm-programs .tabs__panel {
+  display: none;
+}
+
+.pcm-programs .tabs__panel.active {
+  display: block;
+  animation: pcm-prog-fade 0.35s var(--ease);
+}
+
+@keyframes pcm-prog-fade {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Curriculum table */
+.pcm-programs .ctable {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  overflow: hidden;
+  font-size: 0.92rem;
+}
+
+.pcm-programs .ctable th {
+  background: var(--navy);
+  color: #fff;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: left;
+  padding: 0.9rem 1.2rem;
+}
+
+.pcm-programs .ctable td {
+  padding: 0.9rem 1.2rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  font-weight: 700;
+  color: var(--navy);
+  text-align: center;
+}
+
+.pcm-programs .ctable td:nth-child(2) {
+  text-align: left;
+  font-weight: 400;
+  color: var(--body);
+}
+
+.pcm-programs .ctable tr:last-child td {
+  border-bottom: 0;
+}
+
+.pcm-programs .ctable tbody tr:nth-child(even) {
+  background: var(--surface-soft);
+}
+
+/* Credit total */
+.pcm-programs .credit-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding: 0.85rem 1.2rem;
+  background: var(--navy);
+  color: #fff;
+  border-radius: var(--r-sm);
+  font-size: 0.9rem;
+}
+
+.pcm-programs .credit-total b {
+  font-size: 1rem;
+  color: var(--gold-400);
+}

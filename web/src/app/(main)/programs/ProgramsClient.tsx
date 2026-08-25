@@ -132,8 +132,7 @@ export default function ProgramsClient() {
 
   return (
     <div ref={rootRef} className="pcm-programs">
-      <main id="main">
-        <section className="page-hero">
+      <section className="page-hero">
           <svg className="page-hero__peaks" viewBox="0 0 1440 400" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg"><path d="M0 400 L0 250 L300 120 L560 260 L820 90 L1120 240 L1440 120 L1440 400Z" fill="#1C4E8A" opacity=".2"/><path d="M0 400 L0 300 L360 200 L680 320 L980 210 L1280 300 L1440 240 L1440 400Z" fill="#143560" opacity=".45"/></svg>
           <div className="wrap-wide page-hero__inner">
             <nav className="crumbs" aria-label="Breadcrumb">
@@ -251,7 +250,6 @@ export default function ProgramsClient() {
             </div>
           </div>
         </section>
-      </main>
     </div>
   );
 }
