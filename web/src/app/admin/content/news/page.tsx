@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+
 import PageHeader from "../../_components/dashboard/page-header";
 import NewsManager from "./_components/news-manager";
 

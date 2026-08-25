@@ -1,84 +1,63 @@
 "use client";
 
-import { useState } from "react";
-import { News } from "@/types/news";
-import { Plus } from "lucide-react";
+import { useEffect, useState } from "react";
 import NewsTable from "./news-table";
 import NewsFormModal from "./news-form-modal";
+import NewsViewModal from "./news-view-modal";
+import { News } from "@/types/news";
+import { Plus, RefreshCw } from "lucide-react";
 
-const initialNews: News[] = [
-  {
-    id: "1",
-    title: "BBA student Prabhat awarded Rs. 12 lakh entrepreneurship grant",
-    slug: "bba-student-prabhat-grant",
-    excerpt: "Fourth-year BBA student receives major funding for innovative startup",
-    content: "<p>Full content here...</p>",
-    category: "Achievement",
-    featuredImage: "/assets/img/about-1.jpg",
-    author: "Admin",
-    publishedDate: "2026-07-24",
-    status: "published",
-    views: 4200,
-    featured: true,
-    tags: ["BBA", "Entrepreneurship", "Achievement"],
-    createdAt: "2026-07-24T10:00:00Z",
-    updatedAt: "2026-07-24T10:00:00Z",
-  },
-  {
-    id: "2",
-    title: "Annual Fest 2083 dates announced",
-    slug: "annual-fest-2083",
-    excerpt: "Three-day cultural extravaganza scheduled for next month",
-    content: "<p>Full content here...</p>",
-    category: "Announcement",
-    featuredImage: "/assets/img/about-2.jpg",
-    author: "Admin",
-    publishedDate: "2026-07-18",
-    status: "published",
-    views: 3100,
-    featured: false,
-    tags: ["Event", "Culture"],
-    createdAt: "2026-07-18T10:00:00Z",
-    updatedAt: "2026-07-18T10:00:00Z",
-  },
-  {
-    id: "3",
-    title: "Admissions open for 2083 intake",
-    slug: "admissions-2083",
-    excerpt: "Applications now being accepted for all programs",
-    content: "<p>Full content here...</p>",
-    category: "News",
-    author: "Admin",
-    publishedDate: "2026-07-05",
-    status: "published",
-    views: 5400,
-    featured: false,
-    tags: ["Admission", "Programs"],
-    createdAt: "2026-07-05T10:00:00Z",
-    updatedAt: "2026-07-05T10:00:00Z",
-  },
-  {
-    id: "4",
-    title: "Guest lecture series resumes this semester",
-    slug: "guest-lecture-series",
-    excerpt: "Industry experts to share insights with students",
-    content: "<p>Full content here...</p>",
-    category: "Event",
-    author: "Admin",
-    publishedDate: "2026-06-28",
-    status: "published",
-    views: 1650,
-    featured: false,
-    tags: ["Education", "Guest Lecture"],
-    createdAt: "2026-06-28T10:00:00Z",
-    updatedAt: "2026-06-28T10:00:00Z",
-  },
-];
+const API_BASE = "/api/admin/content/news";
 
 export default function NewsManager() {
-  const [news, setNews] = useState<News[]>(initialNews);
+  const [news, setNews] = useState<News[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingNews, setEditingNews] = useState<News | null>(null);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+  const [viewingNews, setViewingNews] = useState<News | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  const refresh = () => {
+    setLoading(true);
+    setReloadKey((k) => k + 1);
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${API_BASE}?pageSize=50`)
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error(
+            res.status === 401
+              ? "Your session has expired. Please sign in again."
+              : `Failed to load news (HTTP ${res.status})`
+          );
+        }
+        return res.json();
+      })
+      .then((data) => {
+        if (cancelled) return;
+        setNews(data.items ?? []);
+        setError("");
+        setLoading(false);
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : "Failed to load news");
+        setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
+
+  const handleViewNews = (newsItem: News) => {
+    setViewingNews(newsItem);
+    setIsViewOpen(true);
+  };
 
   const handleAddNews = () => {
     setEditingNews(null);
@@ -90,30 +69,96 @@ export default function NewsManager() {
     setIsModalOpen(true);
   };
 
-  const handleDeleteNews = (id: string) => {
-    if (confirm("Are you sure you want to delete this news article?")) {
-      setNews(news.filter((n) => n.id !== id));
+  const handleDeleteNews = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this news article?")) return;
+    try {
+      const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `Delete failed (HTTP ${res.status})`);
+      }
+      setNews((prev) => prev.filter((n) => n.id !== id));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Delete failed");
     }
   };
 
-  const handleSaveNews = (newsData: News) => {
-    if (editingNews) {
-      setNews(news.map((n) => (n.id === newsData.id ? newsData : n)));
-    } else {
-      setNews([newsData, ...news]);
+  const handleSaveNews = async (newsData: News) => {
+    setSaving(true);
+    try {
+      const isEdit = !!editingNews;
+      const payload = {
+        title: newsData.title,
+        slug: newsData.slug,
+        excerpt: newsData.excerpt,
+        content: newsData.content,
+        category: newsData.category,
+        image: newsData.image,
+        author: newsData.author,
+        publishedAt: newsData.publishedAt,
+        status: newsData.status,
+        featured: newsData.featured,
+        views: newsData.views,
+        tags: newsData.tags,
+        seo: newsData.seo,
+      };
+
+      const res = await fetch(
+        isEdit ? `${API_BASE}/${editingNews!.id}` : API_BASE,
+        {
+          method: isEdit ? "PATCH" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(
+          data.error ||
+            (isEdit
+              ? `Update failed (HTTP ${res.status})`
+              : `Create failed (HTTP ${res.status})`)
+        );
+      }
+
+      const saved: News = await res.json();
+      setNews((prev) =>
+        isEdit
+          ? prev.map((n) => (n.id === saved.id ? saved : n))
+          : [saved, ...prev]
+      );
+      setIsModalOpen(false);
+      setEditingNews(null);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Save failed");
+    } finally {
+      setSaving(false);
     }
-    setIsModalOpen(false);
-    setEditingNews(null);
   };
 
   return (
-    <main style={{ padding: "1.5rem" }}>
-      <div className="admin-panel">
-        <div className="admin-panel__head">
-          <div>
-            <h3>News articles</h3>
-            <p>Manage, search and edit news articles.</p>
-          </div>
+    <main className="p-6">
+      {/* Header outside the panel */}
+      <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
+        <div>
+          <h2 className="m-0 text-2xl font-bold text-[var(--admin-ink)]">
+            News articles
+          </h2>
+          <p className="mt-1 mb-0 text-[0.9rem] text-[var(--admin-muted)]">
+            Manage, search and edit news articles.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="admin-btn"
+            onClick={refresh}
+            disabled={loading}
+          >
+            <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
+            Refresh
+          </button>
           <button
             type="button"
             className="admin-btn admin-btn--primary"
@@ -123,21 +168,37 @@ export default function NewsManager() {
             Add News
           </button>
         </div>
+      </div>
 
-        <div className="admin-panel__body" style={{ padding: 0 }}>
-          <NewsTable
-            news={news}
-            onEdit={handleEditNews}
-            onDelete={handleDeleteNews}
-          />
+      {/* Table panel */}
+      <div className="admin-panel">
+        <div className="admin-panel__body p-0">
+          {error ? (
+            <div className="p-6 text-[var(--admin-red)]">{error}</div>
+          ) : (
+            <NewsTable
+              news={news}
+              loading={loading}
+              onView={handleViewNews}
+              onEdit={handleEditNews}
+              onDelete={handleDeleteNews}
+            />
+          )}
         </div>
       </div>
+
+      <NewsViewModal
+        open={isViewOpen}
+        onOpenChange={setIsViewOpen}
+        news={viewingNews}
+      />
 
       <NewsFormModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         news={editingNews}
         onSave={handleSaveNews}
+        saving={saving}
       />
     </main>
   );
