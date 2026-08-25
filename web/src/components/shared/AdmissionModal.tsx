@@ -220,13 +220,13 @@ export default function AdmissionModal() {
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-border overflow-x-auto scrollbar-hide">
-          <div className="flex gap-0 px-3 sm:px-4 md:px-6 min-w-max">
+        <div className="border-b border-border">
+          <div className="flex w-full">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base font-semibold border-b-2 transition-all whitespace-nowrap ${
+                className={`flex-1 px-4 py-3 text-sm font-semibold border-b-2 transition-all text-center ${
                   activeTab === tab.id
                     ? "border-pcm-blue text-pcm-blue bg-pcm-blue/5"
                     : "border-transparent text-muted-foreground hover:text-pcm-navy hover:bg-secondary/30"

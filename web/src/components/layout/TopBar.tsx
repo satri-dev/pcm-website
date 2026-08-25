@@ -3,36 +3,10 @@
 import Link from "next/link";
 import { Phone, Mail, ChevronDown } from "lucide-react";
 import { FaFacebook, FaInstagram } from "react-icons/fa";
-import { useEffect, useState } from "react";
 
 export default function TopBar() {
-  const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      
-      // Hide topbar when scrolling down, show when scrolling up
-      if (currentScrollY > lastScrollY && currentScrollY > 50) {
-        setIsVisible(false);
-      } else {
-        setIsVisible(true);
-      }
-      
-      setLastScrollY(currentScrollY);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
-
   return (
-    <div 
-      className={`sticky top-0 z-[102] bg-pcm-dark text-white/80 overflow-hidden transition-transform duration-300 ${
-        isVisible ? "translate-y-0" : "-translate-y-full"
-      }`}
-    >
+    <div className="bg-pcm-dark text-white/80">
       <div className="container flex items-center justify-between gap-2 py-2 px-3 sm:px-4 lg:px-6">
         {/* Contact — visible on all screens */}
         <div className="flex items-center gap-2 sm:gap-3 lg:gap-[1.1rem] text-[0.68rem] sm:text-xs lg:text-[0.8rem]">
@@ -44,8 +18,7 @@ export default function TopBar() {
           <span className="w-px h-[1.1em] bg-white/28" />
           <a href="mailto:info@pcm.edu.np" className="inline-flex items-center gap-1 sm:gap-[0.45rem] hover:text-pcm-green transition-colors">
             <Mail className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-[0.95rem] lg:h-[0.95rem] shrink-0" />
-            <span className="hidden md:inline">info@pcm.edu.np</span>
-            <span className="md:hidden">Email</span>
+            <span>info@pcm.edu.np</span>
           </a>
         </div>
 
