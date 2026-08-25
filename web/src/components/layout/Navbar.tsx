@@ -18,9 +18,9 @@ const aboutLinks = [
 
 const programLinks = [
   { label: "All Programs", href: "/programs" },
-  { label: "BBA", href: "/program-bba" },
-  { label: "BBA-Finance", href: "/program-bba-finance" },
-  { label: "BCSIT", href: "/program-bcsit" },
+  { label: "BBA", href: "/programs/bba" },
+  { label: "BBA-Finance", href: "/programs/bba-finance" },
+  { label: "BCSIT", href: "/programs/bcsit" },
 ];
 
 const newsLinks = [
