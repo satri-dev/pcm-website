@@ -3,26 +3,30 @@
 import { CldUploadWidget } from "next-cloudinary";
 import { Upload } from "lucide-react";
 
-interface ImageUploadProps {
+interface DocumentUploadProps {
   onUpload: (result: {
     public_id: string;
     secure_url: string;
-    width: number;
-    height: number;
     format: string;
+    bytes: number;
+    original_filename: string;
   }) => void;
 }
 
-export default function ImageUpload({ onUpload }: ImageUploadProps) {
+export default function DocumentUpload({
+  onUpload,
+}: DocumentUploadProps) {
   return (
     <CldUploadWidget
       signatureEndpoint="/api/cloudinary/sign"
-      uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
+      uploadPreset={
+        process.env.NEXT_PUBLIC_CLOUDINARY_DOCUMENT_PRESET
+      }
       options={{
-        resourceType: "image",
-        sources: ["local", "url", "camera"],
+        resourceType: "raw",
+        sources: ["local"],
         multiple: false,
-        clientAllowedFormats: ["jpg", "jpeg", "png", "webp", "avif"],
+        clientAllowedFormats: ["pdf", "doc", "docx"],
         maxFileSize: 5_000_000,
       }}
       onSuccess={(result) => {
@@ -31,12 +35,16 @@ export default function ImageUpload({ onUpload }: ImageUploadProps) {
           "secure_url" in result.info &&
           "public_id" in result.info
         ) {
+          const info = result.info;
+
           onUpload({
-            public_id: String(result.info.public_id),
-            secure_url: String(result.info.secure_url),
-            width: Number(result.info.width),
-            height: Number(result.info.height),
-            format: String(result.info.format),
+            public_id: String(info.public_id),
+            secure_url: String(info.secure_url),
+            format: String(info.format || "pdf"),
+            bytes: Number(info.bytes || 0),
+            original_filename: String(
+              info.original_filename || info.public_id
+            ),
           });
         }
       }}
@@ -48,7 +56,7 @@ export default function ImageUpload({ onUpload }: ImageUploadProps) {
           className="admin-btn admin-btn--primary admin-btn--sm flex items-center gap-2"
         >
           <Upload size={14} />
-          Upload Image
+          Upload Document
         </button>
       )}
     </CldUploadWidget>
