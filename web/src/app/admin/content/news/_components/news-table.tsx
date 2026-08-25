@@ -18,15 +18,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { News } from "@/types/news";
-import { Eye, Pencil, Trash2, Search } from "lucide-react";
+import { Eye, Pencil, Trash2, Search, RefreshCw } from "lucide-react";
 
 interface NewsTableProps {
   news: News[];
+  loading?: boolean;
+  onView: (news: News) => void;
   onEdit: (news: News) => void;
   onDelete: (id: string) => void;
 }
 
-export default function NewsTable({ news, onEdit, onDelete }: NewsTableProps) {
+export default function NewsTable({
+  news,
+  loading = false,
+  onView,
+  onEdit,
+  onDelete,
+}: NewsTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -62,146 +70,132 @@ export default function NewsTable({ news, onEdit, onDelete }: NewsTableProps) {
   return (
     <div>
       {/* Toolbar */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "0.75rem",
-          padding: "1rem 1.25rem",
-          borderBottom: "1px solid var(--admin-line)",
-          flexWrap: "wrap",
-        }}
-      >
-        <div style={{ position: "relative", flex: "1 1 300px" }}>
+      <div className="flex items-center gap-3 p-5 border-b border-[var(--admin-line)] flex-wrap">
+        <div className="relative flex-1 min-w-[300px]">
           <Search
             size={16}
-            style={{
-              position: "absolute",
-              left: "0.75rem",
-              top: "50%",
-              transform: "translateY(-50%)",
-              color: "var(--admin-muted)",
-            }}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--admin-muted)] pointer-events-none"
           />
           <Input
             type="text"
             placeholder="Search news..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ paddingLeft: "2.25rem" }}
+            className="pl-9"
           />
         </div>
 
-        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger style={{ width: "160px" }}>
+        <Select value={categoryFilter} onValueChange={(value) => setCategoryFilter(value || "all")}>
+          <SelectTrigger className="w-40">
             <SelectValue placeholder="All category" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All category</SelectItem>
-            <SelectItem value="Achievement">Achievement</SelectItem>
-            <SelectItem value="Announcement">Announcement</SelectItem>
             <SelectItem value="News">News</SelectItem>
             <SelectItem value="Event">Event</SelectItem>
+            <SelectItem value="Student Blog">Student Blog</SelectItem>
+            <SelectItem value="Achievement">Achievement</SelectItem>
           </SelectContent>
         </Select>
 
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger style={{ width: "140px" }}>
+        <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value || "all")}>
+          <SelectTrigger className="w-36">
             <SelectValue placeholder="All status" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All status</SelectItem>
             <SelectItem value="published">Published</SelectItem>
             <SelectItem value="draft">Draft</SelectItem>
-            <SelectItem value="archived">Archived</SelectItem>
           </SelectContent>
         </Select>
 
-        <div
-          style={{
-            fontSize: "0.8rem",
-            color: "var(--admin-muted)",
-            marginLeft: "auto",
-          }}
-        >
+        <div className="text-sm text-[var(--admin-muted)] ml-auto">
           <b>{filteredNews.length}</b> total
         </div>
       </div>
 
       {/* Table */}
-      <div style={{ overflowX: "auto" }}>
+      <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead style={{ width: "50%" }}>TITLE</TableHead>
-              <TableHead>DATE</TableHead>
-              <TableHead>VIEWS</TableHead>
-              <TableHead>FEATURED</TableHead>
-              <TableHead>STATUS</TableHead>
-              <TableHead style={{ textAlign: "right" }}>ACTIONS</TableHead>
+              <TableHead className="w-1/2 text-[var(--admin-muted)] hover:text-[var(--admin-brand)] font-bold text-[0.72rem] uppercase tracking-wider bg-[var(--admin-surface-2)] transition-colors cursor-pointer">
+                TITLE
+              </TableHead>
+              <TableHead className="text-[var(--admin-muted)] hover:text-[var(--admin-brand)] font-bold text-[0.72rem] uppercase tracking-wider bg-[var(--admin-surface-2)] transition-colors cursor-pointer">
+                DATE
+              </TableHead>
+              <TableHead className="text-[var(--admin-muted)] hover:text-[var(--admin-brand)] font-bold text-[0.72rem] uppercase tracking-wider bg-[var(--admin-surface-2)] transition-colors cursor-pointer">
+                VIEWS
+              </TableHead>
+              <TableHead className="text-[var(--admin-muted)] hover:text-[var(--admin-brand)] font-bold text-[0.72rem] uppercase tracking-wider bg-[var(--admin-surface-2)] transition-colors cursor-pointer">
+                FEATURED
+              </TableHead>
+              <TableHead className="text-[var(--admin-muted)] hover:text-[var(--admin-brand)] font-bold text-[0.72rem] uppercase tracking-wider bg-[var(--admin-surface-2)] transition-colors cursor-pointer">
+                STATUS
+              </TableHead>
+              <TableHead className="text-right text-[var(--admin-muted)] hover:text-[var(--admin-brand)] font-bold text-[0.72rem] uppercase tracking-wider bg-[var(--admin-surface-2)] transition-colors cursor-pointer">
+                ACTIONS
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedNews.length === 0 ? (
+            {loading ? (
               <TableRow>
-                <TableCell colSpan={6} style={{ textAlign: "center", padding: "3rem" }}>
-                  <div className="empty">
-                    <Search size={40} style={{ opacity: 0.3, marginBottom: "1rem" }} />
+                <TableCell colSpan={6} className="text-center py-12">
+                  <div className="flex flex-col items-center">
+                    <RefreshCw size={32} className="opacity-40 mb-4 animate-spin" />
+                    <p>Loading news articles…</p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : paginatedNews.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-12">
+                  <div className="flex flex-col items-center">
+                    <Search size={40} className="opacity-30 mb-4" />
                     <p>No news articles match your search.</p>
                   </div>
                 </TableCell>
               </TableRow>
             ) : (
               paginatedNews.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.7rem" }}>
-                      <span
-                        className="avatar-sm"
-                        style={{
-                          background: "var(--admin-brand)",
-                          color: "#fff",
-                        }}
-                      >
+                <TableRow key={item.id} className="hover:bg-[#fafbfe] transition-colors">
+                  <TableCell className="py-3">
+                    <div className="flex items-center gap-3">
+                      <span className="avatar-sm">
                         {item.title.substring(0, 2).toUpperCase()}
                       </span>
                       <div className="cell-main">
-                        <div style={{ fontWeight: 600, fontSize: "0.87rem" }}>{item.title}</div>
-                        <small>{item.category}</small>
+                        <div className="font-semibold text-sm">{item.title}</div>
+                        <small className="text-[var(--admin-muted)] text-[0.76rem]">{item.category}</small>
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell style={{ fontSize: "0.87rem" }}>{formatDate(item.publishedDate)}</TableCell>
-                  <TableCell style={{ fontSize: "0.87rem" }}>{item.views.toLocaleString()}</TableCell>
-                  <TableCell>
+                  <TableCell className="text-sm py-3">{formatDate(item.publishedAt)}</TableCell>
+                  <TableCell className="text-sm py-3">{item.views.toLocaleString()}</TableCell>
+                  <TableCell className="py-3">
                     {item.featured ? (
                       <span className="badge badge--green">Yes</span>
                     ) : (
                       <span className="badge badge--gray">No</span>
                     )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-3">
                     <span
                       className={`badge badge--${
-                        item.status === "published"
-                          ? "green"
-                          : item.status === "draft"
-                            ? "gold"
-                            : "gray"
-                      }`}
-                      style={{ textTransform: "lowercase" }}
+                        item.status === "published" ? "green" : "gold"
+                      } lowercase`}
                     >
                       {item.status}
                     </span>
                   </TableCell>
-                  <TableCell>
-                    <div className="row-actions" style={{ justifyContent: "flex-end" }}>
+                  <TableCell className="py-3">
+                    <div className="row-actions justify-end">
                       <button
                         type="button"
                         className="act-btn"
-                        onClick={() => {
-                          /* View logic */
-                        }}
+                        onClick={() => onView(item)}
                         title="View"
                       >
                         <Eye size={15} />
@@ -233,23 +227,13 @@ export default function NewsTable({ news, onEdit, onDelete }: NewsTableProps) {
 
       {/* Pagination */}
       {filteredNews.length > 0 && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "1rem 1.25rem",
-            borderTop: "1px solid var(--admin-line)",
-            flexWrap: "wrap",
-            gap: "0.75rem",
-          }}
-        >
-          <div style={{ fontSize: "0.85rem", color: "var(--admin-muted)" }}>
+        <div className="flex items-center justify-between p-5 border-t border-[var(--admin-line)] flex-wrap gap-3">
+          <div className="text-sm text-[var(--admin-muted)]">
             Showing {startIndex + 1}–{Math.min(startIndex + itemsPerPage, filteredNews.length)} of{" "}
             <b>{filteredNews.length}</b>
           </div>
 
-          <div style={{ display: "flex", gap: "0.7rem", alignItems: "center" }}>
+          <div className="flex gap-3 items-center">
             <Select
               value={itemsPerPage.toString()}
               onValueChange={(val) => {
@@ -257,7 +241,7 @@ export default function NewsTable({ news, onEdit, onDelete }: NewsTableProps) {
                 setCurrentPage(1);
               }}
             >
-              <SelectTrigger style={{ width: "110px" }}>
+              <SelectTrigger className="w-28">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -268,13 +252,12 @@ export default function NewsTable({ news, onEdit, onDelete }: NewsTableProps) {
               </SelectContent>
             </Select>
 
-            <div style={{ display: "flex", gap: "0.25rem" }}>
+            <div className="flex gap-1">
               <button
                 type="button"
-                className="admin-btn admin-btn--sm"
+                className="admin-btn admin-btn--sm min-w-[36px]"
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                style={{ minWidth: "36px" }}
               >
                 ‹
               </button>
@@ -285,9 +268,8 @@ export default function NewsTable({ news, onEdit, onDelete }: NewsTableProps) {
                   <button
                     key={pageNum}
                     type="button"
-                    className={`admin-btn admin-btn--sm ${currentPage === pageNum ? "admin-btn--primary" : ""}`}
+                    className={`admin-btn admin-btn--sm min-w-[36px] ${currentPage === pageNum ? "admin-btn--primary" : ""}`}
                     onClick={() => setCurrentPage(pageNum)}
-                    style={{ minWidth: "36px" }}
                   >
                     {pageNum}
                   </button>
@@ -296,10 +278,9 @@ export default function NewsTable({ news, onEdit, onDelete }: NewsTableProps) {
 
               <button
                 type="button"
-                className="admin-btn admin-btn--sm"
+                className="admin-btn admin-btn--sm min-w-[36px]"
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                style={{ minWidth: "36px" }}
               >
                 ›
               </button>
