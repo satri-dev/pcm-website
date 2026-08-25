@@ -15,6 +15,21 @@ export type BlogPost = {
   image: string;
   date: string;
   tag: string;
+  cat: string;
+  color: string;
+  body: string[];
+};
+
+export type StudentBlogPost = {
+  slug: string;
+  title: string;
+  excerpt: string;
+  image: string;
+  date: string;
+  tag: string;
+  cat: string;
+  color: string;
+  author: string;
   body: string[];
 };
 
@@ -206,42 +221,154 @@ export const newsData: NewsPost[] = [
 
 export const blogsData: BlogPost[] = [
   {
-    slug: "career-guidance-tips",
-    title: "5 Essential Career Guidance Tips for Students",
-    excerpt: "Practical advice for students to navigate their career path effectively and make informed decisions about their future.",
+    slug: "careers-after-bba",
+    title: "10 career paths after a BBA degree",
+    excerpt: "A BBA opens doors across marketing, finance, HR, operations and entrepreneurship. Here is where PCM graduates go.",
     image: "/images/hero-1.jpg",
-    date: "August 10, 2026",
+    date: "02 Aug 2026",
     tag: "Career",
+    cat: "career",
+    color: "#4167C9",
     body: [
-      "Choosing the right career path is one of the most important decisions you'll make in your life. Here are five essential tips to guide you through this process.",
-      "First, take time to understand your interests, strengths, and values. Self-reflection is crucial in identifying career options that align with your personality and goals.",
-      "Second, research different career options thoroughly. Don't limit yourself to obvious choices - explore emerging fields and unconventional paths that might suit your skills.",
+      "A BBA opens doors across marketing, finance, HR, operations and entrepreneurship. Here is where PCM graduates go.",
     ],
   },
   {
-    slug: "finance-fundamentals",
-    title: "Understanding Finance Fundamentals",
-    excerpt: "A beginner's guide to understanding basic financial concepts that every business student should know.",
+    slug: "finance-future-nepal",
+    title: "Why financial literacy is the skill of the next decade",
+    excerpt: "From personal savings to national markets, financial literacy shapes decisions. A look at how PCM's finance track builds it.",
     image: "/images/hero-5.jpg",
-    date: "August 5, 2026",
+    date: "28 Jul 2026",
     tag: "Finance",
+    cat: "finance",
+    color: "#51B747",
     body: [
-      "Finance is the backbone of any business operation. Understanding fundamental financial concepts is essential for making informed business decisions.",
-      "Key concepts include cash flow management, financial statements analysis, budgeting, and investment evaluation. These form the foundation of financial literacy.",
-      "Whether you're planning to start your own business or work in the corporate world, these financial fundamentals will serve you well throughout your career.",
+      "From personal savings to national markets, financial literacy shapes decisions. A look at how PCM's finance track builds it.",
     ],
   },
   {
-    slug: "tech-industry-trends",
-    title: "Current Trends in the IT Industry",
-    excerpt: "Exploring the latest trends and technologies that are shaping the future of the IT industry.",
+    slug: "bcsit-ai-era",
+    title: "What BCSIT students should learn in the AI era",
+    excerpt: "Artificial intelligence is changing software careers. The fundamentals that still matter — and the new skills to add.",
     image: "/images/hero-6.jpg",
-    date: "July 28, 2026",
-    tag: "Technology",
+    date: "20 Jul 2026",
+    tag: "Tech",
+    cat: "tech",
+    color: "#21409A",
     body: [
-      "The IT industry is constantly evolving, with new technologies and trends emerging regularly. Staying updated with these trends is crucial for IT professionals.",
-      "Artificial Intelligence and Machine Learning continue to dominate the tech landscape, transforming how businesses operate and deliver services.",
-      "Cloud computing, cybersecurity, and mobile development remain strong areas of growth, offering numerous opportunities for skilled professionals.",
+      "Artificial intelligence is changing software careers. The fundamentals that still matter — and the new skills to add.",
+    ],
+  },
+  {
+    slug: "pokhara-startups",
+    title: "Inside Pokhara's growing startup scene",
+    excerpt: "From coffee brands to fintech, Pokhara's entrepreneurs are building big things. PCM students are joining them early.",
+    image: "/images/hero-2.jpg",
+    date: "11 Jul 2026",
+    tag: "Campus",
+    cat: "campus",
+    color: "#3F9E35",
+    body: [
+      "From coffee brands to fintech, Pokhara's entrepreneurs are building big things. PCM students are joining them early.",
+    ],
+  },
+  {
+    slug: "scholarship-guide-2083",
+    title: "Scholarships at PCM: a complete guide for 2083",
+    excerpt: "Merit awards, need-based support and how to apply. Everything families ask us about financing a PCM degree.",
+    image: "/images/hero-3.jpg",
+    date: "30 Jun 2026",
+    tag: "Admission",
+    cat: "admission",
+    color: "#4167C9",
+    body: [
+      "Merit awards, need-based support and how to apply. Everything families ask us about financing a PCM degree.",
+    ],
+  },
+  {
+    slug: "first-semester-tips",
+    title: "Surviving (and enjoying) your first semester at PCM",
+    excerpt: "Orientation, clubs, deadlines and cafeterias — a no-nonsense guide to thriving in your first months on campus.",
+    image: "/images/hero-4.jpg",
+    date: "18 Jun 2026",
+    tag: "Student Life",
+    cat: "student-life",
+    color: "#51B747",
+    body: [
+      "Orientation, clubs, deadlines and cafeterias — a no-nonsense guide to thriving in your first months on campus.",
+    ],
+  },
+];
+
+export const studentBlogsData: StudentBlogPost[] = [
+  {
+    slug: "student-blog-internships",
+    title: "My summer internship at a Pokhara tech firm",
+    excerpt: "Three months of real code, real clients and real deadlines. Here is what I learned beyond the classroom.",
+    image: "/images/hero-6.jpg",
+    date: "25 Jul 2026",
+    tag: "Internships — BCSIT '26",
+    cat: "internships",
+    color: "#21409A",
+    author: "Aarati Gurung",
+    body: [
+      "Three months of real code, real clients and real deadlines. Here is what I learned beyond the classroom.",
+    ],
+  },
+  {
+    slug: "student-blog-fest-prep",
+    title: "Behind the scenes of Annual Fest 2026",
+    excerpt: "Stages, sound checks and 200 cups of coffee — how our committee pulled off the biggest fest in PCM history.",
+    image: "/images/hero-4.jpg",
+    date: "19 Jul 2026",
+    tag: "Campus Life — BBA '27",
+    cat: "campus-life",
+    color: "#51B747",
+    author: "Sujan Karki",
+    body: [
+      "Stages, sound checks and 200 cups of coffee — how our committee pulled off the biggest fest in PCM history.",
+    ],
+  },
+  {
+    slug: "student-blog-banking",
+    title: "A field visit inside Nepal's banking sector",
+    excerpt: "From vaults to credit committees — what a day at a commercial bank taught me about my future career.",
+    image: "/images/hero-5.jpg",
+    date: "08 Jul 2026",
+    tag: "Finance — BBA-Finance '26",
+    cat: "finance",
+    color: "#3F9E35",
+    author: "Priya Shrestha",
+    body: [
+      "From vaults to credit committees — what a day at a commercial bank taught me about my future career.",
+    ],
+  },
+  {
+    slug: "student-blog-mock-press",
+    title: "How a mock press conference changed my confidence",
+    excerpt: "I used to freeze in front of a crowd. Three rehearsals later, I was fielding questions like a pro.",
+    image: "/images/hero-2.jpg",
+    date: "29 Jun 2026",
+    tag: "Skills — BBA '27",
+    cat: "skills",
+    color: "#4167C9",
+    author: "Rabin Thapa",
+    body: [
+      "I used to freeze in front of a crowd. Three rehearsals later, I was fielding questions like a pro.",
+    ],
+  },
+  {
+    slug: "student-blog-clubs",
+    title: "Finding my people: joining PCM's student clubs",
+    excerpt: "Music, debate, coding and community — the clubs that made my first year at PCM unforgettable.",
+    image: "/images/hero-1.jpg",
+    date: "15 Jun 2026",
+    tag: "Clubs — BCSIT '27",
+    cat: "clubs",
+    color: "#51B747",
+    author: "Maya Tamang",
+    body: [
+      "Music, debate, coding and community — the clubs that made my first year at PCM unforgettable.",
     ],
   },
 ];
@@ -252,4 +379,8 @@ export function getNewsBySlug(slug: string) {
 
 export function getBlogBySlug(slug: string) {
   return blogsData.find((post) => post.slug === slug);
+}
+
+export function getStudentBlogBySlug(slug: string) {
+  return studentBlogsData.find((post) => post.slug === slug);
 }

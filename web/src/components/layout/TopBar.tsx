@@ -6,7 +6,7 @@ import { FaFacebook, FaInstagram } from "react-icons/fa";
 
 export default function TopBar() {
   return (
-    <div className="bg-pcm-dark text-white/80">
+    <div className="bg-pcm-blue-900 text-white/80">
       <div className="container flex items-center justify-between gap-2 py-2 px-3 sm:px-4 lg:px-6">
         {/* Contact — visible on all screens */}
         <div className="flex items-center gap-2 sm:gap-3 lg:gap-[1.1rem] text-[0.68rem] sm:text-xs lg:text-[0.8rem]">
@@ -26,6 +26,20 @@ export default function TopBar() {
           <Link href="/scholarship" className="hidden md:inline hover:text-pcm-green transition-colors whitespace-nowrap">
             Scholarships
           </Link>
+
+          <div className="hidden md:inline-flex relative group">
+            <Link href="/np-en-converter" className="inline-flex items-center gap-1 hover:text-pcm-green transition-colors whitespace-nowrap">
+              NP-EN Converter <ChevronDown className="w-3 h-3 transition-transform group-hover:rotate-180" />
+            </Link>
+            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 min-w-[190px] p-2 bg-white rounded-xl border border-border shadow-pcm-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+              <Link href="/np-en-converter#npen-np" className="block px-3 py-2 rounded-md text-sm font-semibold text-pcm-navy hover:bg-secondary hover:text-pcm-blue">
+                Nepali → English
+              </Link>
+              <Link href="/np-en-converter#npen-en2" className="block px-3 py-2 rounded-md text-sm font-semibold text-pcm-navy hover:bg-secondary hover:text-pcm-blue">
+                English → Nepali
+              </Link>
+            </div>
+          </div>
 
           <div className="hidden md:inline-flex relative group">
             <Link href="/gpa-converter" className="inline-flex items-center gap-1 hover:text-pcm-green transition-colors whitespace-nowrap">
