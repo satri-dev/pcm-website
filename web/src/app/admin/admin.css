@@ -527,3 +527,198 @@
   .admin-stats { grid-template-columns: 1fr; }
   .admin-quick-actions { grid-template-columns: 1fr; }
 }
+
+/* ---------- TipTap Rich Text Editor ---------- */
+.ProseMirror {
+  min-h: 180px;
+  padding: 0.75rem 1rem;
+  outline: none;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--admin-ink);
+}
+
+.ProseMirror:focus {
+  outline: none;
+}
+
+.ProseMirror p {
+  margin: 0.75rem 0;
+}
+
+.ProseMirror p:first-child {
+  margin-top: 0;
+}
+
+.ProseMirror p:last-child {
+  margin-bottom: 0;
+}
+
+.ProseMirror h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 1.5rem 0 0.75rem;
+  color: var(--admin-ink);
+}
+
+.ProseMirror h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 1.25rem 0 0.5rem;
+  color: var(--admin-ink);
+}
+
+.ProseMirror h2:first-child,
+.ProseMirror h3:first-child {
+  margin-top: 0;
+}
+
+.ProseMirror ul,
+.ProseMirror ol {
+  padding-left: 1.5rem;
+  margin: 0.75rem 0;
+}
+
+.ProseMirror li {
+  margin: 0.25rem 0;
+}
+
+.ProseMirror blockquote {
+  border-left: 3px solid var(--admin-brand);
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: var(--admin-muted);
+  font-style: italic;
+}
+
+.ProseMirror code {
+  background: var(--admin-surface-2);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85em;
+  color: var(--admin-ink);
+}
+
+.ProseMirror strong {
+  font-weight: 700;
+}
+
+.ProseMirror em {
+  font-style: italic;
+}
+
+.ProseMirror u {
+  text-decoration: underline;
+}
+
+.ProseMirror s {
+  text-decoration: line-through;
+}
+
+.ProseMirror a {
+  color: var(--admin-brand);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.ProseMirror a:hover {
+  color: var(--admin-brand-2);
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: var(--admin-muted);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* ---------- Form grid (from admin/css/admin.css) ---------- */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.15rem; }
+.form-grid .field--full { grid-column: 1 / -1; }
+.form-section {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  margin-top: 0.25rem;
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-line);
+  border-radius: var(--admin-radius-sm);
+  font-size: 0.82rem;
+  color: var(--admin-muted);
+}
+.form-section svg { width: 15px; height: 15px; color: var(--admin-brand); }
+.form-section b { color: var(--admin-ink); font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; font-size: 0.72rem; }
+.form-section span { color: var(--admin-muted); }
+.field { display: grid; gap: 0.35rem; align-content: start; }
+.field label { font-size: 0.8rem; font-weight: 600; color: var(--admin-ink); }
+.field label .req { color: var(--admin-red); }
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--admin-line);
+  border-radius: var(--admin-radius-sm);
+  background: var(--admin-surface);
+  font-size: 0.9rem;
+  color: var(--admin-ink);
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+.field textarea { min-height: 96px; resize: vertical; }
+.field input:focus,
+.field select:focus,
+.field textarea:focus { outline: none; border-color: var(--admin-brand); box-shadow: 0 0 0 3px rgba(33, 64, 154, 0.12); }
+.field input[type="checkbox"] { width: auto; accent-color: var(--admin-brand); }
+.field input[type="file"] { display: none; }
+.field .hint { font-size: 0.76rem; color: var(--admin-muted); display: flex; align-items: center; gap: 0.35rem; }
+.field.is-invalid input,
+.field.is-invalid select,
+.field.is-invalid textarea { border-color: var(--admin-red); }
+.field__err { font-size: 0.75rem; color: var(--admin-red); }
+
+/* ---------- File field ---------- */
+.file-field { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; width: 100%; }
+.file-field input[type="text"] { flex: 1; min-width: 160px; }
+.img-prev { margin-top: 0.4rem; }
+.img-prev img {
+  display: block;
+  height: 64px;
+  width: auto;
+  max-width: 100%;
+  border-radius: 8px;
+  border: 1px solid #e2e7f0;
+}
+
+/* ---------- Modal (from admin/css/admin.css) ---------- */
+.news-modal { box-shadow: var(--admin-shadow-lg); }
+.modal__head {
+  position: sticky;
+  top: 0;
+  background: var(--admin-surface);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.05rem 1.3rem;
+  border-bottom: 1px solid var(--admin-line);
+  z-index: 2;
+}
+.modal__head h3 { margin: 0; font-size: 1.05rem; }
+.modal__body { padding: 1.3rem; }
+.modal__foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding: 1rem 1.3rem;
+  border-top: 1px solid var(--admin-line);
+}
+
+/* Dark scrim behind the news dialog */
+[data-slot="dialog-overlay"]:has(~ .news-modal) {
+  background: rgba(10, 18, 40, 0.55) !important;
+  backdrop-filter: none !important;
+}
