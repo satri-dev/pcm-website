@@ -1,54 +1,49 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { News, NewsFormData } from "@/types/news";
-import { Save } from "lucide-react";
+import { News } from "@/types/news";
+import { Save, X, Upload } from "lucide-react";
+import RichTextEditor from "../../../_components/editor/rich-text-editor";
 
 const newsSchema = z.object({
-  title: z.string().min(1, "Title is required").max(200, "Title too long"),
+  title: z.string().min(3, "Title must be at least 3 characters").max(200),
   slug: z
     .string()
-    .min(1, "Slug is required")
-    .regex(/^[a-z0-9-]+$/, "Slug must contain only lowercase letters, numbers, and hyphens"),
-  excerpt: z.string().min(1, "Excerpt is required").max(300, "Excerpt too long"),
-  content: z.string().min(1, "Content is required"),
-  category: z.enum(["Achievement", "Announcement", "News", "Event"]),
-  featuredImage: z.string().optional(),
-  author: z.string().min(1, "Author is required"),
-  publishedDate: z.string().min(1, "Published date is required"),
-  status: z.enum(["published", "draft", "archived"]),
+    .min(1, "This field is required")
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must contain only lowercase letters, numbers, and hyphens"),
+  excerpt: z.string().min(1, "This field is required").max(1000, "Excerpt too long"),
+  content: z.string().optional(),
+  category: z.enum(["News", "Event", "Student Blog", "Achievement"]),
+  image: z.string().optional(),
+  author: z.string().min(1, "This field is required"),
+  publishedAt: z.string().min(1, "This field is required"),
+  status: z.enum(["published", "draft"]),
   featured: z.boolean(),
   tags: z.string().optional(),
 });
 
 type NewsSchema = z.infer<typeof newsSchema>;
 
+const IMAGE_URL_RE = /^(data:image\/|https?:\/\/.+\.(png|jpe?g|gif|webp|svg|avif)(\?.*)?$)/i;
+
 interface NewsFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   news: News | null;
   onSave: (news: News) => void;
+  saving?: boolean;
+}
+
+function todayISO() {
+  return new Date().toISOString().split("T")[0];
 }
 
 export default function NewsFormModal({
@@ -56,7 +51,12 @@ export default function NewsFormModal({
   onOpenChange,
   news,
   onSave,
+  saving = false,
 }: NewsFormModalProps) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [fileError, setFileError] = useState("");
+  const [excerptHtml, setExcerptHtml] = useState("");
+
   const {
     register,
     handleSubmit,
@@ -72,14 +72,16 @@ export default function NewsFormModal({
       excerpt: "",
       content: "",
       category: "News",
-      featuredImage: "",
+      image: "",
       author: "Admin",
-      publishedDate: new Date().toISOString().split("T")[0],
+      publishedAt: todayISO(),
       status: "draft",
       featured: false,
       tags: "",
     },
   });
+
+  const image = watch("image");
 
   // Auto-generate slug from title
   const titleValue = watch("title");
@@ -90,13 +92,15 @@ export default function NewsFormModal({
         .replace(/[^a-z0-9\s-]/g, "")
         .replace(/\s+/g, "-")
         .replace(/-+/g, "-")
-        .substring(0, 100);
+        .substring(0, 100)
+        .replace(/^-+|-+$/g, "");
       setValue("slug", slug);
     }
   }, [titleValue, news, setValue]);
 
   // Load news data when editing
   useEffect(() => {
+    setFileError("");
     if (news) {
       reset({
         title: news.title,
@@ -104,13 +108,14 @@ export default function NewsFormModal({
         excerpt: news.excerpt,
         content: news.content,
         category: news.category,
-        featuredImage: news.featuredImage || "",
+        image: news.image || "",
         author: news.author,
-        publishedDate: news.publishedDate,
+        publishedAt: news.publishedAt,
         status: news.status,
         featured: news.featured,
         tags: news.tags?.join(", ") || "",
       });
+      setExcerptHtml(news.excerpt);
     } else {
       reset({
         title: "",
@@ -118,27 +123,55 @@ export default function NewsFormModal({
         excerpt: "",
         content: "",
         category: "News",
-        featuredImage: "",
+        image: "",
         author: "Admin",
-        publishedDate: new Date().toISOString().split("T")[0],
+        publishedAt: todayISO(),
         status: "draft",
         featured: false,
         tags: "",
       });
+      setExcerptHtml("");
     }
-  }, [news, reset]);
+  }, [news, reset, open]);
 
-  const onSubmit = (data: NewsSchema) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const limitBytes = 2 * 1048576;
+    if (file.size > limitBytes) {
+      setFileError("File too large — max 2MB");
+      e.target.value = "";
+      return;
+    }
+    if (file.type.indexOf("image/") !== 0) {
+      setFileError("Please choose an image file");
+      e.target.value = "";
+      return;
+    }
+    setFileError("");
+    const reader = new FileReader();
+    reader.onload = () => {
+      setValue("image", String(reader.result));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeImage = () => {
+    setValue("image", "");
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const onSubmit = async (data: NewsSchema) => {
     const newsData: News = {
       id: news?.id || `news-${Date.now()}`,
       title: data.title,
       slug: data.slug,
       excerpt: data.excerpt,
-      content: data.content,
+      content: data.content || "",
       category: data.category,
-      featuredImage: data.featuredImage,
+      image: data.image || undefined,
       author: data.author,
-      publishedDate: data.publishedDate,
+      publishedAt: data.publishedAt,
       status: data.status,
       views: news?.views || 0,
       featured: data.featured,
@@ -148,240 +181,218 @@ export default function NewsFormModal({
             .map((t) => t.trim())
             .filter(Boolean)
         : [],
+      seo: news?.seo,
       createdAt: news?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
-    onSave(newsData);
+    await onSave(newsData);
   };
+
+  const fieldValue = (key: keyof NewsSchema) =>
+    errors[key] ? "field is-invalid" : "field";
+  const fileName = (image || "").split("/").pop() || "";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        style={{
-          maxWidth: "800px",
-          maxHeight: "90vh",
-          overflow: "auto",
-        }}
+        showCloseButton={false}
+        className="news-modal w-[min(100%,640px)] sm:max-w-[640px] max-h-[90vh] overflow-y-auto flex flex-col gap-0 rounded-[16px] p-0 ring-0 outline-none"
       >
-        <DialogHeader>
-          <DialogTitle>{news ? "Edit News" : "Add News"}</DialogTitle>
-          <DialogDescription>
-            {news
-              ? "Update the news article details below."
-              : "Create a new news article by filling out the form below."}
-          </DialogDescription>
-        </DialogHeader>
+        {/* Head */}
+        <div className="modal__head">
+          <DialogTitle className="m-0 text-[1.05rem] font-normal">
+            {news ? "Edit News" : "Add News"}
+          </DialogTitle>
+          <button
+            type="button"
+            className="admin-icon-btn"
+            aria-label="Close"
+            onClick={() => onOpenChange(false)}
+          >
+            <X size={18} />
+          </button>
+        </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} style={{ display: "grid", gap: "1.25rem" }}>
-          {/* Title */}
-          <div style={{ display: "grid", gap: "0.5rem" }}>
-            <Label htmlFor="title">
-              Title <span style={{ color: "var(--admin-red)" }}>*</span>
-            </Label>
-            <Input id="title" {...register("title")} placeholder="Enter news title" />
-            {errors.title && (
-              <span style={{ fontSize: "0.8rem", color: "var(--admin-red)" }}>
-                {errors.title.message}
-              </span>
-            )}
-          </div>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          {/* Body */}          <div className="modal__body">
+            <div className="form-grid">
+              <div className="form-section">
+                <b>Details</b>
+              </div>
 
-          {/* Slug */}
-          <div style={{ display: "grid", gap: "0.5rem" }}>
-            <Label htmlFor="slug">
-              URL Slug <span style={{ color: "var(--admin-red)" }}>*</span>
-            </Label>
-            <Input id="slug" {...register("slug")} placeholder="news-article-slug" />
-            {errors.slug && (
-              <span style={{ fontSize: "0.8rem", color: "var(--admin-red)" }}>
-                {errors.slug.message}
-              </span>
-            )}
-            <span style={{ fontSize: "0.75rem", color: "var(--admin-muted)" }}>
-              Lowercase letters, numbers, and hyphens only
-            </span>
-          </div>
+              <div className={fieldValue("title")}>
+                <label htmlFor="news-title">
+                  Title <span className="req">*</span>
+                </label>
+                <input id="news-title" type="text" {...register("title")} />
+                {errors.title && (
+                  <div className="field__err">{errors.title.message}</div>
+                )}
+              </div>
 
-          {/* Two column layout */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-            {/* Category */}
-            <div style={{ display: "grid", gap: "0.5rem" }}>
-              <Label htmlFor="category">
-                Category <span style={{ color: "var(--admin-red)" }}>*</span>
-              </Label>
-              <Select
-                value={watch("category")}
-                onValueChange={(value) =>
-                  setValue("category", value as NewsSchema["category"])
-                }
+              <div className={fieldValue("category")}>
+                <label htmlFor="news-category">
+                  Category <span className="req">*</span>
+                </label>
+                <select id="news-category" {...register("category")}>
+                  <option value="">— Select —</option>
+                  <option value="News">News</option>
+                  <option value="Event">Event</option>
+                  <option value="Student Blog">Student Blog</option>
+                  <option value="Achievement">Achievement</option>
+                </select>
+                {errors.category && (
+                  <div className="field__err">{errors.category.message}</div>
+                )}
+              </div>
+
+              <div className={fieldValue("publishedAt")}>
+                <label htmlFor="news-date">
+                  Date <span className="req">*</span>
+                </label>
+                <input
+                  id="news-date"
+                  type="date"
+                  {...register("publishedAt")}
+                />
+                {errors.publishedAt && (
+                  <div className="field__err">{errors.publishedAt.message}</div>
+                )}
+              </div>
+
+              <div className="field">
+                <label htmlFor="news-views">Views</label>
+                <input
+                  id="news-views"
+                  type="number"
+                  value={news?.views || 0}
+                  disabled
+                  className="bg-[var(--admin-surface-2)]"
+                />
+              </div>
+
+              <div
+                className={`field field--full ${
+                  fileError ? "is-invalid" : ""
+                }`}
               >
-                <SelectTrigger id="category">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Achievement">Achievement</SelectItem>
-                  <SelectItem value="Announcement">Announcement</SelectItem>
-                  <SelectItem value="News">News</SelectItem>
-                  <SelectItem value="Event">Event</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.category && (
-                <span style={{ fontSize: "0.8rem", color: "var(--admin-red)" }}>
-                  {errors.category.message}
+                <label>Image</label>
+                <div className="file-field">
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn--sm cursor-pointer flex-none"
+                    onClick={() => fileRef.current?.click()}
+                  >
+                    <Upload size={14} />
+                    Choose file · max 2MB image
+                  </button>
+                  <input
+                    type="text"
+                    {...register("image")}
+                    placeholder="…or paste a URL to an existing file"
+                  />
+                </div>
+                {image &&
+                  (IMAGE_URL_RE.test(image) ? (
+                    <div className="img-prev">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={image} alt="" />
+                    </div>
+                  ) : (
+                    <div className="img-prev">
+                      <span className="badge badge--blue">{fileName}</span>
+                    </div>
+                  ))}
+                {image && (
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn--sm admin-btn--ghost text-[var(--admin-red)] border-[rgba(214,69,69,0.3)] hover:border-[rgba(214,69,69,0.3)]"
+                    onClick={removeImage}
+                  >
+                    <X size={13} />
+                    Remove
+                  </button>
+                )}
+                <span className="hint">
+                  Upload from device (max 2MB) or paste a URL
                 </span>
-              )}
-            </div>
+                {fileError && <div className="field__err">{fileError}</div>}
+              </div>
 
-            {/* Status */}
-            <div style={{ display: "grid", gap: "0.5rem" }}>
-              <Label htmlFor="status">
-                Status <span style={{ color: "var(--admin-red)" }}>*</span>
-              </Label>
-              <Select
-                value={watch("status")}
-                onValueChange={(value) => setValue("status", value as NewsSchema["status"])}
+              <div className="form-section">
+                <b>Content</b>
+              </div>
+
+              <div
+                className={`field field--full ${
+                  errors.excerpt ? "is-invalid" : ""
+                }`}
               >
-                <SelectTrigger id="status">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.status && (
-                <span style={{ fontSize: "0.8rem", color: "var(--admin-red)" }}>
-                  {errors.status.message}
-                </span>
-              )}
+                <label htmlFor="news-excerpt">Excerpt</label>
+                <RichTextEditor
+                  content={excerptHtml}
+                  onChange={(html) => {
+                    setExcerptHtml(html);
+                    setValue("excerpt", html);
+                  }}
+                  placeholder="Brief summary..."
+                />
+                {errors.excerpt && (
+                  <div className="field__err">{errors.excerpt.message}</div>
+                )}
+              </div>
+
+              <div className="form-section">
+                <b>Publishing</b>
+              </div>
+
+              <div className="field">
+                <label>Featured</label>
+                <label className="switch">
+                  <input type="checkbox" {...register("featured")} />
+                  <span className="track"></span>
+                </label>
+              </div>
+
+              <div className={fieldValue("status")}>
+                <label htmlFor="news-status">Status</label>
+                <select id="news-status" {...register("status")}>
+                  <option value="published">Published</option>
+                  <option value="draft">Draft</option>
+                </select>
+                {errors.status && (
+                  <div className="field__err">{errors.status.message}</div>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Two column layout */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-            {/* Author */}
-            <div style={{ display: "grid", gap: "0.5rem" }}>
-              <Label htmlFor="author">
-                Author <span style={{ color: "var(--admin-red)" }}>*</span>
-              </Label>
-              <Input id="author" {...register("author")} placeholder="Author name" />
-              {errors.author && (
-                <span style={{ fontSize: "0.8rem", color: "var(--admin-red)" }}>
-                  {errors.author.message}
-                </span>
-              )}
-            </div>
-
-            {/* Published Date */}
-            <div style={{ display: "grid", gap: "0.5rem" }}>
-              <Label htmlFor="publishedDate">
-                Published Date <span style={{ color: "var(--admin-red)" }}>*</span>
-              </Label>
-              <Input id="publishedDate" type="date" {...register("publishedDate")} />
-              {errors.publishedDate && (
-                <span style={{ fontSize: "0.8rem", color: "var(--admin-red)" }}>
-                  {errors.publishedDate.message}
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Excerpt */}
-          <div style={{ display: "grid", gap: "0.5rem" }}>
-            <Label htmlFor="excerpt">
-              Excerpt <span style={{ color: "var(--admin-red)" }}>*</span>
-            </Label>
-            <Textarea
-              id="excerpt"
-              {...register("excerpt")}
-              placeholder="Brief summary of the article"
-              rows={3}
-            />
-            {errors.excerpt && (
-              <span style={{ fontSize: "0.8rem", color: "var(--admin-red)" }}>
-                {errors.excerpt.message}
-              </span>
-            )}
-            <span style={{ fontSize: "0.75rem", color: "var(--admin-muted)" }}>
-              {watch("excerpt")?.length || 0}/300 characters
-            </span>
-          </div>
-
-          {/* Content */}
-          <div style={{ display: "grid", gap: "0.5rem" }}>
-            <Label htmlFor="content">
-              Content <span style={{ color: "var(--admin-red)" }}>*</span>
-            </Label>
-            <Textarea
-              id="content"
-              {...register("content")}
-              placeholder="Full article content (supports HTML)"
-              rows={8}
-            />
-            {errors.content && (
-              <span style={{ fontSize: "0.8rem", color: "var(--admin-red)" }}>
-                {errors.content.message}
-              </span>
-            )}
-          </div>
-
-          {/* Featured Image */}
-          <div style={{ display: "grid", gap: "0.5rem" }}>
-            <Label htmlFor="featuredImage">Featured Image URL</Label>
-            <Input
-              id="featuredImage"
-              {...register("featuredImage")}
-              placeholder="/assets/img/news-image.jpg"
-            />
-            <span style={{ fontSize: "0.75rem", color: "var(--admin-muted)" }}>
-              Optional: Path to featured image
-            </span>
-          </div>
-
-          {/* Tags */}
-          <div style={{ display: "grid", gap: "0.5rem" }}>
-            <Label htmlFor="tags">Tags</Label>
-            <Input
-              id="tags"
-              {...register("tags")}
-              placeholder="Admission, BBA, Achievement (comma-separated)"
-            />
-            <span style={{ fontSize: "0.75rem", color: "var(--admin-muted)" }}>
-              Optional: Comma-separated tags
-            </span>
-          </div>
-
-          {/* Featured Toggle */}
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <label className="switch">
-              <input
-                type="checkbox"
-                {...register("featured")}
-                checked={watch("featured")}
-                onChange={(e) => setValue("featured", e.target.checked)}
-              />
-              <span className="track"></span>
-            </label>
-            <Label htmlFor="featured" style={{ cursor: "pointer" }}>
-              Mark as featured article
-            </Label>
-          </div>
-
-          <DialogFooter>
+          {/* Footer */}
+          <div className="modal__foot">
             <button
               type="button"
               className="admin-btn"
               onClick={() => onOpenChange(false)}
+              disabled={saving}
             >
               Cancel
             </button>
-            <button type="submit" className="admin-btn admin-btn--primary">
+            <button
+              type="submit"
+              className="admin-btn admin-btn--primary"
+              disabled={saving}
+            >
               <Save size={16} />
-              {news ? "Update News" : "Create News"}
+              {saving ? "Saving…" : "Save"}
             </button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>
