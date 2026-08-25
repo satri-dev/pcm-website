@@ -56,7 +56,7 @@ const navigation: NavSection[] = [
     items: [
       { label: "News", href: "/admin/content/news", icon: Newspaper, badge: "4" },
       { label: "Notices", href: "/admin/content/notices", icon: AlertCircle, badge: "5" },
-      { label: "Results", href: "/admin/results", icon: BarChart3, badge: "8" },
+      { label: "Results", href: "/admin/content/results", icon: BarChart3, badge: "8" },
       { label: "Events & Workshops", href: "/admin/events", icon: Calendar, badge: "5" },
       { label: "Programs", href: "/admin/programs", icon: GraduationCap, badge: "3" },
       { label: "Scholarships", href: "/admin/scholarships", icon: Award, badge: "4" },
