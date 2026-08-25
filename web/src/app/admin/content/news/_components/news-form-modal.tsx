@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -10,8 +10,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { News } from "@/types/news";
-import { Save, X, Upload } from "lucide-react";
+import { Save, X } from "lucide-react";
 import RichTextEditor from "../../../_components/editor/rich-text-editor";
+import ImageUpload from "@/components/cloudinary/ImageUpload";
 
 const newsSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters").max(200),
@@ -53,7 +54,6 @@ export default function NewsFormModal({
   onSave,
   saving = false,
 }: NewsFormModalProps) {
-  const fileRef = useRef<HTMLInputElement>(null);
   const [fileError, setFileError] = useState("");
   const [excerptHtml, setExcerptHtml] = useState("");
 
@@ -134,31 +134,8 @@ export default function NewsFormModal({
     }
   }, [news, reset, open]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-    const limitBytes = 2 * 1048576;
-    if (file.size > limitBytes) {
-      setFileError("File too large — max 2MB");
-      e.target.value = "";
-      return;
-    }
-    if (file.type.indexOf("image/") !== 0) {
-      setFileError("Please choose an image file");
-      e.target.value = "";
-      return;
-    }
-    setFileError("");
-    const reader = new FileReader();
-    reader.onload = () => {
-      setValue("image", String(reader.result));
-    };
-    reader.readAsDataURL(file);
-  };
-
   const removeImage = () => {
     setValue("image", "");
-    if (fileRef.current) fileRef.current.value = "";
   };
 
   const onSubmit = async (data: NewsSchema) => {
@@ -278,50 +255,56 @@ export default function NewsFormModal({
                 }`}
               >
                 <label>Image</label>
-                <div className="file-field">
-                  <input
-                    ref={fileRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                  />
-                  <button
-                    type="button"
-                    className="admin-btn admin-btn--sm cursor-pointer flex-none"
-                    onClick={() => fileRef.current?.click()}
-                  >
-                    <Upload size={14} />
-                    Choose file · max 2MB image
-                  </button>
+                <div className="flex flex-col gap-3">
+                  {/* Cloudinary Upload */}
+                  <div className="flex items-center gap-2">
+                    <ImageUpload
+                      onUpload={(result) => {
+                        setValue("image", result.secure_url);
+                        setFileError("");
+                      }}
+                    />
+                    <span className="text-[0.85rem] text-[var(--admin-muted)]">
+                      or paste URL below
+                    </span>
+                  </div>
+
+                  {/* Manual URL Input */}
                   <input
                     type="text"
                     {...register("image")}
-                    placeholder="…or paste a URL to an existing file"
+                    placeholder="Or paste image URL here..."
+                    className="w-full"
                   />
                 </div>
+
+                {/* Image Preview */}
                 {image &&
                   (IMAGE_URL_RE.test(image) ? (
-                    <div className="img-prev">
+                    <div className="img-prev mt-3">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={image} alt="" />
                     </div>
                   ) : (
-                    <div className="img-prev">
+                    <div className="img-prev mt-3">
                       <span className="badge badge--blue">{fileName}</span>
                     </div>
                   ))}
+                
+                {/* Remove Image Button */}
                 {image && (
                   <button
                     type="button"
-                    className="admin-btn admin-btn--sm admin-btn--ghost text-[var(--admin-red)] border-[rgba(214,69,69,0.3)] hover:border-[rgba(214,69,69,0.3)]"
+                    className="admin-btn admin-btn--sm admin-btn--ghost text-[var(--admin-red)] border-[rgba(214,69,69,0.3)] hover:border-[rgba(214,69,69,0.3)] mt-2"
                     onClick={removeImage}
                   >
                     <X size={13} />
                     Remove
                   </button>
                 )}
-                <span className="hint">
-                  Upload from device (max 2MB) or paste a URL
+                
+                <span className="hint mt-2">
+                  Upload via Cloudinary (max 5MB) or paste a URL
                 </span>
                 {fileError && <div className="field__err">{fileError}</div>}
               </div>
