@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ArrowRight, Menu, X, ChevronDown } from "lucide-react";
+import { Search, ArrowRight, Menu, X, ChevronDown, Phone } from "lucide-react";
 import NavDropdown from "./NavDropdown";
 import ThemeToggle from "./ThemeToggle";
 import { buttonVariants } from "@/components/ui/button";
@@ -14,6 +15,48 @@ const aboutLinks = [
   { label: "Board of Directors", href: "/about/board" },
   { label: "Faculty & Staff", href: "/about/faculty" },
   { label: "Campus & Facilities", href: "/about/facility" },
+  { label: "Campus Map", href: "/about/campus-map" },
+];
+
+const moreColumns = [
+  {
+    label: "Community",
+    links: [
+      { label: "Clubs", href: "/clubs" },
+      { label: "Alumni", href: "/alumni" },
+      { label: "Testimonials", href: "/testimonials" },
+      { label: "PCM Life", href: "/life" },
+      { label: "Feedback", href: "/feedback" },
+      { label: "Surveys", href: "/survey" },
+    ],
+  },
+  {
+    label: "Admission & Support",
+    links: [
+      { label: "Admission", href: "/admission" },
+      { label: "Scholarships", href: "/scholarship" },
+      { label: "Downloads", href: "/downloads" },
+      { label: "FAQ", href: "/faq" },
+    ],
+  },
+  {
+    label: "Campus & Careers",
+    links: [
+      { label: "Campus & Facilities", href: "/about/facility" },
+      { label: "Placements", href: "/placements" },
+      { label: "Careers", href: "/career" },
+      { label: "Virtual Tour", href: "/virtual-tour" },
+    ],
+  },
+  {
+    label: "Resources",
+    links: [
+      { label: "GPA Converter", href: "/gpa-converter" },
+      { label: "NP-EN Converter", href: "/np-en-converter" },
+      { label: "Campus Map", href: "/about/campus-map" },
+      { label: "Login", href: "https://www.pcm.edu.np/login" },
+    ],
+  },
 ];
 
 const programLinks = [
@@ -38,6 +81,9 @@ const blogLinks = [
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
 
   const toggleDropdown = (label: string) => {
     setOpenDropdown(openDropdown === label ? null : label);
@@ -79,6 +125,27 @@ export default function Navbar() {
                 </Link>
               </li>
               <NavDropdown label="Blogs" href="/blogs" items={blogLinks} />
+              <li className="relative group">
+                <span className="px-[0.85rem] py-[0.6rem] text-[0.925rem] font-semibold text-pcm-navy rounded-md hover:text-pcm-blue hover:bg-secondary transition-colors cursor-pointer inline-flex items-center gap-1">
+                  More <ChevronDown className="w-3.5 h-3.5 transition-transform group-hover:rotate-180" />
+                </span>
+                <div className="absolute top-full right-0 mt-2 min-w-[680px] p-5 bg-white rounded-xl border border-border shadow-pcm-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 grid grid-cols-4 gap-5">
+                  {moreColumns.map((col) => (
+                    <div key={col.label}>
+                      <span className="block text-[0.7rem] font-bold tracking-[0.15em] uppercase text-pcm-navy/50 mb-2">{col.label}</span>
+                      <ul className="space-y-1">
+                        {col.links.map((link) => (
+                          <li key={link.href}>
+                            <Link href={link.href} className="block px-2 py-1.5 text-sm text-pcm-navy hover:text-pcm-blue hover:bg-secondary rounded-md transition-colors">
+                              {link.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </li>
               <li>
                 <Link href="/contact" className="px-[0.85rem] py-[0.6rem] text-[0.925rem] font-semibold text-pcm-navy rounded-md hover:text-pcm-blue hover:bg-secondary transition-colors">
                   Contact
@@ -89,7 +156,7 @@ export default function Navbar() {
 
           <div className="flex items-center gap-2 sm:gap-3">
             <ThemeToggle />
-            <button aria-label="Search the site" className="w-9 h-9 sm:w-[42px] sm:h-[42px] hidden md:inline-grid place-items-center rounded-md border border-border text-pcm-navy hover:text-pcm-blue hover:border-pcm-blue hover:bg-secondary transition-colors">
+            <button aria-label="Search the site" onClick={() => setSearchOpen(true)} className="w-9 h-9 sm:w-[42px] sm:h-[42px] hidden md:inline-grid place-items-center rounded-md border border-border text-pcm-navy hover:text-pcm-blue hover:border-pcm-blue hover:bg-secondary transition-colors">
               <Search className="w-4 h-4 sm:w-[1.15rem] sm:h-[1.15rem]" />
             </button>
             <Link
@@ -287,10 +354,44 @@ export default function Navbar() {
                     Contact
                   </Link>
                 </li>
+
+                {/* More Section */}
+                <li>
+                  <span className="block px-4 py-2 text-[0.7rem] font-bold tracking-[0.15em] uppercase text-pcm-navy/40 mt-2">More</span>
+                </li>
+                {[
+                  { label: "Facilities", href: "/about/facility" },
+                  { label: "Clubs", href: "/clubs" },
+                  { label: "Alumni", href: "/alumni" },
+                  { label: "Testimonials", href: "/testimonials" },
+                  { label: "PCM Life", href: "/life" },
+                  { label: "Feedback", href: "/feedback" },
+                  { label: "Surveys", href: "/survey" },
+                  { label: "Placements", href: "/placements" },
+                  { label: "Careers", href: "/career" },
+                  { label: "Virtual Tour", href: "/virtual-tour" },
+                  { label: "Admission", href: "/admission" },
+                  { label: "Scholarships", href: "/scholarship" },
+                  { label: "Downloads", href: "/downloads" },
+                  { label: "FAQ", href: "/faq" },
+                  { label: "GPA Converter", href: "/gpa-converter" },
+                  { label: "NP-EN Converter", href: "/np-en-converter" },
+                  { label: "Login", href: "https://www.pcm.edu.np/login" },
+                ].map((item) => (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className="block px-4 py-2.5 text-sm text-pcm-navy/70 hover:text-pcm-blue hover:bg-secondary rounded-md transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
               </ul>
 
               {/* Apply Button */}
-              <div className="mt-6 pt-6 border-t border-border">
+              <div className="mt-6 pt-6 border-t border-border flex flex-col gap-3">
                 <Link
                   href="/admission"
                   className={buttonVariants({ variant: "primary", className: "w-full justify-center" })}
@@ -298,8 +399,55 @@ export default function Navbar() {
                 >
                   Apply Now <ArrowRight className="w-4 h-4" />
                 </Link>
+                <a
+                  href="tel:061544761"
+                  className="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg border border-border text-sm font-semibold text-pcm-navy hover:bg-secondary hover:text-pcm-blue transition-colors"
+                >
+                  <Phone className="w-4 h-4" /> Call Admissions
+                </a>
               </div>
             </nav>
+          </div>
+        </div>
+      )}
+
+      {/* Search Modal */}
+      {searchOpen && (
+        <div className="fixed inset-0 z-[200] flex items-start justify-center pt-[15vh]">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setSearchOpen(false); setSearchQuery(""); }} />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (searchQuery.trim()) {
+                  router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+                  setSearchOpen(false);
+                  setSearchQuery("");
+                }
+              }}
+              className="flex items-center border-b border-border"
+            >
+              <Search className="w-5 h-5 text-pcm-navy/40 ml-4 shrink-0" />
+              <input
+                autoFocus
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search programs, news, pages..."
+                className="flex-1 px-4 py-4 text-base outline-none bg-transparent text-pcm-navy placeholder:text-pcm-navy/40"
+              />
+              <button
+                type="button"
+                onClick={() => { setSearchOpen(false); setSearchQuery(""); }}
+                className="p-4 text-pcm-navy/50 hover:text-pcm-navy transition-colors"
+                aria-label="Close search"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </form>
+            <div className="px-4 py-3 bg-gray-50 text-xs text-pcm-navy/50">
+              Press Enter to search
+            </div>
           </div>
         </div>
       )}

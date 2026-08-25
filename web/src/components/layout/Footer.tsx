@@ -42,7 +42,7 @@ const usefulLinks = [
 
 export default function Footer() {
   return (
-    <footer className="relative bg-pcm-dark text-white/[0.72] overflow-hidden">
+    <footer className="relative bg-pcm-blue-900 text-white/[0.72] overflow-hidden">
       {/* Decorative peaks SVG */}
       <svg 
         className="relative w-full h-[120px]" 
