@@ -183,7 +183,7 @@ export default function ProgramsClient() {
               <h2 className="section-title">Compare the programs</h2>
             </div>
             <div style={{ overflowX: "auto", marginTop: "2rem" }} className="reveal">
-              <table className="ctable" style={{ minWidth: 640 }}>
+              <table className="compare-table ctable" style={{ minWidth: 560 }}>
                 <thead>
                   <tr><th>Program</th><th>Focus</th><th>Duration</th><th>Credits</th><th>Ideal for</th></tr>
                 </thead>
