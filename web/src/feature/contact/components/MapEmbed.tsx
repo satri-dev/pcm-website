@@ -1,101 +1,91 @@
 "use client";
 
-import { useState } from "react";
-
 /**
- * Optimized Google Maps embed.
+ * MapEmbed — Google Maps iframe of the PCM Nadipur campus.
  *
- * - Renders a static placeholder (preview image + "Load map" button) until
- *   the user explicitly clicks, avoiding an eager third-party network request.
- * - Once loaded the real iframe is injected — no layout shift because the
- *   wrapper already has a fixed aspect ratio.
- * - Location coordinates come from props so they can later be driven from
- *   a backend config endpoint (e.g. /api/settings/map-location).
+ * lat/lng props are ready for backend integration:
+ * fetch from /api/settings/map-location and pass them in when ready.
  */
 
-interface Props {
-  /**
-   * Google Maps embed URL.
-   * Defaults to the PCM Nadipur campus.
-   * Later: fetch this from /api/settings and pass it in as a prop.
-   */
-  embedUrl?: string;
-  title?: string;
+const PCM_LAT  = 28.2096;
+const PCM_LNG  = 83.9856;
+const PCM_ZOOM = 16;
+
+const DIRECTIONS_URL =
+  "https://maps.google.com/?q=Pokhara+College+of+Management+Nadipur+Pokhara";
+
+function buildEmbedUrl(lat: number, lng: number, zoom: number) {
+  return (
+    `https://maps.google.com/maps` +
+    `?q=${lat},${lng}&t=&z=${zoom}&ie=UTF8&iwloc=&output=embed`
+  );
 }
 
-const DEFAULT_EMBED =
-  "https://maps.google.com/maps?q=Pokhara%20College%20of%20Management%20Nadipur%20Pokhara&t=&z=15&ie=UTF8&iwloc=&output=embed";
-
-const MapPinIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.8"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
+const PinIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+    strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
     <circle cx="12" cy="10" r="3" />
   </svg>
 );
+const ExternalIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+    strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+    style={{ width: "0.85rem", height: "0.85rem", display: "inline", marginLeft: "0.25rem" }}>
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+    <polyline points="15 3 21 3 21 9" />
+    <line x1="10" y1="14" x2="21" y2="3" />
+  </svg>
+);
+
+interface Props {
+  lat?:   number;
+  lng?:   number;
+  zoom?:  number;
+  title?: string;
+}
 
 export default function MapEmbed({
-  embedUrl = DEFAULT_EMBED,
-  title = "PCM campus location",
+  lat   = PCM_LAT,
+  lng   = PCM_LNG,
+  zoom  = PCM_ZOOM,
+  title = "Pokhara College of Management — Nadipur campus",
 }: Props) {
-  const [loaded, setLoaded] = useState(false);
+  const embedUrl = buildEmbedUrl(lat, lng, zoom);
 
   return (
-    <div className="map-wrap" aria-label="Map showing PCM campus location">
-      {loaded ? (
-        <iframe
-          title={title}
-          src={embedUrl}
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          allowFullScreen
-          className="map-iframe"
-        />
-      ) : (
-        /* Static placeholder — no third-party request until user clicks */
-        <div className="map-placeholder">
-          <div className="map-placeholder__icon">
-            <MapPinIcon />
+    <div className="map-wrap">
+      <iframe
+        title={title}
+        src={embedUrl}
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+        allowFullScreen
+        className="map-iframe"
+      />
+
+      {/* Address bar overlay */}
+      <div className="map-overlay">
+        <div className="map-overlay__left">
+          <span className="map-overlay__icon"><PinIcon /></span>
+          <div>
+            <strong className="map-overlay__name">
+              Pokhara College of Management
+            </strong>
+            <span className="map-overlay__address">
+              Gyan Marg, Nadipur, Pokhara-2, Kaski
+            </span>
           </div>
-          <p className="map-placeholder__label">
-            Gyan Marg, Nadipur, Pokhara-2
-          </p>
-          <button
-            className="map-placeholder__btn"
-            onClick={() => setLoaded(true)}
-            type="button"
-          >
-            Load map
-          </button>
-          <p className="map-placeholder__note">
-            Loads a Google Maps embed. By clicking you agree to Google&apos;s{" "}
-            <a
-              href="https://policies.google.com/privacy"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              privacy policy
-            </a>
-            .
-          </p>
-          {/* Directions link always available without loading the map */}
-          <a
-            className="map-placeholder__directions"
-            href="https://maps.google.com/?q=Pokhara+College+of+Management+Nadipur"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Open in Google Maps ↗
-          </a>
         </div>
-      )}
+        <a
+          href={DIRECTIONS_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="map-overlay__btn map-overlay__btn--directions"
+        >
+          Get directions <ExternalIcon />
+        </a>
+      </div>
     </div>
   );
 }
