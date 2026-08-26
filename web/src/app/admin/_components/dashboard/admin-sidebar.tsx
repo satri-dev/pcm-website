@@ -102,6 +102,11 @@ const navigation: NavSection[] = [
         icon: HelpCircle,
         badgeKey: "faqs",
       },
+      {
+        label: "Content Trash",
+        href: "/admin/content/trash",
+        icon: Trash2,
+      },
     ],
   },
   {
@@ -135,6 +140,11 @@ const navigation: NavSection[] = [
         icon: Download,
         badgeKey: "downloads",
       },
+      {
+        label: "Media Trash",
+        href: "/admin/media/trash",
+        icon: Trash2,
+      },
     ],
   },
   {
@@ -142,13 +152,14 @@ const navigation: NavSection[] = [
     items: [
       { label: "Facilities", href: "/admin/campus/facilities", icon: Building },
       { label: "Campus Map", href: "/admin/campus/campus-map", icon: Map },
+      { label: "Campus Trash", href: "/admin/campus/trash", icon: Trash2 },
     ],
   },
   {
     title: "System",
     items: [
       { label: "Chatbot KB", href: "/admin/system/chat-bot", icon: Bot },
-      { label: "Trash", href: "/admin/system/trash", icon: Trash2 },
+      { label: "System Trash", href: "/admin/system/trash", icon: Trash2 },
       { label: "Backups", href: "/admin/system/backups", icon: HardDrive },
       { label: "SEO & Meta", href: "/admin/system/seo", icon: Search },
       { label: "Users & Roles", href: "/admin/system/users", icon: ShieldCheck },

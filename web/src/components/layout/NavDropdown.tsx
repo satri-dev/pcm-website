@@ -23,7 +23,7 @@ export default function NavDropdown({
         {label}
         <ChevronDown className="w-[0.8rem] h-[0.8rem] transition-transform group-hover:rotate-180" />
       </Link>
-      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-[0.65rem] min-w-[230px] p-[0.55rem] bg-white border border-border rounded-2xl shadow-pcm-md opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all z-50">
+      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-[0.65rem] min-w-57.5 p-[0.55rem] bg-white border border-border rounded-2xl shadow-pcm-md opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all z-50">
         {items.map((item) => (
           <Link
             key={item.href}

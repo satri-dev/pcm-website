@@ -16,6 +16,8 @@ export interface UseScholarshipsReturn {
   createScholarship: (data: Partial<Scholarship>) => Promise<Scholarship>;
   updateScholarship: (id: string, data: Partial<Scholarship>) => Promise<Scholarship>;
   deleteScholarship: (id: string) => Promise<void>;
+  restoreScholarship: (id: string) => Promise<void>;
+  hardDeleteScholarship: (id: string) => Promise<void>;
 }
 
 export function useScholarships({
@@ -110,6 +112,24 @@ export function useScholarships({
     setScholarships((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const restoreScholarship = async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/${id}?action=restore`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Restore failed (HTTP ${res.status})`);
+    }
+    refresh();
+  };
+
+  const hardDeleteScholarship = async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/${id}?action=permanent-delete`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Permanent delete failed (HTTP ${res.status})`);
+    }
+    setScholarships((prev) => prev.filter((item) => item.id !== id));
+  };
+
   return {
     scholarships,
     loading,
@@ -118,5 +138,7 @@ export function useScholarships({
     createScholarship,
     updateScholarship,
     deleteScholarship,
+    restoreScholarship,
+    hardDeleteScholarship,
   };
 }

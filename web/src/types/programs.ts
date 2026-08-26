@@ -32,6 +32,8 @@ export interface Program {
   views: number;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string;
+  deletedBy?: string;
 }
 
 export interface ProgramDocument {
@@ -49,6 +51,8 @@ export interface ProgramDocument {
   views: number;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date;
+  deletedBy?: string;
 }
 
 export interface ProgramCreateInput {

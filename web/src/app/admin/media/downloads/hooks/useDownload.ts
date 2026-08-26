@@ -19,6 +19,8 @@ export interface UseDownloadReturn {
   createDownload: (data: Partial<Download>) => Promise<Download>;
   updateDownload: (id: string, data: Partial<Download>) => Promise<Download>;
   deleteDownload: (id: string) => Promise<void>;
+  restoreDownload: (id: string) => Promise<void>;
+  hardDeleteDownload: (id: string) => Promise<void>;
 }
 
 export function useDownload({
@@ -119,6 +121,24 @@ export function useDownload({
     setDownloads((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const restoreDownload = async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/${id}?action=restore`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Restore failed (HTTP ${res.status})`);
+    }
+    refresh();
+  };
+
+  const hardDeleteDownload = async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/${id}?action=permanent-delete`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Permanent delete failed (HTTP ${res.status})`);
+    }
+    setDownloads((prev) => prev.filter((item) => item.id !== id));
+  };
+
   return {
     downloads,
     loading,
@@ -127,5 +147,7 @@ export function useDownload({
     createDownload,
     updateDownload,
     deleteDownload,
+    restoreDownload,
+    hardDeleteDownload,
   };
 }

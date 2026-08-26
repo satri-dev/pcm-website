@@ -25,7 +25,7 @@ interface EventsTableProps {
   loading?: boolean;
   onView: (event: EventItem) => void;
   onEdit: (event: EventItem) => void;
-  onDelete: (id: string) => void;
+  onDelete: (event: EventItem) => void;
 }
 
 export default function EventsTable({
@@ -245,7 +245,7 @@ export default function EventsTable({
                       <button
                         type="button"
                         className="act-btn danger"
-                        onClick={() => onDelete(item.id)}
+                        onClick={() => onDelete(item)}
                         title="Delete"
                       >
                         <Trash2 size={15} />

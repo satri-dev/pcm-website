@@ -16,6 +16,8 @@ export interface UseChatbotReturn {
   createEntry: (data: Partial<ChatbotEntry>) => Promise<ChatbotEntry>;
   updateEntry: (id: string, data: Partial<ChatbotEntry>) => Promise<ChatbotEntry>;
   deleteEntry: (id: string) => Promise<void>;
+  restoreEntry: (id: string) => Promise<void>;
+  hardDeleteEntry: (id: string) => Promise<void>;
 }
 
 export function useChatbot({
@@ -112,5 +114,23 @@ export function useChatbot({
     setEntries((prev) => prev.filter((item) => item.id !== id));
   };
 
-  return { entries, loading, error, refresh, createEntry, updateEntry, deleteEntry };
+  const restoreEntry = async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/${id}?action=restore`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Restore failed (HTTP ${res.status})`);
+    }
+    refresh();
+  };
+
+  const hardDeleteEntry = async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/${id}?action=permanent-delete`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Permanent delete failed (HTTP ${res.status})`);
+    }
+    setEntries((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  return { entries, loading, error, refresh, createEntry, updateEntry, deleteEntry, restoreEntry, hardDeleteEntry };
 }

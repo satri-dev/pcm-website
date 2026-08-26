@@ -25,7 +25,7 @@ interface ProgramsTableProps {
   loading?: boolean;
   onView: (program: Program) => void;
   onEdit: (program: Program) => void;
-  onDelete: (id: string) => void;
+  onDelete: (program: Program) => void;
 }
 
 export default function ProgramsTable({
@@ -227,7 +227,7 @@ export default function ProgramsTable({
                       <button
                         type="button"
                         className="act-btn danger"
-                        onClick={() => onDelete(item.id)}
+                        onClick={() => onDelete(item)}
                         title="Delete"
                       >
                         <Trash2 size={15} />

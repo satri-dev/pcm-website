@@ -7,6 +7,7 @@ import EventsFormModal from "./events-form-modal";
 import EventsViewModal from "./events-view-modal";
 import { Event } from "@/types/events";
 import { Plus, RefreshCw } from "lucide-react";
+import { SoftDeleteDialog } from "@/components/shared/SoftDeleteDialog";
 
 interface EventsManagerProps {
   initialData?: Event[];
@@ -28,6 +29,9 @@ export default function EventsManager({ initialData }: EventsManagerProps) {
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [viewingEvent, setViewingEvent] = useState<Event | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [deletingItemName, setDeletingItemName] = useState<string>("");
 
   const handleViewEvent = (event: Event) => {
     setViewingEvent(event);
@@ -44,10 +48,18 @@ export default function EventsManager({ initialData }: EventsManagerProps) {
     setIsModalOpen(true);
   };
 
-  const handleDeleteEvent = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this event?")) return;
+  const handleDeleteEvent = (event: Event) => {
+    setDeletingItemId(event.id);
+    setDeletingItemName(event.title || "this item");
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingItemId) return;
     try {
-      await deleteEvent(id);
+      await deleteEvent(deletingItemId);
+      setDeleteDialogOpen(false);
+      setDeletingItemId(null);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Delete failed");
     }
@@ -132,6 +144,15 @@ export default function EventsManager({ initialData }: EventsManagerProps) {
         event={editingEvent}
         onSave={handleSaveEvent}
         saving={saving}
+      />
+
+      <SoftDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        itemName={deletingItemName}
+        itemType="event"
+        loading={false}
       />
     </main>
   );

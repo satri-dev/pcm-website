@@ -7,6 +7,7 @@ import CampusMapFormModal from "./campusmap-form-modal";
 import CampusMapViewModal from "./campusmap-view-modal";
 import { CampusMapItem } from "../types/campus";
 import { Plus } from "lucide-react";
+import { SoftDeleteDialog } from "@/components/shared/SoftDeleteDialog";
 
 interface CampusMapManagerProps {
   initialData?: CampusMapItem[];
@@ -34,6 +35,9 @@ export default function CampusMapManager({
     null,
   );
   const [saving, setSaving] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [deletingItemName, setDeletingItemName] = useState<string>("");
 
   const handleViewLandmark = (landmark: CampusMapItem) => {
     setViewingLandmark(landmark);
@@ -50,10 +54,18 @@ export default function CampusMapManager({
     setIsModalOpen(true);
   };
 
-  const handleDeleteLandmark = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this landmark?")) return;
+  const handleDeleteLandmark = (landmark: CampusMapItem) => {
+    setDeletingItemId(landmark.id);
+    setDeletingItemName(landmark.name || "this item");
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingItemId) return;
     try {
-      await deleteLandmark(id);
+      await deleteLandmark(deletingItemId);
+      setDeleteDialogOpen(false);
+      setDeletingItemId(null);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Delete failed");
     }
@@ -129,6 +141,15 @@ export default function CampusMapManager({
         landmark={editingLandmark}
         onSave={handleSaveLandmark}
         saving={saving}
+      />
+
+      <SoftDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        itemName={deletingItemName}
+        itemType="landmark"
+        loading={false}
       />
     </main>
   );

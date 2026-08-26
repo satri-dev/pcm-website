@@ -16,6 +16,8 @@ export interface UseGalleryReturn {
   createGallery: (data: Partial<Gallery>) => Promise<Gallery>;
   updateGallery: (id: string, data: Partial<Gallery>) => Promise<Gallery>;
   deleteGallery: (id: string) => Promise<void>;
+  restoreGallery: (id: string) => Promise<void>;
+  hardDeleteGallery: (id: string) => Promise<void>;
 }
 
 export function useGallery({
@@ -112,5 +114,23 @@ export function useGallery({
     setGallery((prev) => prev.filter((item) => item.id !== id));
   };
 
-  return { gallery, loading, error, refresh, createGallery, updateGallery, deleteGallery };
+  const restoreGallery = async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/${id}?action=restore`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Restore failed (HTTP ${res.status})`);
+    }
+    refresh();
+  };
+
+  const hardDeleteGallery = async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/${id}?action=permanent-delete`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Permanent delete failed (HTTP ${res.status})`);
+    }
+    setGallery((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  return { gallery, loading, error, refresh, createGallery, updateGallery, deleteGallery, restoreGallery, hardDeleteGallery };
 }

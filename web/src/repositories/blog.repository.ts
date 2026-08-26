@@ -22,6 +22,8 @@ function fromDocument(doc: BlogDocument): Blog {
     fileName: doc.fileName,
     createdAt: (doc.createdAt ?? new Date()).toISOString(),
     updatedAt: (doc.updatedAt ?? new Date()).toISOString(),
+    deletedAt: doc.deletedAt?.toISOString(),
+    deletedBy: doc.deletedBy,
   };
 }
 
@@ -59,13 +61,17 @@ export interface ListBlogsOptions {
   page?: number;
   pageSize?: number;
   sort?: Sort;
+  includeDeleted?: boolean;
 }
 
 export async function listBlogs(options: ListBlogsOptions = {}) {
   const db = await getDb();
-  const { category, status, search, page = 1, pageSize = 8, sort } = options;
+  const { category, status, search, page = 1, pageSize = 8, sort, includeDeleted } = options;
 
   const filter: Filter<BlogDocument> = {};
+  if (!includeDeleted) {
+    filter.deletedAt = { $exists: false };
+  }
   if (category) filter.category = category;
   if (status) filter.status = status;
   if (search) {
@@ -147,13 +153,77 @@ export async function updateBlog(id: string, patch: BlogUpdateInput) {
   return doc ? fromDocument(doc as BlogDocument) : null;
 }
 
-export async function deleteBlog(id: string) {
+export async function deleteBlog(id: string, deletedBy?: string) {
+  if (!ObjectId.isValid(id)) return false;
+  const db = await getDb();
+  const result = await db
+    .collection<BlogDocument>(BLOG_COLLECTION)
+    .updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { deletedAt: new Date(), deletedBy, updatedAt: new Date() } }
+    );
+  return result.modifiedCount > 0;
+}
+
+export async function restoreBlog(id: string) {
+  if (!ObjectId.isValid(id)) return false;
+  const db = await getDb();
+  const result = await db
+    .collection<BlogDocument>(BLOG_COLLECTION)
+    .updateOne(
+      { _id: new ObjectId(id) },
+      { $unset: { deletedAt: "", deletedBy: "" }, $set: { updatedAt: new Date() } }
+    );
+  return result.modifiedCount > 0;
+}
+
+export async function hardDeleteBlog(id: string) {
   if (!ObjectId.isValid(id)) return false;
   const db = await getDb();
   const result = await db
     .collection<BlogDocument>(BLOG_COLLECTION)
     .deleteOne({ _id: new ObjectId(id) });
   return result.deletedCount > 0;
+}
+
+export async function listTrashedBlogs(options: { page?: number; pageSize?: number; search?: string } = {}) {
+  const db = await getDb();
+  const { page = 1, pageSize = 20, search } = options;
+
+  const filter: Filter<BlogDocument> = { deletedAt: { $exists: true } };
+  if (search) {
+    const rx = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+    filter.$or = [{ title: rx }, { author: rx }, { excerpt: rx }];
+  }
+
+  const collection = db.collection<BlogDocument>(BLOG_COLLECTION);
+  const [total, docs] = await Promise.all([
+    collection.countDocuments(filter),
+    collection
+      .find(filter)
+      .sort({ deletedAt: -1 })
+      .skip((page - 1) * pageSize)
+      .limit(pageSize)
+      .toArray(),
+  ]);
+
+  return {
+    items: docs.map(fromDocument),
+    total,
+    page,
+    pageSize,
+    pages: Math.max(1, Math.ceil(total / pageSize)),
+  };
+}
+
+export async function autoPurgeTrashedBlogs() {
+  const db = await getDb();
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const result = await db
+    .collection<BlogDocument>(BLOG_COLLECTION)
+    .deleteMany({ deletedAt: { $exists: true, $lt: thirtyDaysAgo } });
+  return result.deletedCount;
 }
 
 let indexesReady: Promise<void> | null = null;

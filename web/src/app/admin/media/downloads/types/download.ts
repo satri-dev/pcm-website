@@ -42,6 +42,8 @@ export interface Download {
   downloadCount: number;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string;
+  deletedBy?: string;
 }
 
 export interface DownloadDocument {
@@ -58,6 +60,8 @@ export interface DownloadDocument {
   downloadCount: number;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date;
+  deletedBy?: string;
 }
 
 export interface DownloadCreateInput {

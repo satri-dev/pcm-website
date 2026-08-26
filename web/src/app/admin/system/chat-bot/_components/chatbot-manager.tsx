@@ -7,6 +7,7 @@ import ChatbotFormModal from "./chatbot-form-modal";
 import ChatbotViewModal from "./chatbot-view-modal";
 import { ChatbotEntry } from "../types/chatbot";
 import { Plus, RefreshCw, Bot } from "lucide-react";
+import { SoftDeleteDialog } from "@/components/shared/SoftDeleteDialog";
 
 interface ChatbotManagerProps {
   initialData?: ChatbotEntry[];
@@ -28,6 +29,9 @@ export default function ChatbotManager({ initialData }: ChatbotManagerProps) {
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [viewingEntry, setViewingEntry] = useState<ChatbotEntry | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [deletingItemName, setDeletingItemName] = useState<string>("");
 
   const handleViewEntry = (entry: ChatbotEntry) => {
     setViewingEntry(entry);
@@ -44,10 +48,18 @@ export default function ChatbotManager({ initialData }: ChatbotManagerProps) {
     setIsModalOpen(true);
   };
 
-  const handleDeleteEntry = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this chatbot entry?")) return;
+  const handleDeleteEntry = (entry: ChatbotEntry) => {
+    setDeletingItemId(entry.id);
+    setDeletingItemName(entry.question || "this item");
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingItemId) return;
     try {
-      await deleteEntry(id);
+      await deleteEntry(deletingItemId);
+      setDeleteDialogOpen(false);
+      setDeletingItemId(null);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Delete failed");
     }
@@ -129,6 +141,15 @@ export default function ChatbotManager({ initialData }: ChatbotManagerProps) {
         entry={editingEntry}
         onSave={handleSaveEntry}
         saving={saving}
+      />
+
+      <SoftDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        itemName={deletingItemName}
+        itemType="chatbot entry"
+        loading={false}
       />
     </main>
   );
