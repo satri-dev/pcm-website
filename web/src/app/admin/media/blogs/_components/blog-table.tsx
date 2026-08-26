@@ -23,6 +23,7 @@ import { Eye, Pencil, Trash2, Search, FileText } from "lucide-react";
 interface BlogTableProps {
   blogs: Blog[];
   onAdd: () => void;
+  onView: (item: Blog) => void;
   onEdit: (item: Blog) => void;
   onDelete: (id: string) => void;
 }
@@ -30,6 +31,7 @@ interface BlogTableProps {
 export default function BlogTable({
   blogs,
   onAdd,
+  onView,
   onEdit,
   onDelete,
 }: BlogTableProps) {
@@ -159,6 +161,7 @@ export default function BlogTable({
                         <button
                           type="button"
                           className="act-btn"
+                          onClick={() => onView(item)}
                           title="View"
                         >
                           <Eye size={15} />

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useBlog } from "../hooks/useBlog";
 import BlogTable from "./blog-table";
 import BlogFormModal from "./blog-form-modal";
+import BlogViewModal from "./blog-view-modal";
 import { Blog } from "../types/blog";
 import { Plus, RefreshCw } from "lucide-react";
 
@@ -27,10 +28,17 @@ export default function BlogManager({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Blog | null>(null);
   const [saving, setSaving] = useState(false);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+  const [viewingItem, setViewingItem] = useState<Blog | null>(null);
 
   const handleAddBlog = () => {
     setEditingItem(null);
     setIsModalOpen(true);
+  };
+
+  const handleViewBlog = (item: Blog) => {
+    setViewingItem(item);
+    setIsViewOpen(true);
   };
 
   const handleEditBlog = (item: Blog) => {
@@ -106,6 +114,7 @@ export default function BlogManager({
             <BlogTable
               blogs={blogs}
               onAdd={handleAddBlog}
+              onView={handleViewBlog}
               onEdit={handleEditBlog}
               onDelete={handleDeleteBlog}
             />
@@ -119,6 +128,12 @@ export default function BlogManager({
         blog={editingItem}
         onSave={handleSaveBlog}
         saving={saving}
+      />
+
+      <BlogViewModal
+        open={isViewOpen}
+        onOpenChange={setIsViewOpen}
+        blog={viewingItem}
       />
     </main>
   );

@@ -82,9 +82,9 @@ const navigation: NavSection[] = [
   {
     title: "Media",
     items: [
-      { label: "Blogs", href: "/admin/blogs", icon: Pencil, badgeKey: "blogs" },
-      { label: "Gallery", href: "/admin/gallery", icon: ImageIcon, badgeKey: "gallery" },
-      { label: "Downloads", href: "/admin/downloads", icon: Download },
+      { label: "Blogs", href: "/admin/media/blogs", icon: Pencil, badgeKey: "blogs" },
+      { label: "Gallery", href: "/admin/media/gallery", icon: ImageIcon, badgeKey: "gallery" },
+      { label: "Downloads", href: "/admin/media/downloads", icon: Download },
     ],
   },
   {
