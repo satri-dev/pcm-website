@@ -15,19 +15,14 @@ import {
   SCHOLARSHIP_TYPES,
 } from "@/types/scholarships";
 import { Save, X } from "lucide-react";
+import RichTextEditor from "../../../_components/editor/rich-text-editor";
 
 const scholarshipSchema = z.object({
   title: z
     .string()
     .min(3, "Scheme name must be at least 3 characters")
     .max(200),
-  slug: z
-    .string()
-    .min(1, "This field is required")
-    .regex(
-      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-      "Slug must contain only lowercase letters, numbers, and hyphens"
-    ),
+  slug: z.string().min(1, "Slug is required"),
   type: z.enum(["Merit", "Need-based", "University", "Category"]),
   desc: z.string().max(5000),
   active: z.boolean(),
@@ -50,6 +45,8 @@ export default function ScholarshipsFormModal({
   onSave,
   saving = false,
 }: ScholarshipsFormModalProps) {
+  const [descHtml, setDescHtml] = useState("");
+
   const {
     register,
     handleSubmit,
@@ -91,6 +88,7 @@ export default function ScholarshipsFormModal({
         desc: scholarship.desc,
         active: scholarship.active,
       });
+      setDescHtml(scholarship.desc);
     } else {
       reset({
         title: "",
@@ -99,6 +97,7 @@ export default function ScholarshipsFormModal({
         desc: "",
         active: true,
       });
+      setDescHtml("");
     }
   }, [scholarship, reset, open]);
 
@@ -145,7 +144,7 @@ export default function ScholarshipsFormModal({
             <div className="form-grid">
               <div className={fieldValue("title")}>
                 <label htmlFor="scholarship-title">
-                  Scheme Name <span className="req">*</span>
+                  Scheme <span className="req">*</span>
                 </label>
                 <input
                   id="scholarship-title"
@@ -155,20 +154,6 @@ export default function ScholarshipsFormModal({
                 />
                 {errors.title && (
                   <div className="field__err">{errors.title.message}</div>
-                )}
-              </div>
-
-              <div className={fieldValue("slug")}>
-                <label htmlFor="scholarship-slug">
-                  Slug <span className="req">*</span>
-                </label>
-                <input
-                  id="scholarship-slug"
-                  type="text"
-                  {...register("slug")}
-                />
-                {errors.slug && (
-                  <div className="field__err">{errors.slug.message}</div>
                 )}
               </div>
 
@@ -188,11 +173,29 @@ export default function ScholarshipsFormModal({
                 )}
               </div>
 
+              <div
+                className={`field field--full ${
+                  errors.desc ? "is-invalid" : ""
+                }`}
+              >
+                <label>Description</label>
+                <RichTextEditor
+                  content={descHtml}
+                  onChange={(html) => {
+                    setDescHtml(html);
+                    setValue("desc", html);
+                  }}
+                  placeholder="Describe the scholarship scheme..."
+                />
+                {errors.desc && (
+                  <div className="field__err">{errors.desc.message}</div>
+                )}
+              </div>
+
               <div className="field">
-                <label htmlFor="scholarship-active">Active</label>
+                <label>Active</label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
-                    id="scholarship-active"
                     type="checkbox"
                     {...register("active")}
                     className="w-4 h-4"
@@ -201,19 +204,6 @@ export default function ScholarshipsFormModal({
                     {watch("active") ? "Active" : "Inactive"}
                   </span>
                 </label>
-              </div>
-
-              <div className={fieldValue("desc")}>
-                <label htmlFor="scholarship-desc">Description</label>
-                <textarea
-                  id="scholarship-desc"
-                  {...register("desc")}
-                  rows={6}
-                  placeholder="Describe the scholarship scheme..."
-                />
-                {errors.desc && (
-                  <div className="field__err">{errors.desc.message}</div>
-                )}
               </div>
             </div>
           </div>

@@ -147,15 +147,10 @@ export default function ScholarshipsTable({
                       <span className="avatar-sm">
                         {item.title.substring(0, 2).toUpperCase()}
                       </span>
-                      <div className="cell-main">
+                        <div className="cell-main">
                         <div className="font-semibold text-sm">
                           {item.title}
                         </div>
-                        {item.desc && (
-                          <div className="text-xs text-[var(--admin-muted)] line-clamp-1 max-w-[320px]">
-                            {item.desc}
-                          </div>
-                        )}
                       </div>
                     </div>
                   </TableCell>
