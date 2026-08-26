@@ -1,0 +1,127 @@
+/* scripts/create-scholarships-collection.js
+ * Creates/updates the "scholarships" collection with schema validation and indexes.
+ * Run: node scripts/create-scholarships-collection.js
+ * Reads MONGODB_URI / MONGODB_DB from the environment or web/.env
+ */
+const fs = require("fs");
+const path = require("path");
+const { MongoClient } = require("mongodb");
+
+function loadEnv() {
+  const envPath = path.join(__dirname, "..", ".env");
+  if (!fs.existsSync(envPath)) return;
+  for (const line of fs.readFileSync(envPath, "utf8").split(/\r?\n/)) {
+    const m = line.match(/^\s*(.+?)\s*=\s*(.*)\s*$/);
+    if (m && !process.env[m[1]]) {
+      process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
+    }
+  }
+}
+
+function dbNameFromUri(uri) {
+  try {
+    const noQuery = uri.split("?")[0];
+    return noQuery.split("/").slice(3).join("/") || "";
+  } catch {
+    return "";
+  }
+}
+
+const scholarshipsJsonSchema = {
+  bsonType: "object",
+  required: ["title", "slug", "type", "desc", "active", "createdAt", "updatedAt"],
+  properties: {
+    title: {
+      bsonType: "string",
+      minLength: 3,
+      maxLength: 200,
+    },
+    slug: {
+      bsonType: "string",
+      pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+    },
+    type: {
+      enum: ["Merit", "Need-based", "University", "Category"],
+    },
+    desc: {
+      bsonType: "string",
+      maxLength: 5000,
+    },
+    active: {
+      bsonType: "bool",
+    },
+    createdAt: {
+      bsonType: "date",
+    },
+    updatedAt: {
+      bsonType: "date",
+    },
+  },
+};
+
+async function main() {
+  loadEnv();
+  const uri = process.env.MONGODB_URI;
+  const dbName =
+    process.env.MONGODB_DB || dbNameFromUri(uri || "") || "test";
+
+  if (!uri) {
+    console.error("Missing MONGODB_URI");
+    process.exit(1);
+  }
+  console.log("Using database:", dbName);
+
+  const client = new MongoClient(uri);
+  await client.connect();
+
+  try {
+    const db = client.db(dbName);
+    const collections = await db.listCollections({ name: "scholarships" }).toArray();
+
+    if (collections.length === 0) {
+      await db.createCollection("scholarships", {
+        validator: { $jsonSchema: scholarshipsJsonSchema },
+        validationLevel: "strict",
+        validationAction: "error",
+      });
+      console.log('Created "scholarships" collection with schema validation');
+    } else {
+      await db.command({
+        collMod: "scholarships",
+        validator: { $jsonSchema: scholarshipsJsonSchema },
+        validationLevel: "strict",
+        validationAction: "error",
+      });
+      console.log('Updated validator on existing "scholarships" collection');
+    }
+
+    const col = db.collection("scholarships");
+    const wanted = [
+      { key: { slug: 1 }, name: "uniq_slug", unique: true },
+      { key: { type: 1 }, name: "type" },
+      { key: { active: 1, createdAt: -1 }, name: "active_created_desc" },
+      { key: { title: "text", desc: "text" }, name: "text_search" },
+    ];
+
+    const existing = await col.listIndexes().toArray();
+    for (const idx of existing) {
+      if (idx.name === "_id_") continue;
+      const match = wanted.find((w) => w.name === idx.name);
+      if (!match || JSON.stringify(match.key) !== JSON.stringify(idx.key)) {
+        await col.dropIndex(idx.name);
+        console.log("Dropped outdated index:", idx.name);
+      }
+    }
+
+    await col.createIndexes(wanted);
+    console.log("Indexes ensured:");
+    for (const w of wanted) console.log(" ", w.name);
+  } finally {
+    await client.close();
+  }
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
