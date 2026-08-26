@@ -1,60 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useResults } from "../hooks/use-results";
 import ResultsTable from "./results-table";
 import ResultsFormModal from "./results-form-modal";
 import ResultsViewModal from "./results-view-modal";
 import { Result } from "@/types/results";
 import { Plus, RefreshCw } from "lucide-react";
 
-const API_BASE = "/api/admin/content/results";
+interface ResultsManagerProps {
+  initialData?: Result[];
+}
 
-export default function ResultsManager() {
-  const [results, setResults] = useState<Result[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+export default function ResultsManager({ initialData }: ResultsManagerProps) {
+  const {
+    results,
+    loading,
+    error,
+    refresh,
+    createResult,
+    updateResult,
+    deleteResult,
+  } = useResults({ initialData });
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingResult, setEditingResult] = useState<Result | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [viewingResult, setViewingResult] = useState<Result | null>(null);
   const [saving, setSaving] = useState(false);
-  const [reloadKey, setReloadKey] = useState(0);
-
-  const refresh = () => {
-    setLoading(true);
-    setReloadKey((k) => k + 1);
-  };
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch(`${API_BASE}?pageSize=50`)
-      .then(async (res) => {
-        if (!res.ok) {
-          throw new Error(
-            res.status === 401
-              ? "Your session has expired. Please sign in again."
-              : `Failed to load results (HTTP ${res.status})`
-          );
-        }
-        return res.json();
-      })
-      .then((data) => {
-        if (cancelled) return;
-        setResults(data.items ?? []);
-        setError("");
-        setLoading(false);
-      })
-      .catch((err: unknown) => {
-        if (cancelled) return;
-        setError(
-          err instanceof Error ? err.message : "Failed to load results"
-        );
-        setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [reloadKey]);
 
   const handleViewResult = (result: Result) => {
     setViewingResult(result);
@@ -74,12 +47,7 @@ export default function ResultsManager() {
   const handleDeleteResult = async (id: string) => {
     if (!confirm("Are you sure you want to delete this result?")) return;
     try {
-      const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || `Delete failed (HTTP ${res.status})`);
-      }
-      setResults((prev) => prev.filter((r) => r.id !== id));
+      await deleteResult(id);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Delete failed");
     }
@@ -88,43 +56,11 @@ export default function ResultsManager() {
   const handleSaveResult = async (resultData: Result) => {
     setSaving(true);
     try {
-      const isEdit = !!editingResult;
-      const payload = {
-        title: resultData.title,
-        slug: resultData.slug,
-        program: resultData.program,
-        date: resultData.date,
-        status: resultData.status,
-        fileUrl: resultData.fileUrl,
-        fileName: resultData.fileName,
-        views: resultData.views,
-      };
-
-      const res = await fetch(
-        isEdit ? `${API_BASE}/${editingResult!.id}` : API_BASE,
-        {
-          method: isEdit ? "PATCH" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(
-          data.error ||
-            (isEdit
-              ? `Update failed (HTTP ${res.status})`
-              : `Create failed (HTTP ${res.status})`)
-        );
+      if (resultData.id && results.some((r) => r.id === resultData.id)) {
+        await updateResult(resultData.id, resultData);
+      } else {
+        await createResult(resultData);
       }
-
-      const saved: Result = await res.json();
-      setResults((prev) =>
-        isEdit
-          ? prev.map((r) => (r.id === saved.id ? saved : r))
-          : [saved, ...prev]
-      );
       setIsModalOpen(false);
       setEditingResult(null);
     } catch (err) {
