@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import PageHeader from "../../_components/dashboard/page-header";
 import NewsManager from "./_components/news-manager";
+import { listNews } from "@/repositories/news.repository";
 
 export const metadata: Metadata = {
   title: "News Management",
@@ -10,11 +11,13 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function NewsPage() {
+export default async function NewsPage() {
+  const { items } = await listNews({ pageSize: 50 });
+
   return (
     <>
       <PageHeader title="News articles" subtitle="Content · News" />
-      <NewsManager />
+      <NewsManager initialData={items} />
     </>
   );
 }
