@@ -147,12 +147,12 @@ const navigation: NavSection[] = [
   {
     title: "System",
     items: [
-      { label: "Chatbot KB", href: "/admin/chatbot", icon: Bot },
-      { label: "Trash", href: "/admin/trash", icon: Trash2 },
-      { label: "Backups", href: "/admin/backups", icon: HardDrive },
-      { label: "SEO & Meta", href: "/admin/seo", icon: Search },
-      { label: "Users & Roles", href: "/admin/users", icon: ShieldCheck },
-      { label: "Settings", href: "/admin/settings", icon: Settings },
+      { label: "Chatbot KB", href: "/admin/system/chat-bot", icon: Bot },
+      { label: "Trash", href: "/admin/system/trash", icon: Trash2 },
+      { label: "Backups", href: "/admin/system/backups", icon: HardDrive },
+      { label: "SEO & Meta", href: "/admin/system/seo", icon: Search },
+      { label: "Users & Roles", href: "/admin/system/users", icon: ShieldCheck },
+      { label: "Settings", href: "/admin/system/settings", icon: Settings },
     ],
   },
 ];
