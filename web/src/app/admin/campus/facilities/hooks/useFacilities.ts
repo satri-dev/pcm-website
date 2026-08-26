@@ -1,41 +1,39 @@
-/* eslint-disable react-hooks/refs */
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react-hooks/set-state-in-effect */
-import { useEffect, useRef, useState } from "react";
-import { Download } from "../types/download";
+import { useEffect, useState } from "react";
+import { FacilityItem } from "../types/facilities";
 
-const API_BASE = "/api/admin/media/downloads";
+const API_BASE = "/api/admin/campus/facilities";
 
-export interface UseDownloadOptions {
-  initialData?: Download[];
+export interface UseFacilitiesOptions {
+  initialData?: FacilityItem[];
   pageSize?: number;
 }
 
-export interface UseDownloadReturn {
-  downloads: Download[];
+export interface UseFacilitiesReturn {
+  facilities: FacilityItem[];
   loading: boolean;
   error: string;
   refresh: () => void;
-  createDownload: (data: Partial<Download>) => Promise<Download>;
-  updateDownload: (id: string, data: Partial<Download>) => Promise<Download>;
-  deleteDownload: (id: string) => Promise<void>;
+  createFacility: (data: Partial<FacilityItem>) => Promise<FacilityItem>;
+  updateFacility: (
+    id: string,
+    data: Partial<FacilityItem>
+  ) => Promise<FacilityItem>;
+  deleteFacility: (id: string) => Promise<void>;
 }
 
-export function useDownload({
+export function useFacilities({
   initialData,
-  pageSize = 50,
-}: UseDownloadOptions = {}): UseDownloadReturn {
-  const [downloads, setDownloads] = useState<Download[]>(initialData ?? []);
+  pageSize = 100,
+}: UseFacilitiesOptions = {}): UseFacilitiesReturn {
+  const [facilities, setFacilities] = useState<FacilityItem[]>(
+    initialData ?? []
+  );
   const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState("");
-  const reloadKey = useRef(0);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    if (initialData) {
-      setDownloads(initialData);
-      setLoading(false);
-      return;
-    }
+    if (initialData) return;
     let cancelled = false;
     const controller = new AbortController();
     fetch(`${API_BASE}?pageSize=${pageSize}`, { signal: controller.signal })
@@ -44,21 +42,21 @@ export function useDownload({
           throw new Error(
             res.status === 401
               ? "Your session has expired. Please sign in again."
-              : `Failed to load downloads (HTTP ${res.status})`
+              : `Failed to load facilities (HTTP ${res.status})`
           );
         }
         return res.json();
       })
       .then((data) => {
         if (cancelled) return;
-        setDownloads(data.items ?? []);
+        setFacilities(data.items ?? []);
         setError("");
         setLoading(false);
       })
       .catch((err: unknown) => {
         if (cancelled) return;
         setError(
-          err instanceof Error ? err.message : "Failed to load downloads"
+          err instanceof Error ? err.message : "Failed to load facilities"
         );
         setLoading(false);
       });
@@ -66,16 +64,18 @@ export function useDownload({
       cancelled = true;
       controller.abort();
     };
-  }, [reloadKey.current, initialData, pageSize]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reloadKey, pageSize]);
 
   const refresh = () => {
-    reloadKey.current += 1;
+    setReloadKey((k) => k + 1);
     setLoading(true);
+    setError("");
   };
 
-  const createDownload = async (
-    data: Partial<Download>
-  ): Promise<Download> => {
+  const createFacility = async (
+    data: Partial<FacilityItem>
+  ): Promise<FacilityItem> => {
     const res = await fetch(API_BASE, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -85,15 +85,15 @@ export function useDownload({
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || `Create failed (HTTP ${res.status})`);
     }
-    const created = await res.json();
-    setDownloads((prev) => [...prev, created]);
+    const created: FacilityItem = await res.json();
+    setFacilities((prev) => [created, ...prev]);
     return created;
   };
 
-  const updateDownload = async (
+  const updateFacility = async (
     id: string,
-    data: Partial<Download>
-  ): Promise<Download> => {
+    data: Partial<FacilityItem>
+  ): Promise<FacilityItem> => {
     const res = await fetch(`${API_BASE}/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -103,29 +103,29 @@ export function useDownload({
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || `Update failed (HTTP ${res.status})`);
     }
-    const updated = await res.json();
-    setDownloads((prev) =>
+    const updated: FacilityItem = await res.json();
+    setFacilities((prev) =>
       prev.map((item) => (item.id === id ? updated : item))
     );
     return updated;
   };
 
-  const deleteDownload = async (id: string): Promise<void> => {
+  const deleteFacility = async (id: string): Promise<void> => {
     const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || `Delete failed (HTTP ${res.status})`);
     }
-    setDownloads((prev) => prev.filter((item) => item.id !== id));
+    setFacilities((prev) => prev.filter((item) => item.id !== id));
   };
 
   return {
-    downloads,
+    facilities,
     loading,
     error,
     refresh,
-    createDownload,
-    updateDownload,
-    deleteDownload,
+    createFacility,
+    updateFacility,
+    deleteFacility,
   };
 }

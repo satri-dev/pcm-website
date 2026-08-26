@@ -9,13 +9,15 @@ import { listScholarships } from "@/repositories/scholarships.repository";
 import { listFaqs } from "@/repositories/faqs.repository";
 import { listBlogs } from "@/repositories/blog.repository";
 import { listGallery } from "@/repositories/gallery.repository";
+import { listDownloads } from "@/repositories/download.repository";
+
 
 export async function GET() {
   const guard = await requireApiSession(["admin", "editor", "viewer"]);
   if (!guard.ok) return guard.response;
 
   try {
-    const [news, notices, results, events, programs, scholarships, faqs, blogs, gallery] =
+    const [news, notices, results, events, programs, scholarships, faqs, blogs, gallery, downloads] =
       await Promise.all([
         listNews({ pageSize: 1 }).then((r) => r.total),
         listNotices({ pageSize: 1 }).then((r) => r.total),
@@ -26,6 +28,7 @@ export async function GET() {
         listFaqs({ pageSize: 1 }).then((r) => r.total),
         listBlogs({ pageSize: 1 }).then((r) => r.total),
         listGallery({ pageSize: 1 }).then((r) => r.total),
+        listDownloads({pageSize: 1}).then((r)=>r.total)
       ]);
 
     return NextResponse.json({
@@ -38,6 +41,7 @@ export async function GET() {
       faqs,
       blogs,
       gallery,
+      downloads
     });
   } catch {
     return NextResponse.json(
