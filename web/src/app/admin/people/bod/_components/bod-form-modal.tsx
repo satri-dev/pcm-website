@@ -5,19 +5,15 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Bod, BOD_STATUSES } from "@/types/bod";
+import { Bod } from "@/types/bod";
 import { Save, X } from "lucide-react";
 import ImageUpload from "@/components/cloudinary/ImageUpload";
 
 const bodSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters").max(200),
-  designation: z.string().min(2, "Designation is required").max(200),
-  image: z.string().optional(),
-  email: z.string().email("Valid email is required"),
-  phone: z.string().min(1, "Phone is required"),
-  bio: z.string().optional(),
-  sortOrder: z.number().min(0, "Sort order must be 0 or more").optional(),
-  status: z.enum(["active", "inactive"]),
+  name: z.string().min(2, "Full name is required").max(200),
+  role: z.string().min(1, "Role is required").max(200),
+  order: z.number().min(0).optional(),
+  photo: z.string().optional(),
 });
 
 type BodSchema = z.infer<typeof bodSchema>;
@@ -33,34 +29,24 @@ interface BodFormModalProps {
 export default function BodFormModal({ open, onOpenChange, bod, onSave, saving = false }: BodFormModalProps) {
   const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm<BodSchema>({
     resolver: zodResolver(bodSchema),
-    defaultValues: { name: "", designation: "", image: "", email: "", phone: "", bio: "", sortOrder: 0, status: "active" },
+    defaultValues: { name: "", role: "", order: 0, photo: "" },
   });
-
-  const image = watch("image");
+  const photo = watch("photo");
 
   useEffect(() => {
-    if (bod) {
-      reset({ name: bod.name, designation: bod.designation, image: bod.image || "", email: bod.email, phone: bod.phone, bio: bod.bio || "", sortOrder: bod.sortOrder || 0, status: bod.status });
-    } else {
-      reset({ name: "", designation: "", image: "", email: "", phone: "", bio: "", sortOrder: 0, status: "active" });
-    }
+    if (bod) { reset({ name: bod.name, role: bod.role, order: bod.order || 0, photo: bod.photo || "" }); }
+    else { reset({ name: "", role: "", order: 0, photo: "" }); }
   }, [bod, reset, open]);
 
-  const handleImageUpload = (result: { secure_url: string }) => { setValue("image", result.secure_url); };
+  const handlePhotoUpload = (result: { secure_url: string }) => { setValue("photo", result.secure_url); };
 
   const onSubmit = async (data: BodSchema) => {
     const bodData: Bod = {
-      id: bod?.id || `bod-${Date.now()}`,
+      id: bod?.id || `board-${Date.now()}`,
       name: data.name,
-      designation: data.designation,
-      image: data.image || "",
-      email: data.email,
-      phone: data.phone,
-      bio: data.bio || "",
-      sortOrder: data.sortOrder || 0,
-      status: data.status,
-      createdAt: bod?.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      role: data.role,
+      order: data.order || 0,
+      photo: data.photo || "",
     };
     await onSave(bodData);
   };
@@ -74,35 +60,22 @@ export default function BodFormModal({ open, onOpenChange, bod, onSave, saving =
           <DialogTitle className="m-0 text-[1.05rem] font-normal">{bod ? "Edit Board Member" : "Add Board Member"}</DialogTitle>
           <button type="button" className="admin-icon-btn" aria-label="Close" onClick={() => onOpenChange(false)}><X size={18} /></button>
         </div>
-
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="modal__body">
             <div className="form-grid">
-              <div className="form-section"><b>Details</b></div>
-
-              <div className={fv("name")}><label>Name <span className="req">*</span></label><input type="text" {...register("name")} />{errors.name && <div className="field__err">{errors.name.message}</div>}</div>
-              <div className={fv("designation")}><label>Designation <span className="req">*</span></label><input type="text" {...register("designation")} placeholder="e.g. Chairman, Director" />{errors.designation && <div className="field__err">{errors.designation.message}</div>}</div>
-              <div className={fv("status")}><label>Status <span className="req">*</span></label><select {...register("status")}><option value="">— Select —</option>{BOD_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}</select>{errors.status && <div className="field__err">{errors.status.message}</div>}</div>
-              <div className={fv("sortOrder")}><label>Sort Order</label><input type="number" {...register("sortOrder", { valueAsNumber: true })} min={0} /></div>
-
+              <div className={fv("name")}><label>Full name <span className="req">*</span></label><input type="text" {...register("name")} />{errors.name && <div className="field__err">{errors.name.message}</div>}</div>
+              <div className={fv("role")}><label>Role <span className="req">*</span></label><input type="text" {...register("role")} placeholder="e.g. Chairperson, Member" />{errors.role && <div className="field__err">{errors.role.message}</div>}</div>
+              <div className={fv("order")}><label>Order</label><input type="number" {...register("order", { valueAsNumber: true })} min={0} /></div>
               <div className={`field field--full`}>
                 <label>Photo</label>
                 <div className="file-field">
-                  <ImageUpload onUpload={handleImageUpload} />
-                  <input type="text" {...register("image")} placeholder="…or paste a Cloudinary URL" className="mt-2" />
+                  <ImageUpload onUpload={handlePhotoUpload} />
+                  <input type="text" {...register("photo")} placeholder="…or paste a URL" className="mt-2" />
                 </div>
-                {image && <div className="img-prev"><img src={image} alt="" /></div>}
+                {photo && <div className="img-prev"><img src={photo} alt="" style={{ height: 64, width: "auto", maxWidth: "100%", borderRadius: 8, border: "1px solid #e2e7f0" }} /></div>}
               </div>
-
-              <div className="form-section"><b>Contact</b></div>
-
-              <div className={fv("email")}><label>Email <span className="req">*</span></label><input type="email" {...register("email")} />{errors.email && <div className="field__err">{errors.email.message}</div>}</div>
-              <div className={fv("phone")}><label>Phone <span className="req">*</span></label><input type="text" {...register("phone")} />{errors.phone && <div className="field__err">{errors.phone.message}</div>}</div>
-
-              <div className="field field--full"><label>Bio</label><textarea {...register("bio")} rows={3} placeholder="Short biography..." /></div>
             </div>
           </div>
-
           <div className="modal__foot">
             <button type="button" className="admin-btn" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</button>
             <button type="submit" className="admin-btn admin-btn--primary" disabled={saving}><Save size={16} />{saving ? "Saving…" : "Save"}</button>

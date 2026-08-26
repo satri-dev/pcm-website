@@ -1,6 +1,6 @@
 "use client";
 
-import { Faculty, FACULTY_DEPARTMENTS, FACULTY_STATUSES } from "@/types/faculty";
+import { Faculty, FACULTY_GROUPS } from "@/types/faculty";
 import { useFaculty } from "../hooks/use-faculty";
 import FacultyTable from "./faculty-table";
 import FacultyFormModal from "./faculty-form-modal";
@@ -48,8 +48,8 @@ export default function FacultyManager({ initialData }: FacultyManagerProps) {
     <main className="p-6">
       <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
         <div>
-          <h2 className="m-0 text-2xl font-bold text-[var(--admin-ink)]">Faculty</h2>
-          <p className="mt-1 mb-0 text-[0.9rem] text-[var(--admin-muted)]">Manage faculty members, designations, and departments.</p>
+          <h2 className="m-0 text-2xl font-bold text-[var(--admin-ink)]">Faculty & Staff</h2>
+          <p className="mt-1 mb-0 text-[0.9rem] text-[var(--admin-muted)]">Manage, search and edit faculty & staff.</p>
         </div>
         <div className="flex items-center gap-2">
           <button type="button" className="admin-btn" onClick={refresh} disabled={loading}>

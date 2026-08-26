@@ -1,67 +1,39 @@
-export type ClubCategory = "Academic" | "Sports" | "Cultural" | "Technical" | "Social";
-export type ClubStatus = "active" | "inactive";
-
-export const CLUB_CATEGORIES: readonly ClubCategory[] = [
-  "Academic",
-  "Sports",
-  "Cultural",
-  "Technical",
-  "Social",
-];
-
-export const CLUB_STATUSES: readonly ClubStatus[] = ["active", "inactive"];
-
 export const CLUBS_COLLECTION = "clubs";
+
+export interface ClubMember {
+  photo: string;
+  name: string;
+  position: string;
+  program: string;
+}
 
 export interface Club {
   id: string;
   name: string;
-  category: ClubCategory;
+  icon: string;
+  tagline: string;
   image: string;
-  description: string;
-  president: string;
-  vicePresident: string;
-  facultyCoordinator: string;
-  email: string;
-  phone: string;
-  memberCount: number;
-  status: ClubStatus;
-  featured: boolean;
-  createdAt: string;
-  updatedAt: string;
+  desc: string;
+  members: ClubMember[];
 }
 
 export interface ClubDocument {
   _id?: import("mongodb").ObjectId;
   name: string;
-  category: ClubCategory;
+  icon: string;
+  tagline: string;
   image: string;
-  description: string;
-  president: string;
-  vicePresident: string;
-  facultyCoordinator: string;
-  email: string;
-  phone: string;
-  memberCount: number;
-  status: ClubStatus;
-  featured: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  desc: string;
+  members: ClubMember[];
 }
 
 export interface ClubCreateInput {
   name: string;
-  category: ClubCategory;
-  image: string;
-  description: string;
-  president: string;
-  vicePresident: string;
-  facultyCoordinator: string;
-  email: string;
-  phone: string;
-  memberCount: number;
-  status: ClubStatus;
-  featured?: boolean;
+  icon?: string;
+  tagline?: string;
+  image?: string;
+  desc?: string;
+  members?: ClubMember[];
 }
 
 export type ClubUpdateInput = Partial<ClubCreateInput>;

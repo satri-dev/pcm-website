@@ -68,7 +68,7 @@ const programLinks = [
 
 const newsLinks = [
   { label: "News", href: "/news" },
-  { label: "Notices", href: "/notice" },
+  { label: "Notices", href: "/notices" },
   { label: "Results", href: "/results" },
   { label: "Events", href: "/events" },
 ];
