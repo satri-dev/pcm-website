@@ -72,11 +72,11 @@ const navigation: NavSection[] = [
   {
     title: "People",
     items: [
-      { label: "Faculty & Staff", href: "/admin/team", icon: Users },
-      { label: "Board of Directors", href: "/admin/board", icon: Shield },
-      { label: "Leadership Messages", href: "/admin/leadership", icon: MessageCircle },
-      { label: "Alumni", href: "/admin/alumni", icon: UserCheck },
-      { label: "Clubs", href: "/admin/clubs", icon: Circle },
+      { label: "Faculty & Staff", href: "/admin/people/faculty", icon: Users },
+      { label: "Board of Directors", href: "/admin/people/bod", icon: Shield },
+      { label: "Leadership Messages", href: "/admin/people/leadership-message", icon: MessageCircle },
+      { label: "Alumni", href: "/admin/people/alumni", icon: UserCheck },
+      { label: "Clubs", href: "/admin/people/clubs", icon: Circle },
     ],
   },
   {
