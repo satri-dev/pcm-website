@@ -59,7 +59,7 @@ const navigation: NavSection[] = [
       { label: "Results", href: "/admin/content/results", icon: BarChart3, badge: "8" },
       { label: "Events & Workshops", href: "/admin/content/events", icon: Calendar, badge: "5" },
       { label: "Programs", href: "/admin/content/programs", icon: GraduationCap, badge: "3" },
-      { label: "Scholarships", href: "/admin/scholarships", icon: Award, badge: "4" },
+      { label: "Scholarships", href: "/admin/content/scholarships", icon: Award, badge: "4" },
       { label: "FAQs", href: "/admin/faqs", icon: HelpCircle, badge: "7" },
     ],
   },
