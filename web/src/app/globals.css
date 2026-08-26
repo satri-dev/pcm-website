@@ -130,6 +130,13 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
+  --color-pcm-navy: #e5e5e5;
+  --color-pcm-blue: #93b3f5;
+  --color-pcm-blue-400: #7a9de8;
+  --color-pcm-blue-500: #6d8af0;
+  --color-pcm-blue-700: #b0c4f5;
+  --color-pcm-blue-800: #93b3f5;
+  --color-pcm-blue-900: #7a9de8;
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
@@ -241,13 +248,6 @@
 }
 
 /* Dark Mode Overrides for PCM Colors */
-.dark {
-  /* Keep PCM brand colors vibrant in dark mode */
-  --color-pcm-navy: #2e54b8;
-  --color-pcm-blue: #4167c9;
-  --color-pcm-dark: #1a1a1a;
-}
-
 .dark body {
   background-color: #1a1a1a;
   color: #e5e5e5;
@@ -258,22 +258,186 @@
   border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
-.dark .bg-white {
-  background-color: #262626 !important;
-}
+/* Background overrides */
+.dark .bg-white { background-color: #262626 !important; }
+.dark .bg-gray-50 { background-color: #1f1f1f !important; }
+.dark .bg-gray-100 { background-color: #2a2a2a !important; }
+.dark .bg-gray-200 { background-color: #333333 !important; }
+.dark .bg-gray-300 { background-color: #404040 !important; }
+.dark .bg-secondary { background-color: rgba(255, 255, 255, 0.05) !important; }
 
-.dark .text-pcm-navy {
-  color: #e5e5e5 !important;
-}
+/* Text color overrides */
+.dark .text-pcm-navy { color: #e5e5e5 !important; }
+.dark .text-gray-900 { color: #e5e5e5 !important; }
+.dark .text-gray-800 { color: #e0e0e0 !important; }
+.dark .text-gray-700 { color: #d4d4d4 !important; }
+.dark .text-gray-600 { color: #a3a3a3 !important; }
+.dark .text-gray-500 { color: #9ca3af !important; }
+.dark .text-gray-400 { color: #9ca3af !important; }
+.dark .text-muted-foreground { color: #a3a3a3 !important; }
 
-.dark .bg-secondary {
-  background-color: rgba(255, 255, 255, 0.05) !important;
-}
+/* Border overrides */
+.dark .border-border { border-color: rgba(255, 255, 255, 0.1) !important; }
+.dark .border-gray-100 { border-color: rgba(255, 255, 255, 0.08) !important; }
+.dark .border-gray-200 { border-color: rgba(255, 255, 255, 0.1) !important; }
+.dark .border-gray-300 { border-color: rgba(255, 255, 255, 0.15) !important; }
 
-.dark .border-border {
-  border-color: rgba(255, 255, 255, 0.1) !important;
-}
+/* ============================================================
+   Scoped page dark mode overrides
+   (Client-imported CSS files don't reliably cascade .dark
+   rules in Tailwind v4, so we define them here in globals.)
+   ============================================================ */
 
-.dark .text-muted-foreground {
-  color: #a3a3a3 !important;
+/* --- pcm-page (news, notices, results, events) --- */
+.dark .pcm-page {
+  --navy:        #e4eaf7;
+  --brand-400:   #7a9de8;
+  --brand-600:   #6d8af0;
+  --brand-700:   #7d98f5;
+  --brand-900:   #a4b6f7;
+  --gold-400:    #63c95a;
+  --gold-500:    #57bd4e;
+  --body:        #b8c2d6;
+  --muted:       #8b95ab;
+  --line:        #273149;
+  --line-2:      #2f3a56;
+  --surface:     #0e1424;
+  --surface-soft:#141b2e;
+  --surface-tint:#1a2340;
+  --shadow-sm:  0 1px 3px rgba(0,0,0,.45);
+  --shadow-md:  0 10px 30px rgba(0,0,0,.50);
+  --shadow-lg:  0 24px 60px rgba(0,0,0,.60);
+  background: var(--surface);
+  color: var(--body);
 }
+.dark .pcm-page .page-hero { background: #0a1020 !important; }
+.dark .pcm-page .section { background: transparent !important; }
+.dark .pcm-page .cta-band { background: linear-gradient(135deg, #0a1020, #0e1930) !important; }
+
+/* --- pcm-about --- */
+.dark .pcm-about {
+  --pcm-blue:    #7a9de8;
+  --pcm-blue-400:#7a9de8;
+  --pcm-blue-500:#6d8af0;
+  --pcm-blue-700:#b0c4f5;
+  --pcm-blue-900:#93b3f5;
+  --pcm-green:   #63c95a;
+  --pcm-green-600:#57bd4e;
+  --navy:        #e4eaf7;
+  --navy-800:    #a4b6f7;
+  --brand-300:   #a4b6f7;
+  --brand-400:   #7a9de8;
+  --brand-600:   #6d8af0;
+  --brand-700:   #7d98f5;
+  --brand-900:   #a4b6f7;
+  --gold-400:    #63c95a;
+  --gold-500:    #57bd4e;
+  --gold-600:    #4aad42;
+  --body-c:      #b8c2d6;
+  --muted:       #8b95ab;
+  --line:        #273149;
+  --line-2:      #2f3a56;
+  --surface:     #0e1424;
+  --surface-soft:#141b2e;
+  --surface-tint:#1a2340;
+  --dark:        #0e1424;
+  --dark-2:      #141b2e;
+  --shadow-sm:  0 1px 3px rgba(0,0,0,.45);
+  --shadow-md:  0 10px 30px rgba(0,0,0,.50);
+  --shadow-lg:  0 24px 60px rgba(0,0,0,.60);
+  background: var(--surface);
+  color: var(--body-c);
+}
+.dark .pcm-about .page-hero { background: #0a1020 !important; }
+.dark .pcm-about .section { background: transparent !important; }
+.dark .pcm-about .tone-sky { background: var(--surface-tint) !important; border-color: var(--line) !important; }
+.dark .pcm-about .cta-band { background: linear-gradient(135deg, #0a1020, #0e1930) !important; }
+.dark .pcm-about .feature { background: var(--surface-soft); border-color: var(--line); }
+.dark .pcm-about .card, .dark .pcm-about .leader-card { background: var(--surface-soft); border-color: var(--line); }
+.dark .pcm-about .achv__card { background: var(--surface-soft); border-color: var(--line); }
+.dark .pcm-about .est-badge { background: var(--surface-soft); border-color: var(--line); color: var(--body-c); }
+.dark .pcm-about .icon-list li { border-color: var(--line); }
+.dark .pcm-about .stat { background: var(--surface-soft); border-color: var(--line); }
+
+/* --- pcm-gallery --- */
+.dark .pcm-gallery {
+  --navy:        #e4eaf7;
+  --brand-600:   #6d8af0;
+  --brand-700:   #7d98f5;
+  --brand-900:   #a4b6f7;
+  --gold-400:    #63c95a;
+  --gold-500:    #57bd4e;
+  --body-c:      #b8c2d6;
+  --muted-c:     #8b95ab;
+  --line:        #273149;
+  --line-2:      #2f3a56;
+  --surface:     #0e1424;
+  --surface-soft:#141b2e;
+  --surface-tint:#1a2340;
+  --shadow-sm:  0 1px 3px rgba(0,0,0,.45);
+  --shadow-md:  0 10px 30px rgba(0,0,0,.50);
+  --shadow-lg:  0 24px 60px rgba(0,0,0,.60);
+  background: var(--surface);
+  color: var(--body-c);
+}
+.dark .pcm-gallery .page-hero { background: #0a1020 !important; }
+.dark .pcm-gallery .section { background: transparent !important; }
+.dark .pcm-gallery .gal-tab-btn.active { background: var(--brand-600) !important; color: #fff !important; }
+.dark .pcm-gallery .gal-filter-btn { background: var(--surface-soft) !important; }
+.dark .pcm-gallery .gal-filter-btn.active { background: var(--brand-600) !important; color: #fff !important; }
+.dark .pcm-gallery .gal-card { background: var(--surface-soft); border-color: var(--line); }
+.dark .pcm-gallery .gal-back-btn { background: var(--surface-soft); border-color: var(--line); }
+.dark .pcm-gallery .gal-lightbox__media { background: #050d1a !important; }
+.dark .pcm-gallery .gal-lightbox__close { background: rgba(30,45,70,.9) !important; color: #e4eaf7 !important; }
+.dark .pcm-gallery .cta-band { background: linear-gradient(135deg, #0a1020, #0e1930) !important; }
+
+/* --- pcm-programs --- */
+.dark .pcm-programs {
+  --navy:        #e4eaf7;
+  --brand-400:   #7a9de8;
+  --brand-600:   #6d8af0;
+  --brand-700:   #7d98f5;
+  --brand-900:   #a4b6f7;
+  --gold-400:    #63c95a;
+  --gold-500:    #57bd4e;
+  --body-c:      #b8c2d6;
+  --muted-c:     #8b95ab;
+  --line:        #273149;
+  --line-2:      #2f3a56;
+  --surface:     #0e1424;
+  --surface-soft:#141b2e;
+  --surface-tint:#1a2340;
+  --shadow-sm:  0 1px 3px rgba(0,0,0,.45);
+  --shadow-md:  0 10px 30px rgba(0,0,0,.50);
+  --shadow-lg:  0 24px 60px rgba(0,0,0,.60);
+  background: var(--surface);
+  color: var(--body-c);
+}
+.dark .pcm-programs .page-hero { background: #0a1020 !important; }
+.dark .pcm-programs .section { background: transparent !important; }
+.dark .pcm-programs .cta-band { background: linear-gradient(135deg, #0a1020, #0e1930) !important; }
+
+/* --- pcm-contact --- */
+.dark .pcm-contact {
+  --navy:        #e4eaf7;
+  --brand-600:   #6d8af0;
+  --brand-700:   #7d98f5;
+  --brand-900:   #a4b6f7;
+  --gold-400:    #63c95a;
+  --gold-500:    #57bd4e;
+  --body-c:      #b8c2d6;
+  --muted:       #8b95ab;
+  --line:        #273149;
+  --line-2:      #2f3a56;
+  --surface:     #0e1424;
+  --surface-soft:#141b2e;
+  --surface-tint:#1a2340;
+  --shadow-sm:  0 1px 3px rgba(0,0,0,.45);
+  --shadow-md:  0 10px 30px rgba(0,0,0,.50);
+  --shadow-lg:  0 24px 60px rgba(0,0,0,.60);
+  background: var(--surface);
+  color: var(--body-c);
+}
+.dark .pcm-contact .page-hero { background: #0a1020 !important; }
+.dark .pcm-contact .section { background: transparent !important; }
+.dark .pcm-contact .cta-band { background: linear-gradient(135deg, #0a1020, #0e1930) !important; }

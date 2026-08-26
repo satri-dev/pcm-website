@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Search, ArrowRight, Menu, X, ChevronDown, Phone } from "lucide-react";
@@ -84,6 +84,7 @@ export default function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
+  const pathname = usePathname();
 
   const toggleDropdown = (label: string) => {
     setOpenDropdown(openDropdown === label ? null : label);
@@ -112,7 +113,7 @@ export default function Navbar() {
           <nav aria-label="Primary" className="hidden lg:block">
             <ul className="flex items-center gap-[0.35rem]">
               <li>
-                <Link href="/" className="px-[0.85rem] py-[0.6rem] text-[0.925rem] font-semibold text-pcm-blue bg-secondary rounded-md">
+                <Link href="/" className={`px-[0.85rem] py-[0.6rem] text-[0.925rem] font-semibold rounded-md transition-colors ${pathname === "/" ? "text-pcm-blue bg-secondary" : "text-pcm-navy hover:text-pcm-blue hover:bg-secondary"}`}>
                   Home
                 </Link>
               </li>
