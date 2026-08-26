@@ -60,13 +60,48 @@ const navigation: NavSection[] = [
   {
     title: "Content",
     items: [
-      { label: "News", href: "/admin/content/news", icon: Newspaper, badgeKey: "news" },
-      { label: "Notices", href: "/admin/content/notices", icon: AlertCircle, badgeKey: "notices" },
-      { label: "Results", href: "/admin/content/results", icon: BarChart3, badgeKey: "results" },
-      { label: "Events & Workshops", href: "/admin/content/events", icon: Calendar, badgeKey: "events" },
-      { label: "Programs", href: "/admin/content/programs", icon: GraduationCap, badgeKey: "programs" },
-      { label: "Scholarships", href: "/admin/content/scholarships", icon: Award, badgeKey: "scholarships" },
-      { label: "FAQs", href: "/admin/content/faqs", icon: HelpCircle, badgeKey: "faqs" },
+      {
+        label: "News",
+        href: "/admin/content/news",
+        icon: Newspaper,
+        badgeKey: "news",
+      },
+      {
+        label: "Notices",
+        href: "/admin/content/notices",
+        icon: AlertCircle,
+        badgeKey: "notices",
+      },
+      {
+        label: "Results",
+        href: "/admin/content/results",
+        icon: BarChart3,
+        badgeKey: "results",
+      },
+      {
+        label: "Events & Workshops",
+        href: "/admin/content/events",
+        icon: Calendar,
+        badgeKey: "events",
+      },
+      {
+        label: "Programs",
+        href: "/admin/content/programs",
+        icon: GraduationCap,
+        badgeKey: "programs",
+      },
+      {
+        label: "Scholarships",
+        href: "/admin/content/scholarships",
+        icon: Award,
+        badgeKey: "scholarships",
+      },
+      {
+        label: "FAQs",
+        href: "/admin/content/faqs",
+        icon: HelpCircle,
+        badgeKey: "faqs",
+      },
     ],
   },
   {
@@ -74,7 +109,11 @@ const navigation: NavSection[] = [
     items: [
       { label: "Faculty & Staff", href: "/admin/team", icon: Users },
       { label: "Board of Directors", href: "/admin/board", icon: Shield },
-      { label: "Leadership Messages", href: "/admin/leadership", icon: MessageCircle },
+      {
+        label: "Leadership Messages",
+        href: "/admin/leadership",
+        icon: MessageCircle,
+      },
       { label: "Alumni", href: "/admin/alumni", icon: UserCheck },
       { label: "Clubs", href: "/admin/clubs", icon: Circle },
     ],
@@ -82,16 +121,31 @@ const navigation: NavSection[] = [
   {
     title: "Media",
     items: [
-      { label: "Blogs", href: "/admin/media/blogs", icon: Pencil, badgeKey: "blogs" },
-      { label: "Gallery", href: "/admin/media/gallery", icon: ImageIcon, badgeKey: "gallery" },
-      { label: "Downloads", href: "/admin/media/downloads", icon: Download },
+      {
+        label: "Blogs",
+        href: "/admin/media/blogs",
+        icon: Pencil,
+        badgeKey: "blogs",
+      },
+      {
+        label: "Gallery",
+        href: "/admin/media/gallery",
+        icon: ImageIcon,
+        badgeKey: "gallery",
+      },
+      {
+        label: "Downloads",
+        href: "/admin/media/downloads",
+        icon: Download,
+        badgeKey: "downloads",
+      },
     ],
   },
   {
     title: "Campus",
     items: [
-      { label: "Facilities", href: "/admin/facilities", icon: Building },
-      { label: "Campus Map", href: "/admin/campus-map", icon: Map },
+      { label: "Facilities", href: "/admin/campus/facilities", icon: Building },
+      { label: "Campus Map", href: "/admin/campus/campus-map", icon: Map },
     ],
   },
   {
@@ -160,7 +214,11 @@ export default function AdminSidebar() {
       <nav className="admin-sidebar__nav">
         {navigation.map((section, sIdx) => (
           <div key={section.title}>
-            {sIdx > 0 && <div className="admin-nav-sec" style={{ marginTop: "0.5rem" }}>{section.title}</div>}
+            {sIdx > 0 && (
+              <div className="admin-nav-sec" style={{ marginTop: "0.5rem" }}>
+                {section.title}
+              </div>
+            )}
             {sIdx === 0 && <div className="admin-nav-sec">{section.title}</div>}
             {section.items.map((item) => {
               const Icon = item.icon;
