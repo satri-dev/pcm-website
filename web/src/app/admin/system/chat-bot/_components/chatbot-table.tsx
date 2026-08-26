@@ -25,7 +25,7 @@ interface ChatbotTableProps {
   loading?: boolean;
   onView: (entry: ChatbotEntry) => void;
   onEdit: (entry: ChatbotEntry) => void;
-  onDelete: (id: string) => void;
+  onDelete: (entry: ChatbotEntry) => void;
 }
 
 export default function ChatbotTable({
@@ -255,7 +255,7 @@ export default function ChatbotTable({
                       <button
                         type="button"
                         className="act-btn danger"
-                        onClick={() => onDelete(item.id)}
+                        onClick={() => onDelete(item)}
                         title="Delete"
                       >
                         <Trash2 size={15} />

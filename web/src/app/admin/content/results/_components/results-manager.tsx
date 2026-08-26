@@ -7,6 +7,7 @@ import ResultsFormModal from "./results-form-modal";
 import ResultsViewModal from "./results-view-modal";
 import { Result } from "@/types/results";
 import { Plus, RefreshCw } from "lucide-react";
+import { SoftDeleteDialog } from "@/components/shared/SoftDeleteDialog";
 
 interface ResultsManagerProps {
   initialData?: Result[];
@@ -28,6 +29,9 @@ export default function ResultsManager({ initialData }: ResultsManagerProps) {
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [viewingResult, setViewingResult] = useState<Result | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [deletingItemName, setDeletingItemName] = useState<string>("");
 
   const handleViewResult = (result: Result) => {
     setViewingResult(result);
@@ -44,10 +48,18 @@ export default function ResultsManager({ initialData }: ResultsManagerProps) {
     setIsModalOpen(true);
   };
 
-  const handleDeleteResult = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this result?")) return;
+  const handleDeleteResult = (result: Result) => {
+    setDeletingItemId(result.id);
+    setDeletingItemName(result.title || "this item");
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingItemId) return;
     try {
-      await deleteResult(id);
+      await deleteResult(deletingItemId);
+      setDeleteDialogOpen(false);
+      setDeletingItemId(null);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Delete failed");
     }
@@ -130,6 +142,15 @@ export default function ResultsManager({ initialData }: ResultsManagerProps) {
         result={editingResult}
         onSave={handleSaveResult}
         saving={saving}
+      />
+
+      <SoftDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        itemName={deletingItemName}
+        itemType="result"
+        loading={false}
       />
     </main>
   );

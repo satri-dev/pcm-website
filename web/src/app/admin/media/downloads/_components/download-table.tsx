@@ -29,7 +29,7 @@ interface DownloadTableProps {
   onAdd: () => void;
   onView: (item: Download) => void;
   onEdit: (item: Download) => void;
-  onDelete: (id: string) => void;
+  onDelete: (download: Download) => void;
 }
 
 export default function DownloadTable({
@@ -242,7 +242,7 @@ export default function DownloadTable({
                         <button
                           type="button"
                           className="act-btn danger"
-                          onClick={() => onDelete(item.id)}
+                           onClick={() => onDelete(item)}
                           title="Delete"
                         >
                           <Trash2 size={15} />

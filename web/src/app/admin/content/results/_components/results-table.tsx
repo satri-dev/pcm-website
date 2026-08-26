@@ -25,7 +25,7 @@ interface ResultsTableProps {
   loading?: boolean;
   onView: (result: Result) => void;
   onEdit: (result: Result) => void;
-  onDelete: (id: string) => void;
+  onDelete: (result: Result) => void;
 }
 
 export default function ResultsTable({
@@ -241,7 +241,7 @@ export default function ResultsTable({
                       <button
                         type="button"
                         className="act-btn danger"
-                        onClick={() => onDelete(item.id)}
+                        onClick={() => onDelete(item)}
                         title="Delete"
                       >
                         <Trash2 size={15} />

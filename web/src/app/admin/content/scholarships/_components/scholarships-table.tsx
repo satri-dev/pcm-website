@@ -25,7 +25,7 @@ interface ScholarshipsTableProps {
   loading?: boolean;
   onView: (scholarship: Scholarship) => void;
   onEdit: (scholarship: Scholarship) => void;
-  onDelete: (id: string) => void;
+  onDelete: (scholarship: Scholarship) => void;
 }
 
 export default function ScholarshipsTable({
@@ -187,7 +187,7 @@ export default function ScholarshipsTable({
                       <button
                         type="button"
                         className="act-btn danger"
-                        onClick={() => onDelete(item.id)}
+                        onClick={() => onDelete(item)}
                         title="Delete"
                       >
                         <Trash2 size={15} />

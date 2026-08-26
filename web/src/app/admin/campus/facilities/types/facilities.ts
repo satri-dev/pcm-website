@@ -37,6 +37,8 @@ export interface FacilityItem {
   order: number; // display sort order
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string;
+  deletedBy?: string;
 }
 
 // Database document shape ("facilities" collection)
@@ -51,6 +53,8 @@ export interface FacilityDocument {
   order: number;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date;
+  deletedBy?: string;
 }
 
 // Payload accepted by the repository when creating/updating

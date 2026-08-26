@@ -7,6 +7,7 @@ import NewsFormModal from "./news-form-modal";
 import NewsViewModal from "./news-view-modal";
 import { News } from "@/types/news";
 import { Plus, RefreshCw } from "lucide-react";
+import { SoftDeleteDialog } from "@/components/shared/SoftDeleteDialog";
 
 interface NewsManagerProps {
   initialData?: News[];
@@ -28,6 +29,9 @@ export default function NewsManager({ initialData }: NewsManagerProps) {
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [viewingNews, setViewingNews] = useState<News | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [deletingItemName, setDeletingItemName] = useState<string>("");
 
   const handleViewNews = (newsItem: News) => {
     setViewingNews(newsItem);
@@ -44,10 +48,18 @@ export default function NewsManager({ initialData }: NewsManagerProps) {
     setIsModalOpen(true);
   };
 
-  const handleDeleteNews = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this news article?")) return;
+  const handleDeleteNews = (newsItem: News) => {
+    setDeletingItemId(newsItem.id);
+    setDeletingItemName(newsItem.title || "this item");
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingItemId) return;
     try {
-      await deleteNews(id);
+      await deleteNews(deletingItemId);
+      setDeleteDialogOpen(false);
+      setDeletingItemId(null);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Delete failed");
     }
@@ -132,6 +144,15 @@ export default function NewsManager({ initialData }: NewsManagerProps) {
         news={editingNews}
         onSave={handleSaveNews}
         saving={saving}
+      />
+
+      <SoftDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        itemName={deletingItemName}
+        itemType="news article"
+        loading={false}
       />
     </main>
   );

@@ -19,6 +19,8 @@ export interface UseFacilitiesReturn {
     data: Partial<FacilityItem>
   ) => Promise<FacilityItem>;
   deleteFacility: (id: string) => Promise<void>;
+  restoreFacility: (id: string) => Promise<void>;
+  hardDeleteFacility: (id: string) => Promise<void>;
 }
 
 export function useFacilities({
@@ -119,6 +121,24 @@ export function useFacilities({
     setFacilities((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const restoreFacility = async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/${id}?action=restore`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Restore failed (HTTP ${res.status})`);
+    }
+    refresh();
+  };
+
+  const hardDeleteFacility = async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/${id}?action=permanent-delete`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Permanent delete failed (HTTP ${res.status})`);
+    }
+    setFacilities((prev) => prev.filter((item) => item.id !== id));
+  };
+
   return {
     facilities,
     loading,
@@ -127,5 +147,7 @@ export function useFacilities({
     createFacility,
     updateFacility,
     deleteFacility,
+    restoreFacility,
+    hardDeleteFacility,
   };
 }

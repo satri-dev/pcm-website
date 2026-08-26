@@ -26,6 +26,8 @@ export interface ChatbotEntry {
   active: boolean;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string;
+  deletedBy?: string;
 }
 
 export interface ChatbotDocument {
@@ -37,6 +39,8 @@ export interface ChatbotDocument {
   active: boolean;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date;
+  deletedBy?: string;
 }
 
 export interface ChatbotCreateInput {

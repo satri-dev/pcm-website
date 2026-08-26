@@ -18,6 +18,8 @@ function fromDocument(doc: ChatbotDocument): ChatbotEntry {
     active: doc.active ?? true,
     createdAt: (doc.createdAt ?? new Date()).toISOString(),
     updatedAt: (doc.updatedAt ?? new Date()).toISOString(),
+    deletedAt: doc.deletedAt?.toISOString(),
+    deletedBy: doc.deletedBy,
   };
 }
 
@@ -48,13 +50,17 @@ export interface ListChatbotOptions {
   page?: number;
   pageSize?: number;
   sort?: Sort;
+  includeDeleted?: boolean;
 }
 
 export async function listChatbotEntries(options: ListChatbotOptions = {}) {
   const db = await getDb();
-  const { channel, active, search, page = 1, pageSize = 8, sort } = options;
+  const { channel, active, search, page = 1, pageSize = 8, sort, includeDeleted } = options;
 
   const filter: Filter<ChatbotDocument> = {};
+  if (!includeDeleted) {
+    filter.deletedAt = { $exists: false };
+  }
   if (channel) filter.channel = channel;
   if (active !== undefined) filter.active = active;
   if (search) {
@@ -134,13 +140,77 @@ export async function updateChatbotEntry(id: string, patch: ChatbotUpdateInput) 
   return doc ? fromDocument(doc as ChatbotDocument) : null;
 }
 
-export async function deleteChatbotEntry(id: string) {
+export async function deleteChatbotEntry(id: string, deletedBy?: string) {
+  if (!ObjectId.isValid(id)) return false;
+  const db = await getDb();
+  const result = await db
+    .collection<ChatbotDocument>(CHATBOT_COLLECTION)
+    .updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { deletedAt: new Date(), deletedBy, updatedAt: new Date() } }
+    );
+  return result.modifiedCount > 0;
+}
+
+export async function restoreChatbotEntry(id: string) {
+  if (!ObjectId.isValid(id)) return false;
+  const db = await getDb();
+  const result = await db
+    .collection<ChatbotDocument>(CHATBOT_COLLECTION)
+    .updateOne(
+      { _id: new ObjectId(id) },
+      { $unset: { deletedAt: "", deletedBy: "" }, $set: { updatedAt: new Date() } }
+    );
+  return result.modifiedCount > 0;
+}
+
+export async function hardDeleteChatbotEntry(id: string) {
   if (!ObjectId.isValid(id)) return false;
   const db = await getDb();
   const result = await db
     .collection<ChatbotDocument>(CHATBOT_COLLECTION)
     .deleteOne({ _id: new ObjectId(id) });
   return result.deletedCount > 0;
+}
+
+export async function listTrashedChatbotEntries(options: { page?: number; pageSize?: number; search?: string } = {}) {
+  const db = await getDb();
+  const { page = 1, pageSize = 20, search } = options;
+
+  const filter: Filter<ChatbotDocument> = { deletedAt: { $exists: true } };
+  if (search) {
+    const rx = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+    filter.$or = [{ question: rx }, { keywords: rx }, { answer: rx }];
+  }
+
+  const collection = db.collection<ChatbotDocument>(CHATBOT_COLLECTION);
+  const [total, docs] = await Promise.all([
+    collection.countDocuments(filter),
+    collection
+      .find(filter)
+      .sort({ deletedAt: -1 })
+      .skip((page - 1) * pageSize)
+      .limit(pageSize)
+      .toArray(),
+  ]);
+
+  return {
+    items: docs.map(fromDocument),
+    total,
+    page,
+    pageSize,
+    pages: Math.max(1, Math.ceil(total / pageSize)),
+  };
+}
+
+export async function autoPurgeTrashedChatbotEntries() {
+  const db = await getDb();
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const result = await db
+    .collection<ChatbotDocument>(CHATBOT_COLLECTION)
+    .deleteMany({ deletedAt: { $exists: true, $lt: thirtyDaysAgo } });
+  return result.deletedCount;
 }
 
 let indexesReady: Promise<void> | null = null;

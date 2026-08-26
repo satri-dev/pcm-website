@@ -35,6 +35,8 @@ export interface CampusMapItem {
   status: CampusMapStatus;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string;
+  deletedBy?: string;
 }
 
 export interface CampusMapDocument {
@@ -48,6 +50,8 @@ export interface CampusMapDocument {
   status: CampusMapStatus;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date;
+  deletedBy?: string;
 }
 
 export interface CampusMapCreateInput {

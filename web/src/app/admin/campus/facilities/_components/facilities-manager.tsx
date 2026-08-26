@@ -7,6 +7,7 @@ import FacilitiesFormModal from "./facilities-form-modal";
 import FacilitiesViewModal from "./facilities-view-modal";
 import { FacilityItem } from "../types/facilities";
 import { Plus, RefreshCw } from "lucide-react";
+import { SoftDeleteDialog } from "@/components/shared/SoftDeleteDialog";
 
 interface FacilitiesManagerProps {
   initialData?: FacilityItem[];
@@ -34,6 +35,9 @@ export default function FacilitiesManager({
     null,
   );
   const [saving, setSaving] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [deletingItemName, setDeletingItemName] = useState<string>("");
 
   const handleViewFacility = (facility: FacilityItem) => {
     setViewingFacility(facility);
@@ -50,10 +54,18 @@ export default function FacilitiesManager({
     setIsModalOpen(true);
   };
 
-  const handleDeleteFacility = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this facility?")) return;
+  const handleDeleteFacility = (facility: FacilityItem) => {
+    setDeletingItemId(facility.id);
+    setDeletingItemName(facility.name || "this item");
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingItemId) return;
     try {
-      await deleteFacility(id);
+      await deleteFacility(deletingItemId);
+      setDeleteDialogOpen(false);
+      setDeletingItemId(null);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Delete failed");
     }
@@ -129,6 +141,15 @@ export default function FacilitiesManager({
         facility={editingFacility}
         onSave={handleSaveFacility}
         saving={saving}
+      />
+
+      <SoftDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        itemName={deletingItemName}
+        itemType="facility"
+        loading={false}
       />
     </main>
   );

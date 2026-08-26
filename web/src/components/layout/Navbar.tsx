@@ -92,8 +92,8 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-[101] bg-white backdrop-blur-md border-b border-border shadow-sm w-full">
-        <div className="container flex items-center justify-between gap-3 sm:gap-6 min-h-[64px] sm:min-h-[74px] w-full mx-auto px-4 sm:px-6">
+      <header className="sticky top-0 z-101 bg-white backdrop-blur-md border-b border-border shadow-sm w-full">
+        <div className="container flex items-center justify-between gap-3 sm:gap-6 min-h-16 sm:min-h-18.5 w-full mx-auto px-4 sm:px-6">
           <Link href="/" className="inline-flex items-center gap-2 sm:gap-3" aria-label="Pokhara College of Management — home">
             <Image
               src="/images/logo-pcm.png"
@@ -130,7 +130,7 @@ export default function Navbar() {
                 <span className="px-[0.85rem] py-[0.6rem] text-[0.925rem] font-semibold text-pcm-navy rounded-md hover:text-pcm-blue hover:bg-secondary transition-colors cursor-pointer inline-flex items-center gap-1">
                   More <ChevronDown className="w-3.5 h-3.5 transition-transform group-hover:rotate-180" />
                 </span>
-                <div className="absolute top-full right-0 mt-2 min-w-[680px] p-5 bg-white rounded-xl border border-border shadow-pcm-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 grid grid-cols-4 gap-5">
+                <div className="absolute top-full right-0 mt-2 min-w-170 p-5 bg-white rounded-xl border border-border shadow-pcm-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 grid grid-cols-4 gap-5">
                   {moreColumns.map((col) => (
                     <div key={col.label}>
                       <span className="block text-[0.7rem] font-bold tracking-[0.15em] uppercase text-pcm-navy/50 mb-2">{col.label}</span>
@@ -157,7 +157,7 @@ export default function Navbar() {
 
           <div className="flex items-center gap-2 sm:gap-3">
             <ThemeToggle />
-            <button aria-label="Search the site" onClick={() => setSearchOpen(true)} className="w-9 h-9 sm:w-[42px] sm:h-[42px] hidden md:inline-grid place-items-center rounded-md border border-border text-pcm-navy hover:text-pcm-blue hover:border-pcm-blue hover:bg-secondary transition-colors">
+            <button aria-label="Search the site" onClick={() => setSearchOpen(true)} className="w-9 h-9 sm:w-10.5 sm:h-10.5 hidden md:inline-grid place-items-center rounded-md border border-border text-pcm-navy hover:text-pcm-blue hover:border-pcm-blue hover:bg-secondary transition-colors">
               <Search className="w-4 h-4 sm:w-[1.15rem] sm:h-[1.15rem]" />
             </button>
             <Link
@@ -184,7 +184,7 @@ export default function Navbar() {
 
       {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[200] lg:hidden">
+        <div className="fixed inset-0 z-200 lg:hidden">
           {/* Backdrop */}
           <div 
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -414,7 +414,7 @@ export default function Navbar() {
 
       {/* Search Modal */}
       {searchOpen && (
-        <div className="fixed inset-0 z-[200] flex items-start justify-center pt-[15vh]">
+        <div className="fixed inset-0 z-200 flex items-start justify-center pt-[15vh]">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setSearchOpen(false); setSearchQuery(""); }} />
           <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
             <form

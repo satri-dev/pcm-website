@@ -5,6 +5,8 @@ import {
   getChatbotEntryById,
   updateChatbotEntry,
   deleteChatbotEntry,
+  restoreChatbotEntry,
+  hardDeleteChatbotEntry,
   ensureChatbotIndexes,
 } from "@/repositories/chatbot.repository";
 import {
@@ -37,14 +39,54 @@ export async function GET(
 }
 
 export async function PATCH(
-  req: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+  const { searchParams } = new URL(request.url);
+  const action = searchParams.get("action");
+
+  if (action === "restore" || action === "permanent-delete") {
+    const guard = await requireApiSession(["admin"]);
+    if (!guard.ok) return guard.response;
+
+    await ensureChatbotIndexes();
+
+    if (action === "restore") {
+      try {
+        const restored = await restoreChatbotEntry(id);
+        if (!restored) {
+          return NextResponse.json({ error: "Not found" }, { status: 404 });
+        }
+        return NextResponse.json({ ok: true });
+      } catch {
+        return NextResponse.json(
+          { error: "Failed to restore chatbot entry" },
+          { status: 500 }
+        );
+      }
+    }
+
+    if (action === "permanent-delete") {
+      try {
+        const deleted = await hardDeleteChatbotEntry(id);
+        if (!deleted) {
+          return NextResponse.json({ error: "Not found" }, { status: 404 });
+        }
+        return NextResponse.json({ ok: true });
+      } catch {
+        return NextResponse.json(
+          { error: "Failed to permanently delete chatbot entry" },
+          { status: 500 }
+        );
+      }
+    }
+  }
+
   const session = await requireApiSession(["admin", "editor"]);
   if (!session.ok) return session.response;
-  const { id } = await params;
 
-  const body = await req.json().catch(() => null);
+  const body = await request.json().catch(() => null);
   if (!body) return NextResponse.json({ error: "Invalid JSON" }, { status: 422 });
 
   const parsed = updateSchema.safeParse(body);
@@ -76,9 +118,11 @@ export async function DELETE(
   const { id } = await params;
 
   await ensureChatbotIndexes();
-  const deleted = await deleteChatbotEntry(id);
+  const deleted = await deleteChatbotEntry(id, session.session.user.id);
   if (!deleted) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   return NextResponse.json({ ok: true });
 }
+
+

@@ -39,6 +39,8 @@ export interface Notice {
   fileName?: string;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string;
+  deletedBy?: string;
 }
 
 // Database document shape ("notices" collection)
@@ -55,6 +57,8 @@ export interface NoticeDocument {
   fileName?: string;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date;
+  deletedBy?: string;
 }
 
 // Payload accepted by the repository when creating/updating.

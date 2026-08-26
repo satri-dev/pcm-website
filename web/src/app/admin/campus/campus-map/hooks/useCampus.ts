@@ -19,6 +19,8 @@ export interface UseCampusMapReturn {
     data: Partial<CampusMapItem>
   ) => Promise<CampusMapItem>;
   deleteLandmark: (id: string) => Promise<void>;
+  restoreLandmark: (id: string) => Promise<void>;
+  hardDeleteLandmark: (id: string) => Promise<void>;
 }
 
 export function useCampusMap({
@@ -119,6 +121,24 @@ export function useCampusMap({
     setLandmarks((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const restoreLandmark = async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/${id}?action=restore`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Restore failed (HTTP ${res.status})`);
+    }
+    refresh();
+  };
+
+  const hardDeleteLandmark = async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/${id}?action=permanent-delete`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Permanent delete failed (HTTP ${res.status})`);
+    }
+    setLandmarks((prev) => prev.filter((item) => item.id !== id));
+  };
+
   return {
     landmarks,
     loading,
@@ -127,5 +147,7 @@ export function useCampusMap({
     createLandmark,
     updateLandmark,
     deleteLandmark,
+    restoreLandmark,
+    hardDeleteLandmark,
   };
 }

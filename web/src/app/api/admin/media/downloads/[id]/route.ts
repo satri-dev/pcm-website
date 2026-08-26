@@ -4,6 +4,8 @@ import {
   deleteDownload,
   getDownloadById,
   updateDownload,
+  restoreDownload,
+  hardDeleteDownload,
 } from "@/repositories/download.repository";
 import { requireApiSession } from "@/core/lib/api-guard";
 
@@ -63,6 +65,45 @@ export async function PATCH(
   request: NextRequest,
   ctx: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await ctx.params;
+  const { searchParams } = new URL(request.url);
+  const action = searchParams.get("action");
+
+  if (action === "restore" || action === "permanent-delete") {
+    const guard = await requireApiSession(["admin"]);
+    if (!guard.ok) return guard.response;
+
+    if (action === "restore") {
+      try {
+        const restored = await restoreDownload(id);
+        if (!restored) {
+          return NextResponse.json({ error: "Not found" }, { status: 404 });
+        }
+        return NextResponse.json({ ok: true });
+      } catch {
+        return NextResponse.json(
+          { error: "Failed to restore download" },
+          { status: 500 }
+        );
+      }
+    }
+
+    if (action === "permanent-delete") {
+      try {
+        const deleted = await hardDeleteDownload(id);
+        if (!deleted) {
+          return NextResponse.json({ error: "Not found" }, { status: 404 });
+        }
+        return NextResponse.json({ ok: true });
+      } catch {
+        return NextResponse.json(
+          { error: "Failed to permanently delete download" },
+          { status: 500 }
+        );
+      }
+    }
+  }
+
   const guard = await requireApiSession(["admin"]);
   if (!guard.ok) return guard.response;
 
@@ -81,7 +122,6 @@ export async function PATCH(
     );
   }
 
-  const { id } = await ctx.params;
   try {
     const updated = await updateDownload(id, parsed.data);
     if (!updated) {
@@ -111,11 +151,11 @@ export async function DELETE(
 
   const { id } = await ctx.params;
   try {
-    const deleted = await deleteDownload(id);
+    const deleted = await deleteDownload(id, guard.session.user.id);
     if (!deleted) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json(
       { error: "Failed to delete download" },
@@ -123,3 +163,5 @@ export async function DELETE(
     );
   }
 }
+
+

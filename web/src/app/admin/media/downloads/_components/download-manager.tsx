@@ -7,6 +7,7 @@ import DownloadFormModal from "./download-form-modal";
 import DownloadViewModal from "./download-view-modal";
 import { Download } from "../types/download";
 import { Plus, RefreshCw } from "lucide-react";
+import { SoftDeleteDialog } from "@/components/shared/SoftDeleteDialog";
 
 interface DownloadManagerProps {
   initialData?: Download[];
@@ -30,6 +31,9 @@ export default function DownloadManager({
   const [saving, setSaving] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [viewingItem, setViewingItem] = useState<Download | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [deletingItemName, setDeletingItemName] = useState<string>("");
 
   const handleAddDownload = () => {
     setEditingItem(null);
@@ -46,11 +50,18 @@ export default function DownloadManager({
     setIsModalOpen(true);
   };
 
-  const handleDeleteDownload = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this download item?"))
-      return;
+  const handleDeleteDownload = (download: Download) => {
+    setDeletingItemId(download.id);
+    setDeletingItemName(download.title || "this item");
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingItemId) return;
     try {
-      await deleteDownload(id);
+      await deleteDownload(deletingItemId);
+      setDeleteDialogOpen(false);
+      setDeletingItemId(null);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Delete failed");
     }
@@ -133,6 +144,15 @@ export default function DownloadManager({
         open={isViewOpen}
         onOpenChange={setIsViewOpen}
         download={viewingItem}
+      />
+
+      <SoftDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        itemName={deletingItemName}
+        itemType="download"
+        loading={false}
       />
     </main>
   );
