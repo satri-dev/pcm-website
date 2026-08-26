@@ -53,106 +53,108 @@ export default function SubjectRow({ subject, result, index, canRemove, onChange
         />
       </div>
 
-      {/* Credit hours */}
-      <div className="gpa-field gpa-field--sm">
-        <label htmlFor={`cr-${subject.id}`} className="gpa-field-label">Credits</label>
-        <input
-          id={`cr-${subject.id}`}
-          type="number"
-          className="gpa-input"
-          placeholder="3"
-          min="1" max="6" step="0.5"
-          value={subject.creditHours}
-          onChange={(e) => onChange(subject.id, "creditHours", e.target.value)}
-        />
+      {/* All numeric fields — wrapped so mobile CSS can grid them compactly */}
+      <div className="gpa-row-fields">
+        {/* Credit hours */}
+        <div className="gpa-field gpa-field--sm">
+          <label htmlFor={`cr-${subject.id}`} className="gpa-field-label">Credits</label>
+          <input
+            id={`cr-${subject.id}`}
+            type="number"
+            className="gpa-input"
+            placeholder="3"
+            min="1" max="6" step="0.5"
+            value={subject.creditHours}
+            onChange={(e) => onChange(subject.id, "creditHours", e.target.value)}
+          />
+        </div>
+
+        {/* Theory full marks */}
+        <div className="gpa-field gpa-field--sm">
+          <label htmlFor={`tf-${subject.id}`} className="gpa-field-label">Theory Full</label>
+          <input
+            id={`tf-${subject.id}`}
+            type="number"
+            className="gpa-input"
+            placeholder="60"
+            min="1" max="200"
+            value={subject.theoryFullMarks}
+            onChange={(e) => onChange(subject.id, "theoryFullMarks", e.target.value)}
+          />
+        </div>
+
+        {/* Practical full marks */}
+        <div className="gpa-field gpa-field--sm">
+          <label htmlFor={`pf-${subject.id}`} className="gpa-field-label">Practical Full</label>
+          <input
+            id={`pf-${subject.id}`}
+            type="number"
+            className="gpa-input"
+            placeholder="0"
+            min="0" max="100"
+            value={subject.practicalFullMarks}
+            onChange={(e) => onChange(subject.id, "practicalFullMarks", e.target.value)}
+          />
+        </div>
+
+        {/* Theory obtained */}
+        <div className="gpa-field gpa-field--sm">
+          <label htmlFor={`to-${subject.id}`} className="gpa-field-label">Theory Obtained</label>
+          <input
+            id={`to-${subject.id}`}
+            type="number"
+            className={`gpa-input${overMax ? " gpa-input--error" : ""}`}
+            placeholder="e.g. 45"
+            min="0"
+            max={thFull > 0 ? thFull : undefined}
+            value={subject.theoryObtained}
+            onChange={(e) => onChange(subject.id, "theoryObtained", e.target.value)}
+            aria-invalid={overMax}
+          />
+        </div>
+
+        {/* Practical obtained */}
+        <div className="gpa-field gpa-field--sm">
+          <label htmlFor={`po-${subject.id}`} className="gpa-field-label">Practical Obtained</label>
+          <input
+            id={`po-${subject.id}`}
+            type="number"
+            className="gpa-input"
+            placeholder="0"
+            min="0"
+            max={prFull > 0 ? prFull : undefined}
+            value={subject.practicalObtained}
+            disabled={!hasPractical}
+            onChange={(e) => onChange(subject.id, "practicalObtained", e.target.value)}
+            style={!hasPractical ? { opacity: 0.4, cursor: "not-allowed" } : undefined}
+          />
+        </div>
+
+        {/* Auto grade badge */}
+        <div className="gpa-field gpa-field--grade">
+          <span className="gpa-field-label" aria-hidden="true">Grade</span>
+          {hasResult ? (
+            <span
+              className="gpa-grade-badge"
+              style={{ background: gradeColor }}
+              aria-label={`Grade ${result.grade}, ${result.percentage.toFixed(1)}%`}
+            >
+              {result.grade}
+              <small>{result.percentage.toFixed(1)}%</small>
+            </span>
+          ) : (
+            <span className="gpa-grade-badge gpa-grade-badge--empty">—</span>
+          )}
+          {overMax && (
+            <span className="gpa-field-error" role="alert" style={{ fontSize: ".7rem" }}>
+              Exceeds total
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* Theory full marks */}
-      <div className="gpa-field gpa-field--sm">
-        <label htmlFor={`tf-${subject.id}`} className="gpa-field-label">Theory Full</label>
-        <input
-          id={`tf-${subject.id}`}
-          type="number"
-          className="gpa-input"
-          placeholder="60"
-          min="1" max="200"
-          value={subject.theoryFullMarks}
-          onChange={(e) => onChange(subject.id, "theoryFullMarks", e.target.value)}
-        />
-      </div>
-
-      {/* Practical full marks */}
-      <div className="gpa-field gpa-field--sm">
-        <label htmlFor={`pf-${subject.id}`} className="gpa-field-label">Practical Full</label>
-        <input
-          id={`pf-${subject.id}`}
-          type="number"
-          className="gpa-input"
-          placeholder="0"
-          min="0" max="100"
-          value={subject.practicalFullMarks}
-          onChange={(e) => onChange(subject.id, "practicalFullMarks", e.target.value)}
-        />
-      </div>
-
-      {/* Theory obtained */}
-      <div className="gpa-field gpa-field--sm">
-        <label htmlFor={`to-${subject.id}`} className="gpa-field-label">Theory Obtained</label>
-        <input
-          id={`to-${subject.id}`}
-          type="number"
-          className={`gpa-input${overMax ? " gpa-input--error" : ""}`}
-          placeholder="e.g. 45"
-          min="0"
-          max={thFull > 0 ? thFull : undefined}
-          value={subject.theoryObtained}
-          onChange={(e) => onChange(subject.id, "theoryObtained", e.target.value)}
-          aria-invalid={overMax}
-        />
-      </div>
-
-      {/* Practical obtained — greyed out if no practical full marks */}
-      <div className="gpa-field gpa-field--sm">
-        <label htmlFor={`po-${subject.id}`} className="gpa-field-label">Practical Obtained</label>
-        <input
-          id={`po-${subject.id}`}
-          type="number"
-          className="gpa-input"
-          placeholder="0"
-          min="0"
-          max={prFull > 0 ? prFull : undefined}
-          value={subject.practicalObtained}
-          disabled={!hasPractical}
-          onChange={(e) => onChange(subject.id, "practicalObtained", e.target.value)}
-          style={!hasPractical ? { opacity: 0.45, cursor: "not-allowed" } : undefined}
-        />
-      </div>
-
-      {/* Auto grade badge */}
-      <div className="gpa-field gpa-field--grade">
-        <span className="gpa-field-label" aria-hidden="true">Grade</span>
-        {hasResult ? (
-          <span
-            className="gpa-grade-badge"
-            style={{ background: gradeColor }}
-            aria-label={`Grade ${result.grade}, ${result.percentage.toFixed(1)}%`}
-          >
-            {result.grade}
-            <small>{result.percentage.toFixed(1)}%</small>
-          </span>
-        ) : (
-          <span className="gpa-grade-badge gpa-grade-badge--empty">—</span>
-        )}
-        {overMax && (
-          <span className="gpa-field-error" role="alert" style={{ fontSize: ".7rem" }}>
-            Exceeds total
-          </span>
-        )}
-      </div>
-
-      {/* Remove button — disabled when only 1 subject remains */}
+      {/* Remove button */}
       <div className="gpa-field gpa-field--remove">
-        <span className="gpa-field-label" aria-hidden="true"> </span>
         <button
           type="button"
           className={`gpa-remove-btn${!canRemove ? " gpa-remove-btn--disabled" : ""}`}

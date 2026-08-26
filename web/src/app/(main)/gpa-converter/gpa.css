@@ -161,35 +161,75 @@
   border-bottom:1px dashed var(--line);
 }
 
-/* Tablet: compact 3-col card */
+/* On desktop: gpa-row-fields is display:contents so fields sit in parent grid */
+@media (min-width:1081px) {
+  .pcm-gpa .gpa-row-fields { display:contents; }
+}
+
+/* ── Mobile card layout (≤1080px) ── */
 @media (max-width:1080px) {
+  /* Compact card wrapper */
   .pcm-gpa .gpa-row {
-    grid-template-columns: 1fr 1fr 1fr;
-    gap:.55rem; padding:.8rem;
+    display:block;                        /* drop grid entirely on mobile */
+    padding:.55rem .65rem;
     background:var(--surface-soft);
-    border-radius:var(--r); border:1px solid var(--line);
+    border-radius:var(--r-sm);
+    border:1px solid var(--line);
     border-bottom:1px solid var(--line);
     position:relative;
   }
-  /* Name spans full width */
-  .pcm-gpa .gpa-field--name { grid-column: 1 / -1; }
-  /* Grade + remove sit at end */
-  .pcm-gpa .gpa-field--grade { grid-column: 2; }
-  .pcm-gpa .gpa-field--remove {
-    grid-column: 3;
-    justify-self: end;
-    align-self: end;
+
+  /* Row number hidden */
+  .pcm-gpa .gpa-row-num { display:none; }
+
+  /* Name field — full width, sits above the mini-table */
+  .pcm-gpa .gpa-field--name {
+    margin-bottom:.4rem;
   }
+  .pcm-gpa .gpa-field--name .gpa-field-label { display:block; }
+  .pcm-gpa .gpa-field--name .gpa-input {
+    width:100%; padding:.35rem .5rem;
+    font-size:.84rem;
+  }
+
+  /* Remove button — absolute top-right */
+  .pcm-gpa .gpa-field--remove {
+    position:absolute; top:.45rem; right:.5rem;
+  }
+
+  /* Mini-table for numeric fields: 3 cols with tight inputs */
+  .pcm-gpa .gpa-row-fields {
+    display:grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap:.25rem .4rem;
+  }
+
+  /* All labels inside mini-table visible and tiny */
+  .pcm-gpa .gpa-row-fields .gpa-field-label {
+    display:block;
+    font-size:.6rem; letter-spacing:.04em;
+    margin-bottom:.1rem; color:var(--muted-c);
+  }
+
+  /* Compact inputs */
+  .pcm-gpa .gpa-row-fields .gpa-input {
+    padding:.28rem .4rem !important;
+    font-size:.78rem !important;
+    width:100%;
+  }
+
+  /* Grade spans full width at bottom */
+  .pcm-gpa .gpa-field--grade {
+    grid-column: 1 / -1;
+    display:flex; flex-direction:row;
+    align-items:center; gap:.5rem;
+    margin-top:.25rem;
+  }
+  .pcm-gpa .gpa-field--grade .gpa-field-label { display:block; margin-bottom:0; }
 }
 
-/* Mobile: 2-col */
-@media (max-width:560px) {
-  .pcm-gpa .gpa-row { grid-template-columns: 1fr 1fr; }
-  .pcm-gpa .gpa-field--grade { grid-column: 1; }
-  .pcm-gpa .gpa-field--remove {
-    grid-column: 2;
-    justify-self: end;
-  }
+@media (max-width:480px) {
+  .pcm-gpa .gpa-row-fields { grid-template-columns: 1fr 1fr; }
 }
 
 .pcm-gpa .gpa-row-num {
@@ -198,7 +238,6 @@
   border-radius:50%; background:var(--surface-tint);
   font-size:.68rem; font-weight:700; color:var(--muted-c);
 }
-@media (max-width:1080px) { .pcm-gpa .gpa-row-num { display:none; } }
 
 /* ── Field ── */
 .pcm-gpa .gpa-field { display:flex; flex-direction:column; gap:.25rem; }
@@ -207,7 +246,7 @@
   letter-spacing:.05em; text-transform:uppercase;
   color:var(--muted-c);
 }
-/* Hide labels on desktop (header row serves as label) */
+/* Hide labels on desktop — header row serves as label */
 @media (min-width:1081px) { .pcm-gpa .gpa-field-label { display:none; } }
 
 .pcm-gpa .gpa-field--grade { align-items:flex-start; }
