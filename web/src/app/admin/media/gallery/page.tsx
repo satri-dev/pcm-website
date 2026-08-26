@@ -1,4 +1,4 @@
-import PageHeader from "../_components/dashboard/page-header";
+import PageHeader from "../../_components/dashboard/page-header";
 import GalleryManager from "./_components/gallery-manager";
 import { listGallery } from "@/repositories/gallery.repository";
 

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import PageHeader from "../_components/dashboard/page-header";
+import PageHeader from "../../_components/dashboard/page-header";
 import BlogManager from "./_components/blog-manager";
 
 export const metadata: Metadata = {

@@ -5,7 +5,7 @@ import {
   ensureBlogIndexes,
   listBlogs,
 } from "@/repositories/blog.repository";
-import { BLOG_CATEGORIES, BLOG_STATUSES } from "@/app/admin/blogs/types/blog";
+import { BLOG_CATEGORIES, BLOG_STATUSES } from "@/app/admin/media/blogs/types/blog";
 import { requireApiSession } from "@/core/lib/api-guard";
 
 const createSchema = z.object({

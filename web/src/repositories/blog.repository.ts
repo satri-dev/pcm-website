@@ -7,7 +7,7 @@ import {
   BlogCreateInput,
   BlogUpdateInput,
   BLOG_COLLECTION,
-} from "@/app/admin/blogs/types/blog";
+} from "@/app/admin/media/blogs/types/blog";
 
 function fromDocument(doc: BlogDocument): Blog {
   return {
