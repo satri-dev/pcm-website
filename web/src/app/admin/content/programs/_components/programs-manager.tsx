@@ -7,6 +7,7 @@ import ProgramsFormModal from "./programs-form-modal";
 import ProgramsViewModal from "./programs-view-modal";
 import { Program } from "@/types/programs";
 import { Plus, RefreshCw } from "lucide-react";
+import { SoftDeleteDialog } from "@/components/shared/SoftDeleteDialog";
 
 interface ProgramsManagerProps {
   initialData?: Program[];
@@ -28,6 +29,9 @@ export default function ProgramsManager({ initialData }: ProgramsManagerProps) {
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [viewingProgram, setViewingProgram] = useState<Program | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [deletingItemName, setDeletingItemName] = useState<string>("");
 
   const handleViewProgram = (program: Program) => {
     setViewingProgram(program);
@@ -44,10 +48,18 @@ export default function ProgramsManager({ initialData }: ProgramsManagerProps) {
     setIsModalOpen(true);
   };
 
-  const handleDeleteProgram = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this program?")) return;
+  const handleDeleteProgram = (program: Program) => {
+    setDeletingItemId(program.id);
+    setDeletingItemName(program.name || "this item");
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingItemId) return;
     try {
-      await deleteProgram(id);
+      await deleteProgram(deletingItemId);
+      setDeleteDialogOpen(false);
+      setDeletingItemId(null);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Delete failed");
     }
@@ -130,6 +142,15 @@ export default function ProgramsManager({ initialData }: ProgramsManagerProps) {
         program={editingProgram}
         onSave={handleSaveProgram}
         saving={saving}
+      />
+
+      <SoftDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        itemName={deletingItemName}
+        itemType="program"
+        loading={false}
       />
     </main>
   );

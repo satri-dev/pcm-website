@@ -25,6 +25,8 @@ function fromDocument(doc: ProgramDocument): Program {
     views: doc.views ?? 0,
     createdAt: (doc.createdAt ?? new Date()).toISOString(),
     updatedAt: (doc.updatedAt ?? new Date()).toISOString(),
+    deletedAt: doc.deletedAt?.toISOString(),
+    deletedBy: doc.deletedBy,
   };
 }
 
@@ -61,13 +63,17 @@ export interface ListProgramsOptions {
   page?: number;
   pageSize?: number;
   sort?: Sort;
+  includeDeleted?: boolean;
 }
 
 export async function listPrograms(options: ListProgramsOptions = {}) {
   const db = await getDb();
-  const { status, level, search, page = 1, pageSize = 8, sort } = options;
+  const { status, level, search, page = 1, pageSize = 8, sort, includeDeleted } = options;
 
   const filter: Filter<ProgramDocument> = {};
+  if (!includeDeleted) {
+    filter.deletedAt = { $exists: false };
+  }
   if (status) filter.status = status;
   if (level) filter.level = level;
   if (search) {
@@ -152,13 +158,77 @@ export async function updateProgram(id: string, patch: ProgramUpdateInput) {
   return doc ? fromDocument(doc as ProgramDocument) : null;
 }
 
-export async function deleteProgram(id: string) {
+export async function deleteProgram(id: string, deletedBy?: string) {
+  if (!ObjectId.isValid(id)) return false;
+  const db = await getDb();
+  const result = await db
+    .collection<ProgramDocument>(PROGRAM_COLLECTION)
+    .updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { deletedAt: new Date(), deletedBy, updatedAt: new Date() } }
+    );
+  return result.modifiedCount > 0;
+}
+
+export async function restoreProgram(id: string) {
+  if (!ObjectId.isValid(id)) return false;
+  const db = await getDb();
+  const result = await db
+    .collection<ProgramDocument>(PROGRAM_COLLECTION)
+    .updateOne(
+      { _id: new ObjectId(id) },
+      { $unset: { deletedAt: "", deletedBy: "" }, $set: { updatedAt: new Date() } }
+    );
+  return result.modifiedCount > 0;
+}
+
+export async function hardDeleteProgram(id: string) {
   if (!ObjectId.isValid(id)) return false;
   const db = await getDb();
   const result = await db
     .collection<ProgramDocument>(PROGRAM_COLLECTION)
     .deleteOne({ _id: new ObjectId(id) });
   return result.deletedCount > 0;
+}
+
+export async function listTrashedPrograms(options: { page?: number; pageSize?: number; search?: string } = {}) {
+  const db = await getDb();
+  const { page = 1, pageSize = 20, search } = options;
+
+  const filter: Filter<ProgramDocument> = { deletedAt: { $exists: true } };
+  if (search) {
+    const rx = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+    filter.$or = [{ name: rx }, { code: rx }];
+  }
+
+  const collection = db.collection<ProgramDocument>(PROGRAM_COLLECTION);
+  const [total, docs] = await Promise.all([
+    collection.countDocuments(filter),
+    collection
+      .find(filter)
+      .sort({ deletedAt: -1 })
+      .skip((page - 1) * pageSize)
+      .limit(pageSize)
+      .toArray(),
+  ]);
+
+  return {
+    items: docs.map(fromDocument),
+    total,
+    page,
+    pageSize,
+    pages: Math.max(1, Math.ceil(total / pageSize)),
+  };
+}
+
+export async function autoPurgeTrashedPrograms() {
+  const db = await getDb();
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const result = await db
+    .collection<ProgramDocument>(PROGRAM_COLLECTION)
+    .deleteMany({ deletedAt: { $exists: true, $lt: thirtyDaysAgo } });
+  return result.deletedCount;
 }
 
 let indexesReady: Promise<void> | null = null;

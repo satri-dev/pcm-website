@@ -27,6 +27,8 @@ function fromDocument(doc: NewsDocument): News {
     seo: doc.seo,
     createdAt: (doc.createdAt ?? new Date()).toISOString(),
     updatedAt: (doc.updatedAt ?? new Date()).toISOString(),
+    deletedAt: doc.deletedAt?.toISOString(),
+    deletedBy: doc.deletedBy,
   };
 }
 
@@ -71,13 +73,17 @@ export interface ListNewsOptions {
   page?: number;
   pageSize?: number;
   sort?: Sort;
+  includeDeleted?: boolean;
 }
 
 export async function listNews(options: ListNewsOptions = {}) {
   const db = await getDb();
-  const { status, category, search, page = 1, pageSize = 8, sort } = options;
+  const { status, category, search, page = 1, pageSize = 8, sort, includeDeleted } = options;
 
   const filter: Filter<NewsDocument> = {};
+  if (!includeDeleted) {
+    filter.deletedAt = { $exists: false };
+  }
   if (status) filter.status = status;
   if (category) filter.category = category;
   if (search) {
@@ -166,13 +172,77 @@ export async function updateNews(id: string, patch: NewsUpdateInput) {
   return doc ? fromDocument(doc as NewsDocument) : null;
 }
 
-export async function deleteNews(id: string) {
+export async function deleteNews(id: string, deletedBy?: string) {
+  if (!ObjectId.isValid(id)) return false;
+  const db = await getDb();
+  const result = await db
+    .collection<NewsDocument>(NEWS_COLLECTION)
+    .updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { deletedAt: new Date(), deletedBy, updatedAt: new Date() } }
+    );
+  return result.modifiedCount > 0;
+}
+
+export async function restoreNews(id: string) {
+  if (!ObjectId.isValid(id)) return false;
+  const db = await getDb();
+  const result = await db
+    .collection<NewsDocument>(NEWS_COLLECTION)
+    .updateOne(
+      { _id: new ObjectId(id) },
+      { $unset: { deletedAt: "", deletedBy: "" }, $set: { updatedAt: new Date() } }
+    );
+  return result.modifiedCount > 0;
+}
+
+export async function hardDeleteNews(id: string) {
   if (!ObjectId.isValid(id)) return false;
   const db = await getDb();
   const result = await db
     .collection<NewsDocument>(NEWS_COLLECTION)
     .deleteOne({ _id: new ObjectId(id) });
   return result.deletedCount > 0;
+}
+
+export async function listTrashedNews(options: { page?: number; pageSize?: number; search?: string } = {}) {
+  const db = await getDb();
+  const { page = 1, pageSize = 20, search } = options;
+
+  const filter: Filter<NewsDocument> = { deletedAt: { $exists: true } };
+  if (search) {
+    const rx = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+    filter.$or = [{ title: rx }, { excerpt: rx }, { author: rx }];
+  }
+
+  const collection = db.collection<NewsDocument>(NEWS_COLLECTION);
+  const [total, docs] = await Promise.all([
+    collection.countDocuments(filter),
+    collection
+      .find(filter)
+      .sort({ deletedAt: -1 })
+      .skip((page - 1) * pageSize)
+      .limit(pageSize)
+      .toArray(),
+  ]);
+
+  return {
+    items: docs.map(fromDocument),
+    total,
+    page,
+    pageSize,
+    pages: Math.max(1, Math.ceil(total / pageSize)),
+  };
+}
+
+export async function autoPurgeTrashedNews() {
+  const db = await getDb();
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const result = await db
+    .collection<NewsDocument>(NEWS_COLLECTION)
+    .deleteMany({ deletedAt: { $exists: true, $lt: thirtyDaysAgo } });
+  return result.deletedCount;
 }
 
 // Called lazily so indexes exist even if scripts/create-news-collection.js

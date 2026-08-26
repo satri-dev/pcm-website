@@ -25,7 +25,7 @@ interface BlogTableProps {
   onAdd: () => void;
   onView: (item: Blog) => void;
   onEdit: (item: Blog) => void;
-  onDelete: (id: string) => void;
+  onDelete: (blog: Blog) => void;
 }
 
 export default function BlogTable({
@@ -177,7 +177,7 @@ export default function BlogTable({
                         <button
                           type="button"
                           className="act-btn danger"
-                          onClick={() => onDelete(item.id)}
+                           onClick={() => onDelete(item)}
                           title="Delete"
                         >
                           <Trash2 size={15} />

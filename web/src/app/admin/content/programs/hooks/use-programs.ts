@@ -16,6 +16,8 @@ export interface UseProgramsReturn {
   createProgram: (data: Partial<Program>) => Promise<Program>;
   updateProgram: (id: string, data: Partial<Program>) => Promise<Program>;
   deleteProgram: (id: string) => Promise<void>;
+  restoreProgram: (id: string) => Promise<void>;
+  hardDeleteProgram: (id: string) => Promise<void>;
 }
 
 export function usePrograms({
@@ -110,6 +112,22 @@ export function usePrograms({
     setPrograms((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const restoreProgram = async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/${id}?action=restore`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Restore failed (HTTP ${res.status})`);
+    }
+  };
+
+  const hardDeleteProgram = async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/${id}?action=permanent-delete`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Permanent delete failed (HTTP ${res.status})`);
+    }
+  };
+
   return {
     programs,
     loading,
@@ -118,5 +136,7 @@ export function usePrograms({
     createProgram,
     updateProgram,
     deleteProgram,
+    restoreProgram,
+    hardDeleteProgram,
   };
 }

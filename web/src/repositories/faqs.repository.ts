@@ -18,6 +18,8 @@ function fromDocument(doc: FaqDocument): Faq {
     answer: doc.answer,
     createdAt: (doc.createdAt ?? new Date()).toISOString(),
     updatedAt: (doc.updatedAt ?? new Date()).toISOString(),
+    deletedAt: doc.deletedAt?.toISOString(),
+    deletedBy: doc.deletedBy,
   };
 }
 
@@ -46,13 +48,17 @@ export interface ListFaqsOptions {
   page?: number;
   pageSize?: number;
   sort?: Sort;
+  includeDeleted?: boolean;
 }
 
 export async function listFaqs(options: ListFaqsOptions = {}) {
   const db = await getDb();
-  const { category, search, page = 1, pageSize = 8, sort } = options;
+  const { category, search, page = 1, pageSize = 8, sort, includeDeleted } = options;
 
   const filter: Filter<FaqDocument> = {};
+  if (!includeDeleted) {
+    filter.deletedAt = { $exists: false };
+  }
   if (category) filter.category = category;
   if (search) {
     const rx = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
@@ -124,13 +130,77 @@ export async function updateFaq(id: string, patch: FaqUpdateInput) {
   return doc ? fromDocument(doc as FaqDocument) : null;
 }
 
-export async function deleteFaq(id: string) {
+export async function deleteFaq(id: string, deletedBy?: string) {
+  if (!ObjectId.isValid(id)) return false;
+  const db = await getDb();
+  const result = await db
+    .collection<FaqDocument>(FAQ_COLLECTION)
+    .updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { deletedAt: new Date(), deletedBy, updatedAt: new Date() } }
+    );
+  return result.modifiedCount > 0;
+}
+
+export async function restoreFaq(id: string) {
+  if (!ObjectId.isValid(id)) return false;
+  const db = await getDb();
+  const result = await db
+    .collection<FaqDocument>(FAQ_COLLECTION)
+    .updateOne(
+      { _id: new ObjectId(id) },
+      { $unset: { deletedAt: "", deletedBy: "" }, $set: { updatedAt: new Date() } }
+    );
+  return result.modifiedCount > 0;
+}
+
+export async function hardDeleteFaq(id: string) {
   if (!ObjectId.isValid(id)) return false;
   const db = await getDb();
   const result = await db
     .collection<FaqDocument>(FAQ_COLLECTION)
     .deleteOne({ _id: new ObjectId(id) });
   return result.deletedCount > 0;
+}
+
+export async function listTrashedFaqs(options: { page?: number; pageSize?: number; search?: string } = {}) {
+  const db = await getDb();
+  const { page = 1, pageSize = 20, search } = options;
+
+  const filter: Filter<FaqDocument> = { deletedAt: { $exists: true } };
+  if (search) {
+    const rx = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+    filter.$or = [{ question: rx }, { answer: rx }];
+  }
+
+  const collection = db.collection<FaqDocument>(FAQ_COLLECTION);
+  const [total, docs] = await Promise.all([
+    collection.countDocuments(filter),
+    collection
+      .find(filter)
+      .sort({ deletedAt: -1 })
+      .skip((page - 1) * pageSize)
+      .limit(pageSize)
+      .toArray(),
+  ]);
+
+  return {
+    items: docs.map(fromDocument),
+    total,
+    page,
+    pageSize,
+    pages: Math.max(1, Math.ceil(total / pageSize)),
+  };
+}
+
+export async function autoPurgeTrashedFaqs() {
+  const db = await getDb();
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const result = await db
+    .collection<FaqDocument>(FAQ_COLLECTION)
+    .deleteMany({ deletedAt: { $exists: true, $lt: thirtyDaysAgo } });
+  return result.deletedCount;
 }
 
 let indexesReady: Promise<void> | null = null;

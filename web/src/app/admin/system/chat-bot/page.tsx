@@ -6,7 +6,6 @@ import { listChatbotEntries } from "@/repositories/chatbot.repository";
 
 export const dynamic = "force-dynamic";
 
-
 export const metadata: Metadata = {
   title: "Chatbot Knowledge Base",
   description:

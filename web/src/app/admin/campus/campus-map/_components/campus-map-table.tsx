@@ -31,7 +31,7 @@ interface CampusMapTableProps {
   loading?: boolean;
   onView: (landmark: CampusMapItem) => void;
   onEdit: (landmark: CampusMapItem) => void;
-  onDelete: (id: string) => void;
+  onDelete: (landmark: CampusMapItem) => void;
 }
 
 export default function CampusMapTable({
@@ -260,7 +260,7 @@ export default function CampusMapTable({
                       <button
                         type="button"
                         className="act-btn danger"
-                        onClick={() => onDelete(item.id)}
+                        onClick={() => onDelete(item)}
                         title="Delete"
                       >
                         <Trash2 size={15} />

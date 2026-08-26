@@ -25,6 +25,8 @@ export interface Scholarship {
   active: boolean;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string;
+  deletedBy?: string;
 }
 
 export interface ScholarshipDocument {
@@ -36,6 +38,8 @@ export interface ScholarshipDocument {
   active: boolean;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date;
+  deletedBy?: string;
 }
 
 export interface ScholarshipCreateInput {

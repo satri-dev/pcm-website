@@ -16,6 +16,8 @@ export interface UseResultsReturn {
   createResult: (data: Partial<Result>) => Promise<Result>;
   updateResult: (id: string, data: Partial<Result>) => Promise<Result>;
   deleteResult: (id: string) => Promise<void>;
+  restoreResult: (id: string) => Promise<void>;
+  hardDeleteResult: (id: string) => Promise<void>;
 }
 
 export function useResults({
@@ -114,6 +116,22 @@ export function useResults({
     setResults((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const restoreResult = async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/${id}?action=restore`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Restore failed (HTTP ${res.status})`);
+    }
+  };
+
+  const hardDeleteResult = async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/${id}?action=permanent-delete`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Permanent delete failed (HTTP ${res.status})`);
+    }
+  };
+
   return {
     results,
     loading,
@@ -122,5 +140,7 @@ export function useResults({
     createResult,
     updateResult,
     deleteResult,
+    restoreResult,
+    hardDeleteResult,
   };
 }

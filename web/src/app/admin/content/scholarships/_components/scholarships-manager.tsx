@@ -7,6 +7,7 @@ import ScholarshipsFormModal from "./scholarships-form-modal";
 import ScholarshipsViewModal from "./scholarships-view-modal";
 import { Scholarship } from "@/types/scholarships";
 import { Plus, RefreshCw } from "lucide-react";
+import { SoftDeleteDialog } from "@/components/shared/SoftDeleteDialog";
 
 interface ScholarshipsManagerProps {
   initialData?: Scholarship[];
@@ -28,6 +29,9 @@ export default function ScholarshipsManager({ initialData }: ScholarshipsManager
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [viewingScholarship, setViewingScholarship] = useState<Scholarship | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [deletingItemName, setDeletingItemName] = useState<string>("");
 
   const handleViewScholarship = (scholarship: Scholarship) => {
     setViewingScholarship(scholarship);
@@ -44,10 +48,18 @@ export default function ScholarshipsManager({ initialData }: ScholarshipsManager
     setIsModalOpen(true);
   };
 
-  const handleDeleteScholarship = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this scholarship?")) return;
+  const handleDeleteScholarship = (scholarship: Scholarship) => {
+    setDeletingItemId(scholarship.id);
+    setDeletingItemName(scholarship.title || "this item");
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingItemId) return;
     try {
-      await deleteScholarship(id);
+      await deleteScholarship(deletingItemId);
+      setDeleteDialogOpen(false);
+      setDeletingItemId(null);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Delete failed");
     }
@@ -130,6 +142,15 @@ export default function ScholarshipsManager({ initialData }: ScholarshipsManager
         scholarship={editingScholarship}
         onSave={handleSaveScholarship}
         saving={saving}
+      />
+
+      <SoftDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        itemName={deletingItemName}
+        itemType="scholarship"
+        loading={false}
       />
     </main>
   );

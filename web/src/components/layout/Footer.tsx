@@ -42,10 +42,10 @@ const usefulLinks = [
 
 export default function Footer() {
   return (
-    <footer className="relative bg-pcm-blue-900 text-white/[0.72] overflow-hidden">
+    <footer className="relative bg-pcm-blue-900 text-white/72 overflow-hidden">
       {/* Decorative peaks SVG */}
       <svg 
-        className="relative w-full h-[120px]" 
+        className="relative w-full h-30" 
         viewBox="0 0 1440 180" 
         preserveAspectRatio="none" 
         xmlns="http://www.w3.org/2000/svg"
@@ -54,7 +54,7 @@ export default function Footer() {
         <path d="M0 180 L0 120 L300 70 L600 140 L900 60 L1200 130 L1440 80 L1440 180Z" fill="#14265A" opacity=".5"/>
       </svg>
 
-      <div className="relative z-[2]">
+      <div className="relative z-2">
         <div className="container px-4 sm:px-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr] gap-8 sm:gap-10 lg:gap-[clamp(2rem,4vw,3rem)] py-8 sm:py-10 lg:py-[clamp(2.5rem,5vw,4rem)] pb-10 sm:pb-12">
             {/* Brand Column */}
@@ -91,7 +91,7 @@ export default function Footer() {
                     placeholder="Your email address"
                     aria-label="Email address"
                     required
-                    className="w-full min-w-0 px-3 sm:px-4 py-2.5 sm:py-[0.72rem] border border-white/[0.22] rounded-lg sm:rounded-xl bg-white/[0.06] text-white text-sm sm:text-[0.9rem] placeholder:text-white/45 outline-none transition-all focus:border-pcm-green focus:bg-white/10"
+                    className="w-full min-w-0 px-3 sm:px-4 py-2.5 sm:py-[0.72rem] border border-white/22 rounded-lg sm:rounded-xl bg-white/6 text-white text-sm sm:text-[0.9rem] placeholder:text-white/45 outline-none transition-all focus:border-pcm-green focus:bg-white/10"
                   />
                   <button 
                     type="submit"
@@ -141,7 +141,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener"
                   aria-label="Facebook"
-                  className="w-9 h-9 sm:w-10 sm:h-10 grid place-items-center rounded-full border border-white/[0.18] text-white transition-all hover:bg-pcm-green hover:border-pcm-green hover:text-pcm-navy hover:-translate-y-[3px]"
+                  className="w-9 h-9 sm:w-10 sm:h-10 grid place-items-center rounded-full border border-white/18 text-white transition-all hover:bg-pcm-green hover:border-pcm-green hover:text-pcm-navy hover:-translate-y-0.75"
                 >
                   <FaFacebook className="w-4 h-4 sm:w-[1.05rem] sm:h-[1.05rem]" />
                 </a>
@@ -150,7 +150,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener"
                   aria-label="Instagram"
-                  className="w-9 h-9 sm:w-10 sm:h-10 grid place-items-center rounded-full border border-white/[0.18] text-white transition-all hover:bg-pcm-green hover:border-pcm-green hover:text-pcm-navy hover:-translate-y-[3px]"
+                  className="w-9 h-9 sm:w-10 sm:h-10 grid place-items-center rounded-full border border-white/18 text-white transition-all hover:bg-pcm-green hover:border-pcm-green hover:text-pcm-navy hover:-translate-y-0.75"
                 >
                   <FaInstagram className="w-4 h-4 sm:w-[1.05rem] sm:h-[1.05rem]" />
                 </a>
@@ -159,7 +159,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener"
                   aria-label="LinkedIn"
-                  className="w-9 h-9 sm:w-10 sm:h-10 grid place-items-center rounded-full border border-white/[0.18] text-white transition-all hover:bg-pcm-green hover:border-pcm-green hover:text-pcm-navy hover:-translate-y-[3px]"
+                  className="w-9 h-9 sm:w-10 sm:h-10 grid place-items-center rounded-full border border-white/18 text-white transition-all hover:bg-pcm-green hover:border-pcm-green hover:text-pcm-navy hover:-translate-y-0.75"
                 >
                   <FaLinkedin className="w-4 h-4 sm:w-[1.05rem] sm:h-[1.05rem]" />
                 </a>
@@ -168,7 +168,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener"
                   aria-label="WhatsApp"
-                  className="w-9 h-9 sm:w-10 sm:h-10 grid place-items-center rounded-full border border-white/[0.18] text-white transition-all hover:bg-pcm-green hover:border-pcm-green hover:text-pcm-navy hover:-translate-y-[3px]"
+                  className="w-9 h-9 sm:w-10 sm:h-10 grid place-items-center rounded-full border border-white/18 text-white transition-all hover:bg-pcm-green hover:border-pcm-green hover:text-pcm-navy hover:-translate-y-0.75"
                 >
                   <FaWhatsapp className="w-4 h-4 sm:w-[1.05rem] sm:h-[1.05rem]" />
                 </a>
@@ -241,13 +241,13 @@ export default function Footer() {
               </h4>
               <div className="grid gap-1 text-xs sm:text-[0.88rem]">
                 <div className="flex items-center justify-between gap-4 py-2 sm:py-[0.55rem] border-b border-white/[0.14]">
-                  <span className="text-white/60 font-mono text-[0.65rem] sm:text-[0.72rem] uppercase tracking-[0.1em]">
+                  <span className="text-white/60 font-mono text-[0.65rem] sm:text-[0.72rem] uppercase tracking-widest">
                     Sunday – Friday
                   </span>
                   <b className="text-white font-semibold text-xs sm:text-sm">6:00 AM – 4:00 PM</b>
                 </div>
                 <div className="flex items-center justify-between gap-4 py-2 sm:py-[0.55rem]">
-                  <span className="text-white/60 font-mono text-[0.65rem] sm:text-[0.72rem] uppercase tracking-[0.1em]">
+                  <span className="text-white/60 font-mono text-[0.65rem] sm:text-[0.72rem] uppercase tracking-widest">
                     Saturday
                   </span>
                   <b className="text-white font-semibold text-xs sm:text-sm">Closed</b>
@@ -270,7 +270,7 @@ export default function Footer() {
       </div>
 
       {/* Footer Bottom */}
-      <div className="relative z-[2] border-t border-white/10">
+      <div className="relative z-2 border-t border-white/10">
         <div className="container px-4 sm:px-6 py-4 sm:py-5">
           <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center sm:justify-between gap-3 text-xs sm:text-[0.82rem] text-white/50 text-center sm:text-left">
             <span>

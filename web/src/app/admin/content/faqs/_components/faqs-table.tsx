@@ -25,7 +25,7 @@ interface FaqsTableProps {
   loading?: boolean;
   onView: (faq: Faq) => void;
   onEdit: (faq: Faq) => void;
-  onDelete: (id: string) => void;
+  onDelete: (faq: Faq) => void;
 }
 
 export default function FaqsTable({
@@ -181,7 +181,7 @@ export default function FaqsTable({
                       <button
                         type="button"
                         className="act-btn danger"
-                        onClick={() => onDelete(item.id)}
+                        onClick={() => onDelete(item)}
                         title="Delete"
                       >
                         <Trash2 size={15} />

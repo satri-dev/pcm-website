@@ -41,6 +41,8 @@ export interface News {
   seo?: SeoMeta;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string;
+  deletedBy?: string;
 }
 
 // Database document shape ("news" collection)
@@ -61,6 +63,8 @@ export interface NewsDocument {
   seo?: SeoMeta;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date;
+  deletedBy?: string;
 }
 
 // Payload accepted by the repository when creating/updating.

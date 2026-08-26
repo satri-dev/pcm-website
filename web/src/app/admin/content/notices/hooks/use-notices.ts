@@ -16,6 +16,8 @@ export interface UseNoticesReturn {
   createNotice: (data: Partial<Notice>) => Promise<Notice>;
   updateNotice: (id: string, data: Partial<Notice>) => Promise<Notice>;
   deleteNotice: (id: string) => Promise<void>;
+  restoreNotice: (id: string) => Promise<void>;
+  hardDeleteNotice: (id: string) => Promise<void>;
 }
 
 export function useNotices({
@@ -114,6 +116,22 @@ export function useNotices({
     setNotices((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const restoreNotice = async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/${id}?action=restore`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Restore failed (HTTP ${res.status})`);
+    }
+  };
+
+  const hardDeleteNotice = async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/${id}?action=permanent-delete`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Permanent delete failed (HTTP ${res.status})`);
+    }
+  };
+
   return {
     notices,
     loading,
@@ -122,5 +140,7 @@ export function useNotices({
     createNotice,
     updateNotice,
     deleteNotice,
+    restoreNotice,
+    hardDeleteNotice,
   };
 }

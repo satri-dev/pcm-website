@@ -16,6 +16,8 @@ export interface UseNewsReturn {
   createNews: (data: Partial<News>) => Promise<News>;
   updateNews: (id: string, data: Partial<News>) => Promise<News>;
   deleteNews: (id: string) => Promise<void>;
+  restoreNews: (id: string) => Promise<void>;
+  hardDeleteNews: (id: string) => Promise<void>;
 }
 
 export function useNews({
@@ -110,5 +112,21 @@ export function useNews({
     setNews((prev) => prev.filter((item) => item.id !== id));
   };
 
-  return { news, loading, error, refresh, createNews, updateNews, deleteNews };
+  const restoreNews = async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/${id}?action=restore`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Restore failed (HTTP ${res.status})`);
+    }
+  };
+
+  const hardDeleteNews = async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/${id}?action=permanent-delete`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Permanent delete failed (HTTP ${res.status})`);
+    }
+  };
+
+  return { news, loading, error, refresh, createNews, updateNews, deleteNews, restoreNews, hardDeleteNews };
 }

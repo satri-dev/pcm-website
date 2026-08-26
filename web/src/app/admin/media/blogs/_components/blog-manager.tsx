@@ -7,6 +7,7 @@ import BlogFormModal from "./blog-form-modal";
 import BlogViewModal from "./blog-view-modal";
 import { Blog } from "../types/blog";
 import { Plus, RefreshCw } from "lucide-react";
+import { SoftDeleteDialog } from "@/components/shared/SoftDeleteDialog";
 
 interface BlogManagerProps {
   initialData?: Blog[];
@@ -30,6 +31,9 @@ export default function BlogManager({
   const [saving, setSaving] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [viewingItem, setViewingItem] = useState<Blog | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [deletingItemName, setDeletingItemName] = useState<string>("");
 
   const handleAddBlog = () => {
     setEditingItem(null);
@@ -46,10 +50,18 @@ export default function BlogManager({
     setIsModalOpen(true);
   };
 
-  const handleDeleteBlog = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this blog post?")) return;
+  const handleDeleteBlog = (blog: Blog) => {
+    setDeletingItemId(blog.id);
+    setDeletingItemName(blog.title || "this item");
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingItemId) return;
     try {
-      await deleteBlog(id);
+      await deleteBlog(deletingItemId);
+      setDeleteDialogOpen(false);
+      setDeletingItemId(null);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Delete failed");
     }
@@ -134,6 +146,15 @@ export default function BlogManager({
         open={isViewOpen}
         onOpenChange={setIsViewOpen}
         blog={viewingItem}
+      />
+
+      <SoftDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        itemName={deletingItemName}
+        itemType="blog post"
+        loading={false}
       />
     </main>
   );

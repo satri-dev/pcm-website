@@ -32,7 +32,7 @@ interface FacilitiesTableProps {
   loading?: boolean;
   onView: (facility: FacilityItem) => void;
   onEdit: (facility: FacilityItem) => void;
-  onDelete: (id: string) => void;
+  onDelete: (facility: FacilityItem) => void;
 }
 
 export default function FacilitiesTable({
@@ -278,7 +278,7 @@ export default function FacilitiesTable({
                       <button
                         type="button"
                         className="act-btn danger"
-                        onClick={() => onDelete(item.id)}
+                        onClick={() => onDelete(item)}
                         title="Delete"
                       >
                         <Trash2 size={15} />
