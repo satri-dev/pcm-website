@@ -4,6 +4,10 @@ import PageHeader from "../../_components/dashboard/page-header";
 import FacilitiesManager from "./_components/facilities-manager";
 import { listFacilities } from "@/repositories/facilities.repository";
 
+
+export const dynamic = "force-dynamic";
+
+
 export const metadata: Metadata = {
   title: "Campus Facilities Management",
   description:

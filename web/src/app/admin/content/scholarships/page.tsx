@@ -4,6 +4,8 @@ import PageHeader from "../../_components/dashboard/page-header";
 import ScholarshipsManager from "./_components/scholarships-manager";
 import { listScholarships } from "@/repositories/scholarships.repository";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Scholarships Management",
   description:

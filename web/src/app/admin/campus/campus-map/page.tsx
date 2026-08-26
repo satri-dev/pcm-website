@@ -4,6 +4,9 @@ import PageHeader from "../../_components/dashboard/page-header";
 import CampusMapManager from "./_components/campusmap-maager";
 import { listCampusMap } from "@/repositories/campus-map.repository";
 
+export const dynamic = "force-dynamic";
+
+
 export const metadata: Metadata = {
   title: "Campus Map Management",
   description:

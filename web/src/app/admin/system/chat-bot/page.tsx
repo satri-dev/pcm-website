@@ -4,6 +4,9 @@ import PageHeader from "../../_components/dashboard/page-header";
 import ChatbotManager from "./_components/chatbot-manager";
 import { listChatbotEntries } from "@/repositories/chatbot.repository";
 
+export const dynamic = "force-dynamic";
+
+
 export const metadata: Metadata = {
   title: "Chatbot Knowledge Base",
   description:

@@ -4,6 +4,8 @@ import PageHeader from "../../_components/dashboard/page-header";
 import NoticesManager from "./_components/notices-manager";
 import { listNotices } from "@/repositories/notices.repository";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Notices Management",
   description:

@@ -4,6 +4,8 @@ import PageHeader from "../../_components/dashboard/page-header";
 import ResultsManager from "./_components/results-manager";
 import { listResults } from "@/repositories/results.repository";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Results Management",
   description:

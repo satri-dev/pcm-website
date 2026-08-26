@@ -4,6 +4,8 @@ import PageHeader from "../../_components/dashboard/page-header";
 import EventsManager from "./_components/events-manager";
 import { listEvents } from "@/repositories/events.repository";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Events & Workshops Management",
   description:

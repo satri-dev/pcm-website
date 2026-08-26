@@ -9,6 +9,9 @@ import RecentActivity from "./_components/dashboard/recent-activity";
 import QuickActions from "./_components/dashboard/quick-actions";
 import { getSiteVisits } from "@/core/lib/analytics/stats";
 
+export const dynamic = "force-dynamic";
+
+
 export default async function AdminDashboard() {
   const siteVisits = await getSiteVisits(60);
   return (

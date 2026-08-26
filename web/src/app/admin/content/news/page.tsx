@@ -4,6 +4,8 @@ import PageHeader from "../../_components/dashboard/page-header";
 import NewsManager from "./_components/news-manager";
 import { listNews } from "@/repositories/news.repository";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "News Management",
   description:

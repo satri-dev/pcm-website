@@ -4,6 +4,8 @@ import PageHeader from "../../_components/dashboard/page-header";
 import FaqsManager from "./_components/faqs-manager";
 import { listFaqs } from "@/repositories/faqs.repository";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "FAQs Management",
   description:

@@ -2,6 +2,9 @@ import PageHeader from "../../_components/dashboard/page-header";
 import DownloadManager from "./_components/download-manager";
 import { listDownloads } from "@/repositories/download.repository";
 
+export const dynamic = "force-dynamic";
+
+
 export const metadata = {
   title: "Download Management",
   description:
