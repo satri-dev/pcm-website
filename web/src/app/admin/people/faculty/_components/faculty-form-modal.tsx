@@ -5,21 +5,17 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Faculty, FACULTY_DEPARTMENTS, FACULTY_STATUSES } from "@/types/faculty";
+import { Faculty, FACULTY_GROUPS } from "@/types/faculty";
 import { Save, X } from "lucide-react";
 import ImageUpload from "@/components/cloudinary/ImageUpload";
 
 const facultySchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters").max(200),
-  department: z.enum(["Management", "Computer Science", "Hospitality", "Business", "Administration"]),
-  designation: z.string().min(2, "Designation is required").max(200),
-  image: z.string().optional(),
-  email: z.string().email("Valid email is required"),
-  phone: z.string().min(1, "Phone is required"),
-  qualification: z.string().min(1, "Qualification is required"),
-  experience: z.string().min(1, "Experience is required"),
-  bio: z.string().optional(),
-  status: z.enum(["active", "inactive", "on_leave"]),
+  name: z.string().min(2, "Full name is required").max(200),
+  role: z.string().min(1, "Role is required").max(200),
+  group: z.enum(["Leadership", "Faculty", "Administration"]),
+  photo: z.string().optional(),
+  email: z.string().email("Valid email is required").optional().or(z.literal("")),
+  phone: z.string().optional(),
 });
 
 type FacultySchema = z.infer<typeof facultySchema>;
@@ -35,37 +31,30 @@ interface FacultyFormModalProps {
 export default function FacultyFormModal({ open, onOpenChange, faculty, onSave, saving = false }: FacultyFormModalProps) {
   const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm<FacultySchema>({
     resolver: zodResolver(facultySchema),
-    defaultValues: { name: "", department: "Management", designation: "", image: "", email: "", phone: "", qualification: "", experience: "", bio: "", status: "active" },
+    defaultValues: { name: "", role: "", group: "Faculty", photo: "", email: "", phone: "" },
   });
 
-  const image = watch("image");
+  const photo = watch("photo");
 
   useEffect(() => {
     if (faculty) {
-      reset({ name: faculty.name, department: faculty.department, designation: faculty.designation, image: faculty.image || "", email: faculty.email, phone: faculty.phone, qualification: faculty.qualification, experience: faculty.experience, bio: faculty.bio || "", status: faculty.status });
+      reset({ name: faculty.name, role: faculty.role, group: faculty.group, photo: faculty.photo || "", email: faculty.email || "", phone: faculty.phone || "" });
     } else {
-      reset({ name: "", department: "Management", designation: "", image: "", email: "", phone: "", qualification: "", experience: "", bio: "", status: "active" });
+      reset({ name: "", role: "", group: "Faculty", photo: "", email: "", phone: "" });
     }
   }, [faculty, reset, open]);
 
-  const handleImageUpload = (result: { secure_url: string }) => { setValue("image", result.secure_url); };
+  const handlePhotoUpload = (result: { secure_url: string }) => { setValue("photo", result.secure_url); };
 
   const onSubmit = async (data: FacultySchema) => {
     const facultyData: Faculty = {
       id: faculty?.id || `faculty-${Date.now()}`,
       name: data.name,
-      department: data.department,
-      designation: data.designation,
-      image: data.image || "",
-      email: data.email,
-      phone: data.phone,
-      qualification: data.qualification,
-      experience: data.experience,
-      bio: data.bio || "",
-      status: data.status,
-      featured: faculty?.featured || false,
-      createdAt: faculty?.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      role: data.role,
+      group: data.group,
+      photo: data.photo || "",
+      email: data.email || "",
+      phone: data.phone || "",
     };
     await onSave(facultyData);
   };
@@ -83,30 +72,21 @@ export default function FacultyFormModal({ open, onOpenChange, faculty, onSave, 
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="modal__body">
             <div className="form-grid">
-              <div className="form-section"><b>Personal Details</b></div>
+              <div className={fv("name")}><label>Full name <span className="req">*</span></label><input type="text" {...register("name")} />{errors.name && <div className="field__err">{errors.name.message}</div>}</div>
+              <div className={fv("role")}><label>Role <span className="req">*</span></label><input type="text" {...register("role")} placeholder="e.g. Principal, Faculty Member" />{errors.role && <div className="field__err">{errors.role.message}</div>}</div>
+              <div className={fv("group")}><label>Group <span className="req">*</span></label><select {...register("group")}><option value="">— Select —</option>{FACULTY_GROUPS.map((g) => <option key={g} value={g}>{g}</option>)}</select>{errors.group && <div className="field__err">{errors.group.message}</div>}</div>
 
-              <div className={fv("name")}><label>Name <span className="req">*</span></label><input type="text" {...register("name")} />{errors.name && <div className="field__err">{errors.name.message}</div>}</div>
-              <div className={fv("department")}><label>Department <span className="req">*</span></label><select {...register("department")}><option value="">— Select —</option>{FACULTY_DEPARTMENTS.map((d) => <option key={d} value={d}>{d}</option>)}</select>{errors.department && <div className="field__err">{errors.department.message}</div>}</div>
-              <div className={fv("designation")}><label>Designation <span className="req">*</span></label><input type="text" {...register("designation")} />{errors.designation && <div className="field__err">{errors.designation.message}</div>}</div>
-              <div className={fv("status")}><label>Status <span className="req">*</span></label><select {...register("status")}><option value="">— Select —</option>{FACULTY_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}</select>{errors.status && <div className="field__err">{errors.status.message}</div>}</div>
-
-              <div className={`field field--full ${!image ? "" : ""}`}>
+              <div className={`field field--full`}>
                 <label>Photo</label>
                 <div className="file-field">
-                  <ImageUpload onUpload={handleImageUpload} />
-                  <input type="text" {...register("image")} placeholder="…or paste a Cloudinary URL" className="mt-2" />
+                  <ImageUpload onUpload={handlePhotoUpload} />
+                  <input type="text" {...register("photo")} placeholder="…or paste a URL" className="mt-2" />
                 </div>
-                {image && <div className="img-prev"><img src={image} alt="" /></div>}
+                {photo && <div className="img-prev"><img src={photo} alt="" style={{ height: 64, width: "auto", maxWidth: "100%", borderRadius: 8, border: "1px solid #e2e7f0" }} /></div>}
               </div>
 
-              <div className="form-section"><b>Contact &amp; Professional</b></div>
-
-              <div className={fv("email")}><label>Email <span className="req">*</span></label><input type="email" {...register("email")} />{errors.email && <div className="field__err">{errors.email.message}</div>}</div>
-              <div className={fv("phone")}><label>Phone <span className="req">*</span></label><input type="text" {...register("phone")} />{errors.phone && <div className="field__err">{errors.phone.message}</div>}</div>
-              <div className={fv("qualification")}><label>Qualification <span className="req">*</span></label><input type="text" {...register("qualification")} placeholder="e.g. M.Com, PhD" />{errors.qualification && <div className="field__err">{errors.qualification.message}</div>}</div>
-              <div className={fv("experience")}><label>Experience <span className="req">*</span></label><input type="text" {...register("experience")} placeholder="e.g. 10 years" />{errors.experience && <div className="field__err">{errors.experience.message}</div>}</div>
-
-              <div className="field field--full"><label>Bio</label><textarea {...register("bio")} rows={3} placeholder="Short biography..." /></div>
+              <div className={fv("email")}><label>Email</label><input type="email" {...register("email")} /></div>
+              <div className={fv("phone")}><label>Phone</label><input type="text" {...register("phone")} /></div>
             </div>
           </div>
 
