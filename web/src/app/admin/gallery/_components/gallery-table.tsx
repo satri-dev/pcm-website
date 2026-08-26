@@ -23,6 +23,7 @@ import { Eye, Pencil, Trash2, Search, ImageIcon } from "lucide-react";
 interface GalleryTableProps {
   gallery: Gallery[];
   onAdd: () => void;
+  onView: (item: Gallery) => void;
   onEdit: (item: Gallery) => void;
   onDelete: (id: string) => void;
 }
@@ -30,6 +31,7 @@ interface GalleryTableProps {
 export default function GalleryTable({
   gallery,
   onAdd,
+  onView,
   onEdit,
   onDelete,
 }: GalleryTableProps) {
@@ -163,6 +165,7 @@ export default function GalleryTable({
                         <button
                           type="button"
                           className="act-btn"
+                          onClick={() => onView(item)}
                           title="View"
                         >
                           <Eye size={15} />

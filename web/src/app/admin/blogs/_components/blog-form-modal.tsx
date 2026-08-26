@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Blog, BLOG_CATEGORIES, BLOG_STATUSES } from "../types/blog";
-import { Save, X, Plus } from "lucide-react";
+import { Save, X, Plus, FileText } from "lucide-react";
 import DocumentUpload from "@/components/cloudinary/DocumentUpload";
 import RichTextEditor from "@/app/admin/_components/editor/rich-text-editor";
 
@@ -102,10 +102,11 @@ export default function BlogFormModal({
   const handleFileUpload = (result: {
     secure_url: string;
     original_filename: string;
+    format: string;
   }) => {
     setFileError("");
     setValue("fileUrl", result.secure_url);
-    setValue("fileName", result.original_filename);
+    setValue("fileName", `${result.original_filename}.${result.format}`);
   };
 
   const handleFileRemove = () => {
@@ -229,9 +230,12 @@ export default function BlogFormModal({
                 <div className="file-field">
                   <DocumentUpload onUpload={handleFileUpload} />
                 </div>
-                {fileUrl && (
+                {fileUrl && fileUrl.startsWith('http') && (
                   <div className="mt-2 flex items-center gap-2">
-                    <span className="badge badge--blue">document</span>
+                    <span className="badge badge--blue inline-flex items-center gap-1">
+                      <FileText size={12} />
+                      {watch("fileName") || "Attached file"}
+                    </span>
                     <button
                       type="button"
                       className="admin-btn admin-btn--sm admin-btn--ghost text-[var(--admin-red)] border-[rgba(214,69,69,0.3)] hover:border-[rgba(214,69,69,0.3)]"

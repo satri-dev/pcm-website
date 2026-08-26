@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useGallery } from "../hooks/use-gallery";
 import GalleryTable from "./gallery-table";
 import GalleryFormModal from "./gallery-form-modal";
+import GalleryViewModal from "./gallery-view-modal";
 import { Gallery } from "@/types/gallery";
 import { Plus, RefreshCw } from "lucide-react";
 
@@ -27,10 +28,17 @@ export default function GalleryManager({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Gallery | null>(null);
   const [saving, setSaving] = useState(false);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+  const [viewingItem, setViewingItem] = useState<Gallery | null>(null);
 
   const handleAddGallery = () => {
     setEditingItem(null);
     setIsModalOpen(true);
+  };
+
+  const handleViewGallery = (item: Gallery) => {
+    setViewingItem(item);
+    setIsViewOpen(true);
   };
 
   const handleEditGallery = (item: Gallery) => {
@@ -106,6 +114,7 @@ export default function GalleryManager({
             <GalleryTable
               gallery={gallery}
               onAdd={handleAddGallery}
+              onView={handleViewGallery}
               onEdit={handleEditGallery}
               onDelete={handleDeleteGallery}
             />
@@ -119,6 +128,12 @@ export default function GalleryManager({
         gallery={editingItem}
         onSave={handleSaveGallery}
         saving={saving}
+      />
+
+      <GalleryViewModal
+        open={isViewOpen}
+        onOpenChange={setIsViewOpen}
+        gallery={viewingItem}
       />
     </main>
   );
