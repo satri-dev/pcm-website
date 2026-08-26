@@ -162,7 +162,7 @@ export default function Navbar() {
             </button>
             <Link
               href="/admission"
-              className={buttonVariants({ variant: "primary", className: "hidden sm:inline-flex text-sm sm:text-base px-3 sm:px-4 h-9 sm:h-10" })}
+              className={buttonVariants({ variant: "primary", className: "hidden sm:inline-flex text-sm sm:text-base px-3 sm:px-4 h-9 sm:h-10 text-white" })}
             >
               <span className="hidden sm:inline">Apply Now</span>
               <span className="sm:hidden">Apply</span>

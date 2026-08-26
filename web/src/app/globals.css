@@ -258,6 +258,46 @@
   border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
+/* Force navbar elements to always have correct colors */
+header .text-pcm-navy,
+header button,
+header a {
+  color: #1a3173 !important;
+}
+
+.dark header .text-pcm-navy,
+.dark header button,
+.dark header a {
+  color: #e5e5e5 !important;
+}
+
+/* Ensure Apply Now button text is always white */
+header a[href="/admission"] span {
+  color: white !important;
+}
+
+.dark header a[href="/admission"] span {
+  color: white !important;
+}
+
+/* Ensure Apply Now button SVG/arrow is always white */
+header a[href="/admission"] svg {
+  color: white !important;
+  stroke: white !important;
+}
+
+.dark header a[href="/admission"] svg {
+  color: white !important;
+  stroke: white !important;
+}
+
+/* Force hamburger menu to be hidden on desktop (lg and above) */
+@media (min-width: 1024px) {
+  header button[aria-label="Open menu"] {
+    display: none !important;
+  }
+}
+
 /* Background overrides */
 .dark .bg-white { background-color: #262626 !important; }
 .dark .bg-gray-50 { background-color: #1f1f1f !important; }

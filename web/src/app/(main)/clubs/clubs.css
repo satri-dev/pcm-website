@@ -1,0 +1,303 @@
+/* ============================================================
+   Clubs — scoped design system
+   Scope  : .pcm-clubs
+   Dark   : .dark .pcm-clubs
+   ============================================================ */
+
+/* ── Light tokens ── */
+.pcm-clubs {
+  --ff-display: var(--font-poppins), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --ff-body:    var(--font-poppins), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --ff-mono:    var(--font-poppins), ui-monospace, monospace;
+
+  --navy:        #16285b;
+  --navy-800:    #1d3577;
+  --brand-300:   #6d8af0;
+  --brand-400:   #4167c9;
+  --brand-600:   #21409a;
+  --brand-700:   #1b3376;
+  --brand-900:   #14265a;
+  --gold-400:    #51b747;
+  --gold-500:    #3f9e35;
+  --gold-600:    #338430;
+
+  --body-c:      #4a5568;
+  --muted:       #718096;
+  --line:        #e5e9f0;
+  --line-2:      #dce2ec;
+  --surface:     #ffffff;
+  --surface-soft:#f4f7fb;
+  --surface-tint:#edf2f9;
+
+  --dark:        #0f1f3a;
+  --dark-2:      #16285b;
+
+  --shadow-sm:  0 1px 3px rgba(22, 40, 91, 0.08);
+  --shadow-md:  0 10px 30px rgba(22, 40, 91, 0.08);
+  --shadow-lg:  0 24px 60px rgba(22, 40, 91, 0.12);
+  --shadow-gold: 0 14px 34px rgba(81, 183, 71, 0.28);
+
+  --r-sm: 8px;
+  --r:    14px;
+  --r-lg: 22px;
+  --r-full: 999px;
+
+  --container-wide: 1360px;
+  --gutter: clamp(1.25rem, 4vw, 2.5rem);
+  --space-7: 2.5rem;
+
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  font-family: var(--ff-body);
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--body-c);
+  background: var(--surface);
+}
+
+/* ── Dark tokens ── */
+.dark .pcm-clubs {
+  --navy:        #e4eaf7;
+  --navy-800:    #a4b6f7;
+  --brand-300:   #a4b6f7;
+  --brand-400:   #7a9de8;
+  --brand-600:   #6d8af0;
+  --brand-700:   #7d98f5;
+  --brand-900:   #a4b6f7;
+  --gold-400:    #63c95a;
+  --gold-500:    #57bd4e;
+  --gold-600:    #4aad42;
+
+  --body-c:      #b8c2d6;
+  --muted:       #8b95ab;
+  --line:        #273149;
+  --line-2:      #2f3a56;
+  --surface:     #0e1424;
+  --surface-soft:#141b2e;
+  --surface-tint:#1a2340;
+
+  --dark:        #0e1424;
+  --dark-2:      #141b2e;
+
+  --shadow-sm:  0 1px 3px rgba(0,0,0,.45);
+  --shadow-md:  0 10px 30px rgba(0,0,0,.50);
+  --shadow-lg:  0 24px 60px rgba(0,0,0,.60);
+  background: var(--surface);
+  color: var(--body-c);
+}
+
+.dark .pcm-clubs .page-hero { background: #0a1020; }
+
+.dark .pcm-clubs .section { background: transparent; }
+
+/* ── Split section ── */
+.pcm-clubs .split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(2rem, 5vw, 4.5rem);
+  align-items: center;
+}
+
+.pcm-clubs .split.reverse .split__media {
+  order: 2;
+}
+
+.pcm-clubs .split__media {
+  position: relative;
+}
+
+.pcm-clubs .split__media > div {
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.pcm-clubs .split-media-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pcm-clubs .est-badge {
+  position: absolute;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  z-index: 3;
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.7rem 1.1rem;
+  background: rgba(10, 27, 51, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--r);
+  text-align: center;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: var(--shadow-md);
+}
+
+.pcm-clubs .est-badge b {
+  font-size: 1.5rem;
+  color: var(--gold-400);
+  line-height: 1;
+}
+
+.pcm-clubs .est-badge span {
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+@media (max-width: 820px) {
+  .pcm-clubs .split {
+    grid-template-columns: 1fr;
+  }
+  .pcm-clubs .split.reverse .split__media {
+    order: 0;
+  }
+}
+
+/* ── Grids ── */
+.pcm-clubs .grid {
+  display: grid;
+  gap: clamp(1.25rem, 2.5vw, 1.75rem);
+}
+
+.pcm-clubs .g-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 900px) {
+  .pcm-clubs .g-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .pcm-clubs .g-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Club cards ── */
+.pcm-clubs .club-card {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.75rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+
+.pcm-clubs .club-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+}
+
+.pcm-clubs .club-card__head {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.pcm-clubs .club-card__icon {
+  flex: none;
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  font-size: 1.7rem;
+  line-height: 1;
+  border-radius: var(--r);
+  background: var(--surface-tint);
+}
+
+.pcm-clubs .club-card__head h3 {
+  font-size: 1.15rem;
+  margin: 0.1rem 0 0.35rem;
+}
+
+.pcm-clubs .club-card__head p {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.pcm-clubs .club-card__members {
+  display: grid;
+  gap: 0.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px dashed var(--line);
+}
+
+/* ── Club members ── */
+.pcm-clubs .club-member {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.pcm-clubs .club-member__photo {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--gold-400);
+  background: var(--surface-tint);
+}
+
+.pcm-clubs .club-member__photo--ph {
+  display: grid;
+  place-items: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--brand-600);
+  letter-spacing: 0.03em;
+}
+
+.pcm-clubs .club-member__info {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.pcm-clubs .club-member__info b {
+  font-size: 0.95rem;
+}
+
+.pcm-clubs .club-member__role {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--brand-600);
+}
+
+.pcm-clubs .club-member__prog {
+  font-family: var(--ff-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+/* ── Reveal on scroll ── */
+.pcm-clubs .reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+}
+
+.pcm-clubs .reveal.is-inview {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pcm-clubs .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
