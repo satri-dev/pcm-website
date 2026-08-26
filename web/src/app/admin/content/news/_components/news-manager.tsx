@@ -1,58 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useNews } from "../hooks/use-news";
 import NewsTable from "./news-table";
 import NewsFormModal from "./news-form-modal";
 import NewsViewModal from "./news-view-modal";
 import { News } from "@/types/news";
 import { Plus, RefreshCw } from "lucide-react";
 
-const API_BASE = "/api/admin/content/news";
+interface NewsManagerProps {
+  initialData?: News[];
+}
 
-export default function NewsManager() {
-  const [news, setNews] = useState<News[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+export default function NewsManager({ initialData }: NewsManagerProps) {
+  const {
+    news,
+    loading,
+    error,
+    refresh,
+    createNews,
+    updateNews,
+    deleteNews,
+  } = useNews({ initialData });
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingNews, setEditingNews] = useState<News | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [viewingNews, setViewingNews] = useState<News | null>(null);
   const [saving, setSaving] = useState(false);
-  const [reloadKey, setReloadKey] = useState(0);
-
-  const refresh = () => {
-    setLoading(true);
-    setReloadKey((k) => k + 1);
-  };
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch(`${API_BASE}?pageSize=50`)
-      .then(async (res) => {
-        if (!res.ok) {
-          throw new Error(
-            res.status === 401
-              ? "Your session has expired. Please sign in again."
-              : `Failed to load news (HTTP ${res.status})`
-          );
-        }
-        return res.json();
-      })
-      .then((data) => {
-        if (cancelled) return;
-        setNews(data.items ?? []);
-        setError("");
-        setLoading(false);
-      })
-      .catch((err: unknown) => {
-        if (cancelled) return;
-        setError(err instanceof Error ? err.message : "Failed to load news");
-        setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [reloadKey]);
 
   const handleViewNews = (newsItem: News) => {
     setViewingNews(newsItem);
@@ -72,12 +47,7 @@ export default function NewsManager() {
   const handleDeleteNews = async (id: string) => {
     if (!confirm("Are you sure you want to delete this news article?")) return;
     try {
-      const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || `Delete failed (HTTP ${res.status})`);
-      }
-      setNews((prev) => prev.filter((n) => n.id !== id));
+      await deleteNews(id);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Delete failed");
     }
@@ -86,48 +56,11 @@ export default function NewsManager() {
   const handleSaveNews = async (newsData: News) => {
     setSaving(true);
     try {
-      const isEdit = !!editingNews;
-      const payload = {
-        title: newsData.title,
-        slug: newsData.slug,
-        excerpt: newsData.excerpt,
-        content: newsData.content,
-        category: newsData.category,
-        image: newsData.image,
-        author: newsData.author,
-        publishedAt: newsData.publishedAt,
-        status: newsData.status,
-        featured: newsData.featured,
-        views: newsData.views,
-        tags: newsData.tags,
-        seo: newsData.seo,
-      };
-
-      const res = await fetch(
-        isEdit ? `${API_BASE}/${editingNews!.id}` : API_BASE,
-        {
-          method: isEdit ? "PATCH" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(
-          data.error ||
-            (isEdit
-              ? `Update failed (HTTP ${res.status})`
-              : `Create failed (HTTP ${res.status})`)
-        );
+      if (newsData.id && news.some((n) => n.id === newsData.id)) {
+        await updateNews(newsData.id, newsData);
+      } else {
+        await createNews(newsData);
       }
-
-      const saved: News = await res.json();
-      setNews((prev) =>
-        isEdit
-          ? prev.map((n) => (n.id === saved.id ? saved : n))
-          : [saved, ...prev]
-      );
       setIsModalOpen(false);
       setEditingNews(null);
     } catch (err) {
