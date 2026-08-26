@@ -1,0 +1,48 @@
+import { NextResponse } from "next/server";
+import { requireApiSession } from "@/core/lib/api-guard";
+import { listNews } from "@/repositories/news.repository";
+import { listNotices } from "@/repositories/notices.repository";
+import { listResults } from "@/repositories/results.repository";
+import { listEvents } from "@/repositories/events.repository";
+import { listPrograms } from "@/repositories/programs.repository";
+import { listScholarships } from "@/repositories/scholarships.repository";
+import { listFaqs } from "@/repositories/faqs.repository";
+import { listBlogs } from "@/repositories/blog.repository";
+import { listGallery } from "@/repositories/gallery.repository";
+
+export async function GET() {
+  const guard = await requireApiSession(["admin", "editor", "viewer"]);
+  if (!guard.ok) return guard.response;
+
+  try {
+    const [news, notices, results, events, programs, scholarships, faqs, blogs, gallery] =
+      await Promise.all([
+        listNews({ pageSize: 1 }).then((r) => r.total),
+        listNotices({ pageSize: 1 }).then((r) => r.total),
+        listResults({ pageSize: 1 }).then((r) => r.total),
+        listEvents({ pageSize: 1 }).then((r) => r.total),
+        listPrograms({ pageSize: 1 }).then((r) => r.total),
+        listScholarships({ pageSize: 1 }).then((r) => r.total),
+        listFaqs({ pageSize: 1 }).then((r) => r.total),
+        listBlogs({ pageSize: 1 }).then((r) => r.total),
+        listGallery({ pageSize: 1 }).then((r) => r.total),
+      ]);
+
+    return NextResponse.json({
+      news,
+      notices,
+      results,
+      events,
+      programs,
+      scholarships,
+      faqs,
+      blogs,
+      gallery,
+    });
+  } catch {
+    return NextResponse.json(
+      { error: "Failed to fetch counts" },
+      { status: 500 }
+    );
+  }
+}
