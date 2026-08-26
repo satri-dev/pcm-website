@@ -789,3 +789,78 @@
     transition: none;
   }
 }
+
+/* ============================================================
+   Dark mode — .dark class toggled on <html>
+   ============================================================ */
+.dark .pcm-about {
+  --navy:        #e4eaf7;
+  --navy-800:    #a4b6f7;
+  --brand-300:   #a4b6f7;
+  --brand-400:   #7a9de8;
+  --brand-600:   #6d8af0;
+  --brand-700:   #7d98f5;
+  --brand-900:   #a4b6f7;
+  --gold-400:    #63c95a;
+  --gold-500:    #57bd4e;
+  --gold-600:    #4aad42;
+
+  --body-c:      #b8c2d6;
+  --muted:       #8b95ab;
+  --line:        #273149;
+  --line-2:      #2f3a56;
+  --surface:     #0e1424;
+  --surface-soft:#141b2e;
+  --surface-tint:#1a2340;
+
+  --dark:        #0e1424;
+  --dark-2:      #141b2e;
+
+  --shadow-sm:  0 1px 3px rgba(0,0,0,.45);
+  --shadow-md:  0 10px 30px rgba(0,0,0,.50);
+  --shadow-lg:  0 24px 60px rgba(0,0,0,.60);
+  background: var(--surface);
+  color: var(--body-c);
+}
+
+.dark .pcm-about .page-hero { background: #0a1020; }
+
+.dark .pcm-about .section { background: transparent; }
+
+.dark .pcm-about .card,
+.dark .pcm-about .leader-card {
+  background: var(--surface-soft);
+  border-color: var(--line);
+}
+
+.dark .pcm-about .cta-band {
+  background: linear-gradient(135deg, #0a1020, #0e1930);
+}
+
+.dark .pcm-about .on-dark.btn-primary {
+  background: var(--brand-600);
+  color: #fff;
+}
+
+.dark .pcm-about .on-dark.btn-primary:hover {
+  background: var(--brand-700);
+}
+
+.dark .pcm-about .on-dark.btn-ghost {
+  color: #fff;
+  border-color: rgba(255,255,255,.35);
+}
+
+.dark .pcm-about .on-dark.btn-ghost:hover {
+  border-color: #fff;
+  color: #fff;
+}
+
+.dark .pcm-about .eyebrow.on-dark {
+  color: var(--gold-400);
+}
+
+.dark .pcm-about .achv__card {
+  background: var(--surface-soft);
+  border-color: var(--line);
+}
