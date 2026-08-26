@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import PageHeader from "../../_components/dashboard/page-header";
 import NoticesManager from "./_components/notices-manager";
+import { listNotices } from "@/repositories/notices.repository";
 
 export const metadata: Metadata = {
   title: "Notices Management",
@@ -10,11 +11,13 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function NoticesPage() {
+export default async function NoticesPage() {
+  const { items } = await listNotices({ pageSize: 50 });
+
   return (
     <>
       <PageHeader title="Notices" subtitle="Content · Notices" />
-      <NoticesManager />
+      <NoticesManager initialData={items} />
     </>
   );
 }
