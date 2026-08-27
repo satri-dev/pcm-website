@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { HardDeleteDialog } from "@/components/shared/HardDeleteDialog";
-import { Trash2, RotateCcw, X } from "lucide-react";
+import { Trash2, RotateCcw, X, Users, Bot } from "lucide-react";
 
 interface TrashedItem {
   id: string;
   name: string;
   collection: string;
   deletedAt: string;
+  type: "chatbot" | "user";
 }
 
 export default function SystemTrashPage() {
@@ -38,10 +39,20 @@ export default function SystemTrashPage() {
 
   const handleRestore = async (item: TrashedItem) => {
     try {
-      const res = await fetch(
-        `/api/admin/chatbot/${item.id}?action=restore`,
-        { method: "PATCH" }
-      );
+      let res: Response;
+      if (item.type === "user") {
+        // Restore user = unban them
+        res = await fetch(
+          `/api/admin/system/users/${item.id}?action=unban`,
+          { method: "PATCH" }
+        );
+      } else {
+        // Restore chatbot entry
+        res = await fetch(
+          `/api/admin/chatbot/${item.id}?action=restore`,
+          { method: "PATCH" }
+        );
+      }
       if (!res.ok) throw new Error("Failed to restore");
       setItems((prev) => prev.filter((i) => i.id !== item.id));
     } catch (err) {
@@ -52,10 +63,20 @@ export default function SystemTrashPage() {
   const handlePermanentDelete = async () => {
     if (!selectedItem) return;
     try {
-      const res = await fetch(
-        `/api/admin/chatbot/${selectedItem.id}?action=permanent-delete`,
-        { method: "PATCH" }
-      );
+      let res: Response;
+      if (selectedItem.type === "user") {
+        // Hard delete user
+        res = await fetch(
+          `/api/admin/system/users/${selectedItem.id}`,
+          { method: "DELETE" }
+        );
+      } else {
+        // Permanent delete chatbot entry
+        res = await fetch(
+          `/api/admin/chatbot/${selectedItem.id}?action=permanent-delete`,
+          { method: "PATCH" }
+        );
+      }
       if (!res.ok) throw new Error("Failed to delete");
       setItems((prev) => prev.filter((i) => i.id !== selectedItem.id));
       setHardDeleteDialogOpen(false);
@@ -68,12 +89,34 @@ export default function SystemTrashPage() {
   const handleEmptyTrash = async () => {
     if (!confirm("Are you sure you want to empty the entire trash? This cannot be undone.")) return;
     for (const item of items) {
-      await fetch(
-        `/api/admin/chatbot/${item.id}?action=permanent-delete`,
-        { method: "PATCH" }
-      );
+      try {
+        if (item.type === "user") {
+          await fetch(`/api/admin/system/users/${item.id}`, {
+            method: "DELETE",
+          });
+        } else {
+          await fetch(
+            `/api/admin/chatbot/${item.id}?action=permanent-delete`,
+            { method: "PATCH" }
+          );
+        }
+      } catch {
+        // Continue with next item
+      }
     }
     setItems([]);
+  };
+
+  const typeIcon = (type: string) => {
+    return type === "user" ? (
+      <Users size={14} className="inline mr-1" />
+    ) : (
+      <Bot size={14} className="inline mr-1" />
+    );
+  };
+
+  const typeBadge = (type: string) => {
+    return type === "user" ? "badge--blue" : "badge--violet";
   };
 
   return (
@@ -81,14 +124,15 @@ export default function SystemTrashPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">System Trash</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            Trashed items from Chatbot Entries
+          <p className="text-[var(--admin-muted)] text-sm mt-1">
+            Trashed items from Chatbot Entries and Banned Users
           </p>
         </div>
         {items.length > 0 && (
           <button
             onClick={handleEmptyTrash}
-            className="admin-btn bg-red-600 hover:bg-red-700 text-white"
+            className="admin-btn admin-btn--primary"
+            style={{ background: "var(--admin-red)", borderColor: "var(--admin-red)" }}
           >
             <Trash2 className="h-4 w-4 mr-2" />
             Empty Trash
@@ -97,55 +141,112 @@ export default function SystemTrashPage() {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+        <div
+          className="px-4 py-3 rounded mb-4 text-sm"
+          style={{
+            background: "#fdeaea",
+            border: "1px solid #f5c6c6",
+            color: "var(--admin-red)",
+          }}
+        >
           {error}
         </div>
       )}
 
       {loading ? (
-        <div className="text-center py-12 text-muted-foreground">Loading...</div>
+        <div className="text-center py-12 text-[var(--admin-muted)]">
+          Loading...
+        </div>
       ) : items.length === 0 ? (
-        <div className="text-center py-12">
-          <Trash2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <p className="text-muted-foreground">Trash is empty</p>
+        <div className="admin-panel">
+          <div className="text-center py-12">
+            <Trash2
+              size={48}
+              className="mx-auto mb-4"
+              style={{ opacity: 0.3 }}
+            />
+            <p className="text-[var(--admin-muted)]">Trash is empty</p>
+          </div>
         </div>
       ) : (
         <div className="admin-panel">
           <table className="w-full">
             <thead>
-              <tr className="border-b">
-                <th className="text-left py-3 px-4 font-medium">Question</th>
-                <th className="text-left py-3 px-4 font-medium">Deleted</th>
-                <th className="text-right py-3 px-4 font-medium">Actions</th>
+              <tr className="border-b border-[var(--admin-line)]">
+                <th
+                  className="text-left py-3 px-4 font-medium text-[0.72rem] uppercase tracking-wider"
+                  style={{ color: "var(--admin-muted)" }}
+                >
+                  Item
+                </th>
+                <th
+                  className="text-left py-3 px-4 font-medium text-[0.72rem] uppercase tracking-wider"
+                  style={{ color: "var(--admin-muted)" }}
+                >
+                  Type
+                </th>
+                <th
+                  className="text-left py-3 px-4 font-medium text-[0.72rem] uppercase tracking-wider"
+                  style={{ color: "var(--admin-muted)" }}
+                >
+                  Deleted
+                </th>
+                <th
+                  className="text-right py-3 px-4 font-medium text-[0.72rem] uppercase tracking-wider"
+                  style={{ color: "var(--admin-muted)" }}
+                >
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {items.map((item) => (
-                <tr key={item.id} className="border-b last:border-0">
-                  <td className="py-3 px-4">{item.name}</td>
-                  <td className="py-3 px-4 text-sm text-muted-foreground">
+                <tr
+                  key={`${item.type}-${item.id}`}
+                  className="border-b border-[var(--admin-line)] last:border-0 hover:bg-[#fafbfe]"
+                >
+                  <td className="py-3 px-4">
+                    <div className="font-semibold text-sm">{item.name}</div>
+                  </td>
+                  <td className="py-3 px-4">
+                    <span className={`badge ${typeBadge(item.type)}`}>
+                      {typeIcon(item.type)}
+                      {item.type === "user" ? "User" : "Chatbot"}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 text-sm" style={{ color: "var(--admin-muted)" }}>
                     {item.deletedAt
-                      ? new Date(item.deletedAt).toLocaleDateString()
+                      ? new Date(item.deletedAt).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })
                       : "—"}
                   </td>
                   <td className="py-3 px-4 text-right">
-                    <button
-                      onClick={() => handleRestore(item)}
-                      className="admin-btn mr-2"
-                      title="Restore"
-                    >
-                      <RotateCcw className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedItem(item);
-                        setHardDeleteDialogOpen(true);
-                      }}
-                      className="admin-btn text-red-600 hover:bg-red-50"
-                      title="Delete Permanently"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
+                    <div className="row-actions justify-end">
+                      <button
+                        onClick={() => handleRestore(item)}
+                        className="act-btn"
+                        title={
+                          item.type === "user"
+                            ? "Unban user"
+                            : "Restore"
+                        }
+                      >
+                        <RotateCcw size={15} />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedItem(item);
+                          setHardDeleteDialogOpen(true);
+                        }}
+                        className="act-btn danger"
+                        title="Delete Permanently"
+                      >
+                        <X size={15} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -159,7 +260,12 @@ export default function SystemTrashPage() {
         onOpenChange={setHardDeleteDialogOpen}
         onConfirm={handlePermanentDelete}
         itemName={selectedItem?.name}
-        itemType="chatbot entry"
+        itemType={selectedItem?.type === "user" ? "user" : "chatbot entry"}
+        warningMessage={
+          selectedItem?.type === "user"
+            ? "This will permanently delete the user, their account records, and all active sessions."
+            : undefined
+        }
       />
     </div>
   );
