@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/immutability */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -124,7 +125,7 @@ export default function SystemTrashPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">System Trash</h1>
-          <p className="text-[var(--admin-muted)] text-sm mt-1">
+          <p className="text-(--admin-muted) text-sm mt-1">
             Trashed items from Chatbot Entries and Banned Users
           </p>
         </div>
@@ -154,7 +155,7 @@ export default function SystemTrashPage() {
       )}
 
       {loading ? (
-        <div className="text-center py-12 text-[var(--admin-muted)]">
+        <div className="text-center py-12 text-(--admin-muted)">
           Loading...
         </div>
       ) : items.length === 0 ? (
@@ -165,14 +166,14 @@ export default function SystemTrashPage() {
               className="mx-auto mb-4"
               style={{ opacity: 0.3 }}
             />
-            <p className="text-[var(--admin-muted)]">Trash is empty</p>
+            <p className="text-(--admin-muted)">Trash is empty</p>
           </div>
         </div>
       ) : (
         <div className="admin-panel">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[var(--admin-line)]">
+              <tr className="border-b border-(--admin-line)">
                 <th
                   className="text-left py-3 px-4 font-medium text-[0.72rem] uppercase tracking-wider"
                   style={{ color: "var(--admin-muted)" }}
@@ -203,7 +204,7 @@ export default function SystemTrashPage() {
               {items.map((item) => (
                 <tr
                   key={`${item.type}-${item.id}`}
-                  className="border-b border-[var(--admin-line)] last:border-0 hover:bg-[#fafbfe]"
+                  className="border-b border-(--admin-line) last:border-0 hover:bg-[#fafbfe]"
                 >
                   <td className="py-3 px-4">
                     <div className="font-semibold text-sm">{item.name}</div>

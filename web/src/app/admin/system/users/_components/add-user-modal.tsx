@@ -84,7 +84,7 @@ export default function AddUserModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="news-modal w-[min(100%,640px)] sm:max-w-[640px] max-h-[90vh] overflow-y-auto flex flex-col gap-0 rounded-[16px] p-0 ring-0 outline-none"
+        className="news-modal w-[min(100%,640px)] sm:max-w-160 max-h-[90vh] overflow-y-auto flex flex-col gap-0 rounded-[16px] p-0 ring-0 outline-none"
       >
         <div className="modal__head">
           <DialogTitle className="m-0 text-[1.05rem] font-normal flex items-center gap-2">
