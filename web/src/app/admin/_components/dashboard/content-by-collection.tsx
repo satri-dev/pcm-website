@@ -39,7 +39,7 @@ export default function ContentByCollection() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[400px] w-full">
+        <ChartContainer config={chartConfig} className="h-100 w-full">
           <BarChart
             accessibilityLayer
             data={chartData}
