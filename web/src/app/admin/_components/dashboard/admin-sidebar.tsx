@@ -2,7 +2,8 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { authClient } from "@/core/lib/auth-client";
 import {
   LayoutDashboard,
   FileText,
@@ -29,6 +30,7 @@ import {
   Search,
   ShieldCheck,
   Settings,
+  LogOut,
   type LucideIcon,
 } from "lucide-react";
 
@@ -47,6 +49,16 @@ interface NavSection {
 
 interface ContentCounts {
   [key: string]: number;
+}
+
+interface SiteSettings {
+  collegeName: string;
+  logoUrl: string;
+}
+
+interface UserInfo {
+  name: string;
+  email: string;
 }
 
 const navigation: NavSection[] = [
@@ -170,14 +182,21 @@ const navigation: NavSection[] = [
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const current = pathname || "/admin";
   const [counts, setCounts] = useState<ContentCounts | null>(null);
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>({
+    collegeName: "PCM",
+    logoUrl: "/logo-pcm.png",
+  });
+  const [user, setUser] = useState<UserInfo | null>(null);
   const fetchedRef = useRef(false);
 
   useEffect(() => {
     if (fetchedRef.current) return;
     fetchedRef.current = true;
 
+    // Fetch content counts
     fetch("/api/admin/content-counts")
       .then(async (res) => {
         if (!res.ok) return null;
@@ -187,6 +206,27 @@ export default function AdminSidebar() {
         if (data) setCounts(data);
       })
       .catch(() => {});
+
+    // Fetch site settings
+    fetch("/api/admin/system/settings")
+      .then(async (res) => {
+        if (!res.ok) return null;
+        return res.json();
+      })
+      .then((data: SiteSettings | null) => {
+        if (data) setSiteSettings(data);
+      })
+      .catch(() => {});
+
+    // Fetch current user session
+    authClient.getSession().then(({ data }) => {
+      if (data?.user) {
+        setUser({
+          name: data.user.name,
+          email: data.user.email,
+        });
+      }
+    }).catch(() => {});
   }, []);
 
   function isActive(href: string) {
@@ -206,14 +246,14 @@ export default function AdminSidebar() {
     <aside className="admin-sidebar" id="sidebar">
       <Link href="/admin" className="admin-sidebar__brand">
         <Image
-          src="/logo-pcm.png"
-          alt="PCM Logo"
+          src={siteSettings.logoUrl}
+          alt={`${siteSettings.collegeName} Logo`}
           width={40}
           height={40}
           className="admin-sidebar__brand-img"
         />
         <div>
-          <b>PCM Admin</b>
+          <b>{siteSettings.collegeName} Admin</b>
           <span>Content Manager</span>
         </div>
       </Link>
@@ -248,12 +288,28 @@ export default function AdminSidebar() {
 
       <div className="admin-sidebar__foot">
         <div className="admin-sidebar__user">
-          <div className="admin-sidebar__avatar">A</div>
+          <div className="admin-sidebar__avatar">
+            {user?.name?.charAt(0)?.toUpperCase() || "U"}
+          </div>
           <div className="admin-sidebar__user-info">
-            <b>Admin User</b>
-            <span>admin@pcm.edu.np</span>
+            <b>{user?.name || "Loading..."}</b>
+            <span>{user?.email || ""}</span>
           </div>
         </div>
+        <button
+          type="button"
+          onClick={async () => {
+            await authClient.signOut();
+            router.push("/login");
+            router.refresh();
+          }}
+          className="admin-icon-btn"
+          aria-label="Sign out"
+          title="Sign out"
+          style={{ marginLeft: "auto", flexShrink: 0 }}
+        >
+          <LogOut size={16} />
+        </button>
       </div>
     </aside>
   );

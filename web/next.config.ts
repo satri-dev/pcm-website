@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
         pathname: "/v1/create-qr-code/**",
       },
       {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
+      {
         protocol: "http",
         hostname: "localhost",
         pathname: "/assets/**",
