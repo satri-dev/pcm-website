@@ -1,6 +1,5 @@
 import Link from "next/link";
 import {
-  FileText,
   Pencil,
   ExternalLink,
 } from "lucide-react";
@@ -9,10 +8,10 @@ export default function DashboardHeader() {
   return (
     <div className="flex items-start justify-between gap-4 flex-wrap">
       <div>
-        <h1 className="text-[1.35rem] font-bold text-[var(--admin-ink)] m-0 leading-tight">
+        <h1 className="text-[1.35rem] font-bold text-(--admin-ink) m-0 leading-tight">
           Dashboard
         </h1>
-        <p className="text-[0.9rem] text-[var(--admin-muted)] m-0 mt-0.5">
+        <p className="text-[0.9rem] text-(--admin-muted) m-0 mt-0.5">
           Analytics and quick overview of the PCM website content.
         </p>
       </div>

@@ -54,10 +54,10 @@ export default function SiteSettings({ settings, onSave }: SiteSettingsProps) {
       {/* Toast notification */}
       {toast && (
         <div
-          className={`fixed top-4 right-4 z-[100] px-4 py-3 rounded-xl shadow-lg text-sm font-semibold text-white transition-all ${
+          className={`fixed top-4 right-4 z-100 px-4 py-3 rounded-xl shadow-lg text-sm font-semibold text-white transition-all ${
             toast.type === "success"
-              ? "bg-[var(--admin-green)]"
-              : "bg-[var(--admin-red)]"
+              ? "bg-(--admin-green)"
+              : "bg-(--admin-red)"
           }`}
         >
           {toast.message}
@@ -79,7 +79,7 @@ export default function SiteSettings({ settings, onSave }: SiteSettingsProps) {
             <div>
               <label
                 htmlFor="collegeName"
-                className="block text-sm font-semibold text-[var(--admin-ink)] mb-1"
+                className="block text-sm font-semibold text-(--admin-ink) mb-1"
               >
                 College Name
               </label>
@@ -89,28 +89,28 @@ export default function SiteSettings({ settings, onSave }: SiteSettingsProps) {
                 value={collegeName}
                 onChange={(e) => setCollegeName(e.target.value)}
                 placeholder="e.g. Pokhara College of Management"
-                className="w-full px-3 py-2 border border-[var(--admin-line)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--admin-brand)] focus:border-transparent"
+                className="w-full px-3 py-2 border border-(--admin-line) rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-(--admin-brand) focus:border-transparent"
                 required
               />
-              <p className="text-xs text-[var(--admin-muted)] mt-1">
+              <p className="text-xs text-(--admin-muted) mt-1">
                 This will be displayed in the admin sidebar and other areas.
               </p>
             </div>
 
             {/* Logo Upload */}
             <div>
-              <label className="block text-sm font-semibold text-[var(--admin-ink)] mb-1">
+              <label className="block text-sm font-semibold text-(--admin-ink) mb-1">
                 College Logo
               </label>
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-[var(--admin-surface-2)] border border-[var(--admin-line)] rounded-lg flex items-center justify-center overflow-hidden shrink-0">
+                <div className="w-16 h-16 bg-(--admin-surface-2) border border-(--admin-line) rounded-lg flex items-center justify-center overflow-hidden shrink-0">
                   {logoUrl ? (
                     <div
                       className="w-12 h-12 bg-contain bg-no-repeat bg-center"
                       style={{ backgroundImage: `url(${logoUrl})` }}
                     />
                   ) : (
-                    <ImageIcon size={24} className="text-[var(--admin-muted)]" />
+                    <ImageIcon size={24} className="text-(--admin-muted)" />
                   )}
                 </div>
                 <div className="flex-1">
@@ -119,7 +119,7 @@ export default function SiteSettings({ settings, onSave }: SiteSettingsProps) {
                       setLogoUrl(result.secure_url);
                     }}
                   />
-                  <p className="text-xs text-[var(--admin-muted)] mt-1">
+                  <p className="text-xs text-(--admin-muted) mt-1">
                     Upload JPG, PNG, or WebP. Max 5 MB.
                   </p>
                 </div>
@@ -129,22 +129,22 @@ export default function SiteSettings({ settings, onSave }: SiteSettingsProps) {
             </div>
 
             {/* Preview */}
-            <div className="flex items-center gap-4 p-4 bg-[var(--admin-surface-2)] rounded-lg">
-              <div className="w-10 h-10 bg-[var(--admin-surface)] border border-[var(--admin-line)] rounded-lg flex items-center justify-center overflow-hidden">
+            <div className="flex items-center gap-4 p-4 bg-(--admin-surface-2) rounded-lg">
+              <div className="w-10 h-10 bg-(--admin-surface) border border-(--admin-line) rounded-lg flex items-center justify-center overflow-hidden">
                 {logoUrl ? (
                   <div
                     className="w-8 h-8 bg-contain bg-no-repeat bg-center"
                     style={{ backgroundImage: `url(${logoUrl})` }}
                   />
                 ) : (
-                  <Building size={20} className="text-[var(--admin-muted)]" />
+                  <Building size={20} className="text-(--admin-muted)" />
                 )}
               </div>
               <div>
-                <div className="font-semibold text-sm text-[var(--admin-ink)]">
+                <div className="font-semibold text-sm text-(--admin-ink)">
                   {collegeName || "College Name"}
                 </div>
-                <div className="text-xs text-[var(--admin-muted)]">Admin Panel</div>
+                <div className="text-xs text-(--admin-muted)">Admin Panel</div>
               </div>
             </div>
 
