@@ -6,7 +6,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { authClient } from "@/core/lib/auth-client";
 import {
   LayoutDashboard,
-  FileText,
   Newspaper,
   AlertCircle,
   BarChart3,
@@ -31,6 +30,26 @@ import {
   ShieldCheck,
   Settings,
   LogOut,
+  ChevronDown,
+  Home,
+  Info,
+  DoorOpen,
+  BookOpen,
+  Sparkles,
+  Mail,
+  CalendarDays,
+  Calculator,
+  Heart,
+  TrendingUp,
+  Ticket,
+  PanelTop,
+  PanelBottom,
+  LayoutList,
+  Layers,
+  Quote,
+  Megaphone,
+  BadgeCheck,
+  AlignJustify,
   type LucideIcon,
 } from "lucide-react";
 
@@ -61,12 +80,49 @@ interface UserInfo {
   email: string;
 }
 
+interface PagesSectionNavItem {
+  label: string;
+  href: string;
+  icon: LucideIcon;
+  ready?: boolean;
+}
+
+const pagesNav: PagesSectionNavItem[] = [
+  { label: "Home", href: "/admin/pages/home", icon: Home },
+  { label: "About", href: "/admin/pages/about", icon: Info },
+  { label: "Admission", href: "/admin/pages/admission", icon: DoorOpen },
+  { label: "Programs", href: "/admin/pages/programs", icon: Layers },
+  { label: "News", href: "/admin/pages/news", icon: Newspaper },
+  { label: "Notices", href: "/admin/pages/notices", icon: AlertCircle },
+  { label: "Results", href: "/admin/pages/results", icon: BarChart3 },
+  { label: "Events", href: "/admin/pages/events", icon: CalendarDays },
+  { label: "Gallery", href: "/admin/pages/gallery", icon: ImageIcon },
+  { label: "Blogs", href: "/admin/pages/blogs", icon: Pencil },
+  { label: "Student Blogs", href: "/admin/pages/blog-student", icon: BookOpen },
+  { label: "Clubs", href: "/admin/pages/clubs", icon: Sparkles },
+  { label: "Alumni", href: "/admin/pages/alumni", icon: GraduationCap },
+  { label: "Life at PCM", href: "/admin/pages/life", icon: Heart },
+  { label: "Testimonials", href: "/admin/pages/testimonials", icon: Quote },
+  { label: "GPA Converter", href: "/admin/pages/gpa-converter", icon: Calculator },
+  { label: "Contact", href: "/admin/pages/contact", icon: Mail },
+];
+
+const sectionsNav: PagesSectionNavItem[] = [
+  { label: "Navbar", href: "/admin/pages/navbar", icon: PanelTop, ready: true },
+  { label: "Topbar", href: "/admin/pages/topbar", icon: AlignJustify },
+  { label: "Footer", href: "/admin/pages/footer", icon: PanelBottom },
+  { label: "CTA Banners", href: "/admin/pages/cta", icon: Megaphone },
+  { label: "Apply Now Buttons", href: "/admin/pages/apply-now", icon: BadgeCheck },
+  { label: "Tickers", href: "/admin/pages/tickers", icon: TrendingUp },
+  { label: "Chat Widget", href: "/admin/pages/chat-widget", icon: MessageCircle },
+  { label: "Admission Modal", href: "/admin/pages/admission-modal", icon: Ticket },
+];
+
 const navigation: NavSection[] = [
   {
     title: "Overview",
     items: [
       { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-      { label: "Pages & Sections", href: "/admin/pages", icon: FileText },
     ],
   },
   {
@@ -191,6 +247,9 @@ export default function AdminSidebar() {
   });
   const [user, setUser] = useState<UserInfo | null>(null);
   const fetchedRef = useRef(false);
+  const [pagesOpen, setPagesOpen] = useState<boolean>(
+    () => pathname === "/admin/pages" || pathname.startsWith("/admin/pages/")
+  );
 
   useEffect(() => {
     if (fetchedRef.current) return;
@@ -242,6 +301,24 @@ export default function AdminSidebar() {
     return item.badge;
   }
 
+  const isPagesArea =
+    current === "/admin/pages" || current.startsWith("/admin/pages/");
+
+  function renderSubLink(item: PagesSectionNavItem, active: boolean) {
+    const Icon = item.icon;
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        className={`admin-nav-link admin-nav-link--sub${active ? " active" : ""}${item.ready ? " is-ready" : ""}`}
+      >
+        <Icon size={16} />
+        {item.label}
+        {item.ready && <span className="ready-dot" title="Ready" />}
+      </Link>
+    );
+  }
+
   return (
     <aside className="admin-sidebar" id="sidebar">
       <Link href="/admin" className="admin-sidebar__brand">
@@ -282,6 +359,35 @@ export default function AdminSidebar() {
                 </Link>
               );
             })}
+
+            {sIdx === 0 && (
+              <div style={{ marginTop: "0.15rem" }}>
+                <button
+                  type="button"
+                  className={`admin-nav-group${isPagesArea ? " active" : ""}`}
+                  aria-expanded={pagesOpen}
+                  aria-controls="pages-sections-panel"
+                  onClick={() => setPagesOpen((o) => !o)}
+                >
+                  <LayoutList size={17} />
+                  Pages &amp; Sections
+                  <ChevronDown className="admin-nav-group__chevron" size={16} />
+                </button>
+
+                {pagesOpen && (
+                  <div id="pages-sections-panel" className="pages-sections-panel">
+                    <div className="admin-nav-sec admin-nav-sec--sub">Pages</div>
+                    {pagesNav.map((item) =>
+                      renderSubLink(item, current.startsWith(item.href))
+                    )}
+                    <div className="admin-nav-sec admin-nav-sec--sub">Sections</div>
+                    {sectionsNav.map((item) =>
+                      renderSubLink(item, current.startsWith(item.href))
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         ))}
       </nav>
