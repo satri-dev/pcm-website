@@ -9,6 +9,10 @@ export const metadata: Metadata = {
     "Website content management system.",
 };
 
+// Admin pages block on per-request DB + session reads. Opt the whole admin
+// segment out of Cache Components static-shell validation.
+export const instant = false;
+
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <div

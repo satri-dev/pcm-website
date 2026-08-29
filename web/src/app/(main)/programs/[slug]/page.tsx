@@ -7,10 +7,6 @@ import CurriculumTabs from "@/feature/Program/components/CurriculumTabs";
 import "../programs.css";
 
 // All 3 slugs are known at build time — pre-render all of them.
-// ISR at 300s so curriculum or coordinator changes from admin propagate
-// without a full redeploy.
-export const revalidate = 300;
-
 export async function generateStaticParams() {
   return programs.map((p) => ({ slug: p.slug }));
 }

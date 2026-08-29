@@ -7,8 +7,7 @@ import {
   siteSettingsFromDocument,
   type SiteSettingsDocument,
 } from "./types/settings";
-
-export const dynamic = "force-dynamic";
+import { connection } from "next/server";
 
 export const metadata: Metadata = {
   title: "Settings",
@@ -18,6 +17,7 @@ export const metadata: Metadata = {
 };
 
 export default async function SettingsPage() {
+  await connection();
   // Fetch site settings server-side
   const db = await getDb();
   const col = db.collection<SiteSettingsDocument>(SETTINGS_COLLECTION);

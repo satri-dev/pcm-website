@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 import ContactClient from "./ContactClient";
 
-// Contact page content never changes at runtime — address, hours and form
-// UI are all static. Pre-render once at build, serve as a static HTML file.
-// Zero revalidation needed; redeploy to update.
-export const dynamic = "force-static";
-
+// Contact page content is static — address, hours and form UI never change
+// at runtime. Cache Components prerenders the HTML shell automatically.
 export const metadata: Metadata = {
   title: "Contact Us | Pokhara College of Management",
   description:

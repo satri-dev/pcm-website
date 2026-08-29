@@ -1,8 +1,7 @@
 import PageHeader from "../../_components/dashboard/page-header";
 import GalleryManager from "./_components/gallery-manager";
 import { listGallery } from "@/repositories/gallery.repository";
-
-export const dynamic = "force-dynamic";
+import { connection } from "next/server";
 
 export const metadata = {
   title: "Gallery Management",
@@ -12,6 +11,7 @@ export const metadata = {
 };
 
 export default async function GalleryPage() {
+  await connection();
   const { items } = await listGallery({ pageSize: 50 });
 
   return (

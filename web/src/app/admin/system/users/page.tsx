@@ -10,8 +10,7 @@ import {
   userFromDocument,
   type UserDocument,
 } from "./types";
-
-export const dynamic = "force-dynamic";
+import { connection } from "next/server";
 
 export const metadata: Metadata = {
   title: "Users & Roles",
@@ -21,6 +20,7 @@ export const metadata: Metadata = {
 };
 
 export default async function UsersPage() {
+  await connection();
   // Get current session for identifying the logged-in user
   const session = await auth.api.getSession({
     headers: await headers(),

@@ -3,9 +3,7 @@ import type { Metadata } from "next";
 import PageHeader from "../../_components/dashboard/page-header";
 import CampusMapManager from "./_components/campusmap-maager";
 import { listCampusMap } from "@/repositories/campus-map.repository";
-
-export const dynamic = "force-dynamic";
-
+import { connection } from "next/server";
 
 export const metadata: Metadata = {
   title: "Campus Map Management",
@@ -15,6 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function CampusMapPage() {
+  await connection();
   const { items } = await listCampusMap({ pageSize: 100 });
 
   return (

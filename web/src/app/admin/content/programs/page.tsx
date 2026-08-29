@@ -3,8 +3,7 @@ import type { Metadata } from "next";
 import PageHeader from "../../_components/dashboard/page-header";
 import ProgramsManager from "./_components/programs-manager";
 import { listPrograms } from "@/repositories/programs.repository";
-
-export const dynamic = "force-dynamic";
+import { connection } from "next/server";
 
 export const metadata: Metadata = {
   title: "Programs Management",
@@ -14,6 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ProgramsPage() {
+  await connection();
   const { items } = await listPrograms({ pageSize: 50 });
 
   return (
