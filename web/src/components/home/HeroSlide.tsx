@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import type { HeroSlide as HeroSlideType } from "@/data/hero-slides";
+import type { HeroSlide as HeroSlideType } from "@/types/homepage";
 import { buttonVariants } from "@/components/ui/button";
 import HeroBadge from "./HeroBadge";
 import StatsOverlay from "./StatsOverlay";

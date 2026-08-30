@@ -12,6 +12,17 @@ import BlogsSection from "@/components/home/BlogsSection";
 import TestimonialsSection from "@/components/home/TestimonialsSection";
 import CTASection from "@/components/home/CTASection";
 import { BreadcrumbSchema, EducationalOrganizationSchema } from "../structured-data";
+import { getHomepage } from "@/repositories/homepage.repository";
+import { listPrograms } from "@/repositories/programs.repository";
+import { listNews } from "@/repositories/news.repository";
+import { listEvents } from "@/repositories/events.repository";
+import { listNotices } from "@/repositories/notices.repository";
+import { listResults } from "@/repositories/results.repository";
+import { listGallery } from "@/repositories/gallery.repository";
+import { listFacilities } from "@/repositories/facilities.repository";
+import { listBlogs } from "@/repositories/blog.repository";
+
+import { connection } from "next/server";
 
 export const metadata: Metadata = {
   title: "Pokhara College of Management | BBA, BCSIT in Pokhara",
@@ -68,30 +79,59 @@ export const metadata: Metadata = {
     images: ["https://www.pcm.edu.np/images/hero-1.jpg"],
   },
   verification: {
-    google: "your-google-verification-code", // Add actual verification code
+    google: "your-google-verification-code",
   },
   other: {
     "theme-color": "#21409A",
   },
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  await connection();
+
+  const [
+    homepage,
+    programsData,
+    newsData,
+    eventsData,
+    noticesData,
+    resultsData,
+    galleryData,
+    facilitiesData,
+    blogsData,
+  ] = await Promise.all([
+    getHomepage(),
+    listPrograms({ pageSize: 3, status: "open" }),
+    listNews({ pageSize: 6, status: "published" }),
+    listEvents({ pageSize: 3, status: "published" }),
+    listNotices({ pageSize: 3 }),
+    listResults({ pageSize: 3 }),
+    listGallery({ pageSize: 5 }),
+    listFacilities({ status: "published", pageSize: 3 }),
+    listBlogs({ status: "published", pageSize: 3 }),
+  ]);
+
   return (
     <>
       <BreadcrumbSchema />
       <EducationalOrganizationSchema />
-      <HeroSlider />
-      <WelcomeSection />
-      <WhyChoosePCM />
-      <ProgramsSection />
-      <AdmissionSection />
-      <FacilitiesSection />
-      <NewsSection />
-      <EventsSection />
-      <GallerySection />
-      <BlogsSection />
-      <TestimonialsSection />
-      <CTASection />
+      <HeroSlider slides={homepage.heroSlides} />
+      <WelcomeSection stats={homepage.welcomeStats} />
+      <WhyChoosePCM reasons={homepage.whyChooseReasons} />
+      <ProgramsSection programs={programsData.items} />
+      <AdmissionSection admission={homepage.admission} />
+      <FacilitiesSection facilities={facilitiesData.items} />
+      <NewsSection
+        news={newsData.items}
+        notices={noticesData.items}
+        results={resultsData.items}
+        events={eventsData.items}
+      />
+      <EventsSection events={eventsData.items} />
+      <GallerySection galleries={galleryData.items} />
+      <BlogsSection blogs={blogsData.items} />
+      <TestimonialsSection testimonials={homepage.testimonials} />
+      <CTASection cta={homepage.cta} />
     </>
   );
 }

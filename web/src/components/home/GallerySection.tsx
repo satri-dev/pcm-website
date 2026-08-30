@@ -1,36 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
+import { Gallery } from "@/types/gallery";
 
-const galleryImages = [
-  {
-    src: "/images/hero-4.jpg",
-    alt: "Annual Fest celebrations at PCM",
-    title: "Annual Fest"
-  },
-  {
-    src: "/images/about-games.jpg",
-    alt: "Students playing sports at PCM", 
-    title: "Sports Day"
-  },
-  {
-    src: "/images/about-graduation.jpg",
-    alt: "PCM graduation ceremony",
-    title: "Graduation"
-  },
-  {
-    src: "/images/hero-2.jpg",
-    alt: "PCM students in an academic setting",
-    title: "Academic Life"
-  },
-  {
-    src: "/images/hero-5.jpg",
-    alt: "Campus life at PCM",
-    title: "Campus Life"
-  }
-];
-
-export default function GallerySection() {
+export default function GallerySection({ galleries }: { galleries: Gallery[] }) {
+  const galleryImages = galleries.slice(0, 5).map((g) => ({
+    src: g.image || g.photos?.[0]?.url || "/images/hero-4.jpg",
+    alt: g.title,
+    title: g.title,
+  }));
   return (
     <section className="py-[clamp(4rem,8vw,6rem)] bg-secondary/30">
       <div className="container">

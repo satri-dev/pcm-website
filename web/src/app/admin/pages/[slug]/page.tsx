@@ -4,11 +4,13 @@ import { Wrench } from "lucide-react";
 
 import PageHeader from "../../_components/dashboard/page-header";
 import NavMenuManager from "../_components/nav-menu-manager";
+import HomepageManager from "../home/_components/homepage-manager";
 import { findEntry } from "../_config";
 import {
   ensureNavMenusReady,
   listNavMenu,
 } from "@/repositories/nav-menu.repository";
+import { getHomepage } from "@/repositories/homepage.repository";
 import { connection } from "next/server";
 
 interface RouteCtx {
@@ -41,6 +43,16 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
       <>
         <PageHeader title={found.entry.label} subtitle="Sections · Navbar menus" />
         <NavMenuManager initialData={items} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "home") {
+    const data = await getHomepage();
+    return (
+      <>
+        <PageHeader title={found.entry.label} subtitle="Pages · Home" />
+        <HomepageManager initialData={data} />
       </>
     );
   }
