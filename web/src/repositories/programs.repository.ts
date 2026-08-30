@@ -253,7 +253,30 @@ export function ensureProgramIndexes() {
         }
       }
 
-      await col.createIndexes(wanted);
+      // Create indexes one by one, skipping unique index if duplicates exist
+      for (const index of wanted) {
+        try {
+          const options: any = { name: index.name };
+          
+          // Only add unique if it's explicitly true
+          if (index.unique === true) {
+            options.unique = true;
+          }
+          
+          // Add text search options
+          if (index.key.name === "text") {
+            options.default_language = "english";
+          }
+          
+          await col.createIndex(index.key, options);
+        } catch (err: any) {
+          if (err.code === 11000 && index.unique) {
+            console.warn(`[Programs] Skipping unique index ${index.name} due to duplicate values. Please fix duplicate slugs in the database.`);
+          } else {
+            throw err;
+          }
+        }
+      }
     })();
   }
   return indexesReady;
