@@ -6,6 +6,8 @@
 export const CACHE_TAGS = {
   navMenu: "nav-menu",
   pageContent: "page-content",
+  faqPage: "faq-page",
+  faqs: "faqs",
   about: "about",
   homepage: "homepage",
 } as const;
