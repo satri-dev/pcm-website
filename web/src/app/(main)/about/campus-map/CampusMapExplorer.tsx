@@ -2,7 +2,25 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useReveal } from "../legacy/use-reveal";
-import { categoryColors, landmarks, type Landmark } from "./data";
+import { categoryColors, landmarks as fallbackLandmarks, type Landmark } from "./data";
+
+interface CampusMapApiItem {
+  id: string;
+  name: string;
+  category: string;
+  icon: string;
+  positionX: number;
+  positionY: number;
+  description: string;
+}
+
+interface CampusMapResponse {
+  items: CampusMapApiItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+  pages: number;
+}
 
 function clamp(v: number, min: number, max: number) {
   return Math.max(min, Math.min(max, v));
@@ -11,9 +29,45 @@ function clamp(v: number, min: number, max: number) {
 export function CampusMapExplorer() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [stageSize, setStageSize] = useState({ w: 0, h: 0 });
+  const [landmarks, setLandmarks] = useState<Landmark[]>([]);
+  const [loading, setLoading] = useState(true);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const markerRefs = useRef(new Map<string, HTMLButtonElement>());
   const reveal = useReveal<HTMLDivElement>();
+
+  useEffect(() => {
+    let active = true;
+
+    async function load() {
+      try {
+        const res = await fetch("/api/admin/campus/campus-map?page=1&pageSize=100&status=published");
+        if (!res.ok) throw new Error("Failed to load campus map");
+        const data: CampusMapResponse = await res.json();
+        if (!active) return;
+        setLandmarks(
+          data.items.map((item) => ({
+            id: item.id,
+            name: item.name,
+            category: item.category,
+            icon: item.icon,
+            x: item.positionX,
+            y: item.positionY,
+            desc: item.description,
+          })),
+        );
+      } catch {
+        if (!active) return;
+        setLandmarks(fallbackLandmarks);
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     const el = stageRef.current;
@@ -42,6 +96,14 @@ export function CampusMapExplorer() {
       : undefined;
 
   const categories = [...new Set(landmarks.map((l) => l.category))];
+
+  if (loading) {
+    return <p style={{ padding: "1rem 0", color: "var(--muted)" }}>Loading campus map…</p>;
+  }
+
+  if (landmarks.length === 0) {
+    return <p style={{ padding: "1rem 0", color: "var(--muted)" }}>No campus landmarks found.</p>;
+  }
 
   return (
     <div ref={reveal.ref} className={`campus-map-wrap ${reveal.revealClass}`} style={reveal.style} id="campus-map">

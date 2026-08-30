@@ -15,7 +15,7 @@ import ImageUpload from "@/components/cloudinary/ImageUpload";
 
 const gallerySchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters").max(200),
-  category: z.enum(["Campus", "Events", "Students", "Faculty", "Activities", "Infrastructure", "Graduation"]),
+  category: z.string().min(1, "Category is required").max(100),
   image: z.string().optional(),
   photos: z.array(z.object({
     url: z.string().min(1, "Photo URL is required"),
@@ -192,12 +192,18 @@ export default function GalleryFormModal({
                 <label htmlFor="gallery-category">
                   Category <span className="req">*</span>
                 </label>
-                <select id="gallery-category" {...register("category")}>
-                  <option value="">— Select —</option>
+                <input
+                  id="gallery-category"
+                  type="text"
+                  list="gallery-category-list"
+                  placeholder="e.g. Events, Sports, …"
+                  {...register("category")}
+                />
+                <datalist id="gallery-category-list">
                   {GALLERY_CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
+                    <option key={cat} value={cat} />
                   ))}
-                </select>
+                </datalist>
                 {errors.category && (
                   <div className="field__err">{errors.category.message}</div>
                 )}

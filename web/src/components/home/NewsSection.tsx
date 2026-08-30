@@ -4,7 +4,17 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
-import { newsData } from "@/data/news";
+import { News } from "@/types/news";
+import { Notice } from "@/types/notices";
+import { Result } from "@/types/results";
+import { EventItem } from "@/types/events";
+
+interface Props {
+  news: News[];
+  notices: Notice[];
+  results: Result[];
+  events: EventItem[];
+}
 
 const tabs = [
   { id: "news", label: "News" },
@@ -13,25 +23,7 @@ const tabs = [
   { id: "events", label: "Events" }
 ];
 
-const noticesData = [
-  { date: "Ashar 21, 2083", title: "Entrance Examination Schedule - 2083", href: "/assets/pdf/entrance-schedule-2083.pdf" },
-  { date: "Ashar 18, 2083", title: "Admission Form Deadline", href: "/assets/pdf/admission-open-2083.pdf" },
-  { date: "Ashar 10, 2083", title: "Scholarship Applications Open", href: "/assets/pdf/scholarship-open-2083.pdf" },
-];
-
-const resultsData = [
-  { date: "15 Jul 2026", title: "BBA 8th Semester Result - 2082", href: "/assets/pdf/bba-8th-semester-2082.pdf" },
-  { date: "28 Jun 2026", title: "BCSIT 3rd Semester Result - 2082", href: "/assets/pdf/bcsit-3rd-semester-2082.pdf" },
-  { date: "12 Jun 2026", title: "BBA-Finance 5th Semester Result - 2082", href: "/assets/pdf/bba-finance-5th-semester-2082.pdf" },
-];
-
-const eventsData = [
-  { date: "15 Aug 2026", title: "Coding Bootcamp for BCSIT", image: "/images/hero-6.jpg" },
-  { date: "22 Aug 2026", title: "Guest Lecture: Careers in Banking", image: "/images/about-1.jpg" },
-  { date: "29 Aug 2026", title: "Inter-Batch Sports Tournament", image: "/images/about-games.jpg" },
-];
-
-export default function NewsSection() {
+export default function NewsSection({ news, notices, results, events }: Props) {
   const [activeTab, setActiveTab] = useState("news");
 
   const renderTabContent = () => {
@@ -39,13 +31,15 @@ export default function NewsSection() {
       case "news":
         return (
           <div className="space-y-4">
-            {newsData.slice(0, 3).map((item) => (
+            {news.slice(0, 3).map((item) => (
               <Link key={item.slug} href={`/news/${item.slug}`} className="flex gap-4 p-4 rounded-lg hover:bg-secondary/50 transition-colors">
-                <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                  <Image src={item.image} alt="" width={64} height={64} className="object-cover w-full h-full" />
-                </div>
+                {item.image && (
+                  <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                    <Image src={item.image} alt="" width={64} height={64} className="object-cover w-full h-full" />
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs text-muted-foreground mb-1">{item.date}</div>
+                  <div className="text-xs text-muted-foreground mb-1">{item.publishedAt}</div>
                   <div className="font-medium text-pcm-navy line-clamp-2">{item.title}</div>
                 </div>
               </Link>
@@ -58,13 +52,13 @@ export default function NewsSection() {
       case "notices":
         return (
           <div className="space-y-4">
-            {noticesData.map((item) => (
-              <a key={item.href} href={item.href} className="block p-4 rounded-lg hover:bg-secondary/50 transition-colors">
+            {notices.slice(0, 3).map((item) => (
+              <Link key={item.slug} href={`/notices/${item.slug}`} className="block p-4 rounded-lg hover:bg-secondary/50 transition-colors">
                 <div className="text-xs text-muted-foreground mb-1">{item.date}</div>
                 <div className="font-medium text-pcm-navy">{item.title}</div>
-              </a>
+              </Link>
             ))}
-            <Link href="/notice" className="inline-flex items-center gap-2 text-pcm-blue hover:text-pcm-blue-700 font-semibold text-sm transition-colors group mt-4">
+            <Link href="/notices" className="inline-flex items-center gap-2 text-pcm-blue hover:text-pcm-blue-700 font-semibold text-sm transition-colors group mt-4">
               View all notices <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
@@ -72,11 +66,11 @@ export default function NewsSection() {
       case "results":
         return (
           <div className="space-y-4">
-            {resultsData.map((item) => (
-              <a key={item.href} href={item.href} className="block p-4 rounded-lg hover:bg-secondary/50 transition-colors">
+            {results.slice(0, 3).map((item) => (
+              <Link key={item.slug} href={`/results/${item.slug}`} className="block p-4 rounded-lg hover:bg-secondary/50 transition-colors">
                 <div className="text-xs text-muted-foreground mb-1">{item.date}</div>
                 <div className="font-medium text-pcm-navy">{item.title}</div>
-              </a>
+              </Link>
             ))}
             <Link href="/results" className="inline-flex items-center gap-2 text-pcm-blue hover:text-pcm-blue-700 font-semibold text-sm transition-colors group mt-4">
               View all results <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
@@ -86,11 +80,13 @@ export default function NewsSection() {
       case "events":
         return (
           <div className="space-y-4">
-            {eventsData.map((item) => (
-              <Link key={item.title} href="/events" className="flex gap-4 p-4 rounded-lg hover:bg-secondary/50 transition-colors">
-                <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                  <Image src={item.image} alt="" width={64} height={64} className="object-cover w-full h-full" />
-                </div>
+            {events.slice(0, 3).map((item) => (
+              <Link key={item.slug} href={`/events/${item.slug}`} className="flex gap-4 p-4 rounded-lg hover:bg-secondary/50 transition-colors">
+                {item.image && (
+                  <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                    <Image src={item.image} alt="" width={64} height={64} className="object-cover w-full h-full" />
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <div className="text-xs text-muted-foreground mb-1">{item.date}</div>
                   <div className="font-medium text-pcm-navy line-clamp-2">{item.title}</div>
@@ -125,23 +121,25 @@ export default function NewsSection() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {newsData.slice(0, 3).map((news) => (
-                <Link key={news.slug} href={`/news/${news.slug}`} className="group bg-card border border-border rounded-2xl overflow-hidden shadow-pcm-sm hover:shadow-pcm-md transition-all hover:-translate-y-1">
+              {news.slice(0, 3).map((item) => (
+                <Link key={item.slug} href={`/news/${item.slug}`} className="group bg-card border border-border rounded-2xl overflow-hidden shadow-pcm-sm hover:shadow-pcm-md transition-all hover:-translate-y-1">
                   <div className="relative aspect-[16/10]">
-                    <Image src={news.image} alt={news.title} fill sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw" className="object-cover" />
+                    {item.image && (
+                      <Image src={item.image} alt={item.title} fill sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw" className="object-cover" />
+                    )}
                     <div className="absolute top-4 left-4 px-3 py-1.5 rounded-md bg-pcm-dark/85 text-white text-xs font-mono">
-                      {news.date}
+                      {item.publishedAt}
                     </div>
                   </div>
                   <div className="p-6">
                     <span className="inline-block px-3 py-1 rounded-full bg-secondary border border-border text-pcm-blue text-xs font-mono uppercase tracking-wide mb-3">
-                      {news.tag}
+                      {item.category}
                     </span>
                     <h3 className="font-display font-semibold text-pcm-navy mb-2 line-clamp-2">
-                      {news.title}
+                      {item.title}
                     </h3>
                     <p className="text-sm text-muted-foreground line-clamp-3">
-                      {news.excerpt}
+                      {item.excerpt}
                     </p>
                   </div>
                 </Link>

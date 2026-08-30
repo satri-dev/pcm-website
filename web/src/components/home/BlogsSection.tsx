@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { blogsData } from "@/data/news";
+import type { Blog } from "@/app/admin/media/blogs/types/blog";
 
-export default function BlogsSection() {
+export default function BlogsSection({ blogs }: { blogs: Blog[] }) {
   return (
     <section className="py-[clamp(4rem,8vw,6rem)] bg-background">
       <div className="container">
@@ -18,22 +18,22 @@ export default function BlogsSection() {
               Career guidance, industry trends and honest advice from the PCM community.
             </p>
           </div>
-          <Link 
-            href="/blogs" 
+          <Link
+            href="/blogs"
             className="inline-flex items-center gap-2 text-pcm-blue hover:text-pcm-blue-700 font-semibold transition-colors group"
           >
-            All articles 
+            All articles
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {blogsData.map((blog, index) => (
-            <Link key={blog.slug} href={`/blogs/${blog.slug}`} className="group bg-card border border-border rounded-2xl overflow-hidden shadow-pcm-sm hover:shadow-pcm-md transition-all hover:-translate-y-1">
+          {blogs.map((blog, index) => (
+            <Link key={blog.id} href={`/blogs/${blog.id}`} className="group bg-card border border-border rounded-2xl overflow-hidden shadow-pcm-sm hover:shadow-pcm-md transition-all hover:-translate-y-1">
               <div className="relative aspect-[16/10] bg-gradient-to-br from-pcm-blue to-pcm-blue-700">
-                <svg 
-                  viewBox="0 0 800 480" 
-                  className="absolute inset-0 w-full h-full" 
+                <svg
+                  viewBox="0 0 800 480"
+                  className="absolute inset-0 w-full h-full"
                   preserveAspectRatio="xMidYMid slice"
                 >
                   <defs>
@@ -52,7 +52,7 @@ export default function BlogsSection() {
               </div>
               <div className="p-6">
                 <span className="inline-block px-3 py-1 rounded-full bg-secondary border border-border text-pcm-blue text-xs font-mono uppercase tracking-wide mb-3">
-                  {blog.tag}
+                  {blog.category}
                 </span>
                 <h3 className="font-display font-semibold text-pcm-navy mb-2 line-clamp-2">
                   {blog.title}

@@ -1,13 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { heroSlides } from "@/data/hero-slides";
+import type { HeroSlide as HeroSlideType } from "@/types/homepage";
+import { MAX_HERO_SLIDES } from "@/types/homepage";
 import HeroSlide from "./HeroSlide";
 import SliderControls from "./SliderControls";
 
-export default function HeroSlider() {
+export default function HeroSlider({ slides }: { slides: HeroSlideType[] }) {
+  const visibleSlides = slides.slice(0, MAX_HERO_SLIDES);
   const [index, setIndex] = useState(0);
-  const count = heroSlides.length;
+  const count = visibleSlides.length;
 
   const next = useCallback(() => setIndex((i) => (i + 1) % count), [count]);
   const prev = useCallback(() => setIndex((i) => (i - 1 + count) % count), [count]);
@@ -26,7 +28,7 @@ export default function HeroSlider() {
         className="flex flex-1 transition-transform duration-[600ms] ease-[cubic-bezier(0.22,0.61,0.36,1)]"
         style={{ transform: `translateX(-${index * 100}%)` }}
       >
-        {heroSlides.map((slide) => (
+        {visibleSlides.map((slide) => (
           <HeroSlide key={slide.id} slide={slide} />
         ))}
       </div>

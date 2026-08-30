@@ -41,6 +41,7 @@
   font-family: inherit;
 }
 .admin-btn:hover { border-color: #c6cfdf; }
+.admin-btn:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
 .admin-btn--primary { background: var(--admin-brand); border-color: var(--admin-brand); color: #fff; }
 .admin-btn--primary:hover { background: var(--admin-brand-2); }
 .admin-btn--ghost { background: transparent; }

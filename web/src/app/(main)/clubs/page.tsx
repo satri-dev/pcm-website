@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import ClubsClient from "./ClubsClient";
+import { getPageCopy } from "@/lib/data/page-content";
 
 export const metadata: Metadata = {
   title: "Student Clubs | Pokhara College of Management",
@@ -24,6 +25,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ClubsPage() {
-  return <ClubsClient />;
+export default async function ClubsPage() {
+  const content = await getPageCopy("clubs");
+  return <ClubsClient content={content} />;
 }

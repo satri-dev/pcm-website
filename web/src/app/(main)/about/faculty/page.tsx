@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import "../legacy/legacy.css";
 import { PageHero } from "../legacy/page-hero";
-import { SectionHead } from "../legacy/section-head";
 import { CtaBand } from "../legacy/cta-band";
-import { FacultyCard } from "./FacultyCard";
+import { FacultyGrid } from "./FacultyGrid";
 import { StatsGrid } from "./StatsGrid";
-import { leadership, team, stats } from "./data";
+import { stats } from "./data";
+import { getPageCopy, getSection } from "@/lib/data/page-content";
 
 export const metadata: Metadata = {
   title: "Staff & Faculty | Pokhara College of Management",
@@ -13,38 +13,41 @@ export const metadata: Metadata = {
   alternates: { canonical: "/about/faculty" },
 };
 
-export default function FacultyPage() {
+export default async function FacultyPage() {
+  const content = await getPageCopy("about/faculty");
+  const hero = content?.hero ?? {
+    title: "Staff & Faculty",
+    subtitle: "The dedicated people behind PCM — qualified, experienced and genuinely invested in your success.",
+  };
+  const statsSection = getSection(content, "stats", {
+    key: "stats",
+    eyebrow: "By the numbers",
+    title: "A legacy measured in outcomes",
+  });
+  const cta = getSection(content, "cta", {
+    key: "cta",
+    title: "Join a college that cares",
+    paragraphs: [
+      "Experience the PCM difference for yourself — apply for the 2083 intake today.",
+    ],
+  });
+
   return (
     <main id="main">
       <PageHero
         crumbs={[{ label: "Home", href: "/" }, { label: "About", href: "/about" }, { label: "Staff & Faculty" }]}
-        title="Staff & Faculty"
-        subtitle="The dedicated people behind PCM — qualified, experienced and genuinely invested in your success."
+        title={hero.title}
+        subtitle={hero.subtitle}
       />
-      <section className="section">
-        <div className="wrap-wide">
-          <SectionHead eyebrow="Leadership" title="Guiding PCM" />
-          <div className="grid g-4" style={{ marginTop: "2rem" }}>
-            {leadership.map((person, i) => (
-              <FacultyCard key={person.name} person={person} index={i} />
-            ))}
-          </div>
-        </div>
-      </section>
-      <section className="section tone-sky">
-        <div className="wrap-wide">
-          <SectionHead eyebrow="Our team" title="Faculty & administration" />
-          <div className="grid g-4" style={{ marginTop: "2rem" }}>
-            {team.map((person, i) => (
-              <FacultyCard key={person.name} person={person} index={i % 4} />
-            ))}
-          </div>
-        </div>
-      </section>
-      <StatsGrid stats={stats} />
+      <FacultyGrid />
+      <StatsGrid
+        stats={stats}
+        eyebrow={statsSection.eyebrow ?? "By the numbers"}
+        title={statsSection.title ?? "A legacy measured in outcomes"}
+      />
       <CtaBand
-        title="Join a college that cares"
-        text="Experience the PCM difference for yourself — apply for the 2083 intake today."
+        title={cta.title ?? "Join a college that cares"}
+        text={cta.paragraphs?.[0] ?? "Experience the PCM difference for yourself — apply for the 2083 intake today."}
         primary={{ label: "Apply Now", href: "/admission.html" }}
         secondary={{ label: "More Info", href: "/about.html" }}
       />

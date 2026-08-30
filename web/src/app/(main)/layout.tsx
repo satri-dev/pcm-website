@@ -18,7 +18,7 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
       <main id="main">{children}</main>
       <Footer />
       <ChatWidget />
-      <AdmissionModal />
+      
     </>
   );
 }

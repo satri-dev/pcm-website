@@ -1,24 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 import {
   createGallery,
   ensureGalleryIndexes,
   listGallery,
 } from "@/repositories/gallery.repository";
-import { GALLERY_CATEGORIES } from "@/types/gallery";
 import { requireApiSession } from "@/core/lib/api-guard";
-
 const createSchema = z.object({
   title: z.string().min(3).max(200),
-  category: z.enum([
-    "Campus",
-    "Events",
-    "Students",
-    "Faculty",
-    "Activities",
-    "Infrastructure",
-    "Graduation",
-  ]),
+  category: z.string().min(1, "Category is required").max(100),
   image: z.string().optional(),
   photos: z.array(
     z.object({
@@ -48,7 +39,7 @@ export async function GET(request: NextRequest) {
     page,
     pageSize,
     search: search || undefined,
-    category: GALLERY_CATEGORIES.find((c) => c === category) || undefined,
+    category: category || undefined,
   });
 
   return NextResponse.json(result);
@@ -75,6 +66,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const created = await createGallery(parsed.data);
+    revalidateGalleryPaths();
     return NextResponse.json(created, { status: 201 });
   } catch {
     return NextResponse.json(
@@ -82,4 +74,9 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+function revalidateGalleryPaths() {
+  revalidatePath("/gallery");
+  revalidatePath("/");
 }

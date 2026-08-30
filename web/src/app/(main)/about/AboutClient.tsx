@@ -3,8 +3,57 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import "./about.css";
+import type { PageContent, PageContentSection } from "@/types/page-content";
 
 const IMG = "/assets/img";
+
+const FALLBACK: Record<string, PageContentSection> = {
+  "who-we-are": {
+    key: "who-we-are",
+    eyebrow: "Who we are",
+    title: "Quality management education, made affordable",
+    paragraphs: [
+      "Pokhara College of Management (PCM), affiliated to Pokhara University, was established in 2002 with an unwavering dedication to developing well-educated, confident, creative and adaptive graduates able to make an impact on an organisation&apos;s strategic capability and competitive advantage.",
+      "The PCM team firmly believes that quality management education is the need of the hour, as the world transforms into a common business arena. A business leader must understand the global rules to excel in local fields — and that spirit has guided us from humble beginnings to a college trusted by guardians, students and society alike.",
+    ],
+  },
+  "why-pcm": {
+    key: "why-pcm",
+    eyebrow: "Why study at PCM?",
+    title: "A balanced approach to management",
+    paragraphs: [
+      "The last two decades of change in information technology have brought unprecedented shifts to the business world. Markets are opening, competition is intensifying, and the horizon of management education is ever-evolving.",
+      "Through it all, the time-tested values of management remain a guide. Our programs adopt a well-balanced approach — inculcating a strong theoretical concept of management alongside an intense realisation of its practical application in real life.",
+    ],
+  },
+  values: {
+    key: "values",
+    eyebrow: "Vision, Mission &amp; Values",
+    title: "What we stand for",
+    paragraphs: [
+      "To identify, develop and unveil the potential of future business leaders who define their own role and boundaries — and grasp the opportunities of a dynamic new world.",
+      "A value-based organisation promoting discipline, sincerity, hard work and innovation as individual values, and respect, professionalism, fairness, transparency and team spirit as organisational values.",
+      "To offer highly competitive, professionally oriented education — equipping students with advanced conceptual, analytical and quantitative techniques for decision-making.",
+    ],
+  },
+  difference: { key: "difference", eyebrow: "The PCM difference", title: "What makes us different" },
+  stats: { key: "stats", eyebrow: "By the numbers", title: "A legacy measured in outcomes" },
+  achievers: {
+    key: "achievers",
+    eyebrow: "Voices of PCM",
+    title: "What our achievers say",
+    subtitle:
+      "Graduates on the Dean&apos;s List reflect on their four-year journey — the mentorship, the friendships, and the confidence they carry forward.",
+  },
+  cta: {
+    key: "cta",
+    eyebrow: "Enter to Learn — Go Forth to Serve",
+    title: "A step towards your future",
+    paragraphs: [
+      "Applications for the 2083 intake are open across all three programs. Take the first step today.",
+    ],
+  },
+};
 
 const achievers = [
   {
@@ -159,10 +208,23 @@ function Stat({
   );
 }
 
-export default function AboutClient() {
+export default function AboutClient({ content }: { content: PageContent | null }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
   const spot = achievers[active];
+
+  const sec = (key: string): PageContentSection => {
+    const found = content?.sections.find((s) => s.key === key);
+    const merged: PageContentSection = { ...(FALLBACK[key] ?? {}), ...(found ?? {}) };
+    for (const k of Object.keys(merged)) {
+      if (merged[k as keyof PageContentSection] === undefined) {
+        delete merged[k as keyof PageContentSection];
+      }
+    }
+    return merged;
+  };
+
+  const hero = content?.hero;
 
   useEffect(() => {
     const root = rootRef.current;
@@ -210,22 +272,18 @@ export default function AboutClient() {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>{" "}
               <span>About Us</span>
             </nav>
-            <h1>About Pokhara College of Management</h1>
-            <p>Since 2002, a home for confident, creative and adaptive graduates in the heart of Pokhara.</p>
+            <h1>{hero?.title ?? "About Pokhara College of Management"}</h1>
+            <p>{hero?.subtitle ?? "Since 2002, a home for confident, creative and adaptive graduates in the heart of Pokhara."}</p>
           </div>
         </section>
 
         <section className="section">
           <div className="wrap-wide split">
             <div className="reveal">
-              <span className="eyebrow">Who we are</span>
-              <h2 className="section-title">Quality management education, made affordable</h2>
-              <p style={{ marginTop: "1rem" }}>
-                Pokhara College of Management (PCM), affiliated to Pokhara University, was established in 2002 with an unwavering dedication to developing well-educated, confident, creative and adaptive graduates able to make an impact on an organisation&apos;s strategic capability and competitive advantage.
-              </p>
-              <p>
-                The PCM team firmly believes that quality management education is the need of the hour, as the world transforms into a common business arena. A business leader must understand the global rules to excel in local fields — and that spirit has guided us from humble beginnings to a college trusted by guardians, students and society alike.
-              </p>
+              <span className="eyebrow">{sec("who-we-are").eyebrow}</span>
+              <h2 className="section-title">{sec("who-we-are").title}</h2>
+              <p style={{ marginTop: "1rem" }}>{sec("who-we-are").paragraphs?.[0]}</p>
+              <p>{sec("who-we-are").paragraphs?.[1]}</p>
               <div className="pill-row" style={{ marginTop: "1.4rem" }}>
                 <span className="pill">Pokhara University</span>
                 <span className="pill">Nadipur, Pokhara</span>
@@ -254,14 +312,10 @@ export default function AboutClient() {
               </div>
             </div>
             <div className="reveal">
-              <span className="eyebrow">Why study at PCM?</span>
-              <h2 className="section-title">A balanced approach to management</h2>
-              <p style={{ marginTop: "1rem" }}>
-                The last two decades of change in information technology have brought unprecedented shifts to the business world. Markets are opening, competition is intensifying, and the horizon of management education is ever-evolving.
-              </p>
-              <p>
-                Through it all, the time-tested values of management remain a guide. Our programs adopt a well-balanced approach — inculcating a strong theoretical concept of management alongside an intense realisation of its practical application in real life.
-              </p>
+              <span className="eyebrow">{sec("why-pcm").eyebrow}</span>
+              <h2 className="section-title">{sec("why-pcm").title}</h2>
+              <p style={{ marginTop: "1rem" }}>{sec("why-pcm").paragraphs?.[0]}</p>
+              <p>{sec("why-pcm").paragraphs?.[1]}</p>
               <a className="btn btn-primary" href="/programs">
                 See our programs{" "}
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
@@ -273,8 +327,8 @@ export default function AboutClient() {
         <section className="section" id="message">
           <div className="wrap-wide">
             <div className="section-head center reveal">
-              <span className="eyebrow">Vision, Mission &amp; Values</span>
-              <h2 className="section-title">What we stand for</h2>
+              <span className="eyebrow">{sec("values").eyebrow}</span>
+              <h2 className="section-title">{sec("values").title}</h2>
             </div>
             <div className="grid g-3 mt-7">
               <div className="feature reveal">
@@ -282,21 +336,21 @@ export default function AboutClient() {
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z" /></svg>
                 </div>
                 <h3>Vision &amp; Mission</h3>
-                <p>To identify, develop and unveil the potential of future business leaders who define their own role and boundaries — and grasp the opportunities of a dynamic new world.</p>
+                <p>{sec("values").paragraphs?.[0]}</p>
               </div>
               <div className="feature reveal" style={{ transitionDelay: "90ms" }}>
                 <div className="feature__ic">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M6 3h12l4 6-10 12L2 9Z" /><path d="M2 9h20M12 3 8 9l4 12 4-12-4-6" /></svg>
                 </div>
                 <h3>Core Values</h3>
-                <p>A value-based organisation promoting discipline, sincerity, hard work and innovation as individual values, and respect, professionalism, fairness, transparency and team spirit as organisational values.</p>
+                <p>{sec("values").paragraphs?.[1]}</p>
               </div>
               <div className="feature reveal" style={{ transitionDelay: "180ms" }}>
                 <div className="feature__ic">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1.4" fill="currentColor" /></svg>
                 </div>
                 <h3>Objectives</h3>
-                <p>To offer highly competitive, professionally oriented education — equipping students with advanced conceptual, analytical and quantitative techniques for decision-making.</p>
+                <p>{sec("values").paragraphs?.[2]}</p>
               </div>
             </div>
           </div>
@@ -305,8 +359,8 @@ export default function AboutClient() {
         <section className="section tone-sky" id="board">
           <div className="wrap-wide">
             <div className="section-head center reveal">
-              <span className="eyebrow">The PCM difference</span>
-              <h2 className="section-title">What makes us different</h2>
+              <span className="eyebrow">{sec("difference").eyebrow}</span>
+              <h2 className="section-title">{sec("difference").title}</h2>
             </div>
             <ul className="icon-list grid g-2" style={{ gap: "1.6rem" }}>
               {differences.map((item, i) => (
@@ -325,8 +379,8 @@ export default function AboutClient() {
         <section className="stats section">
           <div className="wrap-wide">
             <div className="section-head center reveal" style={{ maxWidth: 560, marginInline: "auto" }}>
-              <span className="eyebrow on-dark">By the numbers</span>
-              <h2 className="section-title" style={{ color: "#fff" }}>A legacy measured in outcomes</h2>
+              <span className="eyebrow on-dark">{sec("stats").eyebrow}</span>
+              <h2 className="section-title" style={{ color: "#fff" }}>{sec("stats").title}</h2>
             </div>
             <div className="stats__grid mt-7">
               <Stat value={80} suffix="%" label="Success stories" />
@@ -340,9 +394,9 @@ export default function AboutClient() {
         <section className="section tone-sky">
           <div className="wrap">
             <div className="section-head center reveal">
-              <span className="eyebrow">Voices of PCM</span>
-              <h2 className="section-title">What our achievers say</h2>
-              <p className="section-sub">Graduates on the Dean&apos;s List reflect on their four-year journey — the mentorship, the friendships, and the confidence they carry forward.</p>
+              <span className="eyebrow">{sec("achievers").eyebrow}</span>
+              <h2 className="section-title">{sec("achievers").title}</h2>
+              <p className="section-sub">{sec("achievers").subtitle}</p>
             </div>
             <div className="achv reveal mt-7">
               <div className="achv__spot">
@@ -378,9 +432,9 @@ export default function AboutClient() {
             <div className="cta-band reveal">
               <div className="cta-band__inner">
                 <div>
-                  <span className="eyebrow on-dark">Enter to Learn — Go Forth to Serve</span>
-                  <h2>A step towards your future</h2>
-                  <p>Applications for the 2083 intake are open across all three programs. Take the first step today.</p>
+                  <span className="eyebrow on-dark">{sec("cta").eyebrow}</span>
+                  <h2>{sec("cta").title}</h2>
+                  <p>{sec("cta").paragraphs?.[0]}</p>
                 </div>
                 <div className="cta-band__actions">
                   <a className="btn btn-gold btn-lg" href="/admission">
