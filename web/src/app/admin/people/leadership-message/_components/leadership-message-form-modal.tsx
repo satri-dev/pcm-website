@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { LeadershipMessage } from "@/types/leadership-message";
+import { LeadershipMessage, LEADERSHIP_ROLES } from "@/types/leadership-message";
 import { Save, X } from "lucide-react";
 
 const msgSchema = z.object({
@@ -61,7 +61,7 @@ export default function LeadershipMessageFormModal({ open, onOpenChange, message
             <div className="form-grid">
               <div className={fv("title")}><label>Title <span className="req">*</span></label><input type="text" {...register("title")} />{errors.title && <div className="field__err">{errors.title.message}</div>}</div>
               <div className={fv("author")}><label>Author <span className="req">*</span></label><input type="text" {...register("author")} />{errors.author && <div className="field__err">{errors.author.message}</div>}</div>
-              <div className={fv("role")}><label>Role</label><input type="text" {...register("role")} placeholder="e.g. Principal, Chairperson" /></div>
+              <div className={fv("role")}><label>Role</label><select {...register("role")}><option value="">— Select —</option>{[...new Set([...(message?.role ? [message.role] : []), ...LEADERSHIP_ROLES])].map((r) => <option key={r} value={r}>{r}</option>)}</select></div>
               <div className="field field--full"><label>Excerpt</label><textarea {...register("excerpt")} rows={4} placeholder="Short message or excerpt…" /></div>
             </div>
           </div>

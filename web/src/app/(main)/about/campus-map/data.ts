@@ -21,6 +21,7 @@ export const landmarks: Landmark[] = [
 
 export const categoryColors: Record<string, string> = {
   Academic: "#21409A",
+  Administration: "#64748B",
   Library: "#E0A400",
   IT: "#0E8A5F",
   Sports: "#16A34A",
