@@ -5,8 +5,7 @@ import { SectionHead } from "../legacy/section-head";
 import { CheckList } from "../legacy/check-list";
 import { CtaBand } from "../legacy/cta-band";
 import { RevealBox } from "../legacy/reveal-box";
-import { BoardCard } from "./BoardCard";
-import { boardMembers } from "./data";
+import { BoardGrid } from "./BoardGrid";
 
 export const metadata: Metadata = {
   title: "Board of Directors | Pokhara College of Management",
@@ -30,11 +29,7 @@ export default function BoardPage() {
             title="Our Board of Directors"
             subtitle="A committed leadership team that keeps PCM rooted in quality, integrity and service."
           />
-          <div className="grid g-3" style={{ marginTop: "2rem" }}>
-            {boardMembers.map((member, i) => (
-              <BoardCard key={member.name} member={member} index={i} />
-            ))}
-          </div>
+          <BoardGrid />
         </div>
       </section>
       <section className="section tone-sky">

@@ -7630,3 +7630,41 @@ img.hero-carousel__bg {
     max-height: 36vh;
   }
 }
+
+/* ---------- Photo fallback monograms ---------- */
+.bod-card__monogram {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--ff-display);
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #21409a, #4167c9);
+}
+
+.fac-card__monogram {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--ff-display);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #21409a, #4167c9);
+}
+
+.leader-card__monogram {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  font-family: var(--ff-display);
+  font-size: 4rem;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, #14265a, #21409a);
+}

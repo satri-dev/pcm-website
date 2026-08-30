@@ -7,7 +7,6 @@ import { CtaBand } from "../legacy/cta-band";
 import { RevealBox } from "../legacy/reveal-box";
 import { ArrowRightIcon } from "../legacy/icons";
 import { FacilitiesExplorer } from "./FacilitiesExplorer";
-import { facilities } from "./data";
 
 export const metadata: Metadata = {
   title: "Campus & Facilities | Pokhara College of Management",
@@ -36,7 +35,7 @@ export default function FacilityPage() {
               View campus map <ArrowRightIcon />
             </a>
           </div>
-          <FacilitiesExplorer facilities={facilities} />
+          <FacilitiesExplorer />
         </div>
       </section>
       <section className="section section--soft">

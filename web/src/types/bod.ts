@@ -1,5 +1,12 @@
 export const BOD_COLLECTION = "board";
 
+export const BOD_ROLES: readonly string[] = [
+  "Chairperson",
+  "Founder Principal",
+  "Advisor",
+  "Member",
+];
+
 export interface Bod {
   id: string;
   name: string;

@@ -1,5 +1,18 @@
 export const LEADERSHIP_MESSAGE_COLLECTION = "messages";
 
+export const LEADERSHIP_ROLES: readonly string[] = [
+  "Chairperson",
+  "Founder Principal",
+  "Principal",
+  "BCSIT Coordinator",
+  "BBA Coordinator (Morning)",
+  "BBA Coordinator (Day)",
+  "Faculty Member",
+  "Administrator (Morning)",
+  "Advisor",
+  "Member",
+];
+
 export interface LeadershipMessage {
   id: string;
   title: string;
