@@ -1,8 +1,12 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import type { GalleryCategory, GalleryPhoto, GalleryAlbum } from "../types";
-import { photos, albums } from "../data/gallery";
+import type { GalleryPhoto, GalleryAlbum } from "../types";
+import {
+  albums as defaultAlbums,
+  photos as defaultPhotos,
+  getCategories,
+} from "../data/gallery";
 
 export type GalleryTab = "photos" | "videos";
 
@@ -12,9 +16,17 @@ export interface LightboxState {
   index: number;
 }
 
-export function useGallery() {
+interface UseGalleryOptions {
+  albums?: GalleryAlbum[];
+  photos?: GalleryPhoto[];
+}
+
+export function useGallery(options: UseGalleryOptions = {}) {
+  const albums: GalleryAlbum[] = options.albums ?? defaultAlbums;
+  const photos: GalleryPhoto[] = options.photos ?? defaultPhotos;
+
   const [tab, setTab] = useState<GalleryTab>("photos");
-  const [category, setCategory] = useState<GalleryCategory>("all");
+  const [category, setCategory] = useState<string>("all");
   const [lightbox, setLightbox] = useState<LightboxState>({
     open: false,
     photos: [],
@@ -23,20 +35,23 @@ export function useGallery() {
   // Which album is currently "open" (drilled into), null = album grid view
   const [openAlbumId, setOpenAlbumId] = useState<string | null>(null);
 
+  // Dynamic category filter options derived from the actual albums
+  const categories = useMemo(() => getCategories(albums), [albums]);
+
   // Filtered albums for the grid
   const filteredAlbums: GalleryAlbum[] = useMemo(
     () =>
       category === "all"
         ? albums
         : albums.filter((a) => a.category === category),
-    [category]
+    [category, albums]
   );
 
   // Photos for the currently open album
   const albumPhotos: GalleryPhoto[] = useMemo(() => {
     if (!openAlbumId) return [];
     return photos.filter((p) => p.albumKey === openAlbumId);
-  }, [openAlbumId]);
+  }, [openAlbumId, photos]);
 
   const openAlbum = useCallback((albumId: string) => {
     setOpenAlbumId(albumId);
@@ -70,7 +85,7 @@ export function useGallery() {
     }));
   }, []);
 
-  const changeCategory = useCallback((cat: GalleryCategory) => {
+  const changeCategory = useCallback((cat: string) => {
     setCategory(cat);
     setOpenAlbumId(null); // reset album view on filter change
   }, []);
@@ -80,6 +95,7 @@ export function useGallery() {
     setTab,
     category,
     changeCategory,
+    categories,
     filteredAlbums,
     openAlbumId,
     openAlbum,

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import HeroSlider from "@/components/home/HeroSlider";
 import WelcomeSection from "@/components/home/WelcomeSection";
 import WhyChoosePCM from "@/components/home/WhyChoosePCM";
@@ -11,11 +12,39 @@ import GallerySection from "@/components/home/GallerySection";
 import BlogsSection from "@/components/home/BlogsSection";
 import TestimonialsSection from "@/components/home/TestimonialsSection";
 import CTASection from "@/components/home/CTASection";
-import { BreadcrumbSchema, EducationalOrganizationSchema } from "../structured-data";
+import {
+  BreadcrumbSchema,
+  EducationalOrganizationSchema,
+} from "../structured-data";
+
+function GallerySectionLoading() {
+  return (
+    <section className="py-[clamp(4rem,8vw,6rem)] bg-secondary/30">
+      <div className="container">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
+          <div className="max-w-2xl">
+            <div className="h-8 w-32 bg-gray-200 rounded-full mb-4 animate-pulse" />
+            <div className="h-10 w-64 bg-gray-200 rounded mb-4 animate-pulse" />
+            <div className="h-6 w-96 bg-gray-200 rounded animate-pulse" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          {[...Array(5)].map((_, i) => (
+            <div
+              key={i}
+              className="aspect-square rounded-2xl bg-gray-200 animate-pulse"
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export const metadata: Metadata = {
   title: "Pokhara College of Management | BBA, BCSIT in Pokhara",
-  description: "Pokhara College of Management — affordable, quality management and IT education in Pokhara. BBA, BBA-Finance and BCSIT degrees affiliated to Pokhara University.",
+  description:
+    "Pokhara College of Management — affordable, quality management and IT education in Pokhara. BBA, BBA-Finance and BCSIT degrees affiliated to Pokhara University.",
   keywords: [
     "Pokhara College of Management",
     "PCM",
@@ -26,7 +55,7 @@ export const metadata: Metadata = {
     "IT College Pokhara",
     "Pokhara University",
     "Business Administration Pokhara",
-    "Computer Science Pokhara"
+    "Computer Science Pokhara",
   ],
   authors: [{ name: "Pokhara College of Management" }],
   creator: "Pokhara College of Management",
@@ -37,9 +66,9 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
     },
   },
   alternates: {
@@ -49,8 +78,10 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://www.pcm.edu.np/",
-    title: "Pokhara College of Management | BBA, BBA-Finance & BCSIT in Pokhara",
-    description: "Pokhara College of Management — affordable, quality management and IT education in Pokhara. BBA, BBA-Finance and BCSIT degrees affiliated to Pokhara University.",
+    title:
+      "Pokhara College of Management | BBA, BBA-Finance & BCSIT in Pokhara",
+    description:
+      "Pokhara College of Management — affordable, quality management and IT education in Pokhara. BBA, BBA-Finance and BCSIT degrees affiliated to Pokhara University.",
     siteName: "Pokhara College of Management",
     images: [
       {
@@ -63,8 +94,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Pokhara College of Management | BBA, BBA-Finance & BCSIT in Pokhara",
-    description: "Pokhara College of Management — affordable, quality management and IT education in Pokhara. BBA, BBA-Finance and BCSIT degrees affiliated to Pokhara University.",
+    title:
+      "Pokhara College of Management | BBA, BBA-Finance & BCSIT in Pokhara",
+    description:
+      "Pokhara College of Management — affordable, quality management and IT education in Pokhara. BBA, BBA-Finance and BCSIT degrees affiliated to Pokhara University.",
     images: ["https://www.pcm.edu.np/images/hero-1.jpg"],
   },
   verification: {
@@ -88,7 +121,9 @@ export default function HomePage() {
       <FacilitiesSection />
       <NewsSection />
       <EventsSection />
-      <GallerySection />
+      <Suspense fallback={<GallerySectionLoading />}>
+        <GallerySection />
+      </Suspense>
       <BlogsSection />
       <TestimonialsSection />
       <CTASection />

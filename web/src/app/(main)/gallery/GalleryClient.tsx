@@ -3,13 +3,19 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { useGallery } from "@/feature/gallery/hooks/useGallery";
-import { albums } from "@/feature/gallery/data/gallery";
 import FilterBar from "@/feature/gallery/components/FilterBar";
 import AlbumGrid from "@/feature/gallery/components/AlbumGrid";
 import PhotoGrid from "@/feature/gallery/components/PhotoGrid";
 import Lightbox from "@/feature/gallery/components/Lightbox";
-import type { GalleryCategory } from "@/feature/gallery/types";
+import type { GalleryPhoto, GalleryAlbum } from "@/feature/gallery/types";
+import type { GalleryPageSettings } from "@/types/gallery-settings";
 import "./gallery.css";
+
+interface GalleryClientProps {
+  albums: GalleryAlbum[];
+  photos: GalleryPhoto[];
+  settings: GalleryPageSettings;
+}
 
 /* ── SVG icons ── */
 const VideoEmptyIcon = () => (
@@ -24,16 +30,20 @@ const ArrowRight = () => (
   </svg>
 );
 
-export default function GalleryClient() {
+export default function GalleryClient({
+  albums,
+  photos,
+  settings,
+}: GalleryClientProps) {
   const rootRef = useRef<HTMLDivElement>(null);
 
   const {
     tab, setTab,
-    category, changeCategory,
+    category, changeCategory, categories,
     filteredAlbums,
     openAlbumId, openAlbum, closeAlbum, albumPhotos,
     lightbox, openLightbox, closeLightbox, lightboxNext, lightboxPrev,
-  } = useGallery();
+  } = useGallery({ albums, photos });
 
   /* Reveal-on-scroll */
   useEffect(() => {
@@ -50,7 +60,7 @@ export default function GalleryClient() {
     );
     items.forEach((el) => io.observe(el));
     return () => io.disconnect();
-  }, [openAlbumId, tab]); // re-run when view changes so new items get observed
+  }, [openAlbumId, tab, category, filteredAlbums]); // re-run when view OR filter changes so new cards get observed
 
   /* Find album title for the open album */
   const openAlbum_ = albums.find((a) => a.id === openAlbumId);
@@ -69,8 +79,8 @@ export default function GalleryClient() {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
             <span>Gallery</span>
           </nav>
-          <h1>Campus Gallery</h1>
-          <p>Glimpses of PCM — take a visual tour through campus life, events, student achievements and academic activities.</p>
+          <h1>{settings.heroTitle}</h1>
+          <p>{settings.heroSubtitle}</p>
         </div>
       </section>
 
@@ -78,9 +88,9 @@ export default function GalleryClient() {
       <section className="section">
         <div className="wrap-wide">
           <div className="section-head center reveal">
-            <span className="eyebrow">Glimpses of PCM</span>
-            <h2 className="section-title">Explore our albums</h2>
-            <p className="section-sub">Browse by category, open any album, then click a photo to view it full-size.</p>
+            <span className="eyebrow">{settings.eyebrow}</span>
+            <h2 className="section-title">{settings.title}</h2>
+            <p className="section-sub">{settings.subtitle}</p>
           </div>
 
           {/* Photos / Videos tabs */}
@@ -109,7 +119,8 @@ export default function GalleryClient() {
               {/* Filter bar — only show when viewing album grid */}
               {!openAlbumId && (
                 <FilterBar
-                  active={category as GalleryCategory}
+                  categories={categories}
+                  active={category}
                   onChange={changeCategory}
                 />
               )}
@@ -144,16 +155,16 @@ export default function GalleryClient() {
           <div className="cta-band reveal">
             <div className="cta-band__inner">
               <div>
-                <span className="eyebrow" style={{ color: "var(--gold-400)" }}>Enter to Learn — Go Forth to Serve</span>
-                <h2>Want to see it in person?</h2>
-                <p>Book a campus visit and experience the PCM community for yourself.</p>
+                <span className="eyebrow" style={{ color: "var(--gold-400)" }}>{settings.ctaEyebrow}</span>
+                <h2>{settings.ctaTitle}</h2>
+                <p>{settings.ctaText}</p>
               </div>
               <div className="cta-band__actions">
-                <Link className="gal-btn gal-btn-gold gal-btn-lg" href="/admission">
-                  Apply Now <ArrowRight />
+                <Link className="gal-btn gal-btn-gold gal-btn-lg" href={settings.ctaPrimaryHref}>
+                  {settings.ctaPrimaryLabel} <ArrowRight />
                 </Link>
-                <Link className="gal-btn gal-btn-ghost-dark gal-btn-lg" href="/about">
-                  More Info
+                <Link className="gal-btn gal-btn-ghost-dark gal-btn-lg" href={settings.ctaSecondaryHref}>
+                  {settings.ctaSecondaryLabel}
                 </Link>
               </div>
             </div>

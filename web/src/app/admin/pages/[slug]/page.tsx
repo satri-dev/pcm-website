@@ -4,11 +4,13 @@ import { Wrench } from "lucide-react";
 
 import PageHeader from "../../_components/dashboard/page-header";
 import NavMenuManager from "../_components/nav-menu-manager";
+import GalleryPageSettings from "../_components/gallery-page-settings";
 import { findEntry } from "../_config";
 import {
   ensureNavMenusReady,
   listNavMenu,
 } from "@/repositories/nav-menu.repository";
+import { getGalleryPageSettings } from "@/repositories/gallery-settings.repository";
 import { connection } from "next/server";
 
 interface RouteCtx {
@@ -41,6 +43,16 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
       <>
         <PageHeader title={found.entry.label} subtitle="Sections · Navbar menus" />
         <NavMenuManager initialData={items} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "gallery") {
+    const settings = await getGalleryPageSettings();
+    return (
+      <>
+        <PageHeader title={found.entry.label} subtitle="Pages · Content & CTA" />
+        <GalleryPageSettings initial={settings} />
       </>
     );
   }
