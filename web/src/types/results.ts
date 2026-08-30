@@ -26,6 +26,8 @@ export interface Result {
   fileName?: string;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string;
+  deletedBy?: string;
 }
 
 export interface ResultDocument {
@@ -40,6 +42,8 @@ export interface ResultDocument {
   fileName?: string;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date;
+  deletedBy?: string;
 }
 
 export interface ResultCreateInput {

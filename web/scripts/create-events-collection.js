@@ -3,14 +3,14 @@
  * Run: node scripts/create-events-collection.js
  * Reads MONGODB_URI / MONGODB_DB from the environment or web/.env
  */
-const fs = require("fs");
-const path = require("path");
-const { MongoClient } = require("mongodb");
+import { existsSync, readFileSync } from "fs";
+import { join } from "path";
+import { MongoClient } from "mongodb";
 
 function loadEnv() {
-  const envPath = path.join(__dirname, "..", ".env");
-  if (!fs.existsSync(envPath)) return;
-  for (const line of fs.readFileSync(envPath, "utf8").split(/\r?\n/)) {
+  const envPath = join(__dirname, "..", ".env");
+  if (!existsSync(envPath)) return;
+  for (const line of readFileSync(envPath, "utf8").split(/\r?\n/)) {
     const m = line.match(/^\s*(.+?)\s*=\s*(.*)\s*$/);
     if (m && !process.env[m[1]]) {
       process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");

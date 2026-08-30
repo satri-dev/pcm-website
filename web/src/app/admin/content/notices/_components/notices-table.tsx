@@ -25,7 +25,7 @@ interface NoticesTableProps {
   loading?: boolean;
   onView: (notice: Notice) => void;
   onEdit: (notice: Notice) => void;
-  onDelete: (id: string) => void;
+  onDelete: (notice: Notice) => void;
 }
 
 export default function NoticesTable({
@@ -248,7 +248,7 @@ export default function NoticesTable({
                       <button
                         type="button"
                         className="act-btn danger"
-                        onClick={() => onDelete(item.id)}
+                        onClick={() => onDelete(item)}
                         title="Delete"
                       >
                         <Trash2 size={15} />

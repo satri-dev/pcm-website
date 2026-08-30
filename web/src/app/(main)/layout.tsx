@@ -5,13 +5,16 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ChatWidget from "@/components/shared/ChatWidget";
 import AdmissionModal from "@/components/shared/AdmissionModal";
+import { getNavbarItems } from "@/lib/data/navigation";
 
-export default function MainLayout({ children }: { children: ReactNode }) {
+export default async function MainLayout({ children }: { children: ReactNode }) {
+  const navItems = await getNavbarItems();
+
   return (
     <>
       <AnnouncementTicker />
       <TopBar />
-      <Navbar />
+      <Navbar items={navItems} />
       <main id="main">{children}</main>
       <Footer />
       <ChatWidget />

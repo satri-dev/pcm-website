@@ -7,6 +7,7 @@ import NoticesFormModal from "./notices-form-modal";
 import NoticesViewModal from "./notices-view-modal";
 import { Notice } from "@/types/notices";
 import { Plus, RefreshCw } from "lucide-react";
+import { SoftDeleteDialog } from "@/components/shared/SoftDeleteDialog";
 
 interface NoticesManagerProps {
   initialData?: Notice[];
@@ -28,6 +29,9 @@ export default function NoticesManager({ initialData }: NoticesManagerProps) {
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [viewingNotice, setViewingNotice] = useState<Notice | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [deletingItemName, setDeletingItemName] = useState<string>("");
 
   const handleViewNotice = (notice: Notice) => {
     setViewingNotice(notice);
@@ -44,10 +48,18 @@ export default function NoticesManager({ initialData }: NoticesManagerProps) {
     setIsModalOpen(true);
   };
 
-  const handleDeleteNotice = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this notice?")) return;
+  const handleDeleteNotice = (notice: Notice) => {
+    setDeletingItemId(notice.id);
+    setDeletingItemName(notice.title || "this item");
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingItemId) return;
     try {
-      await deleteNotice(id);
+      await deleteNotice(deletingItemId);
+      setDeleteDialogOpen(false);
+      setDeletingItemId(null);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Delete failed");
     }
@@ -132,6 +144,15 @@ export default function NoticesManager({ initialData }: NoticesManagerProps) {
         notice={editingNotice}
         onSave={handleSaveNotice}
         saving={saving}
+      />
+
+      <SoftDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        itemName={deletingItemName}
+        itemType="notice"
+        loading={false}
       />
     </main>
   );

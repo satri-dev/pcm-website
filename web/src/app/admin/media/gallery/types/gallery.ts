@@ -27,6 +27,8 @@ export interface Gallery {
   featured: boolean;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string;
+  deletedBy?: string;
 }
 
 export interface GalleryDocument {
@@ -41,6 +43,8 @@ export interface GalleryDocument {
   featured: boolean;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date;
+  deletedBy?: string;
 }
 
 export interface GalleryCreateInput {

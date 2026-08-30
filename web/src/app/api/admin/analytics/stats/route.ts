@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server"
+import { connection } from "next/server"
 import { headers } from "next/headers"
 import { getSiteVisits } from "@/core/lib/analytics/stats"
 import { auth } from "@/core/lib/auth"
 
 export async function GET() {
+  await connection()
   try {
     const session = await auth.api.getSession({
       headers: await headers(),

@@ -26,6 +26,8 @@ export interface Faq {
   answer: string;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string;
+  deletedBy?: string;
 }
 
 export interface FaqDocument {
@@ -36,6 +38,8 @@ export interface FaqDocument {
   answer: string;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date;
+  deletedBy?: string;
 }
 
 export interface FaqCreateInput {

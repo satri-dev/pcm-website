@@ -25,7 +25,7 @@ interface GalleryTableProps {
   onAdd: () => void;
   onView: (item: Gallery) => void;
   onEdit: (item: Gallery) => void;
-  onDelete: (id: string) => void;
+  onDelete: (gallery: Gallery) => void;
 }
 
 export default function GalleryTable({
@@ -181,7 +181,7 @@ export default function GalleryTable({
                         <button
                           type="button"
                           className="act-btn danger"
-                          onClick={() => onDelete(item.id)}
+                           onClick={() => onDelete(item)}
                           title="Delete"
                         >
                           <Trash2 size={15} />

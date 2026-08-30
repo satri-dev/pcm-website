@@ -7,6 +7,7 @@ import FaqsFormModal from "./faqs-form-modal";
 import FaqsViewModal from "./faqs-view-modal";
 import { Faq } from "@/types/faqs";
 import { Plus, RefreshCw } from "lucide-react";
+import { SoftDeleteDialog } from "@/components/shared/SoftDeleteDialog";
 
 interface FaqsManagerProps {
   initialData?: Faq[];
@@ -28,6 +29,9 @@ export default function FaqsManager({ initialData }: FaqsManagerProps) {
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [viewingFaq, setViewingFaq] = useState<Faq | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [deletingItemName, setDeletingItemName] = useState<string>("");
 
   const handleViewFaq = (faq: Faq) => {
     setViewingFaq(faq);
@@ -44,10 +48,18 @@ export default function FaqsManager({ initialData }: FaqsManagerProps) {
     setIsModalOpen(true);
   };
 
-  const handleDeleteFaq = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this FAQ?")) return;
+  const handleDeleteFaq = (faq: Faq) => {
+    setDeletingItemId(faq.id);
+    setDeletingItemName(faq.question || "this item");
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingItemId) return;
     try {
-      await deleteFaq(id);
+      await deleteFaq(deletingItemId);
+      setDeleteDialogOpen(false);
+      setDeletingItemId(null);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Delete failed");
     }
@@ -130,6 +142,15 @@ export default function FaqsManager({ initialData }: FaqsManagerProps) {
         faq={editingFaq}
         onSave={handleSaveFaq}
         saving={saving}
+      />
+
+      <SoftDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        itemName={deletingItemName}
+        itemType="FAQ"
+        loading={false}
       />
     </main>
   );

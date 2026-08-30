@@ -16,6 +16,8 @@ export interface UseFaqsReturn {
   createFaq: (data: Partial<Faq>) => Promise<Faq>;
   updateFaq: (id: string, data: Partial<Faq>) => Promise<Faq>;
   deleteFaq: (id: string) => Promise<void>;
+  restoreFaq: (id: string) => Promise<void>;
+  hardDeleteFaq: (id: string) => Promise<void>;
 }
 
 export function useFaqs({
@@ -107,6 +109,24 @@ export function useFaqs({
     setFaqs((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const restoreFaq = async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/${id}?action=restore`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Restore failed (HTTP ${res.status})`);
+    }
+    refresh();
+  };
+
+  const hardDeleteFaq = async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/${id}?action=permanent-delete`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Permanent delete failed (HTTP ${res.status})`);
+    }
+    setFaqs((prev) => prev.filter((item) => item.id !== id));
+  };
+
   return {
     faqs,
     loading,
@@ -115,5 +135,7 @@ export function useFaqs({
     createFaq,
     updateFaq,
     deleteFaq,
+    restoreFaq,
+    hardDeleteFaq,
   };
 }

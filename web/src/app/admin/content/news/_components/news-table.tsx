@@ -25,7 +25,7 @@ interface NewsTableProps {
   loading?: boolean;
   onView: (news: News) => void;
   onEdit: (news: News) => void;
-  onDelete: (id: string) => void;
+  onDelete: (news: News) => void;
 }
 
 export default function NewsTable({
@@ -211,7 +211,7 @@ export default function NewsTable({
                       <button
                         type="button"
                         className="act-btn danger"
-                        onClick={() => onDelete(item.id)}
+                        onClick={() => onDelete(item)}
                         title="Delete"
                       >
                         <Trash2 size={15} />

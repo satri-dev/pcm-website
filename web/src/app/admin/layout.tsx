@@ -6,8 +6,12 @@ import "./admin.css";
 export const metadata: Metadata = {
   title: { default: "Dashboard", template: "%s · PCM Admin" },
   description:
-    "Pokhara College of Management — website content management system.",
+    "Website content management system.",
 };
+
+// Admin pages block on per-request DB + session reads. Opt the whole admin
+// segment out of Cache Components static-shell validation.
+export const instant = false;
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (

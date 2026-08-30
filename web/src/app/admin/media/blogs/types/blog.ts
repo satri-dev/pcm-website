@@ -28,6 +28,8 @@ export interface Blog {
   fileName?: string;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string;
+  deletedBy?: string;
 }
 
 export interface BlogDocument {
@@ -42,6 +44,8 @@ export interface BlogDocument {
   fileName?: string;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date;
+  deletedBy?: string;
 }
 
 export interface BlogCreateInput {

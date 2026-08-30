@@ -1,0 +1,295 @@
+/* ============================================================
+   Testimonials — scoped design system
+   Scope  : .pcm-testimonials
+   Dark   : .dark .pcm-testimonials
+   ============================================================ */
+
+/* ── Light tokens ── */
+.pcm-testimonials {
+  --ff-display: var(--font-poppins), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --ff-body:    var(--font-poppins), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --ff-mono:    var(--font-poppins), ui-monospace, monospace;
+
+  --navy:        #16285b;
+  --navy-800:    #1d3577;
+  --brand-300:   #6d8af0;
+  --brand-400:   #4167c9;
+  --brand-600:   #21409a;
+  --brand-700:   #1b3376;
+  --brand-900:   #14265a;
+  --gold-400:    #51b747;
+  --gold-500:    #3f9e35;
+  --gold-600:    #338430;
+
+  --body-c:      #4a5568;
+  --muted:       #718096;
+  --line:        #e5e9f0;
+  --line-2:      #dce2ec;
+  --surface:     #ffffff;
+  --surface-soft:#f4f7fb;
+  --surface-tint:#edf2f9;
+
+  --dark:        #0f1f3a;
+  --dark-2:      #16285b;
+
+  --shadow-sm:  0 1px 3px rgba(22, 40, 91, 0.08);
+  --shadow-md:  0 10px 30px rgba(22, 40, 91, 0.08);
+  --shadow-lg:  0 24px 60px rgba(22, 40, 91, 0.12);
+  --shadow-gold: 0 14px 34px rgba(81, 183, 71, 0.28);
+
+  --r-sm: 8px;
+  --r:    14px;
+  --r-lg: 22px;
+  --r-full: 999px;
+
+  --container-wide: 1360px;
+  --gutter: clamp(1.25rem, 4vw, 2.5rem);
+  --space-7: 2.5rem;
+
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  font-family: var(--ff-body);
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--body-c);
+  background: var(--surface);
+}
+
+/* ── Dark tokens ── */
+.dark .pcm-testimonials {
+  --navy:        #e4eaf7;
+  --navy-800:    #a4b6f7;
+  --brand-300:   #a4b6f7;
+  --brand-400:   #7a9de8;
+  --brand-600:   #6d8af0;
+  --brand-700:   #7d98f5;
+  --brand-900:   #a4b6f7;
+  --gold-400:    #63c95a;
+  --gold-500:    #57bd4e;
+  --gold-600:    #4aad42;
+
+  --body-c:      #b8c2d6;
+  --muted:       #8b95ab;
+  --line:        #273149;
+  --line-2:      #2f3a56;
+  --surface:     #0e1424;
+  --surface-soft:#141b2e;
+  --surface-tint:#1a2340;
+
+  --dark:        #0e1424;
+  --dark-2:      #141b2e;
+
+  --shadow-sm:  0 1px 3px rgba(0,0,0,.45);
+  --shadow-md:  0 10px 30px rgba(0,0,0,.50);
+  --shadow-lg:  0 24px 60px rgba(0,0,0,.60);
+  background: var(--surface);
+  color: var(--body-c);
+}
+
+.dark .pcm-testimonials .page-hero { background: #0a1020; }
+
+.dark .pcm-testimonials .section { background: transparent; }
+
+/* ── Testimonials grid ── */
+.pcm-testimonials .testi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(1.25rem, 2.5vw, 1.75rem);
+}
+
+@media (max-width: 900px) {
+  .pcm-testimonials .testi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .pcm-testimonials .testi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Testimonial cards ── */
+.pcm-testimonials .testi-card {
+  display: grid;
+  gap: 1.25rem;
+  align-content: start;
+  padding: 1.75rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+  position: relative;
+}
+
+.pcm-testimonials .testi-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+}
+
+.pcm-testimonials .testi-quote {
+  width: 36px;
+  height: 36px;
+  color: var(--gold-400);
+  opacity: 0.4;
+}
+
+.pcm-testimonials .testi-card blockquote {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--body-c);
+  font-style: italic;
+}
+
+.pcm-testimonials .testi-card figcaption {
+  display: grid;
+  gap: 0.2rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--line);
+}
+
+.pcm-testimonials .testi-card figcaption b {
+  font-size: 1rem;
+  color: var(--navy);
+  font-weight: 600;
+}
+
+.pcm-testimonials .testi-card figcaption span {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* ── Utility ── */
+.pcm-testimonials .mt-7 {
+  margin-top: 2.5rem;
+}
+
+/* ── Reveal on scroll ── */
+.pcm-testimonials .reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+}
+
+.pcm-testimonials .reveal.is-inview {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pcm-testimonials .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+
+/* ── Pagination ── */
+.pcm-testimonials .pagination {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 3rem;
+}
+
+.pcm-testimonials .pagination__info {
+  font-family: var(--ff-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+}
+
+.pcm-testimonials .pagination__list {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pcm-testimonials .pagination__btn,
+.pcm-testimonials .pagination__num {
+  min-width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--navy);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+}
+
+.pcm-testimonials .pagination__btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.pcm-testimonials .pagination__btn:hover,
+.pcm-testimonials .pagination__num:hover {
+  border-color: var(--brand-600);
+  color: var(--brand-600);
+}
+
+.pcm-testimonials .pagination__num.is-current,
+.pcm-testimonials .pagination__num.is-current:hover {
+  background: var(--brand-600);
+  border-color: var(--brand-600);
+  color: #fff;
+}
+
+.pcm-testimonials .pagination__btn[aria-disabled="true"],
+.pcm-testimonials .pagination__btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+  pointer-events: none;
+}
+
+.pcm-testimonials .pagination__ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  height: 42px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.pcm-testimonials .pagination__label {
+  font-size: 0.85rem;
+}
+
+@media (max-width: 560px) {
+  .pcm-testimonials .pagination {
+    gap: 0.3rem;
+    margin-top: 1.8rem;
+  }
+
+  .pcm-testimonials .pagination__info {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .pcm-testimonials .pagination__btn,
+  .pcm-testimonials .pagination__num {
+    min-width: 38px;
+    height: 38px;
+    font-size: 0.85rem;
+  }
+
+  .pcm-testimonials .pagination__label {
+    display: none;
+  }
+}

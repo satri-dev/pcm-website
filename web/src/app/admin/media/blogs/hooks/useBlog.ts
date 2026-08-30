@@ -19,6 +19,8 @@ export interface UseBlogReturn {
   createBlog: (data: Partial<Blog>) => Promise<Blog>;
   updateBlog: (id: string, data: Partial<Blog>) => Promise<Blog>;
   deleteBlog: (id: string) => Promise<void>;
+  restoreBlog: (id: string) => Promise<void>;
+  hardDeleteBlog: (id: string) => Promise<void>;
 }
 
 export function useBlog({
@@ -113,5 +115,23 @@ export function useBlog({
     setBlogs((prev) => prev.filter((item) => item.id !== id));
   };
 
-  return { blogs, loading, error, refresh, createBlog, updateBlog, deleteBlog };
+  const restoreBlog = async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/${id}?action=restore`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Restore failed (HTTP ${res.status})`);
+    }
+    refresh();
+  };
+
+  const hardDeleteBlog = async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/${id}?action=permanent-delete`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Permanent delete failed (HTTP ${res.status})`);
+    }
+    setBlogs((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  return { blogs, loading, error, refresh, createBlog, updateBlog, deleteBlog, restoreBlog, hardDeleteBlog };
 }

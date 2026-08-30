@@ -6,9 +6,6 @@ export const metadata: Metadata = {
   description: "Secure More Your Account with Two-Factor Authentication",
 };
 
-// Guarantees the page is prerendered at build time.
-export const dynamic = "force-static";
-
 export default function TwoFactorPage() {
   return (
     <main className="w-full max-w-sm">

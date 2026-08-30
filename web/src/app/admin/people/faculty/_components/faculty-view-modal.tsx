@@ -18,32 +18,36 @@ export default function FacultyViewModal({ open, onOpenChange, faculty }: Facult
       <DialogContent showCloseButton={false} className="news-modal w-[min(100%,640px)] sm:max-w-[640px] max-h-[90vh] overflow-y-auto flex flex-col gap-0 rounded-[16px] p-0 ring-0 outline-none">
         <div className="modal__head">
           <DialogTitle className="m-0 text-[1.05rem] font-normal flex items-center gap-2">
-            <Eye size={18} /> View Faculty
+            <Eye size={18} /> Faculty
           </DialogTitle>
           <button type="button" className="admin-icon-btn" aria-label="Close" onClick={() => onOpenChange(false)}><X size={18} /></button>
         </div>
 
         <div className="modal__body">
-          <div className="flex items-center gap-4 mb-4">
-            {faculty.image && <img src={faculty.image} alt={faculty.name} className="w-20 h-20 rounded-full object-cover border border-[var(--admin-line)]" />}
-            <div>
-              <h3 className="m-0 text-xl font-bold text-[var(--admin-ink)]">{faculty.name}</h3>
-              <p className="m-0 text-sm text-[var(--admin-muted)]">{faculty.designation} · {faculty.department}</p>
-            </div>
+          <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: "0.5rem", padding: "0.55rem 0", borderBottom: "1px dashed #e2e7f0" }}>
+            <b style={{ fontSize: ".8rem", color: "#5c6678" }}>Full name</b>
+            <div>{faculty.name}</div>
           </div>
-
-          <div className="flex items-center gap-4 flex-wrap text-sm text-[var(--admin-muted)] mb-4">
-            <span className="inline-flex items-center gap-1.5"><Mail size={14} />{faculty.email}</span>
-            <span className="inline-flex items-center gap-1.5"><Phone size={14} />{faculty.phone}</span>
+          <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: "0.5rem", padding: "0.55rem 0", borderBottom: "1px dashed #e2e7f0" }}>
+            <b style={{ fontSize: ".8rem", color: "#5c6678" }}>Role</b>
+            <div>{faculty.role}</div>
           </div>
-
-          <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
-            <div><b>Qualification:</b> {faculty.qualification}</div>
-            <div><b>Experience:</b> {faculty.experience}</div>
-            <div><b>Status:</b> <span className={`badge ${faculty.status === "active" ? "badge--green" : "badge--gray"}`}>{faculty.status}</span></div>
+          <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: "0.5rem", padding: "0.55rem 0", borderBottom: "1px dashed #e2e7f0" }}>
+            <b style={{ fontSize: ".8rem", color: "#5c6678" }}>Group</b>
+            <div><span className="badge badge--blue">{faculty.group}</span></div>
           </div>
-
-          {faculty.bio && <div className="text-sm text-[var(--admin-ink)] whitespace-pre-wrap">{faculty.bio}</div>}
+          <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: "0.5rem", padding: "0.55rem 0", borderBottom: "1px dashed #e2e7f0" }}>
+            <b style={{ fontSize: ".8rem", color: "#5c6678" }}>Photo</b>
+            <div>{faculty.photo ? <img src={faculty.photo} alt="" style={{ maxWidth: 180, maxHeight: 110, borderRadius: 8, border: "1px solid #e2e7f0" }} /> : "—"}</div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: "0.5rem", padding: "0.55rem 0", borderBottom: "1px dashed #e2e7f0" }}>
+            <b style={{ fontSize: ".8rem", color: "#5c6678" }}>Email</b>
+            <div>{faculty.email || "—"}</div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: "0.5rem", padding: "0.55rem 0", borderBottom: "1px dashed #e2e7f0" }}>
+            <b style={{ fontSize: ".8rem", color: "#5c6678" }}>Phone</b>
+            <div>{faculty.phone || "—"}</div>
+          </div>
         </div>
 
         <div className="modal__foot">

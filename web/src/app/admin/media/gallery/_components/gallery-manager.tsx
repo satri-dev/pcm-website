@@ -7,6 +7,7 @@ import GalleryFormModal from "./gallery-form-modal";
 import GalleryViewModal from "./gallery-view-modal";
 import { Gallery } from "@/types/gallery";
 import { Plus, RefreshCw } from "lucide-react";
+import { SoftDeleteDialog } from "@/components/shared/SoftDeleteDialog";
 
 interface GalleryManagerProps {
   initialData?: Gallery[];
@@ -30,6 +31,9 @@ export default function GalleryManager({
   const [saving, setSaving] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [viewingItem, setViewingItem] = useState<Gallery | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [deletingItemName, setDeletingItemName] = useState<string>("");
 
   const handleAddGallery = () => {
     setEditingItem(null);
@@ -46,10 +50,18 @@ export default function GalleryManager({
     setIsModalOpen(true);
   };
 
-  const handleDeleteGallery = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this gallery item?")) return;
+  const handleDeleteGallery = (gallery: Gallery) => {
+    setDeletingItemId(gallery.id);
+    setDeletingItemName(gallery.title || "this item");
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingItemId) return;
     try {
-      await deleteGallery(id);
+      await deleteGallery(deletingItemId);
+      setDeleteDialogOpen(false);
+      setDeletingItemId(null);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Delete failed");
     }
@@ -134,6 +146,15 @@ export default function GalleryManager({
         open={isViewOpen}
         onOpenChange={setIsViewOpen}
         gallery={viewingItem}
+      />
+
+      <SoftDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        itemName={deletingItemName}
+        itemType="gallery item"
+        loading={false}
       />
     </main>
   );

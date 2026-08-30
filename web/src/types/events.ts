@@ -30,6 +30,8 @@ export interface EventItem {
   views: number;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string;
+  deletedBy?: string;
 }
 
 export interface EventDocument {
@@ -46,6 +48,8 @@ export interface EventDocument {
   views: number;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date;
+  deletedBy?: string;
 }
 
 export interface EventCreateInput {

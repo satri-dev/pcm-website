@@ -2,7 +2,14 @@
 
 import { Eye, LogOut, Menu } from "lucide-react";
 import Link from "next/link";
-import { useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { authClient } from "@/core/lib/auth-client";
+
+interface SiteSettings {
+  collegeName: string;
+  logoUrl: string;
+}
 
 export default function PageHeader({
   title,
@@ -11,6 +18,21 @@ export default function PageHeader({
   title: string;
   subtitle: string;
 }) {
+  const router = useRouter();
+  const [siteName, setSiteName] = useState("PCM");
+
+  useEffect(() => {
+    fetch("/api/admin/system/settings")
+      .then(async (res) => {
+        if (!res.ok) return null;
+        return res.json();
+      })
+      .then((data: SiteSettings | null) => {
+        if (data?.collegeName) setSiteName(data.collegeName);
+      })
+      .catch(() => {});
+  }, []);
+
   const toggle = useCallback(() => {
     document.body.classList.toggle("admin-sidebar-open");
   }, []);
@@ -18,6 +40,12 @@ export default function PageHeader({
   const closeSidebar = useCallback(() => {
     document.body.classList.remove("admin-sidebar-open");
   }, []);
+
+  const handleSignOut = useCallback(async () => {
+    await authClient.signOut();
+    router.push("/login");
+    router.refresh();
+  }, [router]);
 
   return (
     <>
@@ -33,7 +61,7 @@ export default function PageHeader({
 
         <div style={{ minWidth: 0 }}>
           <div className="admin-topbar__title">{title}</div>
-          <div className="admin-topbar__crumb">PCM Admin &middot; {subtitle}</div>
+          <div className="admin-topbar__crumb">{siteName} Admin &middot; {subtitle}</div>
         </div>
 
         <div className="admin-topbar__spacer" />
@@ -49,11 +77,15 @@ export default function PageHeader({
           <Eye size={18} />
         </Link>
 
-        <form action="/api/auth/sign-out" method="POST" style={{ display: "contents" }}>
-          <button type="submit" className="admin-icon-btn" aria-label="Sign out" title="Sign out">
-            <LogOut size={18} />
-          </button>
-        </form>
+        <button
+          type="button"
+          onClick={handleSignOut}
+          className="admin-icon-btn"
+          aria-label="Sign out"
+          title="Sign out"
+        >
+          <LogOut size={18} />
+        </button>
       </div>
 
       <div

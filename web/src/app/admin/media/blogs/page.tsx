@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import PageHeader from "../../_components/dashboard/page-header";
 import BlogManager from "./_components/blog-manager";
+import { connection } from "next/server";
 
 export const metadata: Metadata = {
   title: "Blog Management",
@@ -10,7 +11,9 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+
 export default async function BlogPage() {
+  await connection();
   return (
     <>
       <PageHeader title="Blogs" subtitle="Content · Blog" />
