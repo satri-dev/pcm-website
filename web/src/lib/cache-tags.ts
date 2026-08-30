@@ -6,6 +6,8 @@
 export const CACHE_TAGS = {
   navMenu: "nav-menu",
   pageContent: "page-content",
+  about: "about",
+  homepage: "homepage",
 } as const;
 
 // Per-slug tag so an edit to one page only invalidates its own cache
