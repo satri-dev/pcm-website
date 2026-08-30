@@ -8,9 +8,6 @@ export const metadata: Metadata = {
   description: "Sign in to manage the website content.",
 };
 
-// Guarantees the page is prerendered at build time.
-export const dynamic = "force-static";
-
 export default function LoginPage() {
   return (
     <main className="w-full max-w-sm">

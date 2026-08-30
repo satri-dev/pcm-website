@@ -1,9 +1,7 @@
 import PageHeader from "../../_components/dashboard/page-header";
 import DownloadManager from "./_components/download-manager";
 import { listDownloads } from "@/repositories/download.repository";
-
-export const dynamic = "force-dynamic";
-
+import { connection } from "next/server";
 
 export const metadata = {
   title: "Download Management",
@@ -13,6 +11,7 @@ export const metadata = {
 };
 
 export default async function DownloadPage() {
+  await connection();
   const { items } = await listDownloads({ pageSize: 50 });
 
   return (

@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// This is a write endpoint — never cache it.
-export const dynamic = "force-dynamic";
-
 /**
  * POST /api/contact
  *

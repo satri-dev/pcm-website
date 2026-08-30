@@ -2,8 +2,19 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import { MapPin, Phone, Mail, ChevronRight, Send } from "lucide-react";
 import { FaFacebook, FaInstagram, FaLinkedin, FaWhatsapp } from "react-icons/fa";
+
+function CurrentYear() {
+  const [year, setYear] = useState<number | null>(null);
+  useEffect(() => {
+    // Must be read client-side after mount, not cached in the prerendered shell
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setYear(new Date().getFullYear());
+  }, []);
+  return <>{year ?? ""}</>;
+}
 
 const quickLinks = [
   { label: "Home", href: "/" },
@@ -274,7 +285,7 @@ export default function Footer() {
         <div className="container px-4 sm:px-6 py-4 sm:py-5">
           <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center sm:justify-between gap-3 text-xs sm:text-[0.82rem] text-white/50 text-center sm:text-left">
             <span>
-              © <span>{new Date().getFullYear()}</span> Pokhara College of Management. All rights reserved.
+              © <CurrentYear /> Pokhara College of Management. All rights reserved.
             </span>
             <span className="inline-flex items-center gap-2">
               <Link href="/terms" className="text-white/70 hover:text-pcm-green transition-colors">

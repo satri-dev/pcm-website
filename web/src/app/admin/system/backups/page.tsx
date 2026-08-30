@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { listBackups } from "@/core/lib/backup-utils";
+import { connection } from "next/server";
 import PageHeader from "../../_components/dashboard/page-header";
 import BackupsManager from "./_components/backups-manager";
-
-export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Database Backups",
@@ -13,6 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function BackupsPage() {
+  await connection();
   const backups = listBackups();
 
   return (

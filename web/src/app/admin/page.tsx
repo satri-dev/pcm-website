@@ -8,11 +8,10 @@ import SeoMetaPanel from "./_components/dashboard/seo-meta-panel";
 import RecentActivity from "./_components/dashboard/recent-activity";
 import QuickActions from "./_components/dashboard/quick-actions";
 import { getSiteVisits } from "@/core/lib/analytics/stats";
-
-export const dynamic = "force-dynamic";
-
+import { connection } from "next/server";
 
 export default async function AdminDashboard() {
+  await connection();
   const siteVisits = await getSiteVisits(60);
   return (
     <>

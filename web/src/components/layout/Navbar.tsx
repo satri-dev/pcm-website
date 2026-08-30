@@ -8,77 +8,9 @@ import { Search, ArrowRight, Menu, X, ChevronDown, Phone } from "lucide-react";
 import NavDropdown from "./NavDropdown";
 import ThemeToggle from "./ThemeToggle";
 import { buttonVariants } from "@/components/ui/button";
+import type { NavMenuItem } from "@/types/nav-menu";
 
-const aboutLinks = [
-  { label: "About PCM", href: "/about" },
-  { label: "Words from our leaders", href: "/about/message" },
-  { label: "Board of Directors", href: "/about/board" },
-  { label: "Faculty & Staff", href: "/about/faculty" },
-  { label: "Campus & Facilities", href: "/about/facility" },
-  { label: "Campus Map", href: "/about/campus-map" },
-];
-
-const moreColumns = [
-  {
-    label: "Community",
-    links: [
-      { label: "Clubs", href: "/clubs" },
-      { label: "Alumni", href: "/alumni" },
-      { label: "Testimonials", href: "/testimonials" },
-      { label: "PCM Life", href: "/life" },
-      { label: "Feedback", href: "/feedback" },
-      { label: "Surveys", href: "/survey" },
-    ],
-  },
-  {
-    label: "Admission & Support",
-    links: [
-      { label: "Admission", href: "/admission" },
-      { label: "Scholarships", href: "/scholarship" },
-      { label: "Downloads", href: "/downloads" },
-      { label: "FAQ", href: "/faq" },
-    ],
-  },
-  {
-    label: "Campus & Careers",
-    links: [
-      { label: "Campus & Facilities", href: "/about/facility" },
-      { label: "Placements", href: "/placements" },
-      { label: "Careers", href: "/career" },
-      { label: "Virtual Tour", href: "/virtual-tour" },
-    ],
-  },
-  {
-    label: "Resources",
-    links: [
-      { label: "GPA Converter", href: "/gpa-converter" },
-      { label: "NP-EN Converter", href: "/np-en-converter" },
-      { label: "Campus Map", href: "/about/campus-map" },
-      { label: "Login", href: "https://www.pcm.edu.np/login" },
-    ],
-  },
-];
-
-const programLinks = [
-  { label: "All Programs", href: "/programs" },
-  { label: "BBA", href: "/programs/bba" },
-  { label: "BBA-Finance", href: "/programs/bba-finance" },
-  { label: "BCSIT", href: "/programs/bcsit" },
-];
-
-const newsLinks = [
-  { label: "News", href: "/news" },
-  { label: "Notices", href: "/notices" },
-  { label: "Results", href: "/results" },
-  { label: "Events", href: "/events" },
-];
-
-const blogLinks = [
-  { label: "Articles", href: "/blogs" },
-  { label: "Student Blogs", href: "/blogs-student" },
-];
-
-export default function Navbar() {
+export default function Navbar({ items }: { items: NavMenuItem[] }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -86,9 +18,16 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
 
-  const toggleDropdown = (label: string) => {
-    setOpenDropdown(openDropdown === label ? null : label);
+  const toggleDropdown = (id: string) => {
+    setOpenDropdown(openDropdown === id ? null : id);
   };
+
+  const navLinkClass = (href: string, base = "px-[0.85rem] py-[0.6rem] text-[0.925rem] font-semibold rounded-md transition-colors") =>
+    `${base} ${
+      pathname === href
+        ? "text-pcm-blue bg-secondary"
+        : "text-pcm-navy hover:text-pcm-blue hover:bg-secondary"
+    }`;
 
   return (
     <>
@@ -112,46 +51,56 @@ export default function Navbar() {
 
           <nav aria-label="Primary" className="hidden lg:block">
             <ul className="flex items-center gap-[0.35rem]">
-              <li>
-                <Link href="/" className={`px-[0.85rem] py-[0.6rem] text-[0.925rem] font-semibold rounded-md transition-colors ${pathname === "/" ? "text-pcm-blue bg-secondary" : "text-pcm-navy hover:text-pcm-blue hover:bg-secondary"}`}>
-                  Home
-                </Link>
-              </li>
-              <NavDropdown label="About" href="/about" items={aboutLinks} />
-              <NavDropdown label="Programs" href="/programs" items={programLinks} />
-              <NavDropdown label="News" href="/news" items={newsLinks} />
-              <li>
-                <Link href="/gallery" className="px-[0.85rem] py-[0.6rem] text-[0.925rem] font-semibold text-pcm-navy rounded-md hover:text-pcm-blue hover:bg-secondary transition-colors">
-                  Gallery
-                </Link>
-              </li>
-              <NavDropdown label="Blogs" href="/blogs" items={blogLinks} />
-              <li className="relative group">
-                <span className="px-[0.85rem] py-[0.6rem] text-[0.925rem] font-semibold text-pcm-navy rounded-md hover:text-pcm-blue hover:bg-secondary transition-colors cursor-pointer inline-flex items-center gap-1">
-                  More <ChevronDown className="w-3.5 h-3.5 transition-transform group-hover:rotate-180" />
-                </span>
-                <div className="absolute top-full right-0 mt-2 min-w-170 p-5 bg-white rounded-xl border border-border shadow-pcm-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 grid grid-cols-4 gap-5">
-                  {moreColumns.map((col) => (
-                    <div key={col.label}>
-                      <span className="block text-[0.7rem] font-bold tracking-[0.15em] uppercase text-pcm-navy/50 mb-2">{col.label}</span>
-                      <ul className="space-y-1">
-                        {col.links.map((link) => (
-                          <li key={link.href}>
-                            <Link href={link.href} className="block px-2 py-1.5 text-sm text-pcm-navy hover:text-pcm-blue hover:bg-secondary rounded-md transition-colors">
-                              {link.label}
-                            </Link>
-                          </li>
+              {items.map((item) => {
+                if (item.type === "link") {
+                  return (
+                    <li key={item.id}>
+                      <Link href={item.href || "#"} className={navLinkClass(item.href || "#")}>
+                        {item.label}
+                      </Link>
+                    </li>
+                  );
+                }
+
+                if (item.type === "dropdown") {
+                  return (
+                    <NavDropdown
+                      key={item.id}
+                      label={item.label}
+                      href={item.href || "#"}
+                      items={item.children}
+                    />
+                  );
+                }
+
+                if (item.type === "mega") {
+                  return (
+                    <li key={item.id} className="relative group">
+                      <span className="px-[0.85rem] py-[0.6rem] text-[0.925rem] font-semibold text-pcm-navy rounded-md hover:text-pcm-blue hover:bg-secondary transition-colors cursor-pointer inline-flex items-center gap-1">
+                        {item.label} <ChevronDown className="w-3.5 h-3.5 transition-transform group-hover:rotate-180" />
+                      </span>
+                      <div className="absolute top-full right-0 mt-2 min-w-170 p-5 bg-white rounded-xl border border-border shadow-pcm-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 grid grid-cols-4 gap-5">
+                        {item.columns.map((col) => (
+                          <div key={col.label}>
+                            <span className="block text-[0.7rem] font-bold tracking-[0.15em] uppercase text-pcm-navy/50 mb-2">{col.label}</span>
+                            <ul className="space-y-1">
+                              {col.links.map((link) => (
+                                <li key={`${link.label}-${link.href}`}>
+                                  <Link href={link.href} className="block px-2 py-1.5 text-sm text-pcm-navy hover:text-pcm-blue hover:bg-secondary rounded-md transition-colors">
+                                    {link.label}
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
                         ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              </li>
-              <li>
-                <Link href="/contact" className="px-[0.85rem] py-[0.6rem] text-[0.925rem] font-semibold text-pcm-navy rounded-md hover:text-pcm-blue hover:bg-secondary transition-colors">
-                  Contact
-                </Link>
-              </li>
+                      </div>
+                    </li>
+                  );
+                }
+
+                return null;
+              })}
             </ul>
           </nav>
 
@@ -168,12 +117,11 @@ export default function Navbar() {
               <span className="sm:hidden">Apply</span>
               <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </Link>
-            <button 
+            <button
               onClick={() => {
-                console.log('Hamburger clicked!');
                 setMobileMenuOpen(true);
               }}
-              aria-label="Open menu" 
+              aria-label="Open menu"
               className="lg:hidden w-10 h-10 sm:w-11 sm:h-11 grid place-items-center rounded-md text-pcm-navy hover:bg-secondary transition-colors"
             >
               <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -186,11 +134,11 @@ export default function Navbar() {
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-200 lg:hidden">
           {/* Backdrop */}
-          <div 
+          <div
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setMobileMenuOpen(false)}
           />
-          
+
           {/* Drawer */}
           <div className="absolute top-0 right-0 h-full w-[85vw] max-w-sm bg-white shadow-2xl overflow-y-auto">
             {/* Header */}
@@ -222,173 +170,94 @@ export default function Navbar() {
             {/* Navigation */}
             <nav className="p-4">
               <ul className="space-y-1">
-                <li>
-                  <Link 
-                    href="/" 
-                    className="block px-4 py-3 text-base font-semibold text-pcm-blue bg-secondary rounded-lg"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Home
-                  </Link>
-                </li>
+                {items.map((item) => {
+                  if (item.type === "link") {
+                    return (
+                      <li key={item.id}>
+                        <Link
+                          href={item.href || "#"}
+                          className={`block px-4 py-3 text-base font-semibold rounded-lg hover:bg-secondary transition-colors ${
+                            pathname === (item.href || "#")
+                              ? "text-pcm-blue bg-secondary"
+                              : "text-pcm-navy"
+                          }`}
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          {item.label}
+                        </Link>
+                      </li>
+                    );
+                  }
 
-                {/* About Dropdown */}
-                <li>
-                  <button
-                    onClick={() => toggleDropdown("About")}
-                    className="w-full flex items-center justify-between px-4 py-3 text-base font-semibold text-pcm-navy rounded-lg hover:bg-secondary transition-colors"
-                  >
-                    About
-                    <ChevronDown className={`w-4 h-4 transition-transform ${openDropdown === "About" ? "rotate-180" : ""}`} />
-                  </button>
-                  {openDropdown === "About" && (
-                    <ul className="mt-1 ml-4 space-y-1">
-                      {aboutLinks.map((link) => (
-                        <li key={link.href}>
-                          <Link
-                            href={link.href}
-                            className="block px-4 py-2 text-sm text-pcm-navy/80 hover:text-pcm-blue hover:bg-secondary rounded-md transition-colors"
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
-                            {link.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </li>
+                  if (item.type === "dropdown") {
+                    return (
+                      <li key={item.id}>
+                        <button
+                          onClick={() => toggleDropdown(item.id)}
+                          className="w-full flex items-center justify-between px-4 py-3 text-base font-semibold text-pcm-navy rounded-lg hover:bg-secondary transition-colors"
+                        >
+                          {item.label}
+                          <ChevronDown className={`w-4 h-4 transition-transform ${openDropdown === item.id ? "rotate-180" : ""}`} />
+                        </button>
+                        {openDropdown === item.id && (
+                          <ul className="mt-1 ml-4 space-y-1">
+                            {item.children.map((link) => (
+                              <li key={`${link.label}-${link.href}`}>
+                                <Link
+                                  href={link.href}
+                                  className="block px-4 py-2 text-sm text-pcm-navy/80 hover:text-pcm-blue hover:bg-secondary rounded-md transition-colors"
+                                  onClick={() => setMobileMenuOpen(false)}
+                                >
+                                  {link.label}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </li>
+                    );
+                  }
 
-                {/* Programs Dropdown */}
-                <li>
-                  <button
-                    onClick={() => toggleDropdown("Programs")}
-                    className="w-full flex items-center justify-between px-4 py-3 text-base font-semibold text-pcm-navy rounded-lg hover:bg-secondary transition-colors"
-                  >
-                    Programs
-                    <ChevronDown className={`w-4 h-4 transition-transform ${openDropdown === "Programs" ? "rotate-180" : ""}`} />
-                  </button>
-                  {openDropdown === "Programs" && (
-                    <ul className="mt-1 ml-4 space-y-1">
-                      {programLinks.map((link) => (
-                        <li key={link.href}>
-                          <Link
-                            href={link.href}
-                            className="block px-4 py-2 text-sm text-pcm-navy/80 hover:text-pcm-blue hover:bg-secondary rounded-md transition-colors"
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
-                            {link.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </li>
+                  if (item.type === "mega") {
+                    return (
+                      <li key={item.id}>
+                        <button
+                          onClick={() => toggleDropdown(item.id)}
+                          className="w-full flex items-center justify-between px-4 py-3 text-base font-semibold text-pcm-navy rounded-lg hover:bg-secondary transition-colors"
+                        >
+                          {item.label}
+                          <ChevronDown className={`w-4 h-4 transition-transform ${openDropdown === item.id ? "rotate-180" : ""}`} />
+                        </button>
+                        {openDropdown === item.id && (
+                          <div className="mt-1 ml-4 space-y-1">
+                            {item.columns.map((col) => (
+                              <div key={col.label} className="pt-2">
+                                <span className="block px-4 py-1 text-[0.7rem] font-bold tracking-[0.15em] uppercase text-pcm-navy/40">
+                                  {col.label}
+                                </span>
+                                <ul className="space-y-1">
+                                  {col.links.map((link) => (
+                                    <li key={`${link.label}-${link.href}`}>
+                                      <Link
+                                        href={link.href}
+                                        className="block px-4 py-2.5 text-sm text-pcm-navy/70 hover:text-pcm-blue hover:bg-secondary rounded-md transition-colors"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                      >
+                                        {link.label}
+                                      </Link>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </li>
+                    );
+                  }
 
-                {/* News Dropdown */}
-                <li>
-                  <button
-                    onClick={() => toggleDropdown("News")}
-                    className="w-full flex items-center justify-between px-4 py-3 text-base font-semibold text-pcm-navy rounded-lg hover:bg-secondary transition-colors"
-                  >
-                    News
-                    <ChevronDown className={`w-4 h-4 transition-transform ${openDropdown === "News" ? "rotate-180" : ""}`} />
-                  </button>
-                  {openDropdown === "News" && (
-                    <ul className="mt-1 ml-4 space-y-1">
-                      {newsLinks.map((link) => (
-                        <li key={link.href}>
-                          <Link
-                            href={link.href}
-                            className="block px-4 py-2 text-sm text-pcm-navy/80 hover:text-pcm-blue hover:bg-secondary rounded-md transition-colors"
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
-                            {link.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </li>
-
-                <li>
-                  <Link 
-                    href="/gallery" 
-                    className="block px-4 py-3 text-base font-semibold text-pcm-navy rounded-lg hover:bg-secondary transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Gallery
-                  </Link>
-                </li>
-
-                {/* Blogs Dropdown */}
-                <li>
-                  <button
-                    onClick={() => toggleDropdown("Blogs")}
-                    className="w-full flex items-center justify-between px-4 py-3 text-base font-semibold text-pcm-navy rounded-lg hover:bg-secondary transition-colors"
-                  >
-                    Blogs
-                    <ChevronDown className={`w-4 h-4 transition-transform ${openDropdown === "Blogs" ? "rotate-180" : ""}`} />
-                  </button>
-                  {openDropdown === "Blogs" && (
-                    <ul className="mt-1 ml-4 space-y-1">
-                      {blogLinks.map((link) => (
-                        <li key={link.href}>
-                          <Link
-                            href={link.href}
-                            className="block px-4 py-2 text-sm text-pcm-navy/80 hover:text-pcm-blue hover:bg-secondary rounded-md transition-colors"
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
-                            {link.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </li>
-
-                <li>
-                  <Link 
-                    href="/contact" 
-                    className="block px-4 py-3 text-base font-semibold text-pcm-navy rounded-lg hover:bg-secondary transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Contact
-                  </Link>
-                </li>
-
-                {/* More Section */}
-                <li>
-                  <span className="block px-4 py-2 text-[0.7rem] font-bold tracking-[0.15em] uppercase text-pcm-navy/40 mt-2">More</span>
-                </li>
-                {[
-                  { label: "Facilities", href: "/about/facility" },
-                  { label: "Clubs", href: "/clubs" },
-                  { label: "Alumni", href: "/alumni" },
-                  { label: "Testimonials", href: "/testimonials" },
-                  { label: "PCM Life", href: "/life" },
-                  { label: "Feedback", href: "/feedback" },
-                  { label: "Surveys", href: "/survey" },
-                  { label: "Placements", href: "/placements" },
-                  { label: "Careers", href: "/career" },
-                  { label: "Virtual Tour", href: "/virtual-tour" },
-                  { label: "Admission", href: "/admission" },
-                  { label: "Scholarships", href: "/scholarship" },
-                  { label: "Downloads", href: "/downloads" },
-                  { label: "FAQ", href: "/faq" },
-                  { label: "GPA Converter", href: "/gpa-converter" },
-                  { label: "NP-EN Converter", href: "/np-en-converter" },
-                  { label: "Login", href: "https://www.pcm.edu.np/login" },
-                ].map((item) => (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      className="block px-4 py-2.5 text-sm text-pcm-navy/70 hover:text-pcm-blue hover:bg-secondary rounded-md transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
+                  return null;
+                })}
               </ul>
 
               {/* Apply Button */}

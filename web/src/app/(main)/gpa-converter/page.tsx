@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import GpaClient from "./GpaClient";
 
 // All content is static — grading scale and UI never change at runtime.
-export const dynamic = "force-static";
-
 export const metadata: Metadata = {
   title: "GPA Calculator | Pokhara University Grading Scale | PCM Pokhara",
   description:

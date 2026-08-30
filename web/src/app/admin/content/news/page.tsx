@@ -3,8 +3,7 @@ import type { Metadata } from "next";
 import PageHeader from "../../_components/dashboard/page-header";
 import NewsManager from "./_components/news-manager";
 import { listNews } from "@/repositories/news.repository";
-
-export const dynamic = "force-dynamic";
+import { connection } from "next/server";
 
 export const metadata: Metadata = {
   title: "News Management",
@@ -14,6 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function NewsPage() {
+  await connection();
   const { items } = await listNews({ pageSize: 50 });
 
   return (

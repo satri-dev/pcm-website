@@ -3,8 +3,7 @@ import type { Metadata } from "next";
 import PageHeader from "../../_components/dashboard/page-header";
 import EventsManager from "./_components/events-manager";
 import { listEvents } from "@/repositories/events.repository";
-
-export const dynamic = "force-dynamic";
+import { connection } from "next/server";
 
 export const metadata: Metadata = {
   title: "Events & Workshops Management",
@@ -14,6 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function EventsPage() {
+  await connection();
   const { items } = await listEvents({ pageSize: 50 });
 
   return (

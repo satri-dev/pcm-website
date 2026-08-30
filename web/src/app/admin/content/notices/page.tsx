@@ -3,8 +3,7 @@ import type { Metadata } from "next";
 import PageHeader from "../../_components/dashboard/page-header";
 import NoticesManager from "./_components/notices-manager";
 import { listNotices } from "@/repositories/notices.repository";
-
-export const dynamic = "force-dynamic";
+import { connection } from "next/server";
 
 export const metadata: Metadata = {
   title: "Notices Management",
@@ -14,6 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function NoticesPage() {
+  await connection();
   const { items } = await listNotices({ pageSize: 50 });
 
   return (

@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import ProgramsClient from "./ProgramsClient";
 
-// Programs listing changes only when a new program is added — rare but possible.
-// ISR at 300s (5 min) keeps it fast while allowing admin updates without redeploy.
-export const revalidate = 300;
-
+// Programs listing data is fetched client-side; the page shell is static.
 export const metadata: Metadata = {
   title: "Programs | BBA, BBA-Finance & BCSIT at PCM Pokhara",
   description:

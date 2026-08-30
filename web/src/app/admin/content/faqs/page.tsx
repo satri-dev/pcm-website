@@ -3,8 +3,7 @@ import type { Metadata } from "next";
 import PageHeader from "../../_components/dashboard/page-header";
 import FaqsManager from "./_components/faqs-manager";
 import { listFaqs } from "@/repositories/faqs.repository";
-
-export const dynamic = "force-dynamic";
+import { connection } from "next/server";
 
 export const metadata: Metadata = {
   title: "FAQs Management",
@@ -14,6 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function FaqsPage() {
+  await connection();
   const { items } = await listFaqs({ pageSize: 50 });
 
   return (

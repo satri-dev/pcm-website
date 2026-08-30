@@ -3,8 +3,7 @@ import type { Metadata } from "next";
 import PageHeader from "../../_components/dashboard/page-header";
 import ChatbotManager from "./_components/chatbot-manager";
 import { listChatbotEntries } from "@/repositories/chatbot.repository";
-
-export const dynamic = "force-dynamic";
+import { connection } from "next/server";
 
 export const metadata: Metadata = {
   title: "Chatbot Knowledge Base",
@@ -14,6 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ChatbotPage() {
+  await connection();
   const { items } = await listChatbotEntries({ pageSize: 100 });
 
   return (

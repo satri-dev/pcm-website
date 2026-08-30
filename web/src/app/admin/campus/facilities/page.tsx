@@ -3,9 +3,7 @@ import type { Metadata } from "next";
 import PageHeader from "../../_components/dashboard/page-header";
 import FacilitiesManager from "./_components/facilities-manager";
 import { listFacilities } from "@/repositories/facilities.repository";
-
-
-export const dynamic = "force-dynamic";
+import { connection } from "next/server";
 
 
 export const metadata: Metadata = {
@@ -16,6 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default async function FacilitiesPage() {
+  await connection();
   const { items } = await listFacilities({ pageSize: 100 });
 
   return (
