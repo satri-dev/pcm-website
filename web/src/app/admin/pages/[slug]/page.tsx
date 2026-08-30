@@ -5,6 +5,7 @@ import { Wrench } from "lucide-react";
 import PageHeader from "../../_components/dashboard/page-header";
 import NavMenuManager from "../_components/nav-menu-manager";
 import GalleryPageSettings from "../_components/gallery-page-settings";
+import FaqPageSettings from "../_components/faq-page-settings";
 import PageContentManager from "../_components/page-content-manager";
 import { findEntry } from "../_config";
 import {
@@ -12,6 +13,7 @@ import {
   listNavMenu,
 } from "@/repositories/nav-menu.repository";
 import { getGalleryPageSettings } from "@/repositories/gallery-settings.repository";
+import { getFaqPageSettings } from "@/repositories/faq-content.repository";
 import {
   ensurePageContentsReady,
   getPageContentBySlug,
@@ -64,6 +66,19 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
           subtitle="Pages · Content & CTA"
         />
         <GalleryPageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "faq") {
+    const settings = await getFaqPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content & CTA"
+        />
+        <FaqPageSettings initial={settings} />
       </>
     );
   }

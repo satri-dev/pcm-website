@@ -39,14 +39,13 @@ export default function FaqItem({ item, isOpen, onToggle }: Props) {
         </span>
       </button>
       <div
-        className="faq-item__body"
+        className="faq-item__body prose prose-lg max-w-none"
         id={`faq-body-${item.id}`}
         role="region"
         aria-labelledby={`faq-btn-${item.id}`}
         hidden={!isOpen}
-      >
-        <p>{item.answer}</p>
-      </div>
+        dangerouslySetInnerHTML={{ __html: item.answer }}
+      />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   deleteFaq,
   getFaqById,
@@ -8,6 +9,7 @@ import {
   hardDeleteFaq,
 } from "@/repositories/faqs.repository";
 import { requireApiSession } from "@/core/lib/api-guard";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 const updateSchema = z
   .object({
@@ -69,6 +71,8 @@ export async function PATCH(
         if (!restored) {
           return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
+        revalidateTag(CACHE_TAGS.faqs, "max");
+        revalidatePath("/faq");
         return NextResponse.json({ ok: true });
       } catch {
         return NextResponse.json(
@@ -84,6 +88,8 @@ export async function PATCH(
         if (!deleted) {
           return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
+        revalidateTag(CACHE_TAGS.faqs, "max");
+        revalidatePath("/faq");
         return NextResponse.json({ ok: true });
       } catch {
         return NextResponse.json(
@@ -117,6 +123,8 @@ export async function PATCH(
     if (!updated) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+    revalidateTag(CACHE_TAGS.faqs, "max");
+    revalidatePath("/faq");
     return NextResponse.json(updated);
   } catch (err) {
     if (isMongoError(err) && err.code === 11000) {
@@ -145,6 +153,8 @@ export async function DELETE(
     if (!deleted) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+    revalidateTag(CACHE_TAGS.faqs, "max");
+    revalidatePath("/faq");
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json(
