@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ProgramsPage() {
+  await connection();
   const { items } = await listPrograms({ pageSize: 50 });
 
   return (
