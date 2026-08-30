@@ -1,12 +1,9 @@
 export type MediaType = "photo" | "video";
 
-export type GalleryCategory =
-  | "all"
-  | "cultural"
-  | "academic"
-  | "sports"
-  | "tour"
-  | "albums";
+// Categories are dynamic — they are derived from the albums stored in the
+// backend, so any category added in the database automatically appears in the
+// public gallery filter. The special value "all" means "show everything".
+export type GalleryCategory = string;
 
 export interface GalleryPhoto {
   id: string;

@@ -94,23 +94,23 @@ function EntryGrid({
         <div className="admin-pages-list">
           {entries.map((entry) => {
             const Icon = icons[entry.slug] ?? LayoutList;
-            const live = entry.slug === "navbar";
-            return (
-              <Link
-                key={entry.slug}
-                href={`/admin/pages/${entry.slug}`}
-                className="admin-pages-entry"
-              >
-                <span className="admin-pages-entry__label">
-                  <Icon size={17} />
-                  <b>{entry.label}</b>
-                </span>
-                <span
-                  className={`admin-pages-badge${live ? " is-live" : ""}`}
-                >
-                  {live ? "Live" : "Plan"}
-                </span>
-              </Link>
+                const live = entry.live || entry.slug === "navbar";
+                return (
+                  <Link
+                    key={entry.slug}
+                    href={`/admin/pages/${entry.slug}`}
+                    className="admin-pages-entry"
+                  >
+                    <span className="admin-pages-entry__label">
+                      <Icon size={17} />
+                      <b>{entry.label}</b>
+                    </span>
+                    <span
+                      className={`admin-pages-badge${live ? " is-live" : ""}`}
+                    >
+                      {live ? "Live" : "Plan"}
+                    </span>
+                  </Link>
             );
           })}
         </div>

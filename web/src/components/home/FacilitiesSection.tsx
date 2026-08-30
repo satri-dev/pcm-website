@@ -1,32 +1,17 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, GraduationCap, BookOpen, Laptop } from "lucide-react";
+import type { FacilityItem } from "@/app/admin/campus/facilities/types/facilities";
 
-const facilities = [
-  {
-    title: "Smart Classrooms",
-    category: "Learning",
-    description: "Spacious, well-lit classrooms with modern projectors, AV systems and comfortable seating.",
-    icon: GraduationCap,
-    image: "/images/about-2.jpg"
-  },
-  {
-    title: "Learning Resource Centre",
-    category: "Library", 
-    description: "A quiet, fully-stocked library with reference texts, journals, e-resources and study desks.",
-    icon: BookOpen,
-    image: "/images/about-1.jpg"
-  },
-  {
-    title: "IT & Computer Labs",
-    category: "IT",
-    description: "Dedicated labs with up-to-date computers and software for BCSIT practicals and coding workshops.",
-    icon: Laptop,
-    image: "/images/hero-6.jpg"
-  }
-];
+const iconMap: Record<string, typeof GraduationCap> = {
+  Learning: GraduationCap,
+  Library: BookOpen,
+  IT: Laptop,
+  Sports: GraduationCap,
+  "Student Life": GraduationCap,
+};
 
-export default function FacilitiesSection() {
+export default function FacilitiesSection({ facilities }: { facilities: FacilityItem[] }) {
   return (
     <section className="py-[clamp(4rem,8vw,6rem)] bg-secondary/30">
       <div className="container">
@@ -42,46 +27,51 @@ export default function FacilitiesSection() {
               Modern classrooms, dedicated labs and space to play and unwind — everything you need to learn well.
             </p>
           </div>
-          <Link 
-            href="/facilities" 
+          <Link
+            href="/facilities"
             className="inline-flex items-center gap-2 text-pcm-blue hover:text-pcm-blue-700 font-semibold transition-colors group"
           >
-            All facilities 
+            All facilities
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {facilities.map((facility, index) => (
-            <div key={facility.title} className="bg-card rounded-2xl overflow-hidden border border-border shadow-pcm-sm hover:shadow-pcm-md transition-shadow">
-              <div className="relative aspect-[4/3]">
-                <Image
-                  src={facility.image}
-                  alt={facility.title}
-                  fill
-                  priority={index === 0}
-                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className="object-cover"
-                />
-              </div>
-              <div className="p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-pcm-green/10 flex items-center justify-center">
-                    <facility.icon className="w-5 h-5 text-pcm-green" />
-                  </div>
-                  <span className="text-sm font-mono uppercase tracking-wider text-pcm-blue">
-                    {facility.category}
-                  </span>
+          {facilities.map((facility, index) => {
+            const Icon = iconMap[facility.category] ?? GraduationCap;
+            return (
+              <div key={facility.id} className="bg-card rounded-2xl overflow-hidden border border-border shadow-pcm-sm hover:shadow-pcm-md transition-shadow">
+                <div className="relative aspect-[4/3]">
+                  {facility.image && (
+                    <Image
+                      src={facility.image}
+                      alt={facility.name}
+                      fill
+                      priority={index === 0}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover"
+                    />
+                  )}
                 </div>
-                <h3 className="text-xl font-display font-semibold text-pcm-navy mb-2">
-                  {facility.title}
-                </h3>
-                <p className="text-muted-foreground">
-                  {facility.description}
-                </p>
+                <div className="p-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-full bg-pcm-green/10 flex items-center justify-center">
+                      <Icon className="w-5 h-5 text-pcm-green" />
+                    </div>
+                    <span className="text-sm font-mono uppercase tracking-wider text-pcm-blue">
+                      {facility.category}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-display font-semibold text-pcm-navy mb-2">
+                    {facility.name}
+                  </h3>
+                  <p className="text-muted-foreground">
+                    {facility.description}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

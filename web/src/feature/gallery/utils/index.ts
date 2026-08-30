@@ -1,16 +1,10 @@
 /**
- * Returns a human-readable label for a gallery category.
+ * Returns the display label for a gallery category. Categories are dynamic
+ * (derived from the database), so the category string is used directly. The
+ * special "all" value is shown as "All".
  */
 export function categoryLabel(cat: string): string {
-  const map: Record<string, string> = {
-    all:      "All",
-    albums:   "Albums",
-    sports:   "Sports",
-    cultural: "Cultural",
-    academic: "Academic",
-    tour:     "Tour",
-  };
-  return map[cat] ?? cat.charAt(0).toUpperCase() + cat.slice(1);
+  return cat === "all" ? "All" : cat;
 }
 
 /**

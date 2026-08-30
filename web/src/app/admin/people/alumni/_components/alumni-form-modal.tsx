@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Alumni, ALUMNI_PROGRAMS, ALUMNI_SECTORS } from "@/types/alumni";
+import { Alumni, ALUMNI_PROGRAMS, ALUMNI_ROLES, ALUMNI_SECTORS } from "@/types/alumni";
 import { Save, X } from "lucide-react";
 import ImageUpload from "@/components/cloudinary/ImageUpload";
 
@@ -68,7 +68,7 @@ export default function AlumniFormModal({ open, onOpenChange, alumni, onSave, sa
               <div className={fv("batch")}><label>Batch <span className="req">*</span></label><input type="text" {...register("batch")} placeholder="e.g. 2075" />{errors.batch && <div className="field__err">{errors.batch.message}</div>}</div>
               <div className={fv("program")}><label>Program <span className="req">*</span></label><select {...register("program")}><option value="">— Select —</option>{ALUMNI_PROGRAMS.map((p) => <option key={p} value={p}>{p}</option>)}</select>{errors.program && <div className="field__err">{errors.program.message}</div>}</div>
               <div className={fv("sector")}><label>Sector <span className="req">*</span></label><select {...register("sector")}><option value="">— Select —</option>{ALUMNI_SECTORS.map((s) => <option key={s} value={s}>{s}</option>)}</select>{errors.sector && <div className="field__err">{errors.sector.message}</div>}</div>
-              <div className={fv("role")}><label>Role / company <span className="req">*</span></label><input type="text" {...register("role")} placeholder="e.g. Relationship Officer, Nabil Bank" />{errors.role && <div className="field__err">{errors.role.message}</div>}</div>
+              <div className={fv("role")}><label>Role / company <span className="req">*</span></label><select {...register("role")}><option value="">— Select —</option>{[...new Set([...(alumni?.role ? [alumni.role] : []), ...ALUMNI_ROLES])].map((r) => <option key={r} value={r}>{r}</option>)}</select>{errors.role && <div className="field__err">{errors.role.message}</div>}</div>
               <div className={fv("location")}><label>Location</label><input type="text" {...register("location")} placeholder="e.g. Pokhara" /></div>
               <div className={`field field--full`}>
                 <label>Photo</label>

@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Bod } from "@/types/bod";
+import { Bod, BOD_ROLES } from "@/types/bod";
 import { Save, X } from "lucide-react";
 import ImageUpload from "@/components/cloudinary/ImageUpload";
 
@@ -64,7 +64,7 @@ export default function BodFormModal({ open, onOpenChange, bod, onSave, saving =
           <div className="modal__body">
             <div className="form-grid">
               <div className={fv("name")}><label>Full name <span className="req">*</span></label><input type="text" {...register("name")} />{errors.name && <div className="field__err">{errors.name.message}</div>}</div>
-              <div className={fv("role")}><label>Role <span className="req">*</span></label><input type="text" {...register("role")} placeholder="e.g. Chairperson, Member" />{errors.role && <div className="field__err">{errors.role.message}</div>}</div>
+              <div className={fv("role")}><label>Role <span className="req">*</span></label><select {...register("role")}><option value="">— Select —</option>{[...new Set([...(bod?.role ? [bod.role] : []), ...BOD_ROLES])].map((r) => <option key={r} value={r}>{r}</option>)}</select>{errors.role && <div className="field__err">{errors.role.message}</div>}</div>
               <div className={fv("order")}><label>Order</label><input type="number" {...register("order", { valueAsNumber: true })} min={0} /></div>
               <div className={`field field--full`}>
                 <label>Photo</label>

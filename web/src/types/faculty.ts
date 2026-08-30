@@ -6,6 +6,24 @@ export const FACULTY_GROUPS: readonly FacultyGroup[] = [
   "Administration",
 ];
 
+export const FACULTY_ROLES: readonly string[] = [
+  "Principal",
+  "BCSIT Coordinator",
+  "BBA Coordinator (Morning)",
+  "BBA Coordinator (Day)",
+  "Faculty Member",
+  "Administrator (Morning)",
+  "Accountant",
+  "Accountant Assist",
+  "Executive Secretary",
+  "Office Secretary",
+  "Office Assistant",
+  "IT Technician",
+  "Driver / Store / Photocopy",
+  "Sweeper",
+  "Guard",
+];
+
 export const FACULTY_COLLECTION = "faculty";
 
 export interface Faculty {

@@ -1,15 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { WelcomeStat } from "@/types/homepage";
 
-const stats = [
-  { value: 80, suffix: "%", label: "Success stories" },
-  { value: 100, suffix: "", label: "Dean's List Scholars" },
-  { value: 1000, suffix: "", label: "Graduates" },
-  { value: 23, suffix: "", label: "Years of Excellence" },
-];
-
-export default function WelcomeSection() {
+export default function WelcomeSection({ stats }: { stats: WelcomeStat[] }) {
   const [counters, setCounters] = useState(stats.map(() => 0));
 
   useEffect(() => {

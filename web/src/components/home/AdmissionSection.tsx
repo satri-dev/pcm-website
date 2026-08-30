@@ -2,45 +2,21 @@ import Link from "next/link";
 import Image from "next/image";
 import { buttonVariants } from "@/components/ui/button";
 import { ArrowRight, CheckCircle } from "lucide-react";
+import type { AdmissionConfig } from "@/types/homepage";
 
-const admissionSteps = [
-  {
-    number: "01",
-    title: "Submit the form",
-    description: "Fill out the online application or pick up a form from the college office before Ashar 26, 2083."
-  },
-  {
-    number: "02", 
-    title: "Appear for the entrance",
-    description: "The entrance exam is held on Ashar 29, 2083, 8:00 AM at the PCM campus."
-  },
-  {
-    number: "03",
-    title: "Secure your seat", 
-    description: "Selected candidates complete admission formalities and begin a journey worth starting."
-  }
-];
-
-const admissionDetails = [
-  { label: "Form deadline", value: "Ashar 26, 2083" },
-  { label: "Entrance exam", value: "Ashar 29, 2083 · 8:00 AM" },
-  { label: "Programs", value: "BBA · BBA-Finance · BCSIT" },
-  { label: "Scholarships", value: "Available" }
-];
-
-export default function AdmissionSection() {
+export default function AdmissionSection({ admission }: { admission: AdmissionConfig }) {
   return (
     <section className="py-[clamp(3rem,6vw,5rem)] bg-background">
       <div className="container">
         <div className="max-w-2xl mb-6">
           <span className="inline-block px-4 py-2 rounded-full bg-pcm-blue/10 text-pcm-blue text-sm font-mono uppercase tracking-wider mb-4">
-            Admissions 2083
+            {admission.badge}
           </span>
           <h2 className="text-[clamp(1.75rem,3.2vw,2.4rem)] font-display font-semibold text-pcm-navy mb-3">
-            Join PCM this intake
+            {admission.heading}
           </h2>
           <p className="text-muted-foreground text-base">
-            A simple, transparent admission process — scholarships available for deserving students.
+            {admission.subheading}
           </p>
         </div>
 
@@ -49,8 +25,8 @@ export default function AdmissionSection() {
           {/* Left: Admission Poster */}
           <div className="relative w-full max-w-[200px] mx-auto lg:mx-0 aspect-[4/5] rounded-lg overflow-hidden shadow-md">
             <Image
-              src="/images/admission-open-2026.png"
-              alt="Admissions open for 2083 intake"
+              src={admission.posterImage}
+              alt="Admissions open"
               fill
               sizes="200px"
               className="object-cover"
@@ -59,7 +35,7 @@ export default function AdmissionSection() {
           
           {/* Middle: Steps */}
           <div className="space-y-5">
-            {admissionSteps.map((step) => (
+            {admission.steps.map((step) => (
               <div key={step.number} className="flex gap-3">
                 <div className="flex-shrink-0 text-pcm-blue/50 text-sm font-mono font-semibold">
                   {step.number}
@@ -83,7 +59,7 @@ export default function AdmissionSection() {
             </h3>
             
             <div className="space-y-3 mb-5">
-              {admissionDetails.map((detail) => (
+              {admission.details.map((detail) => (
                 <div key={detail.label} className="flex flex-col gap-0.5">
                   <span className="text-[0.75rem] text-muted-foreground">
                     {detail.label}
