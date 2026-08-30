@@ -19,6 +19,8 @@ import {
   getPageContentBySlug,
 } from "@/repositories/page-content.repository";
 import { connection } from "next/server";
+import TickersManager from "../_components/tickers-manager";
+import { listTickers } from "@/repositories/ticker.repository";
 
 interface RouteCtx {
   params: Promise<{ slug: string }>;
@@ -79,6 +81,19 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
           subtitle="Pages · Content & CTA"
         />
         <FaqPageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "tickers") {
+    const settings = await listTickers();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content & CTA"
+        />
+        <TickersManager tickers={settings} />
       </>
     );
   }
