@@ -3,8 +3,7 @@ import "../legacy/legacy.css";
 import { PageHero } from "../legacy/page-hero";
 import { SectionHead } from "../legacy/section-head";
 import { CtaBand } from "../legacy/cta-band";
-import { LeaderCard } from "./LeaderCard";
-import { leaders } from "./data";
+import { LeaderList } from "./LeaderList";
 
 export const metadata: Metadata = {
   title: "Words from our leaders | Pokhara College of Management",
@@ -28,11 +27,7 @@ export default function MessagePage() {
             title="Words from our leaders"
             subtitle="The people guiding PCM share why they believe in our mission of affordable, quality education."
           />
-          <div className="leader-stack">
-            {leaders.map((leader, i) => (
-              <LeaderCard key={leader.name} leader={leader} index={i} />
-            ))}
-          </div>
+          <LeaderList />
         </div>
       </section>
       <CtaBand

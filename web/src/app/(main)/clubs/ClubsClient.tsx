@@ -1,74 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import "../about/legacy/legacy.css";
 import "./clubs.css";
 
 const IMG = "/assets/img";
 
-const clubs = [
-  {
-    icon: "🌿",
-    name: "Eco Club",
-    description:
-      "Green campus drives, waste segregation, tree plantation and sustainability awareness programs.",
-    members: [
-      { initials: "PS", name: "Prakash Sharma", role: "President", program: "BBA" },
-      { initials: "AG", name: "Anisha Gurung", role: "Vice President", program: "BCSIT" },
-    ],
-  },
-  {
-    icon: "📊",
-    name: "Finance Club",
-    description:
-      "Stock market simulations, investment workshops, financial literacy sessions and banking visits.",
-    members: [
-      { initials: "SB", name: "Sagar Bhattarai", role: "President", program: "BBA-Finance" },
-      { initials: "NK", name: "Nisha Karki", role: "Treasurer", program: "BBA" },
-    ],
-  },
-  {
-    icon: "💻",
-    name: "Coding Club",
-    description:
-      "Hackathons, competitive programming, web and app development bootcamps and tech talks.",
-    members: [
-      { initials: "BT", name: "Bishal Thapa", role: "President", program: "BCSIT" },
-      { initials: "RM", name: "Rojina Maharjan", role: "Technical Lead", program: "BCSIT" },
-    ],
-  },
-  {
-    icon: "🗣️",
-    name: "Debate Club",
-    description:
-      "Inter-college debates, elocution, public speaking workshops and model UN participation.",
-    members: [
-      { initials: "AL", name: "Aayusha Lamichhane", role: "President", program: "BBA" },
-      { initials: "KR", name: "Kiran Rai", role: "Coordinator", program: "BBA-Finance" },
-    ],
-  },
-  {
-    icon: "🎵",
-    name: "Music Club",
-    description:
-      "Band practice, open-mic nights, cultural performances and audio production workshops.",
-    members: [
-      { initials: "SK", name: "Samyak KC", role: "President", program: "BCSIT" },
-      { initials: "MG", name: "Maya Ghale", role: "Events Lead", program: "BBA" },
-    ],
-  },
-  {
-    icon: "⚽",
-    name: "Sports Club",
-    description:
-      "Intra-college tournaments in football, basketball, volleyball and athletics, plus futsal leagues.",
-    members: [
-      { initials: "DR", name: "Dinesh Rana", role: "President", program: "BBA-Finance" },
-      { initials: "ST", name: "Sarita Tamang", role: "Captain", program: "BCSIT" },
-    ],
-  },
-];
+interface ClubMemberApi {
+  photo: string;
+  name: string;
+  position: string;
+  program: string;
+}
+
+interface ClubApi {
+  id: string;
+  name: string;
+  icon: string;
+  tagline: string;
+  image: string;
+  desc: string;
+  members: ClubMemberApi[];
+}
+
+interface ClubsResponse {
+  items: ClubApi[];
+  total: number;
+  page: number;
+  pageSize: number;
+  pages: number;
+}
 
 const whyJoinItems = [
   "Run real events — fests, seminars and competitions",
@@ -76,8 +38,19 @@ const whyJoinItems = [
   "Connect with mentors, alumni and industry partners",
 ];
 
+function initials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  const first = parts[0][0] ?? "";
+  const last = parts.length > 1 ? (parts[parts.length - 1][0] ?? "") : "";
+  return (first + last).toUpperCase();
+}
+
 export default function ClubsClient() {
   const rootRef = useRef<HTMLDivElement>(null);
+  const [clubs, setClubs] = useState<ClubApi[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const items = rootRef.current?.querySelectorAll(".reveal");
@@ -97,7 +70,31 @@ export default function ClubsClient() {
 
     items.forEach((el) => io.observe(el));
     return () => io.disconnect();
+  }, [clubs, loading]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function load() {
+      try {
+        const res = await fetch("/api/admin/people/clubs?page=1&pageSize=50");
+        if (!res.ok) throw new Error("Failed to load clubs");
+        const data: ClubsResponse = await res.json();
+        if (active) setClubs(data.items ?? []);
+      } catch (err) {
+        if (active) setError(err instanceof Error ? err.message : "Failed to load clubs");
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      active = false;
+    };
   }, []);
+
+  const clubCount = clubs.length;
 
   return (
     <div ref={rootRef} className="pcm-clubs">
@@ -128,7 +125,7 @@ export default function ClubsClient() {
             <div style={{ borderRadius: 22, overflow: "hidden", boxShadow: "var(--shadow-lg)", aspectRatio: "4/3" }}>
               <img className="split-media-img" src={`${IMG}/about-games.jpg`} alt="PCM club activities and sports" loading="lazy" />
             </div>
-            <div className="est-badge"><b>6+</b><span>Active Clubs</span></div>
+            <div className="est-badge"><b>{loading ? "…" : `${clubCount}+`}</b><span>Active Clubs</span></div>
           </div>
           <div className="reveal">
             <span className="eyebrow">Why join?</span>
@@ -150,34 +147,50 @@ export default function ClubsClient() {
       <section className="section tone-sky">
         <div className="wrap-wide">
           <div className="section-head center reveal">
-            <span className="eyebrow">Six clubs, one community</span>
+            <span className="eyebrow">{clubCount > 0 ? `${clubCount} ${clubCount === 1 ? "club" : "clubs"}, one community` : "Clubs, one community"}</span>
             <h2 className="section-title">Find your crew</h2>
             <p className="section-sub">Every club is run by students, for students — with a faculty mentor and a calendar of events each semester.</p>
           </div>
           <div className="grid g-3" style={{ marginTop: "2rem" }}>
-            {clubs.map((club, i) => (
-              <article key={club.name} className="club-card reveal" style={{ transitionDelay: `${i * 60}ms` }}>
-                <div className="club-card__head">
-                  <span className="club-card__icon">{club.icon}</span>
-                  <div>
-                    <h3>{club.name}</h3>
-                    <p>{club.description}</p>
-                  </div>
-                </div>
-                <div className="club-card__members">
-                  {club.members.map((m) => (
-                    <div key={m.name} className="club-member">
-                      <span className="club-member__photo club-member__photo--ph">{m.initials}</span>
-                      <div className="club-member__info">
-                        <b>{m.name}</b>
-                        <span className="club-member__role">{m.role}</span>
-                        <small className="club-member__prog">{m.program}</small>
-                      </div>
+            {loading ? (
+              <p style={{ padding: "2rem 0", color: "var(--muted)" }}>Loading clubs…</p>
+            ) : error ? (
+              <p style={{ padding: "2rem 0", color: "var(--muted)" }}>{error}</p>
+            ) : clubs.length === 0 ? (
+              <p style={{ padding: "2rem 0", color: "var(--muted)" }}>No clubs listed yet.</p>
+            ) : (
+              clubs.map((club, i) => (
+                <article key={club.id} className="club-card reveal" style={{ transitionDelay: `${i * 60}ms` }}>
+                  <div className="club-card__head">
+                    <span className="club-card__icon">{club.icon}</span>
+                    <div>
+                      <h3>{club.name}</h3>
+                      <p>{club.desc || club.tagline}</p>
                     </div>
-                  ))}
-                </div>
-              </article>
-            ))}
+                  </div>
+                  <div className="club-card__members">
+                    {club.members.length === 0 ? (
+                      <p style={{ color: "var(--muted)", fontSize: ".85rem", margin: 0 }}>Club member details coming soon.</p>
+                    ) : (
+                      club.members.map((m) => (
+                        <div key={m.name} className="club-member">
+                          {m.photo ? (
+                            <img className="club-member__photo" src={m.photo} alt={m.name} loading="lazy" />
+                          ) : (
+                            <span className="club-member__photo club-member__photo--ph">{initials(m.name)}</span>
+                          )}
+                          <div className="club-member__info">
+                            <b>{m.name}</b>
+                            <span className="club-member__role">{m.position}</span>
+                            <small className="club-member__prog">{m.program}</small>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </article>
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -192,10 +205,10 @@ export default function ClubsClient() {
                 <p>Applications for the 2083 intake are open across all three programs. Take the first step today.</p>
               </div>
               <div className="cta-band__actions">
-                <a className="btn btn-gold btn-lg " href="/admission">
+                <Link className="btn btn-gold btn-lg " href="/admission">
                   Apply Now <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-                </a>
-                <a className="btn btn-ghost on-dark btn-lg" href="/programs">Explore Programs</a>
+                </Link>
+                <Link className="btn btn-ghost on-dark btn-lg" href="/programs">Explore Programs</Link>
               </div>
             </div>
           </div>
