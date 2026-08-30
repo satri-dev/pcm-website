@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 import {
   deleteGallery,
   getGalleryById,
@@ -12,15 +13,7 @@ import { requireApiSession } from "@/core/lib/api-guard";
 const updateSchema = z
   .object({
     title: z.string().min(3).max(200),
-    category: z.enum([
-      "Campus",
-      "Events",
-      "Students",
-      "Faculty",
-      "Activities",
-      "Infrastructure",
-      "Graduation",
-    ]),
+    category: z.string().min(1, "Category is required").max(100),
     image: z.string().optional(),
     photos: z.array(
       z.object({
@@ -42,6 +35,11 @@ function isMongoError(err: unknown): err is { code?: number } {
     "code" in err &&
     typeof (err as { code?: unknown }).code === "number"
   );
+}
+
+function revalidateGalleryPaths() {
+  revalidatePath("/gallery");
+  revalidatePath("/");
 }
 
 export async function GET(
@@ -81,6 +79,7 @@ export async function PATCH(
         if (!restored) {
           return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
+        revalidateGalleryPaths();
         return NextResponse.json({ ok: true });
       } catch {
         return NextResponse.json(
@@ -96,6 +95,7 @@ export async function PATCH(
         if (!deleted) {
           return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
+        revalidateGalleryPaths();
         return NextResponse.json({ ok: true });
       } catch {
         return NextResponse.json(
@@ -129,6 +129,7 @@ export async function PATCH(
     if (!updated) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+    revalidateGalleryPaths();
     return NextResponse.json(updated);
   } catch (err) {
     if (isMongoError(err) && err.code === 11000) {
@@ -157,6 +158,7 @@ export async function DELETE(
     if (!deleted) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+    revalidateGalleryPaths();
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json(

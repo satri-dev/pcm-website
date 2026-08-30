@@ -4,6 +4,24 @@ export type AlumniSector = "Banking & Finance" | "Technology" | "Education" | "E
 export const ALUMNI_PROGRAMS: readonly AlumniProgram[] = ["BBA", "BCSIT", "BBA-Finance"];
 export const ALUMNI_SECTORS: readonly AlumniSector[] = ["Banking & Finance", "Technology", "Education", "Entrepreneurship"];
 
+export const ALUMNI_ROLES: readonly string[] = [
+  "Branch Manager",
+  "Bank Officer",
+  "Relationship Officer",
+  "Credit Analyst",
+  "Investment Analyst",
+  "Financial Analyst",
+  "Marketing Manager",
+  "Software Engineer",
+  "Data Analyst",
+  "Product Manager",
+  "System Administrator",
+  "Lecturer / Researcher",
+  "Teacher / Educator",
+  "Founder / Entrepreneur",
+  "HR Officer",
+];
+
 export const ALUMNI_COLLECTION = "alumni";
 
 export interface Alumni {

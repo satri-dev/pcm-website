@@ -1,4 +1,6 @@
-export type GalleryCategory = "Campus" | "Events" | "Students" | "Faculty" | "Activities" | "Infrastructure" | "Graduation";
+// Categories are dynamic — admins can add new ones at any time. GALLERY_CATEGORIES
+// below is only a suggested/default list used in the admin form's datalist.
+export type GalleryCategory = string;
 export type GalleryStatus = "published" | "draft";
 
 export const GALLERY_CATEGORIES: readonly GalleryCategory[] = [

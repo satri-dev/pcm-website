@@ -9,7 +9,11 @@ export function LeaderCard({ leader, index }: { leader: Leader; index: number })
   return (
     <article ref={reveal.ref} className={`leader-card ${reveal.revealClass}`} style={reveal.style}>
       <div className="leader-card__media">
-        <img src={leader.photo} alt={leader.name} loading="lazy" />
+        {leader.photo ? (
+          <img src={leader.photo} alt={leader.name} loading="lazy" />
+        ) : (
+          <span className="leader-card__monogram">{leader.chip}</span>
+        )}
         <span className="leader-card__chip">{leader.chip}</span>
       </div>
       <div className="leader-card__body">
