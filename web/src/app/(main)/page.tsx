@@ -101,14 +101,38 @@ export const metadata: Metadata = {
     images: ["https://www.pcm.edu.np/images/hero-1.jpg"],
   },
   verification: {
-    google: "your-google-verification-code", // Add actual verification code
+    google: "your-google-verification-code",
   },
   other: {
     "theme-color": "#21409A",
   },
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  await connection();
+
+  const [
+    homepage,
+    programsData,
+    newsData,
+    eventsData,
+    noticesData,
+    resultsData,
+    galleryData,
+    facilitiesData,
+    blogsData,
+  ] = await Promise.all([
+    getHomepage(),
+    listPrograms({ pageSize: 3, status: "open" }),
+    listNews({ pageSize: 6, status: "published" }),
+    listEvents({ pageSize: 3, status: "published" }),
+    listNotices({ pageSize: 3 }),
+    listResults({ pageSize: 3 }),
+    listGallery({ pageSize: 5 }),
+    listFacilities({ status: "published", pageSize: 3 }),
+    listBlogs({ status: "published", pageSize: 3 }),
+  ]);
+
   return (
     <>
       <BreadcrumbSchema />

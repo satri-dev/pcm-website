@@ -2,12 +2,13 @@ export interface PagesSectionEntry {
   slug: string;
   label: string;
   publicHref: string;
+  live?: boolean;
 }
 
 // Mirrors the public (main) routes. Each item is a candidate for a real admin
 // editor; managers are wired up incrementally.
 export const mainPages: PagesSectionEntry[] = [
-  { slug: "home", label: "Home", publicHref: "/" },
+  { slug: "home", label: "Home", publicHref: "/", live: true },
   { slug: "about", label: "About", publicHref: "/about" },
   { slug: "admission", label: "Admission", publicHref: "/admission" },
   { slug: "alumni", label: "Alumni", publicHref: "/alumni" },

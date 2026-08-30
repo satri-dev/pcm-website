@@ -1,16 +1,8 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import type { WhyChooseReason } from "@/types/homepage";
 
-const reasons = [
-  { icon: "🎓", title: "PU-affiliated degrees", desc: "All three programs are awarded by Pokhara University — a nationally recognised qualification employers trust." },
-  { icon: "💰", title: "Scholarships for all", desc: "Merit and need-based awards with up to 100% coverage, because quality education should stay affordable." },
-  { icon: "👩‍🏫", title: "Mentors who know you", desc: "Small batches and an open-door culture mean faculty know your goals — and push you toward them." },
-  { icon: "💼", title: "Careers & placements", desc: "Internships, field visits and a dedicated placement team connect classroom learning to real jobs." },
-  { icon: "🎉", title: "A campus that comes alive", desc: "Fests, sports, clubs and community drives build confidence and a network that lasts a lifetime." },
-  { icon: "📍", title: "Central, safe location", desc: "On Gyan Marg in Nadipur, Pokhara-2 — easy to reach, hard to leave, and close to everything you need." },
-];
-
-export default function WhyChoosePCM() {
+export default function WhyChoosePCM({ reasons }: { reasons: WhyChooseReason[] }) {
   return (
     <section className="py-[clamp(3.5rem,8vw,6.5rem)]">
       <div className="container">
