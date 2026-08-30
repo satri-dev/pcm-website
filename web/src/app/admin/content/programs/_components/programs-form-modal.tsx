@@ -201,24 +201,6 @@ export default function ProgramsFormModal({
                 )}
               </div>
 
-              <div className={fieldValue("slug")}>
-                <label htmlFor="program-slug">
-                  Slug <span className="req">*</span>
-                </label>
-                <input
-                  id="program-slug"
-                  type="text"
-                  {...register("slug")}
-                  placeholder="e.g. bba or bachelor-business-administration"
-                />
-                <span className="hint mt-1">
-                  URL-friendly identifier. Auto-generated from name, but you can edit it.
-                </span>
-                {errors.slug && (
-                  <div className="field__err">{errors.slug.message}</div>
-                )}
-              </div>
-
               <div className={fieldValue("code")}>
                 <label htmlFor="program-code">
                   Code <span className="req">*</span>
