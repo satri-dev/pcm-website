@@ -54,7 +54,15 @@ function Stat({ count, suffix, label }: StatItem) {
   );
 }
 
-export function StatsGrid({ stats }: { stats: StatItem[] }) {
+export function StatsGrid({
+  stats,
+  eyebrow = "By the numbers",
+  title = "A legacy measured in outcomes",
+}: {
+  stats: StatItem[];
+  eyebrow?: string;
+  title?: string;
+}) {
   const reveal = useReveal<HTMLDivElement>();
   return (
     <section className="stats section">
@@ -64,9 +72,9 @@ export function StatsGrid({ stats }: { stats: StatItem[] }) {
           className={`section-head center ${reveal.revealClass}`}
           style={{ maxWidth: 560, marginInline: "auto", ...reveal.style }}
         >
-          <span className="eyebrow on-dark">By the numbers</span>
+          <span className="eyebrow on-dark">{eyebrow}</span>
           <h2 className="section-title" style={{ color: "#fff" }}>
-            A legacy measured in outcomes
+            {title}
           </h2>
         </div>
         <div className="stats__grid mt-7">

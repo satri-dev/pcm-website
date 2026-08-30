@@ -4,11 +4,16 @@ import { Wrench } from "lucide-react";
 
 import PageHeader from "../../_components/dashboard/page-header";
 import NavMenuManager from "../_components/nav-menu-manager";
+import PageContentManager from "../_components/page-content-manager";
 import { findEntry } from "../_config";
 import {
   ensureNavMenusReady,
   listNavMenu,
 } from "@/repositories/nav-menu.repository";
+import {
+  ensurePageContentsReady,
+  getPageContentBySlug,
+} from "@/repositories/page-content.repository";
 import { connection } from "next/server";
 
 interface RouteCtx {
@@ -45,11 +50,22 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
     );
   }
 
+  if (found.kind === "page") {
+    await ensurePageContentsReady();
+    const content = await getPageContentBySlug(found.entry.slug);
+    return (
+      <>
+        <PageHeader title={found.entry.label} subtitle="Pages · Copy & metadata" />
+        <PageContentManager slug={found.entry.slug} initialContent={content} />
+      </>
+    );
+  }
+
   return (
     <>
       <PageHeader
         title={found.entry.label}
-        subtitle={`${found.kind === "page" ? "Pages" : "Sections"} · Overview`}
+        subtitle="Sections · Overview"
       />
       <div className="admin-panel">
         <div className="admin-panel__body p-6">

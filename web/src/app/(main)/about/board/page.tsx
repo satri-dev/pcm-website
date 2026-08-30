@@ -6,6 +6,7 @@ import { CheckList } from "../legacy/check-list";
 import { CtaBand } from "../legacy/cta-band";
 import { RevealBox } from "../legacy/reveal-box";
 import { BoardGrid } from "./BoardGrid";
+import { getPageCopy, getSection } from "@/lib/data/page-content";
 
 export const metadata: Metadata = {
   title: "Board of Directors | Pokhara College of Management",
@@ -14,20 +15,52 @@ export const metadata: Metadata = {
   alternates: { canonical: "/about/board" },
 };
 
-export default function BoardPage() {
+export default async function BoardPage() {
+  const content = await getPageCopy("about/board");
+  const hero = content?.hero ?? {
+    title: "Board of Directors",
+    subtitle: "The people steering PCM — guiding vision, governance and growth since 2002.",
+  };
+  const intro = getSection(content, "intro", {
+    key: "intro",
+    eyebrow: "Governance",
+    title: "Our Board of Directors",
+    subtitle: "A committed leadership team that keeps PCM rooted in quality, integrity and service.",
+  });
+  const promise = getSection(content, "promise", {
+    key: "promise",
+    eyebrow: "Our promise",
+    title: "Governance rooted in student success",
+    paragraphs: [
+      "Every decision at PCM flows from one question: how do we best serve our students? The board works closely with faculty, guardians and industry partners to keep our programs relevant, our campus supportive and our graduates ready for the world.",
+    ],
+    checklist: [
+      "Regular curriculum reviews aligned with Pokhara University",
+      "Transparent, merit-based scholarship and admission policies",
+      "Investment in faculty, facilities and student experience",
+    ],
+  });
+  const cta = getSection(content, "cta", {
+    key: "cta",
+    title: "A step towards your future",
+    paragraphs: [
+      "Applications for the 2083 intake are open across all three programs. Take the first step today.",
+    ],
+  });
+
   return (
     <main id="main">
       <PageHero
         crumbs={[{ label: "Home", href: "/" }, { label: "Board of Directors" }]}
-        title="Board of Directors"
-        subtitle="The people steering PCM — guiding vision, governance and growth since 2002."
+        title={hero.title}
+        subtitle={hero.subtitle}
       />
       <section className="section">
         <div className="wrap-wide">
           <SectionHead
-            eyebrow="Governance"
-            title="Our Board of Directors"
-            subtitle="A committed leadership team that keeps PCM rooted in quality, integrity and service."
+            eyebrow={intro.eyebrow ?? ""}
+            title={intro.title ?? "Our Board of Directors"}
+            subtitle={intro.subtitle}
           />
           <BoardGrid />
         </div>
@@ -35,20 +68,12 @@ export default function BoardPage() {
       <section className="section tone-sky">
         <div className="wrap-wide split">
           <RevealBox>
-            <span className="eyebrow">Our promise</span>
-            <h2 className="section-title">Governance rooted in student success</h2>
-            <p style={{ marginTop: "1rem" }}>
-              Every decision at PCM flows from one question: how do we best serve our students? The
-              board works closely with faculty, guardians and industry partners to keep our programs
-              relevant, our campus supportive and our graduates ready for the world.
-            </p>
+            <span className="eyebrow">{promise.eyebrow}</span>
+            <h2 className="section-title">{promise.title}</h2>
+            <p style={{ marginTop: "1rem" }}>{promise.paragraphs?.[0]}</p>
             <CheckList
               className="checklist"
-              items={[
-                "Regular curriculum reviews aligned with Pokhara University",
-                "Transparent, merit-based scholarship and admission policies",
-                "Investment in faculty, facilities and student experience",
-              ]}
+              items={promise.checklist ?? []}
             />
           </RevealBox>
           <RevealBox className="split__media">
@@ -63,8 +88,8 @@ export default function BoardPage() {
         </div>
       </section>
       <CtaBand
-        title="A step towards your future"
-        text="Applications for the 2083 intake are open across all three programs. Take the first step today."
+        title={cta.title ?? "A step towards your future"}
+        text={cta.paragraphs?.[0] ?? "Applications for the 2083 intake are open across all three programs. Take the first step today."}
         primary={{ label: "Apply Now", href: "/admission.html" }}
         secondary={{ label: "Explore Programs", href: "/programs.html" }}
       />

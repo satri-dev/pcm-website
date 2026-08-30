@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import "../about/legacy/legacy.css";
 import "./clubs.css";
+import type { PageContent, PageContentSection } from "@/types/page-content";
 
 const IMG = "/assets/img";
 
@@ -38,6 +39,33 @@ const whyJoinItems = [
   "Connect with mentors, alumni and industry partners",
 ];
 
+const FALLBACK: Record<string, PageContentSection> = {
+  "why-join": {
+    key: "why-join",
+    eyebrow: "Why join?",
+    title: "Leadership happens outside the lecture hall",
+    paragraphs: [
+      "Employers look for more than grades. Club leadership, event management and teamwork give PCM students the confidence and experience that make their résumés stand out.",
+    ],
+    checklist: whyJoinItems,
+  },
+  "clubs-list": {
+    key: "clubs-list",
+    eyebrow: "Clubs, one community",
+    title: "Find your crew",
+    subtitle:
+      "Every club is run by students, for students — with a faculty mentor and a calendar of events each semester.",
+  },
+  cta: {
+    key: "cta",
+    eyebrow: "Enter to Learn — Go Forth to Serve",
+    title: "A step towards your future",
+    paragraphs: [
+      "Applications for the 2083 intake are open across all three programs. Take the first step today.",
+    ],
+  },
+};
+
 function initials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "?";
@@ -46,11 +74,24 @@ function initials(name: string) {
   return (first + last).toUpperCase();
 }
 
-export default function ClubsClient() {
+export default function ClubsClient({ content }: { content: PageContent | null }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [clubs, setClubs] = useState<ClubApi[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const sec = (key: string): PageContentSection => {
+    const found = content?.sections.find((s) => s.key === key);
+    const merged: PageContentSection = { ...(FALLBACK[key] ?? {}), ...(found ?? {}) };
+    for (const k of Object.keys(merged)) {
+      if (merged[k as keyof PageContentSection] === undefined) {
+        delete merged[k as keyof PageContentSection];
+      }
+    }
+    return merged;
+  };
+
+  const hero = content?.hero;
 
   useEffect(() => {
     const items = rootRef.current?.querySelectorAll(".reveal");
@@ -114,8 +155,8 @@ export default function ClubsClient() {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>{" "}
             <span>Student Clubs</span>
           </nav>
-          <h1>Student Clubs</h1>
-          <p>Six active student clubs at PCM — eco, finance, coding, debate, music and sports — where students lead, create and build skills beyond the classroom.</p>
+          <h1>{hero?.title ?? "Student Clubs"}</h1>
+          <p>{hero?.subtitle ?? "Six active student clubs at PCM — eco, finance, coding, debate, music and sports — where students lead, create and build skills beyond the classroom."}</p>
         </div>
       </section>
 
@@ -128,13 +169,11 @@ export default function ClubsClient() {
             <div className="est-badge"><b>{loading ? "…" : `${clubCount}+`}</b><span>Active Clubs</span></div>
           </div>
           <div className="reveal">
-            <span className="eyebrow">Why join?</span>
-            <h2 className="section-title">Leadership happens outside the lecture hall</h2>
-            <p style={{ marginTop: "1rem" }}>
-              Employers look for more than grades. Club leadership, event management and teamwork give PCM students the confidence and experience that make their résumés stand out.
-            </p>
+            <span className="eyebrow">{sec("why-join").eyebrow}</span>
+            <h2 className="section-title">{sec("why-join").title}</h2>
+            <p style={{ marginTop: "1rem" }}>{sec("why-join").paragraphs?.[0]}</p>
             <ul className="checklist" style={{ marginTop: "1.2rem" }}>
-              {whyJoinItems.map((item) => (
+              {(sec("why-join").checklist ?? whyJoinItems).map((item) => (
                 <li key={item}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg> {item}
                 </li>
@@ -147,9 +186,9 @@ export default function ClubsClient() {
       <section className="section tone-sky">
         <div className="wrap-wide">
           <div className="section-head center reveal">
-            <span className="eyebrow">{clubCount > 0 ? `${clubCount} ${clubCount === 1 ? "club" : "clubs"}, one community` : "Clubs, one community"}</span>
-            <h2 className="section-title">Find your crew</h2>
-            <p className="section-sub">Every club is run by students, for students — with a faculty mentor and a calendar of events each semester.</p>
+            <span className="eyebrow">{clubCount > 0 ? `${clubCount} ${clubCount === 1 ? "club" : "clubs"}, one community` : sec("clubs-list").eyebrow}</span>
+            <h2 className="section-title">{sec("clubs-list").title}</h2>
+            <p className="section-sub">{sec("clubs-list").subtitle}</p>
           </div>
           <div className="grid g-3" style={{ marginTop: "2rem" }}>
             {loading ? (
@@ -200,9 +239,9 @@ export default function ClubsClient() {
           <div className="cta-band reveal">
             <div className="cta-band__inner">
               <div>
-                <span className="eyebrow on-dark">Enter to Learn — Go Forth to Serve</span>
-                <h2>A step towards your future</h2>
-                <p>Applications for the 2083 intake are open across all three programs. Take the first step today.</p>
+                <span className="eyebrow on-dark">{sec("cta").eyebrow}</span>
+                <h2>{sec("cta").title}</h2>
+                <p>{sec("cta").paragraphs?.[0]}</p>
               </div>
               <div className="cta-band__actions">
                 <Link className="btn btn-gold btn-lg " href="/admission">
