@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { connection } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 import HeroSlider from "@/components/home/HeroSlider";
 import WelcomeSection from "@/components/home/WelcomeSection";
 import WhyChoosePCM from "@/components/home/WhyChoosePCM";
@@ -16,6 +18,15 @@ import {
   BreadcrumbSchema,
   EducationalOrganizationSchema,
 } from "../structured-data";
+import { getHomepage } from "@/repositories/homepage.repository";
+import { listPrograms } from "@/repositories/programs.repository";
+import { listNews } from "@/repositories/news.repository";
+import { listEvents } from "@/repositories/events.repository";
+import { listNotices } from "@/repositories/notices.repository";
+import { listResults } from "@/repositories/results.repository";
+import { listGallery } from "@/repositories/gallery.repository";
+import { listFacilities } from "@/repositories/facilities.repository";
+import { listBlogs } from "@/repositories/blog.repository";
 
 function GallerySectionLoading() {
   return (
@@ -108,7 +119,10 @@ export const metadata: Metadata = {
   },
 };
 
+export const instant = false;
+
 export default async function HomePage() {
+  noStore();
   await connection();
 
   const [
@@ -137,20 +151,25 @@ export default async function HomePage() {
     <>
       <BreadcrumbSchema />
       <EducationalOrganizationSchema />
-      <HeroSlider />
-      <WelcomeSection />
-      <WhyChoosePCM />
-      <ProgramsSection />
-      <AdmissionSection />
-      <FacilitiesSection />
-      <NewsSection />
-      <EventsSection />
+      <HeroSlider slides={homepage.heroSlides} />
+      <WelcomeSection stats={homepage.welcomeStats} />
+      <WhyChoosePCM reasons={homepage.whyChooseReasons} />
+      <ProgramsSection programs={programsData.items} />
+      <AdmissionSection admission={homepage.admission} />
+      <FacilitiesSection facilities={facilitiesData.items} />
+      <NewsSection 
+        news={newsData.items} 
+        notices={noticesData.items}
+        results={resultsData.items}
+        events={eventsData.items}
+      />
+      <EventsSection events={eventsData.items} />
       <Suspense fallback={<GallerySectionLoading />}>
         <GallerySection />
       </Suspense>
-      <BlogsSection />
-      <TestimonialsSection />
-      <CTASection />
+      <BlogsSection blogs={blogsData.items} />
+      <TestimonialsSection testimonials={homepage.testimonials} />
+      <CTASection cta={homepage.cta} />
     </>
   );
 }
