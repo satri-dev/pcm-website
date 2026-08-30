@@ -219,13 +219,22 @@
 .ticker-inner {
   display: flex;
   animation: scroll 30s linear infinite;
+  will-change: transform;
 }
 
 .ticker-item {
   flex-shrink: 0;
-  padding-left: 3rem;
-  padding-right: 3rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
   font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .ticker-item {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
 }
 
 @keyframes scroll {
