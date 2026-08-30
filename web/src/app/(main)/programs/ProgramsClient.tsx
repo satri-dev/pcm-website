@@ -3,72 +3,12 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import "./programs.css";
+import type { Program } from "@/types/programs";
+import type { ProgramsPageContent } from "@/types/page-content";
 
 const IMG = "/images";
 
-const cards = [
-  {
-    badge: "BCSIT",
-    image: `${IMG}/program-bcsit.jpg`,
-    alt: "BCSIT students at PCM",
-    href: "/programs/bcsit",
-    title: "Computer System & Information Technology",
-    summary:
-      "A four-year, eight-semester degree merging information technology with business management to meet the evolving demands of modern organisations.",
-    duration: "4 Years",
-    credits: "127 Cr",
-    seats: "48",
-  },
-  {
-    badge: "BBA",
-    image: `${IMG}/program-bba.jpg`,
-    alt: "BBA students at PCM",
-    href: "/programs/bba",
-    title: "Bachelor in Business Administration",
-    summary:
-      "Designed to produce professional managers, giving students sound conceptual foundations alongside the practical skills to lead in a dynamic business world.",
-    duration: "4 Years",
-    credits: "120 Cr",
-    seats: "48",
-  },
-  {
-    badge: "BBA-Finance",
-    image: `${IMG}/program-bbaf.jpg`,
-    alt: "BBA-Finance students at PCM",
-    href: "/programs/bba-finance",
-    title: "Business Administration in Finance",
-    summary:
-      "A finance-focused BBA that builds deep expertise in financial analysis, investment and corporate finance for careers in banking and beyond.",
-    duration: "4 Years",
-    credits: "120 Cr",
-    seats: "48",
-  },
-];
-
-const compareRows = [
-  {
-    program: "BBA",
-    focus: "General management & leadership",
-    duration: "4 Years",
-    credits: "120",
-    idealFor: "Future managers & entrepreneurs",
-  },
-  {
-    program: "BBA-Finance",
-    focus: "Finance, investment & banking",
-    duration: "4 Years",
-    credits: "120",
-    idealFor: "Analysts & finance professionals",
-  },
-  {
-    program: "BCSIT",
-    focus: "IT + business management",
-    duration: "4 Years",
-    credits: "127",
-    idealFor: "Developers, data & IT specialists",
-  },
-];
-
+// Fallback coordinators data (can be moved to CMS later)
 const coordinators = [
   {
     photo: `${IMG}/people/leader_hariadhikari.jpg`,
@@ -96,12 +36,88 @@ const coordinators = [
   },
 ];
 
+interface ProgramsClientProps {
+  hero?: ProgramsPageContent["hero"];
+  intro?: ProgramsPageContent["intro"];
+  comparisonTable?: ProgramsPageContent["comparisonTable"];
+  cta?: ProgramsPageContent["cta"];
+  programs: Program[];
+}
+
 const ArrowIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
 );
 
-export default function ProgramsClient() {
+// Helper to map program to card format
+function mapProgramToCard(program: Program) {
+  const slugMap: Record<string, { badge: string; image: string }> = {
+    bcsit: { badge: "BCSIT", image: `${IMG}/program-bcsit.jpg` },
+    bba: { badge: "BBA", image: `${IMG}/program-bba.jpg` },
+    "bba-finance": { badge: "BBA-Finance", image: `${IMG}/program-bbaf.jpg` },
+  };
+  const mapped = slugMap[program.slug] || { badge: program.code, image: program.image || `${IMG}/program-bba.jpg` };
+  
+  return {
+    badge: mapped.badge,
+    image: mapped.image,
+    alt: `${program.name} students at PCM`,
+    href: `/programs/${program.slug}`,
+    title: program.name,
+    summary: program.intro || "",
+    duration: program.duration,
+    credits: "120 Cr", // Could be added to Program type
+    seats: program.seats.toString(),
+  };
+}
+
+// Helper to map program to comparison row
+function mapProgramToComparisonRow(program: Program) {
+  const focusMap: Record<string, { focus: string; idealFor: string }> = {
+    bba: { focus: "General management & leadership", idealFor: "Future managers & entrepreneurs" },
+    "bba-finance": { focus: "Finance, investment & banking", idealFor: "Analysts & finance professionals" },
+    bcsit: { focus: "IT + business management", idealFor: "Developers, data & IT specialists" },
+  };
+  const mapped = focusMap[program.slug] || { focus: program.intro || "", idealFor: "" };
+  
+  return {
+    program: program.code,
+    focus: mapped.focus,
+    duration: program.duration,
+    credits: "120", // Could be added to Program type
+    idealFor: mapped.idealFor,
+  };
+}
+
+export default function ProgramsClient({
+  hero,
+  intro,
+  comparisonTable,
+  cta,
+  programs,
+}: ProgramsClientProps) {
   const rootRef = useRef<HTMLDivElement>(null);
+  
+  // Fallback values
+  const heroData = hero || {
+    title: "Academic Programs",
+    subtitle: "Three Pokhara University bachelor's degrees, each built to turn four years of study into a career you're proud of.",
+  };
+  const introData = intro || {
+    heading: "Choose your path",
+    body: "Every PCM program blends conceptual depth with real-world practice, non-credit skill courses and internship experience.",
+  };
+  const comparisonData = comparisonTable || {
+    heading: "Compare the programs",
+    columns: ["Program", "Focus", "Duration", "Credits", "Ideal for"],
+  };
+  const ctaData = cta || {
+    heading: "Ready to choose your program?",
+    body: "Apply online in minutes, or reach out and we'll guide you through every step.",
+    phone: "(061) 544761",
+  };
+  
+  const cards = programs.map(mapProgramToCard);
+  const compareRows = programs.map(mapProgramToComparisonRow);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -140,17 +156,17 @@ export default function ProgramsClient() {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>{" "}
               <span>Programs</span>
             </nav>
-            <h1>Academic Programs</h1>
-            <p>Three Pokhara University bachelor&apos;s degrees, each built to turn four years of study into a career you&apos;re proud of.</p>
+            <h1>{heroData.title}</h1>
+            <p>{heroData.subtitle}</p>
           </div>
         </section>
 
         <section className="section">
           <div className="wrap-wide">
             <div className="section-head reveal">
-              <span className="eyebrow">Choose your path</span>
+              <span className="eyebrow">{introData.heading}</span>
               <h2 className="section-title">Undergraduate degrees at PCM</h2>
-              <p className="section-sub">Every PCM program blends conceptual depth with real-world practice, non-credit skill courses and internship experience.</p>
+              <p className="section-sub">{introData.body}</p>
             </div>
             <div className="grid g-3" style={{ marginTop: "2.5rem" }}>
               {cards.map((card, i) => (
@@ -180,12 +196,16 @@ export default function ProgramsClient() {
           <div className="wrap-wide">
             <div className="section-head center reveal">
               <span className="eyebrow">At a glance</span>
-              <h2 className="section-title">Compare the programs</h2>
+              <h2 className="section-title">{comparisonData.heading}</h2>
             </div>
             <div style={{ overflowX: "auto", marginTop: "2rem" }} className="reveal">
               <table className="compare-table ctable" style={{ minWidth: 560 }}>
                 <thead>
-                  <tr><th>Program</th><th>Focus</th><th>Duration</th><th>Credits</th><th>Ideal for</th></tr>
+                  <tr>
+                    {comparisonData.columns.map((col, idx) => (
+                      <th key={idx}>{col}</th>
+                    ))}
+                  </tr>
                 </thead>
                 <tbody>
                   {compareRows.map((row) => (
@@ -202,7 +222,7 @@ export default function ProgramsClient() {
             </div>
             <div className="callout reveal" style={{ marginTop: "1.6rem" }}>
               <h4>Not sure which fits you?</h4>
-              <p>Our admissions team helps you match your interests and goals to the right program. Call (061) 544761 or visit the campus for a friendly, no-pressure chat.</p>
+              <p>Our admissions team helps you match your interests and goals to the right program. Call {ctaData.phone} or visit the campus for a friendly, no-pressure chat.</p>
             </div>
           </div>
         </section>
@@ -239,8 +259,8 @@ export default function ProgramsClient() {
               <div className="cta-band__inner">
                 <div>
                   <span className="eyebrow on-dark">Enter to Learn — Go Forth to Serve</span>
-                  <h2>Ready to choose your program?</h2>
-                  <p>Apply online in minutes, or reach out and we&apos;ll guide you through every step.</p>
+                  <h2>{ctaData.heading}</h2>
+                  <p>{ctaData.body}</p>
                 </div>
                 <div className="cta-band__actions">
                   <Link className="btn btn-gold btn-lg" href="/admission">Apply Now <ArrowIcon /></Link>

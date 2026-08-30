@@ -1,92 +1,105 @@
+// src/app/api/admin/pages/[slug]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-import { revalidatePath, revalidateTag } from "next/cache";
-import {
-  ensurePageContentsReady,
-  getPageContentBySlug,
-  upsertPageContent,
-} from "@/repositories/page-content.repository";
+import { updateTag } from "next/cache";
 import { requireApiSession } from "@/core/lib/api-guard";
-import { CACHE_TAGS, pageContentTag } from "@/lib/cache-tags";
+import { upsertPageContent, getPageContentBySlug } from "@/repositories/page-content.repository";
+import { filterEditableFields, PROGRAMS_PAGE_SCHEMA } from "@/types/page-content";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
-const sectionSchema = z.object({
-  key: z.string().trim().min(1).max(200),
-  eyebrow: z.string().trim().max(300).optional(),
-  title: z.string().trim().max(300).optional(),
-  subtitle: z.string().trim().max(600).optional(),
-  paragraphs: z.array(z.string().trim().max(5000)).optional(),
-  checklist: z.array(z.string().trim().max(500)).optional(),
-});
-
-const bodySchema = z.object({
-  label: z.string().trim().min(1).max(200).optional(),
-  hero: z
-    .object({
-      title: z.string().trim().min(1).max(300),
-      subtitle: z.string().trim().max(600),
-    })
-    .optional(),
-  sections: z.array(sectionSchema).optional(),
-});
-
-interface RouteCtx {
-  params: Promise<{ slug: string }>;
-}
-
-function publicPath(slug: string): string {
-  return slug === "home" ? "/" : `/${slug}`;
-}
-
-export async function GET(_request: NextRequest, ctx: RouteCtx) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
+) {
   const guard = await requireApiSession(["admin", "editor", "viewer"]);
   if (!guard.ok) return guard.response;
 
-  const { slug } = await ctx.params;
-  await ensurePageContentsReady();
+  const { slug } = await params;
+  const content = await getPageContentBySlug(slug);
 
-  try {
-    const content = await getPageContentBySlug(slug);
-    return NextResponse.json({ content });
-  } catch {
+  if (!content) {
     return NextResponse.json(
-      { error: "Failed to load page content" },
-      { status: 500 }
+      { error: "Page content not found" },
+      { status: 404 }
     );
   }
+
+  return NextResponse.json(content);
 }
 
-export async function PUT(request: NextRequest, ctx: RouteCtx) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
+) {
   const guard = await requireApiSession(["admin", "editor"]);
   if (!guard.ok) return guard.response;
 
-  const { slug } = await ctx.params;
-  await ensurePageContentsReady();
-
+  const { slug } = await params;
   let body: unknown;
+
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const parsed = bodySchema.safeParse(body);
-  if (!parsed.success) {
+  if (typeof body !== "object" || body === null) {
     return NextResponse.json(
-      { error: "Validation failed", issues: parsed.error.flatten() },
-      { status: 422 }
+      { error: "Request body must be an object" },
+      { status: 400 }
     );
   }
 
+  // Filter out locked fields based on schema
+  let filteredContent = body as Record<string, unknown>;
+  
+  if (slug === "programs") {
+    filteredContent = filterEditableFields(body as Record<string, unknown>, PROGRAMS_PAGE_SCHEMA);
+  }
+
   try {
-    const existing = await getPageContentBySlug(slug);
-    const saved = await upsertPageContent(slug, parsed.data, existing);
-    revalidateTag(CACHE_TAGS.pageContent, "max");
-    revalidateTag(pageContentTag(slug), "max");
-    revalidatePath(publicPath(slug), "page");
-    return NextResponse.json({ content: saved });
-  } catch {
+    const updated = await upsertPageContent(slug, filteredContent);
+    
+    // Invalidate cache for this page content
+    updateTag(CACHE_TAGS.pageContent(slug));
+
+    return NextResponse.json(updated);
+  } catch (err) {
+    console.error("Error updating page content:", err);
     return NextResponse.json(
-      { error: "Failed to save page content" },
+      { error: "Failed to update page content" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
+) {
+  const guard = await requireApiSession(["admin"]);
+  if (!guard.ok) return guard.response;
+
+  const { slug } = await params;
+
+  try {
+    const { deletePageContent } = await import("@/repositories/page-content.repository");
+    const success = await deletePageContent(slug);
+
+    if (!success) {
+      return NextResponse.json(
+        { error: "Page content not found" },
+        { status: 404 }
+      );
+    }
+
+    // Invalidate cache
+    updateTag(CACHE_TAGS.pageContent(slug));
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("Error deleting page content:", err);
+    return NextResponse.json(
+      { error: "Failed to delete page content" },
       { status: 500 }
     );
   }

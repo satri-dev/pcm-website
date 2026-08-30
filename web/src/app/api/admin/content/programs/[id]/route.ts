@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
+import { ObjectId } from "mongodb";
 import { z } from "zod";
 import {
   deleteProgram,
@@ -8,6 +10,7 @@ import {
   hardDeleteProgram,
 } from "@/repositories/programs.repository";
 import { requireApiSession } from "@/core/lib/api-guard";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 const updateSchema = z
   .object({
@@ -76,6 +79,11 @@ export async function PATCH(
         if (!restored) {
           return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
+        
+        // Invalidate cache when restoring
+        revalidateTag(CACHE_TAGS.programsList);
+        revalidateTag(CACHE_TAGS.navMenu); // Navbar shows programs list
+        
         return NextResponse.json({ ok: true });
       } catch {
         return NextResponse.json(
@@ -91,6 +99,11 @@ export async function PATCH(
         if (!deleted) {
           return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
+        
+        // Invalidate cache when permanently deleting
+        revalidateTag(CACHE_TAGS.programsList);
+        revalidateTag(CACHE_TAGS.navMenu); // Navbar shows programs list
+        
         return NextResponse.json({ ok: true });
       } catch {
         return NextResponse.json(
@@ -124,6 +137,12 @@ export async function PATCH(
     if (!updated) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+    
+    // Invalidate cache when updating
+    revalidateTag(CACHE_TAGS.programsList);
+    revalidateTag(CACHE_TAGS.program(updated.slug));
+    revalidateTag(CACHE_TAGS.navMenu); // Navbar shows programs list
+    
     return NextResponse.json(updated);
   } catch (err) {
     if (isMongoError(err) && err.code === 11000) {
@@ -147,13 +166,40 @@ export async function DELETE(
   if (!guard.ok) return guard.response;
 
   const { id } = await ctx.params;
+  
+  console.log("[DELETE /api/admin/content/programs/[id]] ID:", id);
+  console.log("[DELETE /api/admin/content/programs/[id]] Is valid ObjectId?", ObjectId.isValid(id));
+  
   try {
+    // Get program first to get the slug for cache invalidation
+    const program = await getProgramById(id);
+    
+    if (!program) {
+      console.log("[DELETE /api/admin/content/programs/[id]] Program not found for ID:", id);
+      return NextResponse.json({ 
+        error: "Program not found", 
+        debug: { id, isValidObjectId: ObjectId.isValid(id) }
+      }, { status: 404 });
+    }
+    
+    console.log("[DELETE /api/admin/content/programs/[id]] Found:", program.name);
+    
     const deleted = await deleteProgram(id, guard.session.user.id);
     if (!deleted) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
+      console.log("[DELETE /api/admin/content/programs/[id]] Delete returned false");
+      return NextResponse.json({ error: "Failed to delete program" }, { status: 404 });
     }
+    
+    console.log("[DELETE /api/admin/content/programs/[id]] Success! Invalidating cache");
+    
+    // Invalidate cache after soft delete
+    revalidateTag(CACHE_TAGS.programsList);
+    revalidateTag(CACHE_TAGS.program(program.slug));
+    revalidateTag(CACHE_TAGS.navMenu); // Navbar shows programs list
+    
     return NextResponse.json({ ok: true });
-  } catch {
+  } catch (err) {
+    console.error("[DELETE /api/admin/content/programs/[id]] Error:", err);
     return NextResponse.json(
       { error: "Failed to delete program" },
       { status: 500 }

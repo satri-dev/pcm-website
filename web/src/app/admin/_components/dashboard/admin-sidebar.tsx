@@ -85,13 +85,21 @@ interface PagesSectionNavItem {
   href: string;
   icon: LucideIcon;
   ready?: boolean;
+  collapsible?: boolean;
+  subItems?: { label: string; href: string }[];
 }
 
 const pagesNav: PagesSectionNavItem[] = [
   { label: "Home", href: "/admin/pages/home", icon: Home },
   { label: "About", href: "/admin/pages/about", icon: Info },
   { label: "Admission", href: "/admin/pages/admission", icon: DoorOpen },
-  { label: "Programs", href: "/admin/pages/programs", icon: Layers },
+  { 
+    label: "Programs", 
+    href: "/admin/pages/programs", 
+    icon: Layers,
+    collapsible: true,
+    subItems: [] // Will be populated dynamically
+  },
   { label: "News", href: "/admin/pages/news", icon: Newspaper },
   { label: "Notices", href: "/admin/pages/notices", icon: AlertCircle },
   { label: "Results", href: "/admin/pages/results", icon: BarChart3 },
@@ -250,6 +258,10 @@ export default function AdminSidebar() {
   const [pagesOpen, setPagesOpen] = useState<boolean>(
     () => pathname === "/admin/pages" || pathname.startsWith("/admin/pages/")
   );
+  const [programsOpen, setProgramsOpen] = useState<boolean>(
+    () => pathname.startsWith("/admin/pages/programs/")
+  );
+  const [programs, setPrograms] = useState<{ slug: string; name: string; code: string }[]>([]);
 
   useEffect(() => {
     if (fetchedRef.current) return;
@@ -286,6 +298,28 @@ export default function AdminSidebar() {
         });
       }
     }).catch(() => {});
+
+    // Fetch programs for sidebar navigation
+    fetch("/api/admin/content/programs?pageSize=50")
+      .then(async (res) => {
+        console.log("[AdminSidebar] Programs API response status:", res.status);
+        if (!res.ok) {
+          const text = await res.text();
+          console.error("[AdminSidebar] Programs API failed:", res.status, text);
+          return null;
+        }
+        return res.json();
+      })
+      .then((data: { items: { slug: string; name: string; code: string }[] } | null) => {
+        console.log("[AdminSidebar] Programs loaded:", data);
+        if (data?.items) {
+          console.log("[AdminSidebar] Setting programs state with", data.items.length, "items");
+          setPrograms(data.items);
+        }
+      })
+      .catch((err) => {
+        console.error("[AdminSidebar] Failed to load programs:", err);
+      });
   }, []);
 
   function isActive(href: string) {
@@ -306,6 +340,73 @@ export default function AdminSidebar() {
 
   function renderSubLink(item: PagesSectionNavItem, active: boolean) {
     const Icon = item.icon;
+    
+    // Handle collapsible items (like Programs)
+    if (item.collapsible && item.label === "Programs") {
+      const isOpen = programsOpen;
+      const hasSubActive = current.startsWith("/admin/pages/programs/");
+      
+      return (
+        <div key={item.href}>
+          <div className="flex items-stretch">
+            <Link
+              href={item.href}
+              className={`admin-nav-link admin-nav-link--sub${active || hasSubActive ? " active" : ""}${item.ready ? " is-ready" : ""}`}
+              style={{ flex: 1, paddingRight: "0.3rem", borderRight: "none" }}
+            >
+              <Icon size={16} />
+              {item.label}
+              {item.ready && <span className="ready-dot" title="Ready" />}
+            </Link>
+            <button
+              type="button"
+              className={`admin-nav-link admin-nav-link--sub${active || hasSubActive ? " active" : ""}`}
+              style={{ 
+                flex: "0 0 auto", 
+                paddingLeft: "0.3rem",
+                paddingRight: "0.65rem",
+                borderLeft: "none"
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setProgramsOpen(!isOpen);
+              }}
+            >
+              <ChevronDown 
+                className="admin-nav-group__chevron" 
+                size={14} 
+                style={{ 
+                  transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+                  transition: "transform 0.2s"
+                }} 
+              />
+            </button>
+          </div>
+          
+          {isOpen && (
+            <div>
+              {programs.length > 0 ? (
+                programs.map((prog) => (
+                  <Link
+                    key={prog.slug}
+                    href={`/admin/pages/programs/${prog.slug}`}
+                    className={`admin-nav-link admin-nav-link--nested${current === `/admin/pages/programs/${prog.slug}` ? " active" : ""}`}
+                  >
+                    {prog.code || prog.name}
+                  </Link>
+                ))
+              ) : (
+                <div className="admin-nav-link admin-nav-link--nested" style={{ opacity: 0.5, cursor: "default" }}>
+                  Loading programs... ({programs.length} found)
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    }
+    
+    // Regular non-collapsible links
     return (
       <Link
         key={item.href}

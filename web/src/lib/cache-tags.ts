@@ -1,19 +1,31 @@
 // src/lib/cache-tags.ts
-// Shared cache tag constants. The fetch side (lib/data) and the
-// invalidation side (admin API routes) must never drift apart — always
-// reference these constants instead of duplicating string literals.
+// Central registry of cache tags for updateTag() calls
 
 export const CACHE_TAGS = {
-  navMenu: "nav-menu",
-  pageContent: "page-content",
-  faqPage: "faq-page",
-  faqs: "faqs",
-  about: "about",
-  homepage: "homepage",
+  // Programs
+  programsList: "programs-list",
+  program: (slug: string) => `program-${slug}`,
+  
+  // Page Content
+  pageContent: (slug: string) => `page-content-${slug}`,
+  
+  // Gallery
+  galleryList: "gallery-list",
+  gallery: (id: string) => `gallery-${id}`,
+  
+  // News
+  newsList: "news-list",
+  news: (slug: string) => `news-${slug}`,
+  
+  // Notices
+  noticesList: "notices-list",
+  notice: (slug: string) => `notice-${slug}`,
+  
+  // Events
+  eventsList: "events-list",
+  event: (slug: string) => `event-${slug}`,
+  
+  // Results
+  resultsList: "results-list",
+  result: (slug: string) => `result-${slug}`,
 } as const;
-
-// Per-slug tag so an edit to one page only invalidates its own cache
-// entries, while the shared "page-content" tag covers bulk invalidation.
-export function pageContentTag(slug: string): string {
-  return `page-content:${slug}`;
-}
