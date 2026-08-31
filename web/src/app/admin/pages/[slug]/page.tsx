@@ -15,7 +15,6 @@ import {
 import { getGalleryPageSettings } from "@/repositories/gallery-settings.repository";
 import { getFaqPageSettings } from "@/repositories/faq-content.repository";
 import {
-  ensurePageContentsReady,
   getPageContentBySlug,
 } from "@/repositories/page-content.repository";
 import { connection } from "next/server";
@@ -99,7 +98,6 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
   }
 
   if (found.kind === "page") {
-    await ensurePageContentsReady();
     const content = await getPageContentBySlug(found.entry.slug);
     return (
       <>

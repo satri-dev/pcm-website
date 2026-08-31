@@ -1,13 +1,28 @@
 // src/lib/cache-tags.ts
-// Central registry of cache tags for updateTag() calls
+// Shared cache tag constants. The fetch side (lib/data) and the
+// invalidation side (admin API routes) must never drift apart — always
+// reference these constants instead of duplicating string literals.
 
 export const CACHE_TAGS = {
+  // Navigation
+  navMenu: "nav-menu",
+  
   // Programs
   programsList: "programs-list",
   program: (slug: string) => `program-${slug}`,
   
   // Page Content
   pageContent: (slug: string) => `page-content-${slug}`,
+  
+  // FAQs
+  faqPage: "faq-page",
+  faqs: "faqs",
+  
+  // Homepage
+  homepage: "homepage",
+  
+  // About
+  about: "about",
   
   // Gallery
   galleryList: "gallery-list",

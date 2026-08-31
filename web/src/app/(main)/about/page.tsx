@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import AboutClient from "./AboutClient";
-import { getPageCopy } from "@/lib/data/page-content";
+import { getAboutData } from "@/lib/data/about";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700", "800"],
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AboutPage() {
-  const content = await getPageCopy("about");
+  const content = await getAboutData();
   return (
     <div className={poppins.variable}>
       <AboutClient content={content} />

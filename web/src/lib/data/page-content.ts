@@ -16,3 +16,24 @@ export async function getPageContent(slug: string) {
   
   return await getPageContentBySlug(slug);
 }
+
+/**
+ * Alias for getPageContent - for backward compatibility
+ */
+export async function getPageCopy(slug: string) {
+  return await getPageContent(slug);
+}
+
+/**
+ * Get a specific section from page content by section key
+ */
+export async function getSection(pageSlug: string, sectionKey: string) {
+  "use cache";
+  cacheLife("content");
+  cacheTag(CACHE_TAGS.pageContent(pageSlug));
+  
+  const content = await getPageContentBySlug(pageSlug);
+  if (!content?.content?.sections) return null;
+  
+  return (content.content.sections as any[]).find((s: any) => s.key === sectionKey) || null;
+}

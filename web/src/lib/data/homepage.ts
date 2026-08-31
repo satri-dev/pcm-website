@@ -1,11 +1,17 @@
 // src/lib/data/homepage.ts
-// Server-side data access for the public home page. Uses no-store
-// so the page always reads fresh data from MongoDB, which is then
-// cached at the HTTP / CDN layer via standard Next.js fetch caching.
-// When the admin updates homepage content, the next page load always
-// sees the latest data.
+// Server-side data access for the public home page. Uses the Cache Components
+// ISR model so homepage content is served from cache instead of hitting MongoDB
+// on every request. Written data is invalidated from the admin API routes via
+// revalidateTag(CACHE_TAGS.homepage).
+import "server-only";
+import { cacheLife, cacheTag } from "next/cache";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 import { getHomepage } from "@/repositories/homepage.repository";
 
 export async function getHomepageData() {
-  return getHomepage();
+  "use cache";
+  cacheLife("content");
+  cacheTag(CACHE_TAGS.homepage);
+  
+  return await getHomepage();
 }
