@@ -34,7 +34,6 @@ import {
   Home,
   Info,
   DoorOpen,
-  BookOpen,
   Sparkles,
   Mail,
   CalendarDays,
@@ -118,8 +117,16 @@ const pagesNav: PagesSectionNavItem[] = [
   { label: "Results", href: "/admin/pages/results", icon: BarChart3 },
   { label: "Events", href: "/admin/pages/events", icon: CalendarDays },
   { label: "Gallery", href: "/admin/pages/gallery", icon: ImageIcon },
-  { label: "Blogs", href: "/admin/pages/blogs", icon: Pencil },
-  { label: "Student Blogs", href: "/admin/pages/blog-student", icon: BookOpen },
+  {
+    label: "Blogs",
+    href: "/admin/pages/blogs",
+    icon: Pencil,
+    collapsible: true,
+    subItems: [
+      { label: "Blogs", href: "/admin/pages/blogs" },
+      { label: "Student Blogs", href: "/admin/pages/blog-student" },
+    ],
+  },
   { label: "Clubs", href: "/admin/pages/clubs", icon: Sparkles },
   { label: "Alumni", href: "/admin/pages/alumni", icon: GraduationCap },
   { label: "Life at PCM", href: "/admin/pages/life", icon: Heart },
@@ -277,6 +284,9 @@ export default function AdminSidebar() {
   const [aboutOpen, setAboutOpen] = useState<boolean>(
     () => pathname.startsWith("/admin/pages/about/")
   );
+  const [blogsOpen, setBlogsOpen] = useState<boolean>(
+    () => pathname.startsWith("/admin/pages/blog")
+  );
   const [programs, setPrograms] = useState<{ slug: string; name: string; code: string }[]>([]);
 
   useEffect(() => {
@@ -357,20 +367,30 @@ export default function AdminSidebar() {
   function renderSubLink(item: PagesSectionNavItem, active: boolean) {
     const Icon = item.icon;
     
-    // Handle collapsible items (Like Programs, About)
+    // Handle collapsible items (Programs is dynamic; About/Blogs use static sub-items)
     if (item.collapsible) {
-      const isAbout = item.label === "About";
-      const isOpen = isAbout ? aboutOpen : programsOpen;
-      const setOpen = isAbout ? setAboutOpen : setProgramsOpen;
-      const baseHref = isAbout ? "/admin/pages/about" : "/admin/pages/programs";
-      const hasSubActive = current.startsWith(baseHref + "/");
-      
-      const subLinks = isAbout
-        ? (item.subItems ?? [])
-        : programs.map((prog) => ({
+      const isPrograms = item.label === "Programs";
+      const isOpen = isPrograms
+        ? programsOpen
+        : item.label === "About"
+          ? aboutOpen
+          : blogsOpen;
+      const setOpen = isPrograms
+        ? setProgramsOpen
+        : item.label === "About"
+          ? setAboutOpen
+          : setBlogsOpen;
+
+      const subLinks = isPrograms
+        ? programs.map((prog) => ({
             label: prog.code || prog.name,
             href: `/admin/pages/programs/${prog.slug}`,
-          }));
+          }))
+        : (item.subItems ?? []);
+
+      const hasSubActive = subLinks.some(
+        (s) => current === s.href || current.startsWith(s.href + "/")
+      );
 
       return (
         <div key={item.href}>
