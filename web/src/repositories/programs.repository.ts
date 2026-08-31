@@ -9,6 +9,8 @@ import {
   PROGRAM_COLLECTION,
 } from "@/types/programs";
 
+const EPOCH_ISO = "1970-01-01T00:00:00.000Z";
+
 function fromDocument(doc: ProgramDocument): Program {
   return {
     id: doc._id!.toString(),
@@ -26,8 +28,8 @@ function fromDocument(doc: ProgramDocument): Program {
     eligibility: doc.eligibility,
     affiliation: doc.affiliation ?? "",
     views: doc.views ?? 0,
-    createdAt: (doc.createdAt ?? new Date()).toISOString(),
-    updatedAt: (doc.updatedAt ?? new Date()).toISOString(),
+    createdAt: doc.createdAt?.toISOString() ?? EPOCH_ISO,
+    updatedAt: doc.updatedAt?.toISOString() ?? EPOCH_ISO,
     deletedAt: doc.deletedAt?.toISOString(),
     deletedBy: doc.deletedBy,
   };

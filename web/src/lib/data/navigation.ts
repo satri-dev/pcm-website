@@ -6,7 +6,7 @@
 import { cacheLife, cacheTag } from "next/cache";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 import { listNavMenu } from "@/repositories/nav-menu.repository";
-import { listPrograms } from "@/repositories/programs.repository";
+import { getActivePrograms } from "@/lib/data/programs";
 import type { NavMenuItem } from "@/types/nav-menu";
 
 export async function getNavMenuItems(): Promise<NavMenuItem[]> {
@@ -19,15 +19,19 @@ export async function getNavMenuItems(): Promise<NavMenuItem[]> {
 }
 
 export async function getNavbarItems() {
-  // Not cached on purpose: the Programs dropdown must always reflect the
-  // current program records so adds/deletes appear immediately.
+  // The nav-menu structure is cached, and the Programs dropdown is filled from
+  // the cached programs list too. Both are tagged for revalidation, so admin
+  // edits (nav-menu or program CRUD) invalidate the cache automatically while
+  // the navbar stays part of the prerendered static shell.
   const activeItems = await getNavMenuItems();
 
-  // Dynamically populate the Programs dropdown with live database programs
+  // Dynamically populate the Programs dropdown with the cached active programs.
+  // getActivePrograms uses "use cache" tagged with programsList, which the admin
+  // program CRUD routes revalidateTag on create/update/delete.
   const programsItem = activeItems.find((item) => item.label === "Programs");
   if (programsItem && programsItem.type === "dropdown") {
-    const result = await listPrograms({ pageSize: 50 });
-    const activePrograms = result.items.filter((p) => p.status === "open");
+    const result = await getActivePrograms({ pageSize: 50 });
+    const activePrograms = result.items;
 
     programsItem.children = [
       { label: "All Programs", href: "/programs" },
