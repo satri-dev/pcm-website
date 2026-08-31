@@ -25,8 +25,8 @@ function fieldLabel(children: React.ReactNode) {
 
 export default function PageContentManager({ slug, initialContent }: PageContentManagerProps) {
   const [label, setLabel] = useState(initialContent?.label ?? slug);
-  const [heroTitle, setHeroTitle] = useState(initialContent?.hero.title ?? "");
-  const [heroSubtitle, setHeroSubtitle] = useState(initialContent?.hero.subtitle ?? "");
+  const [heroTitle, setHeroTitle] = useState(initialContent?.hero?.title ?? "");
+  const [heroSubtitle, setHeroSubtitle] = useState(initialContent?.hero?.subtitle ?? "");
   const [sections, setSections] = useState<PageContentSection[]>(initialContent?.sections ?? []);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");

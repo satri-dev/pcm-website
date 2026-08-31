@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Suspense } from "react";
 import AnnouncementTicker from "@/components/layout/AnnouncementTicker";
 import TopBar from "@/components/layout/TopBar";
 import Navbar from "@/components/layout/Navbar";
@@ -12,7 +13,9 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
 
   return (
     <>
-      <AnnouncementTicker />
+      <Suspense fallback={null}>
+        <AnnouncementTicker />
+      </Suspense>
       <TopBar />
       <Navbar items={navItems} />
       <main id="main">{children}</main>

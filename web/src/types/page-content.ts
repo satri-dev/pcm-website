@@ -19,6 +19,16 @@ export interface PageContent {
   content: PageContentData; // Dynamic fields per page
   createdAt: string;
   updatedAt: string;
+  // Legacy flat shape (about, clubs, and the other "about/*" pages). These
+  // fields are stored at the document root in Mongo (NOT nested under
+  // "content") and are exposed here so the public pages and the admin
+  // editor can read hero/label/sections directly.
+  label?: string;
+  hero?: {
+    title: string;
+    subtitle: string;
+  };
+  sections?: PageContentSection[];
 }
 
 // Union type for different page content structures
@@ -35,9 +45,17 @@ export type PageContentData = Record<string, unknown> & {
 export interface PageContentDocument {
   _id?: import("mongodb").ObjectId;
   slug: string;
-  content: PageContentData;
-  createdAt: Date;
+  content?: PageContentData;
+  createdAt?: Date;
   updatedAt: Date;
+  // Legacy flat shape — some pages (about, clubs, "about/*") store
+  // label/hero/sections at the document root instead of under "content".
+  label?: string;
+  hero?: {
+    title: string;
+    subtitle: string;
+  };
+  sections?: PageContentSection[];
 }
 
 // Programs page specific content schema

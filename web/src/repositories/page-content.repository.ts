@@ -1,5 +1,4 @@
 // src/repositories/page-content.repository.ts
-import { ObjectId } from "mongodb";
 import { getDb } from "@/core/lib/db";
 import {
   PageContent,
@@ -11,9 +10,18 @@ function fromDocument(doc: PageContentDocument): PageContent {
   return {
     id: doc._id!.toString(),
     slug: doc.slug,
-    content: doc.content,
-    createdAt: doc.createdAt.toISOString(),
-    updatedAt: doc.updatedAt.toISOString(),
+    content: doc.content ?? {},
+    // Legacy flat exposure for about/clubs "about/*" pages where the fields
+    // live at the document root rather than nested under "content".
+    label: doc.label ?? doc.content?.label,
+    hero: doc.hero ?? doc.content?.hero,
+    sections: doc.sections ?? doc.content?.sections,
+    createdAt: doc.createdAt
+      ? new Date(doc.createdAt).toISOString()
+      : new Date().toISOString(),
+    updatedAt: doc.updatedAt
+      ? new Date(doc.updatedAt).toISOString()
+      : new Date().toISOString(),
   };
 }
 
@@ -32,16 +40,20 @@ export async function upsertPageContent(
 ): Promise<PageContent> {
   const db = await getDb();
   const now = new Date();
-  
+
+  // Generic CMS pages (about, clubs, "about/*") store label/hero/sections
+  // flat at the document root. Program pages store their payload nested
+  // under "content". Peek at the keys to write the right shape.
+  const isFlat = "label" in content || "sections" in content;
+
   const doc = await db
     .collection<PageContentDocument>(PAGE_CONTENT_COLLECTION)
     .findOneAndUpdate(
       { slug },
       {
-        $set: {
-          content,
-          updatedAt: now,
-        },
+        $set: isFlat
+          ? { ...(content as object), updatedAt: now }
+          : { content, updatedAt: now },
         $setOnInsert: {
           slug,
           createdAt: now,
@@ -52,7 +64,7 @@ export async function upsertPageContent(
         returnDocument: "after",
       }
     );
-  
+
   return fromDocument(doc as PageContentDocument);
 }
 
@@ -60,8 +72,8 @@ export async function deletePageContent(slug: string): Promise<boolean> {
   const db = await getDb();
   const result = await db
     .collection<PageContentDocument>(PAGE_CONTENT_COLLECTION)
-    .insertOne(doc as PageContentDocument);
-  return fromDocument({ ...doc, _id: result.insertedId });
+    .deleteOne({ slug });
+  return (result.deletedCount ?? 0) > 0;
 }
 
 // Default copy mirrors what the public pages shipped with before the
@@ -344,7 +356,7 @@ let readyPromise: Promise<void> | null = null;
 export function ensurePageContentsReady() {
   if (!readyPromise) {
     readyPromise = (async () => {
-      await ensurePageContentsIndexes();
+      await ensurePageContentIndexes();
       await seedDefaultPageContents();
     })();
   }
