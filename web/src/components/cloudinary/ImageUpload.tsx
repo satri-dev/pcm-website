@@ -11,9 +11,10 @@ interface ImageUploadProps {
     height: number;
     format: string;
   }) => void;
+  className?: string;
 }
 
-export default function ImageUpload({ onUpload }: ImageUploadProps) {
+export default function ImageUpload({ onUpload, className }: ImageUploadProps) {
   return (
     <CldUploadWidget
       signatureEndpoint="/api/cloudinary/sign"
@@ -45,7 +46,10 @@ export default function ImageUpload({ onUpload }: ImageUploadProps) {
         <button
           type="button"
           onClick={() => open()}
-          className="admin-btn admin-btn--primary admin-btn--sm flex items-center gap-2"
+          className={
+            className ||
+            "admin-btn admin-btn--primary admin-btn--sm flex items-center gap-2"
+          }
         >
           <Upload size={14} />
           Upload Image

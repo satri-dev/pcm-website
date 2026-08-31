@@ -44,10 +44,16 @@ export const CACHE_TAGS = {
   resultsList: "results-list",
   result: (slug: string) => `result-${slug}`,
   
+  // Footer
+  footerSettings: "footer-settings",
+  footerLinks: "footer-links",
   // Downloads
   downloads: "downloads",
   downloadsSettings: "downloads-settings",
   
   // Chatbot
   chatbot: "chatbot",
+  // Footer
+  footerSettings: "footer-settings",
+  footerLinks: "footer-links",
 } as const;
