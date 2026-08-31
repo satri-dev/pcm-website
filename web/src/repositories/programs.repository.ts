@@ -264,7 +264,7 @@ export function ensureProgramIndexes() {
           }
           
           // Add text search options
-          if (index.key.name === "text") {
+          if ((index.key as any).name === "text") {
             options.default_language = "english";
           }
           

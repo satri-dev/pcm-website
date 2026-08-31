@@ -81,8 +81,8 @@ export async function PATCH(
         }
         
         // Invalidate cache when restoring
-        revalidateTag(CACHE_TAGS.programsList);
-        revalidateTag(CACHE_TAGS.navMenu); // Navbar shows programs list
+        revalidateTag(CACHE_TAGS.programsList, "max");
+        revalidateTag(CACHE_TAGS.navMenu, "max"); // Navbar shows programs list
         
         return NextResponse.json({ ok: true });
       } catch {
@@ -101,8 +101,8 @@ export async function PATCH(
         }
         
         // Invalidate cache when permanently deleting
-        revalidateTag(CACHE_TAGS.programsList);
-        revalidateTag(CACHE_TAGS.navMenu); // Navbar shows programs list
+        revalidateTag(CACHE_TAGS.programsList, "max");
+        revalidateTag(CACHE_TAGS.navMenu, "max"); // Navbar shows programs list
         
         return NextResponse.json({ ok: true });
       } catch {
@@ -139,9 +139,9 @@ export async function PATCH(
     }
     
     // Invalidate cache when updating
-    revalidateTag(CACHE_TAGS.programsList);
-    revalidateTag(CACHE_TAGS.program(updated.slug));
-    revalidateTag(CACHE_TAGS.navMenu); // Navbar shows programs list
+    revalidateTag(CACHE_TAGS.programsList, "max");
+    revalidateTag(CACHE_TAGS.program(updated.slug), "max");
+    revalidateTag(CACHE_TAGS.navMenu, "max"); // Navbar shows programs list
     
     return NextResponse.json(updated);
   } catch (err) {
@@ -193,9 +193,9 @@ export async function DELETE(
     console.log("[DELETE /api/admin/content/programs/[id]] Success! Invalidating cache");
     
     // Invalidate cache after soft delete
-    revalidateTag(CACHE_TAGS.programsList);
-    revalidateTag(CACHE_TAGS.program(program.slug));
-    revalidateTag(CACHE_TAGS.navMenu); // Navbar shows programs list
+    revalidateTag(CACHE_TAGS.programsList, "max");
+    revalidateTag(CACHE_TAGS.program(program.slug), "max");
+    revalidateTag(CACHE_TAGS.navMenu, "max"); // Navbar shows programs list
     
     return NextResponse.json({ ok: true });
   } catch (err) {

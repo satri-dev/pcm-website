@@ -17,17 +17,17 @@ export const metadata: Metadata = {
 
 export default async function BoardPage() {
   const content = await getPageCopy("about/board");
-  const hero = content?.hero ?? {
+  const hero = (content as any)?.hero ?? {
     title: "Board of Directors",
     subtitle: "The people steering PCM — guiding vision, governance and growth since 2002.",
   };
-  const intro = getSection(content, "intro", {
+  const intro = await getSection(content, "intro", {
     key: "intro",
     eyebrow: "Governance",
     title: "Our Board of Directors",
     subtitle: "A committed leadership team that keeps PCM rooted in quality, integrity and service.",
   });
-  const promise = getSection(content, "promise", {
+  const promise = await getSection(content, "promise", {
     key: "promise",
     eyebrow: "Our promise",
     title: "Governance rooted in student success",
@@ -40,7 +40,7 @@ export default async function BoardPage() {
       "Investment in faculty, facilities and student experience",
     ],
   });
-  const cta = getSection(content, "cta", {
+  const cta = await getSection(content, "cta", {
     key: "cta",
     title: "A step towards your future",
     paragraphs: [

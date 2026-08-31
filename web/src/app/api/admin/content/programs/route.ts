@@ -85,12 +85,12 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const created = await createProgram(parsed.data);
+    const created = await createProgram(parsed.data as any);
     
     // Invalidate programs list cache
-    revalidateTag(CACHE_TAGS.programsList);
-    revalidateTag(CACHE_TAGS.program(created.slug));
-    revalidateTag(CACHE_TAGS.navMenu); // Navbar shows programs list
+    revalidateTag(CACHE_TAGS.programsList, "max");
+    revalidateTag(CACHE_TAGS.program(created.slug), "max");
+    revalidateTag(CACHE_TAGS.navMenu, "max"); // Navbar shows programs list
 
     return NextResponse.json(created, { status: 201 });
   } catch (err) {

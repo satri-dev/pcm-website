@@ -1,6 +1,6 @@
 // src/app/api/admin/pages/[slug]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { updateTag } from "next/cache";
+import { revalidateTag } from "next/cache";
 import { requireApiSession } from "@/core/lib/api-guard";
 import { upsertPageContent, getPageContentBySlug } from "@/repositories/page-content.repository";
 import { filterEditableFields, PROGRAMS_PAGE_SCHEMA } from "@/types/page-content";
@@ -60,7 +60,7 @@ export async function PUT(
     const updated = await upsertPageContent(slug, filteredContent);
     
     // Invalidate cache for this page content
-    updateTag(CACHE_TAGS.pageContent(slug));
+    revalidateTag(CACHE_TAGS.pageContent(slug), "max");
 
     return NextResponse.json(updated);
   } catch (err) {
@@ -93,7 +93,7 @@ export async function DELETE(
     }
 
     // Invalidate cache
-    updateTag(CACHE_TAGS.pageContent(slug));
+    revalidateTag(CACHE_TAGS.pageContent(slug), "max");
 
     return NextResponse.json({ success: true });
   } catch (err) {

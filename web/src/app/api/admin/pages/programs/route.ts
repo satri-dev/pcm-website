@@ -20,7 +20,7 @@ export async function PUT(req: NextRequest) {
     await upsertPageContent("programs", safeContent);
 
     // Invalidate page content cache (does NOT invalidate programs cache)
-    revalidateTag(CACHE_TAGS.pageContent("programs"));
+    revalidateTag(CACHE_TAGS.pageContent("programs"), "max");
 
     return NextResponse.json({ success: true });
   } catch (error) {

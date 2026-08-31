@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 
 import PageHeader from "../../_components/dashboard/page-header";
 import ProgramsManager from "./_components/programs-manager";

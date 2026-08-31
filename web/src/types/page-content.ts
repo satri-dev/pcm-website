@@ -3,18 +3,39 @@
 
 export const PAGE_CONTENT_COLLECTION = "page_content";
 
+// Legacy page content section (for about, clubs pages using old schema)
+export interface PageContentSection {
+  key: string;
+  eyebrow?: string;
+  title?: string;
+  subtitle?: string;
+  paragraphs?: string[];
+  checklist?: string[];
+}
+
 export interface PageContent {
   id: string;
   slug: string; // "programs", "about", "admissions", etc.
-  content: Record<string, unknown>; // Dynamic fields per page
+  content: PageContentData; // Dynamic fields per page
   createdAt: string;
   updatedAt: string;
 }
 
+// Union type for different page content structures
+export type PageContentData = Record<string, unknown> & {
+  // Legacy generic page schema (about, clubs, etc.)
+  label?: string;
+  hero?: {
+    title: string;
+    subtitle: string;
+  };
+  sections?: PageContentSection[];
+};
+
 export interface PageContentDocument {
   _id?: import("mongodb").ObjectId;
   slug: string;
-  content: Record<string, unknown>;
+  content: PageContentData;
   createdAt: Date;
   updatedAt: Date;
 }

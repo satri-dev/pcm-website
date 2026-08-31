@@ -15,17 +15,17 @@ export const metadata: Metadata = {
 
 export default async function MessagePage() {
   const content = await getPageCopy("about/message");
-  const hero = content?.hero ?? {
+  const hero = (content as any)?.hero ?? {
     title: "Words from our leaders",
     subtitle: "A personal welcome from the leadership team at Pokhara College of Management.",
   };
-  const intro = getSection(content, "intro", {
+  const intro = await getSection(content, "intro", {
     key: "intro",
     eyebrow: "Leadership voices",
     title: "Words from our leaders",
     subtitle: "The people guiding PCM share why they believe in our mission of affordable, quality education.",
   });
-  const cta = getSection(content, "cta", {
+  const cta = await getSection(content, "cta", {
     key: "cta",
     title: "A step towards your future",
     paragraphs: [

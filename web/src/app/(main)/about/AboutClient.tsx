@@ -208,13 +208,13 @@ function Stat({
   );
 }
 
-export default function AboutClient({ content }: { content: PageContent | null }) {
+export default function AboutClient({ content }: { content: any }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
   const spot = achievers[active];
 
   const sec = (key: string): PageContentSection => {
-    const found = content?.sections.find((s) => s.key === key);
+    const found = content?.sections.find((s: any) => s.key === key);
     const merged: PageContentSection = { ...(FALLBACK[key] ?? {}), ...(found ?? {}) };
     for (const k of Object.keys(merged)) {
       if (merged[k as keyof PageContentSection] === undefined) {

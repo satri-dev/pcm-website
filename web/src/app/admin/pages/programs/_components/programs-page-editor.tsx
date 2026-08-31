@@ -90,7 +90,7 @@ export default function ProgramsPageEditor({
     updateProgramPageField(
       slug,
       ["growthSection", "items"],
-      current.filter((_, i) => i !== index)
+      current.filter((_: any, i: number) => i !== index)
     );
   };
 
@@ -368,7 +368,7 @@ export default function ProgramsPageEditor({
               <div className="field field--full">
                 <label>Table Column Headers</label>
                 <div className="space-y-2">
-                  {formData.comparisonTable.columns.map((col, idx) => (
+                  {formData.comparisonTable.columns.map((col: any, idx: number) => (
                     <input
                       key={idx}
                       type="text"

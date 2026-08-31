@@ -139,8 +139,8 @@ export async function PUT(
     console.log("[PUT /api/admin/pages/programs/[slug]] Update result:", updated);
 
     // Invalidate caches
-    revalidateTag(CACHE_TAGS.pageContent("programs"));
-    revalidateTag(CACHE_TAGS.program(slug));
+    revalidateTag(CACHE_TAGS.pageContent("programs"), "max");
+    revalidateTag(CACHE_TAGS.program(slug), "max");
     
     console.log("[PUT /api/admin/pages/programs/[slug]] Cache invalidated for:", CACHE_TAGS.pageContent("programs"), CACHE_TAGS.program(slug));
 

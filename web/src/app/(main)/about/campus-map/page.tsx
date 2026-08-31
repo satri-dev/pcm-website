@@ -18,17 +18,17 @@ export const metadata: Metadata = {
 
 export default async function CampusMapPage() {
   const content = await getPageCopy("about/campus-map");
-  const hero = content?.hero ?? {
+  const hero = (content as any)?.hero ?? {
     title: "Campus Map",
     subtitle: "Find your way around the PCM campus — tap a marker to see what's nearby.",
   };
-  const explore = getSection(content, "explore", {
+  const explore = await getSection(content, "explore", {
     key: "explore",
     eyebrow: "Getting around",
     title: "Explore the Nadipur campus",
     subtitle: "Click a marker on the map or a place in the list to learn more about each spot.",
   });
-  const location = getSection(content, "location", {
+  const location = await getSection(content, "location", {
     key: "location",
     eyebrow: "Location",
     title: "Easy to reach, hard to leave",
@@ -41,7 +41,7 @@ export default async function CampusMapPage() {
       "Safe neighbourhood with parking nearby",
     ],
   });
-  const cta = getSection(content, "cta", {
+  const cta = await getSection(content, "cta", {
     key: "cta",
     title: "Come visit us at Nadipur",
     paragraphs: [

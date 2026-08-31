@@ -26,7 +26,7 @@ export default async function ProgramsPage() {
   const featuredProgramSlugs = content.featuredProgramRefs || ["bcsit", "bba", "bba-finance"];
   const featuredPrograms = featuredProgramSlugs
     .map((slug) => programs.find((p) => p.slug === slug))
-    .filter(Boolean);
+    .filter((p): p is NonNullable<typeof p> => p !== undefined);
 
   return (
     <ProgramsClient
