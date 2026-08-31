@@ -47,6 +47,10 @@ export const CACHE_TAGS = {
   // Footer
   footerSettings: "footer-settings",
   footerLinks: "footer-links",
+  // Downloads
+  downloads: "downloads",
+  downloadsSettings: "downloads-settings",
+  
   // Chatbot
   chatbot: "chatbot",
 } as const;
