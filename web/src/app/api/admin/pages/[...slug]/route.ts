@@ -96,7 +96,11 @@ export async function PUT(request: NextRequest, ctx: RouteCtx) {
   const slugString = normalizeSlug(slug);
 
   let body: unknown;
+<<<<<<< HEAD
 >>>>>>> 4759ccc (feat: enhance about page and board of directors section with dynamic metadata and content management)
+=======
+>>>>>>> 4759ccc98020e972b33cac1a93eb632d1831c83f
+>>>>>>> 7196c185ea48f5819ad1a438ec03b337fc2f672c
   try {
     body = await request.json();
   } catch {
@@ -127,7 +131,11 @@ export async function PUT(request: NextRequest, ctx: RouteCtx) {
     );
   }
 
+<<<<<<< HEAD
 >>>>>>> 4759ccc (feat: enhance about page and board of directors section with dynamic metadata and content management)
+=======
+>>>>>>> 4759ccc98020e972b33cac1a93eb632d1831c83f
+>>>>>>> 7196c185ea48f5819ad1a438ec03b337fc2f672c
   try {
     await ensurePageContentsReady();
     const existing = await getPageContentBySlug(slugString);
@@ -177,4 +185,8 @@ export async function DELETE(
 }
 =======
 }
+<<<<<<< HEAD
 >>>>>>> 4759ccc (feat: enhance about page and board of directors section with dynamic metadata and content management)
+=======
+>>>>>>> 4759ccc98020e972b33cac1a93eb632d1831c83f
+>>>>>>> 7196c185ea48f5819ad1a438ec03b337fc2f672c
