@@ -328,6 +328,8 @@ const DEFAULT_CONTENT: Omit<PageContentDocument, "_id" | "updatedAt">[] = [
 
 export async function seedDefaultPageContents() {
   const db = await getDb();
+  await db.createCollection(PAGE_CONTENT_COLLECTION).catch(() => {});
+
   const col = db.collection<PageContentDocument>(PAGE_CONTENT_COLLECTION);
   const now = new Date();
 
@@ -354,6 +356,8 @@ export function ensurePageContentsIndexes() {
   if (!indexesReady) {
     indexesReady = (async () => {
       const db = await getDb();
+      await db.createCollection(PAGE_CONTENT_COLLECTION).catch(() => {});
+
       const col = db.collection<PageContentDocument>(PAGE_CONTENT_COLLECTION);
       const wanted: IndexDescription[] = [{ key: { slug: 1 }, name: "slug", unique: true }];
 

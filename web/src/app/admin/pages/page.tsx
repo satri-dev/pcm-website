@@ -25,6 +25,8 @@ import {
   Ticket,
   LayoutList,
   BarChart3,
+  Map,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 
@@ -45,6 +47,11 @@ export const metadata: Metadata = {
 const pageIcons: Record<string, LucideIcon> = {
   home: Home,
   about: Info,
+  "about/board": Users,
+  "about/message": MessageCircle,
+  "about/faculty": GraduationCap,
+  "about/facility": Layers,
+  "about/campus-map": Map,
   admission: DoorOpen,
   alumni: GraduationCap,
   blogs: PenLine,

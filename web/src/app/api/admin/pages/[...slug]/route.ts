@@ -30,11 +30,23 @@ const bodySchema = z.object({
 });
 
 interface RouteCtx {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string | string[] }>;
+}
+
+function normalizeSlug(slug: string | string[]): string {
+  return Array.isArray(slug) ? slug.join("/") : slug;
 }
 
 function publicPath(slug: string): string {
   return slug === "home" ? "/" : `/${slug}`;
+}
+
+function errorResponse(err: unknown, fallback: string) {
+  const message =
+    err instanceof Error && err.message && err.message.length < 300
+      ? err.message
+      : fallback;
+  return NextResponse.json({ error: message }, { status: 500 });
 }
 
 export async function GET(_request: NextRequest, ctx: RouteCtx) {
@@ -42,16 +54,15 @@ export async function GET(_request: NextRequest, ctx: RouteCtx) {
   if (!guard.ok) return guard.response;
 
   const { slug } = await ctx.params;
-  await ensurePageContentsReady();
+  const slugString = normalizeSlug(slug);
 
   try {
-    const content = await getPageContentBySlug(slug);
+    await ensurePageContentsReady();
+    const content = await getPageContentBySlug(slugString);
     return NextResponse.json({ content });
-  } catch {
-    return NextResponse.json(
-      { error: "Failed to load page content" },
-      { status: 500 }
-    );
+  } catch (err) {
+    console.error(`GET /api/admin/pages/${slugString}`, err);
+    return errorResponse(err, "Failed to load page content");
   }
 }
 
@@ -60,7 +71,7 @@ export async function PUT(request: NextRequest, ctx: RouteCtx) {
   if (!guard.ok) return guard.response;
 
   const { slug } = await ctx.params;
-  await ensurePageContentsReady();
+  const slugString = normalizeSlug(slug);
 
   let body: unknown;
   try {
@@ -78,16 +89,15 @@ export async function PUT(request: NextRequest, ctx: RouteCtx) {
   }
 
   try {
-    const existing = await getPageContentBySlug(slug);
-    const saved = await upsertPageContent(slug, parsed.data, existing);
-    revalidateTag(CACHE_TAGS.pageContent, "max");
-    revalidateTag(pageContentTag(slug), "max");
-    revalidatePath(publicPath(slug), "page");
+    await ensurePageContentsReady();
+    const existing = await getPageContentBySlug(slugString);
+    const saved = await upsertPageContent(slugString, parsed.data, existing);
+    revalidateTag(CACHE_TAGS.pageContent, { expire: 0 });
+    revalidateTag(pageContentTag(slugString), { expire: 0 });
+    revalidatePath(publicPath(slugString), "page");
     return NextResponse.json({ content: saved });
-  } catch {
-    return NextResponse.json(
-      { error: "Failed to save page content" },
-      { status: 500 }
-    );
+  } catch (err) {
+    console.error(`PUT /api/admin/pages/${slugString}`, err);
+    return errorResponse(err, "Failed to save page content");
   }
 }

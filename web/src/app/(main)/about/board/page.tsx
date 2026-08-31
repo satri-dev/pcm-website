@@ -6,47 +6,57 @@ import { CheckList } from "../legacy/check-list";
 import { CtaBand } from "../legacy/cta-band";
 import { RevealBox } from "../legacy/reveal-box";
 import { BoardGrid } from "./BoardGrid";
-import { getPageCopy, getSection } from "@/lib/data/page-content";
+import { getPageCopy } from "@/lib/data/page-content";
+import type { PageContentSection } from "@/types/page-content";
 
-export const metadata: Metadata = {
-  title: "Board of Directors | Pokhara College of Management",
-  description:
-    "Meet the Board of Directors of Pokhara College of Management — the leadership guiding our vision, governance and growth since 2002.",
-  alternates: { canonical: "/about/board" },
+const FALLBACK_HERO = {
+  title: "Board of Directors",
+  subtitle:
+    "The people steering PCM — guiding vision, governance and growth since 2002.",
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  const content = await getPageCopy("about/board");
+  const title = [
+    content?.hero?.title?.trim() || content?.label?.trim() || "Board of Directors",
+    "Pokhara College of Management",
+  ]
+    .filter(Boolean)
+    .join(" | ");
+  const description =
+    content?.hero?.subtitle?.trim() ||
+    "Meet the Board of Directors of Pokhara College of Management — the leadership guiding our vision, governance and growth since 2002.";
+  return {
+    title,
+    description,
+    alternates: { canonical: "/about/board" },
+  };
+}
+
+function hasContent(section: PageContentSection): boolean {
+  return Boolean(
+    section.eyebrow?.trim() ||
+      section.title?.trim() ||
+      section.subtitle?.trim() ||
+      (section.paragraphs?.length ?? 0) > 0 ||
+      (section.checklist?.length ?? 0) > 0
+  );
+}
 
 export default async function BoardPage() {
   const content = await getPageCopy("about/board");
-  const hero = content?.hero ?? {
-    title: "Board of Directors",
-    subtitle: "The people steering PCM — guiding vision, governance and growth since 2002.",
+
+  const hero = {
+    title: content?.hero?.title?.trim() || FALLBACK_HERO.title,
+    subtitle: content?.hero?.subtitle?.trim() || FALLBACK_HERO.subtitle,
   };
-  const intro = getSection(content, "intro", {
-    key: "intro",
-    eyebrow: "Governance",
-    title: "Our Board of Directors",
-    subtitle: "A committed leadership team that keeps PCM rooted in quality, integrity and service.",
-  });
-  const promise = getSection(content, "promise", {
-    key: "promise",
-    eyebrow: "Our promise",
-    title: "Governance rooted in student success",
-    paragraphs: [
-      "Every decision at PCM flows from one question: how do we best serve our students? The board works closely with faculty, guardians and industry partners to keep our programs relevant, our campus supportive and our graduates ready for the world.",
-    ],
-    checklist: [
-      "Regular curriculum reviews aligned with Pokhara University",
-      "Transparent, merit-based scholarship and admission policies",
-      "Investment in faculty, facilities and student experience",
-    ],
-  });
-  const cta = getSection(content, "cta", {
-    key: "cta",
-    title: "A step towards your future",
-    paragraphs: [
-      "Applications for the 2083 intake are open across all three programs. Take the first step today.",
-    ],
-  });
+
+  const sections = (content?.sections ?? []).filter(hasContent);
+
+  const intro = sections[0];
+  const rest = sections.slice(1);
+  const cta = rest.find((s) => s.key === "cta") ?? rest[rest.length - 1];
+  const bodySections = cta ? rest.filter((s) => s !== cta) : rest;
 
   return (
     <main id="main">
@@ -55,43 +65,71 @@ export default async function BoardPage() {
         title={hero.title}
         subtitle={hero.subtitle}
       />
+
       <section className="section">
         <div className="wrap-wide">
-          <SectionHead
-            eyebrow={intro.eyebrow ?? ""}
-            title={intro.title ?? "Our Board of Directors"}
-            subtitle={intro.subtitle}
-          />
-          <BoardGrid />
-        </div>
-      </section>
-      <section className="section tone-sky">
-        <div className="wrap-wide split">
-          <RevealBox>
-            <span className="eyebrow">{promise.eyebrow}</span>
-            <h2 className="section-title">{promise.title}</h2>
-            <p style={{ marginTop: "1rem" }}>{promise.paragraphs?.[0]}</p>
-            <CheckList
-              className="checklist"
-              items={promise.checklist ?? []}
+          {intro ? (
+            <SectionHead
+              eyebrow={intro.eyebrow ?? ""}
+              title={intro.title ?? ""}
+              subtitle={intro.subtitle}
             />
-          </RevealBox>
-          <RevealBox className="split__media">
-            <div style={{ borderRadius: 22, overflow: "hidden", boxShadow: "var(--shadow-lg)", aspectRatio: "4/3" }}>
-              <img className="split-media-img" src="/assets/img/about-1.jpg" alt="The PCM campus in Nadipur" loading="lazy" />
+          ) : (
+            <SectionHead
+              eyebrow="Governance"
+              title="Our Board of Directors"
+              subtitle="A committed leadership team that keeps PCM rooted in quality, integrity and service."
+            />
+          )}
+          <BoardGrid />
+          {intro?.paragraphs ? (
+            <div className="split" style={{ marginTop: "1.6rem" }}>
+              <RevealBox>
+                {intro.paragraphs.map((p, i) => (
+                  <p key={i} style={i === 0 ? { marginTop: "1rem" } : undefined}>
+                    {p}
+                  </p>
+                ))}
+                {intro.checklist ? <CheckList className="checklist" items={intro.checklist} /> : null}
+              </RevealBox>
             </div>
-            <div className="est-badge">
-              <b>2002</b>
-              <span>Established</span>
-            </div>
-          </RevealBox>
+          ) : null}
         </div>
       </section>
+
+      {bodySections.map((section, i) => (
+        <section key={section.key || i} className={i % 2 === 1 ? "section tone-sky" : "section"}>
+          <div className="wrap-wide">
+            <SectionHead
+              eyebrow={section.eyebrow ?? ""}
+              title={section.title ?? ""}
+              subtitle={section.subtitle}
+              center
+            />
+            {section.paragraphs ? (
+              <div className="split" style={{ marginTop: "1.4rem" }}>
+                <RevealBox>
+                  {section.paragraphs.map((p, pi) => (
+                    <p key={pi} style={pi === 0 ? { marginTop: "1rem" } : undefined}>
+                      {p}
+                    </p>
+                  ))}
+                  {section.checklist ? <CheckList className="checklist" items={section.checklist} /> : null}
+                </RevealBox>
+              </div>
+            ) : null}
+          </div>
+        </section>
+      ))}
+
       <CtaBand
-        title={cta.title ?? "A step towards your future"}
-        text={cta.paragraphs?.[0] ?? "Applications for the 2083 intake are open across all three programs. Take the first step today."}
-        primary={{ label: "Apply Now", href: "/admission.html" }}
-        secondary={{ label: "Explore Programs", href: "/programs.html" }}
+        title={cta?.title ?? "A step towards your future"}
+        text={
+          cta?.paragraphs?.[0] ??
+          "Applications for the 2083 intake are open across all three programs. Take the first step today."
+        }
+        primary={{ label: "Apply Now", href: "/admission" }}
+        secondary={{ label: "Explore Programs", href: "/programs" }}
       />
     </main>
   );

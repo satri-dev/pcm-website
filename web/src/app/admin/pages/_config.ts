@@ -9,6 +9,11 @@ export interface PagesSectionEntry {
 export const mainPages: PagesSectionEntry[] = [
   { slug: "home", label: "Home", publicHref: "/" },
   { slug: "about", label: "About", publicHref: "/about" },
+  { slug: "about/board", label: "Board of Directors", publicHref: "/about/board" },
+  { slug: "about/message", label: "Message from the Chair", publicHref: "/about/message" },
+  { slug: "about/faculty", label: "Faculty & Staff", publicHref: "/about/faculty" },
+  { slug: "about/facility", label: "Campus & Facilities", publicHref: "/about/facility" },
+  { slug: "about/campus-map", label: "Campus Map", publicHref: "/about/campus-map" },
   { slug: "admission", label: "Admission", publicHref: "/admission" },
   { slug: "alumni", label: "Alumni", publicHref: "/alumni" },
   { slug: "blogs", label: "Blogs", publicHref: "/blogs" },
@@ -46,4 +51,16 @@ export function findEntry(
   const section = siteSections.find((s) => s.slug === slug);
   if (section) return { entry: section, kind: "section" };
   return null;
+}
+
+// Maps an admin editor entry to the db content + public page it actually
+// drives. The "About" admin entry edits the same content that the public
+// Board of Directors page (/about/board) renders.
+const contentAliases: Record<string, string> = {
+  about: "about/board",
+};
+
+/** Resolve the content slug an admin editor entry should load and save. */
+export function resolveEntryContentSlug(entrySlug: string): string {
+  return contentAliases[entrySlug] ?? entrySlug;
 }
