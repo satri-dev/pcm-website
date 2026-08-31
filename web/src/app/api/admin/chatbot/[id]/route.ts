@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import * as z from "zod";
 import { requireApiSession } from "@/core/lib/api-guard";
 import {
@@ -9,6 +10,7 @@ import {
   hardDeleteChatbotEntry,
   ensureChatbotIndexes,
 } from "@/repositories/chatbot.repository";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 import {
   CHATBOT_CHANNELS,
   ChatbotChannel,
@@ -58,6 +60,7 @@ export async function PATCH(
         if (!restored) {
           return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
+        revalidateTag(CACHE_TAGS.chatbot, "max");
         return NextResponse.json({ ok: true });
       } catch {
         return NextResponse.json(
@@ -73,6 +76,7 @@ export async function PATCH(
         if (!deleted) {
           return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
+        revalidateTag(CACHE_TAGS.chatbot, "max");
         return NextResponse.json({ ok: true });
       } catch {
         return NextResponse.json(
@@ -106,6 +110,7 @@ export async function PATCH(
   if (!updated) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+  revalidateTag(CACHE_TAGS.chatbot, "max");
   return NextResponse.json(updated);
 }
 
@@ -122,6 +127,7 @@ export async function DELETE(
   if (!deleted) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+  revalidateTag(CACHE_TAGS.chatbot, "max");
   return NextResponse.json({ ok: true });
 }
 
