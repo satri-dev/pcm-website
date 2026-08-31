@@ -21,6 +21,7 @@ export const mainPages: PagesSectionEntry[] = [
   { slug: "blog-student", label: "Student Blogs", publicHref: "/blogs-student" },
   { slug: "clubs", label: "Clubs", publicHref: "/clubs" },
   { slug: "contact", label: "Contact", publicHref: "/contact" },
+  { slug: "downloads", label: "Downloads", publicHref: "/downloads", live: true },
   { slug: "events", label: "Events", publicHref: "/events" },
   { slug: "faq", label: "FAQ", publicHref: "/faq", live: true },
   { slug: "gallery", label: "Gallery", publicHref: "/gallery" },
@@ -32,6 +33,7 @@ export const mainPages: PagesSectionEntry[] = [
   { slug: "results", label: "Results", publicHref: "/results" },
   { slug: "testimonials", label: "Testimonials", publicHref: "/testimonials" },
   { slug: "faq", label: "FAQ", publicHref: "/faq", live:true },
+  { slug: "downloads", label: "Download", publicHref: "/downloads", live:true },
 ];
 
 // Reusable site chrome/teaser pieces administrators configure.

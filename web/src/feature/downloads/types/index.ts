@@ -1,17 +1,9 @@
-export type DownloadCategory =
-  | "All"
-  | "Prospectus"
-  | "Admission Form"
-  | "Syllabus"
-  | "Scholarship Form"
-  | "Other";
+import type { Download } from "@/app/admin/media/downloads/types/download";
 
-export interface DownloadItem {
-  id: string;
-  title: string;
-  category: Exclude<DownloadCategory, "All">;
-  date: string; // "2026-07-01"
-  sizeKb: number;
-  fileUrl: string;
-  description: string;
-}
+/**
+ * Public download card item — a published `Download` surfaced on the
+ * public downloads page. We keep it as a distinct type so the feature layer
+ * never depends on admin internals, but it mirrors the collection shape
+ * (string file size, file type, HTML description, download count).
+ */
+export type DownloadItem = Download;

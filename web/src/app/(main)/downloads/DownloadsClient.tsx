@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { useDownloads } from "@/feature/downloads/hooks/useDownloads";
-import { DOWNLOAD_CATEGORIES } from "@/feature/downloads/data/downloads";
+import { deriveCategories } from "@/feature/downloads/data/downloads";
 import FilterChips from "@/feature/downloads/components/FilterChips";
 import DownloadGrid from "@/feature/downloads/components/DownloadGrid";
+import type { DownloadItem } from "@/feature/downloads/types";
+import type { DownloadsPageSettings } from "@/types/downloads-page-settings";
+import { DOWNLOADS_PAGE_SETTINGS_DEFAULTS } from "@/types/downloads-page-settings";
 import "./downloads.css";
 
 /* ── SVG icons ── */
@@ -26,18 +29,30 @@ const ArrowRight = () => (
   </svg>
 );
 
-export default function DownloadsClient() {
+interface Props {
+  items: DownloadItem[];
+  settings: DownloadsPageSettings;
+}
+
+export default function DownloadsClient({ items, settings }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
+
+  const s = {
+    ...DOWNLOADS_PAGE_SETTINGS_DEFAULTS,
+    ...settings,
+  };
+
+  const categories = deriveCategories(items.map((i) => i.category));
   const { filteredItems, activeCategory, setCategory, searchQuery, setSearch } =
-    useDownloads();
+    useDownloads({ items, categories });
 
   /* Reveal-on-scroll */
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    const items = Array.from(root.querySelectorAll<HTMLElement>(".reveal"));
+    const els = Array.from(root.querySelectorAll<HTMLElement>(".reveal"));
     if (!("IntersectionObserver" in window)) {
-      items.forEach((el) => el.classList.add("is-inview"));
+      els.forEach((el) => el.classList.add("is-inview"));
       return;
     }
     const io = new IntersectionObserver(
@@ -50,7 +65,7 @@ export default function DownloadsClient() {
         }),
       { threshold: 0.1 }
     );
-    items.forEach((el) => io.observe(el));
+    els.forEach((el) => io.observe(el));
     return () => io.disconnect();
   }, [filteredItems]);
 
@@ -72,13 +87,10 @@ export default function DownloadsClient() {
           <nav className="crumbs" aria-label="Breadcrumb">
             <Link href="/">Home</Link>
             <ChevronRight />
-            <span>Downloads</span>
+            <span>{s.heroTitle}</span>
           </nav>
-          <h1>Downloads</h1>
-          <p>
-            Access prospectuses, admission forms, syllabi and scholarship
-            application forms — all in one place.
-          </p>
+          <h1>{s.heroTitle}</h1>
+          <p>{s.heroSubtitle}</p>
         </div>
       </section>
 
@@ -86,11 +98,11 @@ export default function DownloadsClient() {
       <section className="section">
         <div className="wrap-wide">
           <div className="section-head reveal">
-            <span className="eyebrow">Resources</span>
-            <h2 className="section-title">Official documents &amp; forms</h2>
-            <p className="section-sub">
-              Download the files you need. All documents are current for the 2083 intake.
-            </p>
+            <span className="eyebrow">{s.eyebrow}</span>
+            <h2 className="section-title">{s.title}</h2>
+            {s.subtitle ? (
+              <p className="section-sub">{s.subtitle}</p>
+            ) : null}
           </div>
 
           {/* Search */}
@@ -100,7 +112,7 @@ export default function DownloadsClient() {
             </span>
             <input
               type="search"
-              placeholder="Search documents…"
+              placeholder={s.searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearch(e.target.value)}
               aria-label="Search downloadable documents"
@@ -110,7 +122,7 @@ export default function DownloadsClient() {
           {/* Filter chips */}
           <div className="reveal">
             <FilterChips
-              categories={DOWNLOAD_CATEGORIES}
+              categories={categories}
               active={activeCategory}
               onChange={setCategory}
             />
@@ -128,20 +140,17 @@ export default function DownloadsClient() {
             <div className="cta-band__inner">
               <div>
                 <span className="eyebrow" style={{ color: "var(--gold-400)" }}>
-                  Enter to Learn — Go Forth to Serve
+                  {s.ctaEyebrow}
                 </span>
-                <h2>Ready to apply?</h2>
-                <p>
-                  Download your admission form above and submit it to the PCM
-                  office before Ashar 26, 2083.
-                </p>
+                <h2>{s.ctaTitle}</h2>
+                <p>{s.ctaText}</p>
               </div>
               <div className="cta-band__actions">
-                <Link className="btn btn-gold btn-lg" href="/admission">
-                  Apply Now <ArrowRight />
+                <Link className="btn btn-gold btn-lg" href={s.ctaPrimaryHref}>
+                  {s.ctaPrimaryLabel} <ArrowRight />
                 </Link>
-                <Link className="btn btn-ghost-dark btn-lg" href="/contact">
-                  Contact Us
+                <Link className="btn btn-ghost-dark btn-lg" href={s.ctaSecondaryHref}>
+                  {s.ctaSecondaryLabel}
                 </Link>
               </div>
             </div>

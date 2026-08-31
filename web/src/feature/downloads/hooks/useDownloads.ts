@@ -1,27 +1,35 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import type { DownloadCategory } from "../types";
-import { downloadItems } from "../data/downloads";
+import type { DownloadItem } from "../types";
 
-export function useDownloads() {
-  const [activeCategory, setActiveCategory] = useState<DownloadCategory>("All");
+export function useDownloads({
+  items,
+  categories,
+}: {
+  items: DownloadItem[];
+  categories: string[];
+}) {
+  const [activeCategory, setActiveCategory] = useState<string>(
+    categories[0] ?? "All"
+  );
   const [searchQuery, setSearch] = useState("");
 
   const filteredItems = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
-    return downloadItems
+    return items
       .filter((item) => {
         const matchCat =
           activeCategory === "All" || item.category === activeCategory;
-        const matchQ =
-          !q ||
-          item.title.toLowerCase().includes(q) ||
-          item.description.toLowerCase().includes(q);
-        return matchCat && matchQ;
+        if (!matchCat) return false;
+        if (!q) return true;
+        const haystack = [item.title, item.fileName, item.description ?? ""]
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(q);
       })
-      .sort((a, b) => b.date.localeCompare(a.date)); // sort by date desc
-  }, [activeCategory, searchQuery]);
+      .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+  }, [items, activeCategory, searchQuery]);
 
   return {
     filteredItems,
