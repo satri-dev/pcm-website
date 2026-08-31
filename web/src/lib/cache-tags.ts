@@ -43,4 +43,8 @@ export const CACHE_TAGS = {
   // Results
   resultsList: "results-list",
   result: (slug: string) => `result-${slug}`,
+  
+  // Footer
+  footerSettings: "footer-settings",
+  footerLinks: "footer-links",
 } as const;

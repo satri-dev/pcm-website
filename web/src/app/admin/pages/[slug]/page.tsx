@@ -20,6 +20,10 @@ import {
 import { connection } from "next/server";
 import TickersManager from "../_components/tickers-manager";
 import { listTickers } from "@/repositories/ticker.repository";
+import TopBarManager from "../_components/topbar-manager";
+import { listAllTopBarLinks, getTopBarContact } from "@/repositories/topbar.repository";
+import FooterManager from "../_components/footer-manager";
+import { getFooterSettings } from "@/repositories/footer.repository";
 
 interface RouteCtx {
   params: Promise<{ slug: string }>;
@@ -93,6 +97,35 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
           subtitle="Pages · Content & CTA"
         />
         <TickersManager tickers={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "topbar") {
+    const [links, contact] = await Promise.all([
+      listAllTopBarLinks(),
+      getTopBarContact(),
+    ]);
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Sections · TopBar Links & Contact"
+        />
+        <TopBarManager links={links} contact={contact} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "footer") {
+    const settings = await getFooterSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Sections · Footer Content & Settings"
+        />
+        <FooterManager settings={settings} />
       </>
     );
   }
