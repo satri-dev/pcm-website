@@ -91,7 +91,20 @@ interface PagesSectionNavItem {
 
 const pagesNav: PagesSectionNavItem[] = [
   { label: "Home", href: "/admin/pages/home", icon: Home },
-  { label: "About", href: "/admin/pages/about", icon: Info },
+  {
+    label: "About",
+    href: "/admin/pages/about",
+    icon: Info,
+    collapsible: true,
+    subItems: [
+      { label: "Overview", href: "/admin/pages/about" },
+      { label: "Board of Directors", href: "/admin/pages/about/board" },
+      { label: "Message from the Chair", href: "/admin/pages/about/message" },
+      { label: "Faculty & Staff", href: "/admin/pages/about/faculty" },
+      { label: "Campus & Facilities", href: "/admin/pages/about/facility" },
+      { label: "Campus Map", href: "/admin/pages/about/campus-map" },
+    ],
+  },
   { label: "Admission", href: "/admin/pages/admission", icon: DoorOpen },
   { 
     label: "Programs", 
@@ -261,6 +274,9 @@ export default function AdminSidebar() {
   const [programsOpen, setProgramsOpen] = useState<boolean>(
     () => pathname.startsWith("/admin/pages/programs/")
   );
+  const [aboutOpen, setAboutOpen] = useState<boolean>(
+    () => pathname.startsWith("/admin/pages/about/")
+  );
   const [programs, setPrograms] = useState<{ slug: string; name: string; code: string }[]>([]);
 
   useEffect(() => {
@@ -341,11 +357,21 @@ export default function AdminSidebar() {
   function renderSubLink(item: PagesSectionNavItem, active: boolean) {
     const Icon = item.icon;
     
-    // Handle collapsible items (like Programs)
-    if (item.collapsible && item.label === "Programs") {
-      const isOpen = programsOpen;
-      const hasSubActive = current.startsWith("/admin/pages/programs/");
+    // Handle collapsible items (Like Programs, About)
+    if (item.collapsible) {
+      const isAbout = item.label === "About";
+      const isOpen = isAbout ? aboutOpen : programsOpen;
+      const setOpen = isAbout ? setAboutOpen : setProgramsOpen;
+      const baseHref = isAbout ? "/admin/pages/about" : "/admin/pages/programs";
+      const hasSubActive = current.startsWith(baseHref + "/");
       
+      const subLinks = isAbout
+        ? (item.subItems ?? [])
+        : programs.map((prog) => ({
+            label: prog.code || prog.name,
+            href: `/admin/pages/programs/${prog.slug}`,
+          }));
+
       return (
         <div key={item.href}>
           <div className="flex items-stretch">
@@ -369,7 +395,7 @@ export default function AdminSidebar() {
               }}
               onClick={(e) => {
                 e.stopPropagation();
-                setProgramsOpen(!isOpen);
+                setOpen(!isOpen);
               }}
             >
               <ChevronDown 
@@ -385,19 +411,19 @@ export default function AdminSidebar() {
           
           {isOpen && (
             <div>
-              {programs.length > 0 ? (
-                programs.map((prog) => (
+              {subLinks.length > 0 ? (
+                subLinks.map((sub) => (
                   <Link
-                    key={prog.slug}
-                    href={`/admin/pages/programs/${prog.slug}`}
-                    className={`admin-nav-link admin-nav-link--nested${current === `/admin/pages/programs/${prog.slug}` ? " active" : ""}`}
+                    key={sub.href}
+                    href={sub.href}
+                    className={`admin-nav-link admin-nav-link--nested${current === sub.href ? " active" : ""}`}
                   >
-                    {prog.code || prog.name}
+                    {sub.label}
                   </Link>
                 ))
               ) : (
                 <div className="admin-nav-link admin-nav-link--nested" style={{ opacity: 0.5, cursor: "default" }}>
-                  Loading programs... ({programs.length} found)
+                  Loading... (0 found)
                 </div>
               )}
             </div>
