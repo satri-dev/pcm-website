@@ -33,6 +33,16 @@ import FooterManager from "../_components/footer-manager";
 import { getFooterSettings } from "@/repositories/footer.repository";
 import PlacementsPageSettings from "../_components/placements-page-settings";
 import { getPlacementsPageSettings } from "@/repositories/placements-settings.repository";
+import NewsPageSettings from "../_components/news-page-settings";
+import { getNewsPageSettings } from "@/repositories/news-page-settings.repository";
+import NewsArticleSettings from "../_components/news-article-settings";
+import { getNewsArticleSettings } from "@/repositories/news-article-settings.repository";
+import EventsPageSettings from "../_components/events-page-settings";
+import { getEventsPageSettings } from "@/repositories/events-page-settings.repository";
+import ResultsPageSettings from "../_components/results-page-settings";
+import { getResultsPageSettings } from "@/repositories/results-page-settings.repository";
+import NoticesPageSettings from "../_components/notices-page-settings";
+import { getNoticesPageSettings } from "@/repositories/notices-page-settings.repository";
 
 interface RouteCtx {
   params: Promise<{ slug: string | string[] }>;
@@ -163,6 +173,71 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
           subtitle="Pages · Content & SEO"
         />
         <PlacementsPageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "news") {
+    const settings = await getNewsPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content & SEO"
+        />
+        <NewsPageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "news-article") {
+    const settings = await getNewsArticleSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Article detail layout"
+        />
+        <NewsArticleSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "events") {
+    const settings = await getEventsPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content & SEO"
+        />
+        <EventsPageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "results") {
+    const settings = await getResultsPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content & SEO"
+        />
+        <ResultsPageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "notices") {
+    const settings = await getNoticesPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content & SEO"
+        />
+        <NoticesPageSettings initial={settings} />
       </>
     );
   }

@@ -31,18 +31,23 @@ export const CACHE_TAGS = {
   // News
   newsList: "news-list",
   news: (slug: string) => `news-${slug}`,
+  newsSettings: "news-settings",
+  newsArticleSettings: "news-article-settings",
   
   // Notices
   noticesList: "notices-list",
   notice: (slug: string) => `notice-${slug}`,
+  noticesSettings: "notices-settings",
   
   // Events
   eventsList: "events-list",
   event: (slug: string) => `event-${slug}`,
+  eventsSettings: "events-settings",
   
   // Results
   resultsList: "results-list",
   result: (slug: string) => `result-${slug}`,
+  resultsSettings: "results-settings",
   
   // Footer
   footerSettings: "footer-settings",
