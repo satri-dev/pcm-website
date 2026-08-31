@@ -47,6 +47,11 @@ export const CACHE_TAGS = {
   // Footer
   footerSettings: "footer-settings",
   footerLinks: "footer-links",
+  
+  // TopBar
+  topBarLinks: "topbar-links",
+  topBarContact: "topbar-contact",
+  
   // Downloads
   downloads: "downloads",
   downloadsSettings: "downloads-settings",

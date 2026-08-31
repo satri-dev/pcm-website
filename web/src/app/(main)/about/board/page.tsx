@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "../legacy/legacy.css";
 import { PageHero } from "../legacy/page-hero";
 import { SectionHead } from "../legacy/section-head";
@@ -15,35 +16,32 @@ const FALLBACK_HERO = {
     "The people steering PCM — guiding vision, governance and growth since 2002.",
 };
 
-export async function generateMetadata(): Promise<Metadata> {
-  const content = await getPageCopy("about/board");
-  const title = [
-    content?.hero?.title?.trim() || content?.label?.trim() || "Board of Directors",
-    "Pokhara College of Management",
-  ]
-    .filter(Boolean)
-    .join(" | ");
-  const description =
-    content?.hero?.subtitle?.trim() ||
-    "Meet the Board of Directors of Pokhara College of Management — the leadership guiding our vision, governance and growth since 2002.";
-  return {
-    title,
-    description,
-    alternates: { canonical: "/about/board" },
-  };
-}
+export const metadata: Metadata = {
+  title: "Board of Directors | Pokhara College of Management",
+  description:
+    "Meet the Board of Directors of Pokhara College of Management — the leadership guiding our vision, governance and growth since 2002.",
+  alternates: { canonical: "/about/board" },
+};
 
 function hasContent(section: PageContentSection): boolean {
   return Boolean(
     section.eyebrow?.trim() ||
-      section.title?.trim() ||
-      section.subtitle?.trim() ||
-      (section.paragraphs?.length ?? 0) > 0 ||
-      (section.checklist?.length ?? 0) > 0
+    section.title?.trim() ||
+    section.subtitle?.trim() ||
+    (section.paragraphs?.length ?? 0) > 0 ||
+    (section.checklist?.length ?? 0) > 0,
   );
 }
 
-export default async function BoardPage() {
+export default function BoardPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <BoardPageContent />
+    </Suspense>
+  );
+}
+
+async function BoardPageContent() {
   const content = await getPageCopy("about/board");
 
   const hero = {
@@ -86,11 +84,16 @@ export default async function BoardPage() {
             <div className="split" style={{ marginTop: "1.6rem" }}>
               <RevealBox>
                 {intro.paragraphs.map((p, i) => (
-                  <p key={i} style={i === 0 ? { marginTop: "1rem" } : undefined}>
+                  <p
+                    key={i}
+                    style={i === 0 ? { marginTop: "1rem" } : undefined}
+                  >
                     {p}
                   </p>
                 ))}
-                {intro.checklist ? <CheckList className="checklist" items={intro.checklist} /> : null}
+                {intro.checklist ? (
+                  <CheckList className="checklist" items={intro.checklist} />
+                ) : null}
               </RevealBox>
             </div>
           ) : null}
@@ -98,7 +101,10 @@ export default async function BoardPage() {
       </section>
 
       {bodySections.map((section, i) => (
-        <section key={section.key || i} className={i % 2 === 1 ? "section tone-sky" : "section"}>
+        <section
+          key={section.key || i}
+          className={i % 2 === 1 ? "section tone-sky" : "section"}
+        >
           <div className="wrap-wide">
             <SectionHead
               eyebrow={section.eyebrow ?? ""}
@@ -110,11 +116,19 @@ export default async function BoardPage() {
               <div className="split" style={{ marginTop: "1.4rem" }}>
                 <RevealBox>
                   {section.paragraphs.map((p, pi) => (
-                    <p key={pi} style={pi === 0 ? { marginTop: "1rem" } : undefined}>
+                    <p
+                      key={pi}
+                      style={pi === 0 ? { marginTop: "1rem" } : undefined}
+                    >
                       {p}
                     </p>
                   ))}
-                  {section.checklist ? <CheckList className="checklist" items={section.checklist} /> : null}
+                  {section.checklist ? (
+                    <CheckList
+                      className="checklist"
+                      items={section.checklist}
+                    />
+                  ) : null}
                 </RevealBox>
               </div>
             ) : null}

@@ -3,66 +3,88 @@
 import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Phone, Mail, ChevronRight, Send } from "lucide-react";
-import { FaFacebook, FaInstagram, FaLinkedin, FaWhatsapp } from "react-icons/fa";
-import { connection } from "next/server";
+import {
+  FaFacebook,
+  FaInstagram,
+  FaLinkedin,
+  FaWhatsapp,
+} from "react-icons/fa";
 import { getFooterSettings, getFooterLinks } from "@/lib/data/footer";
-
-function CurrentYear() {
-  return <>{new Date().getFullYear()}</>;
-}
+import CurrentYear from "@/components/shared/CurrentYear";
 
 export default async function Footer() {
-  await connection();
   const settings = await getFooterSettings();
   const footerLinks = await getFooterLinks();
-  
+
   // Use settings or fallback to defaults
   const logoUrl = settings?.logoUrl || "/images/logo-pcm.png";
-  const tagline = settings?.tagline || "Enter to Learn — Go Forth to Serve. Affordable, quality management & IT education in the heart of Pokhara since 2002.";
-  const address = settings?.address || "Gyan Marg, Nadipur, Pokhara-2, Kaski, Nepal";
+  const tagline =
+    settings?.tagline ||
+    "Enter to Learn — Go Forth to Serve. Affordable, quality management & IT education in the heart of Pokhara since 2002.";
+  const address =
+    settings?.address || "Gyan Marg, Nadipur, Pokhara-2, Kaski, Nepal";
   const phone = settings?.phone || "(061) 544761, 570124";
   const email = settings?.email || "info@pcm.edu.np";
-  const mapUrl = settings?.mapUrl || "https://maps.google.com/?q=Pokhara+College+of+Management+Nadipur";
-  const facebookUrl = settings?.facebookUrl || "https://www.facebook.com/239069093193587";
+  const mapUrl =
+    settings?.mapUrl ||
+    "https://maps.google.com/?q=Pokhara+College+of+Management+Nadipur";
+  const facebookUrl =
+    settings?.facebookUrl || "https://www.facebook.com/239069093193587";
   const instagramUrl = settings?.instagramUrl || "https://www.instagram.com/";
   const linkedinUrl = settings?.linkedinUrl || "https://www.linkedin.com/";
   const whatsappNumber = settings?.whatsappNumber || "97761544761";
   const weekdaysHours = settings?.weekdaysHours || "6:00 AM – 4:00 PM";
   const saturdayHours = settings?.saturdayHours || "Closed";
-  const affiliationText = settings?.affiliationText || "Affiliated to Pokhara University";
+  const affiliationText =
+    settings?.affiliationText || "Affiliated to Pokhara University";
   const affiliationBadge = settings?.affiliationBadge || "PU";
   const newsletterTitle = settings?.newsletterTitle || "Stay in the Loop";
-  const newsletterDescription = settings?.newsletterDescription || "Monthly highlights — events, scholarships and results. No spam, unsubscribe anytime.";
-  const copyrightText = settings?.copyrightText || "Pokhara College of Management. All rights reserved.";
+  const newsletterDescription =
+    settings?.newsletterDescription ||
+    "Monthly highlights — events, scholarships and results. No spam, unsubscribe anytime.";
+  const copyrightText =
+    settings?.copyrightText ||
+    "Pokhara College of Management. All rights reserved.";
   const developerName = settings?.developerName || "SATRI (satritech.com)";
   const developerUrl = settings?.developerUrl || "https://satritech.com";
 
   // Calculate grid columns based on number of link sections (1-4 sections + brand column)
   const linkSectionsCount = footerLinks.length;
-  const gridCols = linkSectionsCount === 0 
-    ? "lg:grid-cols-[1.4fr_1fr]" 
-    : linkSectionsCount === 1 
-    ? "lg:grid-cols-[1.4fr_1fr_1fr]" 
-    : linkSectionsCount === 2 
-    ? "lg:grid-cols-[1.4fr_1fr_1fr_1fr]" 
-    : "lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr]";
+  const gridCols =
+    linkSectionsCount === 0
+      ? "lg:grid-cols-[1.4fr_1fr]"
+      : linkSectionsCount === 1
+        ? "lg:grid-cols-[1.4fr_1fr_1fr]"
+        : linkSectionsCount === 2
+          ? "lg:grid-cols-[1.4fr_1fr_1fr_1fr]"
+          : "lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr]";
 
   return (
     <footer className="relative bg-pcm-blue-900 text-white/72 overflow-hidden">
       {/* Decorative peaks SVG */}
-      <svg 
-        className="relative w-full h-30" 
-        viewBox="0 0 1440 180" 
-        preserveAspectRatio="none" 
+      <svg
+        className="relative w-full h-30"
+        viewBox="0 0 1440 180"
+        preserveAspectRatio="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <path d="M0 180 L0 90 L240 30 L480 110 L720 20 L960 120 L1200 40 L1440 100 L1440 180Z" fill="#4167C9" opacity=".25"/>
-        <path d="M0 180 L0 120 L300 70 L600 140 L900 60 L1200 130 L1440 80 L1440 180Z" fill="#14265A" opacity=".5"/>
+        <path
+          d="M0 180 L0 90 L240 30 L480 110 L720 20 L960 120 L1200 40 L1440 100 L1440 180Z"
+          fill="#4167C9"
+          opacity=".25"
+        />
+        <path
+          d="M0 180 L0 120 L300 70 L600 140 L900 60 L1200 130 L1440 80 L1440 180Z"
+          fill="#14265A"
+          opacity=".5"
+        />
       </svg>
 
       <div className="relative z-2">
         <div className="container px-4 sm:px-6">
-          <div className={`grid grid-cols-1 sm:grid-cols-2 ${gridCols} gap-8 sm:gap-10 lg:gap-[clamp(2rem,4vw,3rem)] py-8 sm:py-10 lg:py-[clamp(2.5rem,5vw,4rem)] pb-10 sm:pb-12`}>
+          <div
+            className={`grid grid-cols-1 sm:grid-cols-2 ${gridCols} gap-8 sm:gap-10 lg:gap-[clamp(2rem,4vw,3rem)] py-8 sm:py-10 lg:py-[clamp(2.5rem,5vw,4rem)] pb-10 sm:pb-12`}
+          >
             {/* Brand Column */}
             <div className="grid gap-4 content-start">
               <Link href="/" className="inline-flex items-center gap-3 w-fit">
@@ -91,15 +113,15 @@ export default async function Footer() {
                   {newsletterTitle}
                 </h4>
                 <form className="grid grid-cols-[1fr_auto] gap-2 sm:gap-[0.55rem] mt-[0.2rem]">
-                  <input 
-                    type="email" 
+                  <input
+                    type="email"
                     name="email"
                     placeholder="Your email address"
                     aria-label="Email address"
                     required
                     className="w-full min-w-0 px-3 sm:px-4 py-2.5 sm:py-[0.72rem] border border-white/22 rounded-lg sm:rounded-xl bg-white/6 text-white text-sm sm:text-[0.9rem] placeholder:text-white/45 outline-none transition-all focus:border-pcm-green focus:bg-white/10"
                   />
-                  <button 
+                  <button
                     type="submit"
                     aria-label="Subscribe to newsletter"
                     className="inline-flex items-center gap-[0.45rem] px-3 sm:px-[1.15rem] py-2.5 sm:py-[0.72rem] rounded-lg sm:rounded-xl bg-pcm-green text-pcm-navy font-bold text-sm sm:text-[0.9rem] transition-all hover:bg-pcm-green-500 hover:-translate-y-0.5"
@@ -115,23 +137,23 @@ export default async function Footer() {
 
               {/* Contact Info */}
               <div className="grid gap-2 sm:gap-[0.65rem] text-sm sm:text-[0.9rem]">
-                <a 
+                <a
                   href={mapUrl}
-                  target="_blank" 
+                  target="_blank"
                   rel="noopener"
                   className="inline-flex items-start gap-2 text-white/70 transition-colors hover:text-pcm-green"
                 >
                   <MapPin className="w-4 h-4 mt-[0.15rem] text-pcm-green shrink-0" />
                   <span>{address}</span>
                 </a>
-                <a 
-                  href={`tel:${phone.replace(/[^0-9]/g, '')}`}
+                <a
+                  href={`tel:${phone.replace(/[^0-9]/g, "")}`}
                   className="inline-flex items-start gap-2 text-white/70 transition-colors hover:text-pcm-green"
                 >
                   <Phone className="w-4 h-4 mt-[0.15rem] text-pcm-green shrink-0" />
                   <span>{phone}</span>
                 </a>
-                <a 
+                <a
                   href={`mailto:${email}`}
                   className="inline-flex items-start gap-2 text-white/70 transition-colors hover:text-pcm-green"
                 >
@@ -228,13 +250,17 @@ export default async function Footer() {
                   <span className="text-white/60 font-mono text-[0.65rem] sm:text-[0.72rem] uppercase tracking-widest">
                     Sunday – Friday
                   </span>
-                  <b className="text-white font-semibold text-xs sm:text-sm">{weekdaysHours}</b>
+                  <b className="text-white font-semibold text-xs sm:text-sm">
+                    {weekdaysHours}
+                  </b>
                 </div>
                 <div className="flex items-center justify-between gap-4 py-2 sm:py-[0.55rem]">
                   <span className="text-white/60 font-mono text-[0.65rem] sm:text-[0.72rem] uppercase tracking-widest">
                     Saturday
                   </span>
-                  <b className="text-white font-semibold text-xs sm:text-sm">{saturdayHours}</b>
+                  <b className="text-white font-semibold text-xs sm:text-sm">
+                    {saturdayHours}
+                  </b>
                 </div>
               </div>
 
@@ -244,7 +270,7 @@ export default async function Footer() {
                   {affiliationBadge}
                 </span>
                 <div className="text-xs sm:text-[0.78rem] text-white/55 leading-tight">
-                  {affiliationText.split('\n').map((line, i) => (
+                  {affiliationText.split("\n").map((line, i) => (
                     <span key={i}>
                       {line}
                       {i === 0 && <br />}
@@ -265,19 +291,25 @@ export default async function Footer() {
               © <CurrentYear /> {copyrightText}
             </span>
             <span className="inline-flex items-center gap-2">
-              <Link href="/terms" className="text-white/70 hover:text-pcm-green transition-colors">
+              <Link
+                href="/terms"
+                className="text-white/70 hover:text-pcm-green transition-colors"
+              >
                 Terms &amp; Services
               </Link>
               <span className="text-white/30">·</span>
-              <Link href="/privacy" className="text-white/70 hover:text-pcm-green transition-colors">
+              <Link
+                href="/privacy"
+                className="text-white/70 hover:text-pcm-green transition-colors"
+              >
                 Privacy Policy
               </Link>
             </span>
             <span className="text-white/50">
               Developed by{" "}
-              <a 
+              <a
                 href={developerUrl}
-                target="_blank" 
+                target="_blank"
                 rel="noopener"
                 className="text-white/70 hover:text-pcm-green transition-colors"
               >

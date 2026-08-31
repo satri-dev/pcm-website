@@ -1,5 +1,7 @@
+import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 import { getTopBarContact, updateTopBarContact } from "@/repositories/topbar.repository";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 import type { TopBarContactUpdateInput } from "@/types/topbar";
 
 export async function GET() {
@@ -20,6 +22,9 @@ export async function PUT(request: Request) {
     if (!contact) {
       return NextResponse.json({ error: "TopBar contact not found" }, { status: 404 });
     }
+    
+    // Invalidate cache
+    revalidateTag(CACHE_TAGS.topBarContact, "max");
     
     return NextResponse.json(contact);
   } catch (error) {
