@@ -25,7 +25,10 @@ import { getFaqPageSettings } from "@/repositories/faq-content.repository";
 import TickersManager from "../_components/tickers-manager";
 import { listTickers } from "@/repositories/ticker.repository";
 import TopBarManager from "../_components/topbar-manager";
-import { listAllTopBarLinks, getTopBarContact } from "@/repositories/topbar.repository";
+import {
+  listAllTopBarLinks,
+  getTopBarContact,
+} from "@/repositories/topbar.repository";
 import FooterManager from "../_components/footer-manager";
 import { getFooterSettings } from "@/repositories/footer.repository";
 
@@ -70,6 +73,17 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
 
   if (found.entry.slug === "downloads") {
     const settings = await getDownloadsPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content & CTA"
+        />
+        <DownloadsPageSettings initial={settings} />
+      </>
+    );
+  }
+
   if (found.entry.slug === "gallery") {
     const settings = await getGalleryPageSettings();
     return (
@@ -134,45 +148,6 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
           subtitle="Sections · Footer Content & Settings"
         />
         <FooterManager settings={settings} />
-      </>
-    );
-  }
-
-  if (found.kind === "page") {
-    const content = await getPageContentBySlug(found.entry.slug);
-    return (
-      <>
-        <PageHeader
-          title={found.entry.label}
-          subtitle="Pages · Copy & metadata"
-        />
-        <DownloadsPageSettings initial={settings} />
-      </>
-    );
-  }
-
-  if(found.entry.slug=== "faq"){
-    const settings = await getFaqPageSettings();
-    return (
-      <>
-        <PageHeader
-          title={found.entry.label}
-          subtitle="Pages · Copy & metadata"
-        />
-        <FaqPageSettings initial={settings} />
-      </>
-    );
-  }
-
-  if (found.entry.slug === "gallery") {
-    const settings = await getGalleryPageSettings();
-    return (
-      <>
-        <PageHeader
-          title={found.entry.label}
-          subtitle="Pages · Copy & metadata"
-        />
-        <GalleryPageSettings initial={settings} />
       </>
     );
   }
