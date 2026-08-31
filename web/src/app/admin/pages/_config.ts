@@ -57,11 +57,9 @@ export function findEntry(
 }
 
 // Maps an admin editor entry to the db content + public page it actually
-// drives. The "About" admin entry edits the same content that the public
-// Board of Directors page (/about/board) renders.
-const contentAliases: Record<string, string> = {
-  about: "about/board",
-};
+// drives. Kept empty for now — each editor entry edits the content for its
+// own slug (About edits "about", the board editor edits "about/board", etc.).
+const contentAliases: Record<string, string> = {};
 
 /** Resolve the content slug an admin editor entry should load and save. */
 export function resolveEntryContentSlug(entrySlug: string): string {
