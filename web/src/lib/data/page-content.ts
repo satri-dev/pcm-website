@@ -1,72 +1,55 @@
 // src/lib/data/page-content.ts
-// Server-side data access for static page copy (eyebrows, section titles,
-// paragraphs, checklists). Uses the Cache Components ISR model so these
-// pages — which change rarely — are served from cache instead of hitting
-// MongoDB on every request. Written data is invalidated from the admin API
-// via revalidateTag(page-content:slug).
+// Cached data functions for page_content collection
+import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
-import { CACHE_TAGS, pageContentTag } from "@/lib/cache-tags";
-import {
-  PageContent,
-  PageContentDocument,
-  PageContentSection,
-  PAGE_CONTENT_COLLECTION,
-} from "@/types/page-content";
-import { getDb } from "@/core/lib/db";
+import { getPageContentBySlug } from "@/repositories/page-content.repository";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
-export async function getPageCopy(slug: string): Promise<PageContent | null> {
+/**
+ * Get page content by slug with caching
+ * Cache invalidates only when this specific page's content is updated
+ */
+export async function getPageContent(slug: string) {
   "use cache";
   cacheLife("content");
-  cacheTag(CACHE_TAGS.pageContent, pageContentTag(slug));
-
-  const db = await getDb();
-  const doc = await db
-    .collection<PageContentDocument>(PAGE_CONTENT_COLLECTION)
-    .findOne({ slug });
-
-  if (!doc) return null;
-  return {
-    id: doc._id!.toString(),
-    slug: doc.slug,
-    label: doc.label,
-    hero: doc.hero,
-    sections: doc.sections ?? [],
-    updatedAt: doc.updatedAt.toISOString(),
-  };
+  cacheTag(CACHE_TAGS.pageContent(slug));
+  
+  return await getPageContentBySlug(slug);
 }
 
-// Look up a section by key with the DB copy taking priority and the
-// hardcoded value preserved as an offline/empty-database fallback.
-export function getSection(
-  content: PageContent | null,
-  key: string,
-  fallback: PageContentSection
-): PageContentSection {
-  return content?.sections.find((s) => s.key === key) ?? fallback;
+/**
+ * Alias for getPageContent - for backward compatibility
+ */
+export async function getPageCopy(slug: string) {
+  return await getPageContent(slug);
 }
 
-// Split multi-line textarea input back into separate paragraphs.
-export function fromParagraphBlob(text: string): string[] {
-  return text
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean);
-}
-
-// Join paragraphs into a single textarea value for editing.
-export function toParagraphBlob(paragraphs: string[] | undefined): string {
-  return (paragraphs ?? []).join("\n");
-}
-
-// Split one-per-line checklist input back into items.
-export function fromChecklistBlob(text: string): string[] {
-  return text
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean);
-}
-
-// Join checklist items into a single textarea value for editing.
-export function toChecklistBlob(checklist: string[] | undefined): string {
-  return (checklist ?? []).join("\n");
+/**
+ * Get a specific section from page content by section key
+ * @param pageSlugOrContent - Either a page slug string or PageContent object
+ * @param sectionKey - The key of the section to retrieve
+ * @param fallback - Optional fallback value if section not found
+ */
+export async function getSection(
+  pageSlugOrContent: string | any,
+  sectionKey: string,
+  fallback?: any
+) {
+  "use cache";
+  cacheLife("content");
+  
+  let content: any;
+  
+  // If it's a string, fetch the content; otherwise use the passed object
+  if (typeof pageSlugOrContent === 'string') {
+    cacheTag(CACHE_TAGS.pageContent(pageSlugOrContent));
+    content = await getPageContentBySlug(pageSlugOrContent);
+  } else {
+    content = pageSlugOrContent;
+  }
+  
+  if (!content?.content?.sections) return fallback || null;
+  
+  const section = (content.content.sections as any[]).find((s: any) => s.key === sectionKey);
+  return section || fallback || null;
 }

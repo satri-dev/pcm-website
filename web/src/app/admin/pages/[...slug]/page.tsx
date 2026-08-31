@@ -4,29 +4,29 @@ import { Wrench } from "lucide-react";
 
 import PageHeader from "../../_components/dashboard/page-header";
 import NavMenuManager from "../_components/nav-menu-manager";
-import GalleryPageSettings from "../_components/gallery-page-settings";
 import PageContentManager from "../_components/page-content-manager";
-import { findEntry } from "../_config";
+import { findEntry, resolveEntryContentSlug } from "../_config";
 import {
   ensureNavMenusReady,
   listNavMenu,
 } from "@/repositories/nav-menu.repository";
-import { getGalleryPageSettings } from "@/repositories/gallery-settings.repository";
 import {
   ensurePageContentsReady,
   getPageContentBySlug,
 } from "@/repositories/page-content.repository";
+import type { PageContent } from "@/types/page-content";
 import { connection } from "next/server";
 
 interface RouteCtx {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string | string[] }>;
 }
 
 export async function generateMetadata({
   params,
 }: RouteCtx): Promise<Metadata> {
   const { slug } = await params;
-  const found = findEntry(slug);
+  const slugString = Array.isArray(slug) ? slug.join("/") : slug;
+  const found = findEntry(slugString);
   return {
     title: found ? found.entry.label : "Not found",
     description: "Configure this section of the public website.",
@@ -36,9 +36,10 @@ export async function generateMetadata({
 
 export default async function PagesSectionPage({ params }: RouteCtx) {
   const { slug } = await params;
+  const slugString = Array.isArray(slug) ? slug.join("/") : slug;
   await connection();
 
-  const found = findEntry(slug);
+  const found = findEntry(slugString);
   if (!found) notFound();
 
   if (found.entry.slug === "navbar") {
@@ -46,59 +47,46 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
     const items = await listNavMenu();
     return (
       <>
-        <PageHeader
-          title={found.entry.label}
-          subtitle="Sections · Navbar menus"
-        />
+        <PageHeader title={found.entry.label} subtitle="Sections · Navbar menus" />
         <NavMenuManager initialData={items} />
       </>
     );
   }
 
-  if (found.entry.slug === "gallery") {
-    const settings = await getGalleryPageSettings();
-    return (
-      <>
-        <PageHeader
-          title={found.entry.label}
-          subtitle="Pages · Content & CTA"
-        />
-        <GalleryPageSettings initial={settings} />
-      </>
-    );
-  }
-
   if (found.kind === "page") {
-    await ensurePageContentsReady();
-    const content = await getPageContentBySlug(found.entry.slug);
+    const contentSlug = resolveEntryContentSlug(found.entry.slug);
+    let content: PageContent | null = null;
+    try {
+      await ensurePageContentsReady();
+      content = await getPageContentBySlug(contentSlug);
+    } catch {
+      content = null;
+    }
     return (
       <>
-        <PageHeader
-          title={found.entry.label}
-          subtitle="Pages · Copy & metadata"
-        />
-        <PageContentManager slug={found.entry.slug} initialContent={content} />
+        <PageHeader title={found.entry.label} subtitle="Pages · Copy & metadata" />
+        <PageContentManager slug={contentSlug} initialContent={content} />
       </>
     );
   }
 
   return (
     <>
-      <PageHeader title={found.entry.label} subtitle="Sections · Overview" />
+      <PageHeader
+        title={found.entry.label}
+        subtitle="Sections · Overview"
+      />
       <div className="admin-panel">
         <div className="admin-panel__body p-6">
           <div className="flex items-start gap-4">
-            <div
-              className="p-3 rounded-xl"
-              style={{ background: "rgba(255,255,255,0.08)" }}
-            >
+            <div className="p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.08)" }}>
               <Wrench size={22} />
             </div>
             <div>
-              <h3 className="m-0 text-lg font-bold text-(--admin-ink)">
+              <h3 className="m-0 text-lg font-bold text-[var(--admin-ink)]">
                 Under construction
               </h3>
-              <p className="mt-1 mb-3 text-[0.9rem] text-(--admin-muted)">
+              <p className="mt-1 mb-3 text-[0.9rem] text-[var(--admin-muted)]">
                 The editor for this {found.kind} will be wired up here
                 incrementally. The public version is live now at its current
                 path.

@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import FaqClient from "./FaqClient";
-import { faqItems } from "@/feature/faq/data/faq";
-// Caching is handled by cacheComponents in next.config.ts — no segment config needed.
+import { getFaqPageCopy } from "@/lib/data/faq-content";
+import { getPublicFaqs } from "@/lib/data/faqs";
+// FAQ copy and items are served through the Cache Components ISR model
+// (cacheLife/cacheTag in lib/data) - no segment config needed.
 
 export const metadata: Metadata = {
   title: "FAQ | Pokhara College of Management",
   description:
-    "Answers to the most common questions about PCM — programmes, admission requirements, scholarships, GPA calculation, campus life and contact details.",
+    "Answers to the most common questions about PCM - programmes, admission requirements, scholarships, GPA calculation, campus life and contact details.",
   keywords: [
     "PCM FAQ",
     "Pokhara College of Management admissions",
@@ -43,21 +45,32 @@ export const metadata: Metadata = {
   },
 };
 
-/* ── Schema.org FAQPage JSON-LD ── */
-const faqSchema = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: faqItems.map((item) => ({
-    "@type": "Question",
-    name: item.question,
-    acceptedAnswer: {
-      "@type": "Answer",
-      text: item.answer,
-    },
-  })),
-};
+function stripHtml(html: string): string {
+  return html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
-export default function FaqPage() {
+export default async function FaqPage() {
+  const [faqs, settings] = await Promise.all([
+    getPublicFaqs(),
+    getFaqPageCopy(),
+  ]);
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: stripHtml(item.answer),
+      },
+    })),
+  };
+
   return (
     <>
       <Script
@@ -65,7 +78,7 @@ export default function FaqPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <FaqClient />
+      <FaqClient faqs={faqs} settings={settings} />
     </>
   );
 }

@@ -74,14 +74,14 @@ function initials(name: string) {
   return (first + last).toUpperCase();
 }
 
-export default function ClubsClient({ content }: { content: PageContent | null }) {
+export default function ClubsClient({ content }: { content: any }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [clubs, setClubs] = useState<ClubApi[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const sec = (key: string): PageContentSection => {
-    const found = content?.sections.find((s) => s.key === key);
+    const found = content?.sections.find((s: any) => s.key === key);
     const merged: PageContentSection = { ...(FALLBACK[key] ?? {}), ...(found ?? {}) };
     for (const k of Object.keys(merged)) {
       if (merged[k as keyof PageContentSection] === undefined) {

@@ -18,17 +18,17 @@ export const metadata: Metadata = {
 
 export default async function FacilityPage() {
   const content = await getPageCopy("about/facility");
-  const hero = content?.hero ?? {
+  const hero = (content as any)?.hero ?? {
     title: "Campus & Facilities",
     subtitle: "Everything a student needs to learn, create and grow — all on one campus at Nadipur.",
   };
-  const campus = getSection(content, "campus", {
+  const campus = await getSection(content, "campus", {
     key: "campus",
     eyebrow: "Our campus",
     title: "Facilities designed around you",
     subtitle: "Modern classrooms, dedicated labs, a rich learning resource centre and space to play and unwind.",
   });
-  const designed = getSection(content, "designed", {
+  const designed = await getSection(content, "designed", {
     key: "designed",
     eyebrow: "Designed for learning",
     title: "A campus that feels like home",
@@ -42,7 +42,7 @@ export default async function FacilityPage() {
       "Safe, shaded outdoor spaces for breaks and sports",
     ],
   });
-  const cta = getSection(content, "cta", {
+  const cta = await getSection(content, "cta", {
     key: "cta",
     title: "See the campus for yourself",
     paragraphs: [

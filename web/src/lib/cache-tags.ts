@@ -4,14 +4,43 @@
 // reference these constants instead of duplicating string literals.
 
 export const CACHE_TAGS = {
+  // Navigation
   navMenu: "nav-menu",
-  pageContent: "page-content",
-  about: "about",
+  
+  // Programs
+  programsList: "programs-list",
+  program: (slug: string) => `program-${slug}`,
+  
+  // Page Content
+  pageContent: (slug: string) => `page-content-${slug}`,
+  
+  // FAQs
+  faqPage: "faq-page",
+  faqs: "faqs",
+  
+  // Homepage
   homepage: "homepage",
+  
+  // About
+  about: "about",
+  
+  // Gallery
+  galleryList: "gallery-list",
+  gallery: (id: string) => `gallery-${id}`,
+  
+  // News
+  newsList: "news-list",
+  news: (slug: string) => `news-${slug}`,
+  
+  // Notices
+  noticesList: "notices-list",
+  notice: (slug: string) => `notice-${slug}`,
+  
+  // Events
+  eventsList: "events-list",
+  event: (slug: string) => `event-${slug}`,
+  
+  // Results
+  resultsList: "results-list",
+  result: (slug: string) => `result-${slug}`,
 } as const;
-
-// Per-slug tag so an edit to one page only invalidates its own cache
-// entries, while the shared "page-content" tag covers bulk invalidation.
-export function pageContentTag(slug: string): string {
-  return `page-content:${slug}`;
-}

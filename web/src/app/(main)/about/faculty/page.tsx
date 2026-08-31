@@ -15,16 +15,16 @@ export const metadata: Metadata = {
 
 export default async function FacultyPage() {
   const content = await getPageCopy("about/faculty");
-  const hero = content?.hero ?? {
+  const hero = (content as any)?.hero ?? {
     title: "Staff & Faculty",
     subtitle: "The dedicated people behind PCM — qualified, experienced and genuinely invested in your success.",
   };
-  const statsSection = getSection(content, "stats", {
+  const statsSection = await getSection(content, "stats", {
     key: "stats",
     eyebrow: "By the numbers",
     title: "A legacy measured in outcomes",
   });
-  const cta = getSection(content, "cta", {
+  const cta = await getSection(content, "cta", {
     key: "cta",
     title: "Join a college that cares",
     paragraphs: [

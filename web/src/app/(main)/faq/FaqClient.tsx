@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, useMemo } from "react";
-import { faqItems, FAQ_CATEGORIES, type FaqCategory } from "@/feature/faq/data/faq";
+import type { PublicFaqItem } from "@/lib/data/faqs";
+import type { FaqPageSettings } from "@/lib/data/faq-content";
 import FaqList from "@/feature/faq/components/FaqList";
 import FaqStillHelp from "@/feature/faq/components/FaqStillHelp";
 import "./faq.css";
 
-/* ── SVG icons ── */
+/* SVG icons */
 const ChevronRight = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="m9 18 6-6-6-6" />
@@ -25,10 +26,23 @@ const ArrowRight = () => (
   </svg>
 );
 
-export default function FaqClient() {
+interface FaqClientProps {
+  faqs: PublicFaqItem[];
+  settings: FaqPageSettings;
+}
+
+export default function FaqClient({ faqs, settings }: FaqClientProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState("");
-  const [activeCategory, setActiveCategory] = useState<FaqCategory>("All");
+  const [activeCategory, setActiveCategory] = useState<string>("All");
+
+  const categories = useMemo(() => {
+    const seen = new Set<string>();
+    for (const item of faqs) {
+      if (item.category) seen.add(item.category);
+    }
+    return { items: Array.from(seen), all: seen.size === 0 };
+  }, [faqs]);
 
   /* Reveal-on-scroll */
   useEffect(() => {
@@ -56,7 +70,7 @@ export default function FaqClient() {
   /* Filtered items */
   const filteredItems = useMemo(() => {
     const q = search.toLowerCase().trim();
-    return faqItems.filter((item) => {
+    return faqs.filter((item) => {
       const matchCat = activeCategory === "All" || item.category === activeCategory;
       const matchQ =
         !q ||
@@ -64,11 +78,11 @@ export default function FaqClient() {
         item.answer.toLowerCase().includes(q);
       return matchCat && matchQ;
     });
-  }, [search, activeCategory]);
+  }, [faqs, search, activeCategory]);
 
   return (
     <div ref={rootRef} className="pcm-faq">
-      {/* ── Page Hero ── */}
+      {/* Page Hero */}
       <section className="page-hero">
         <svg
           className="page-hero__peaks"
@@ -86,23 +100,18 @@ export default function FaqClient() {
             <ChevronRight />
             <span>FAQ</span>
           </nav>
-          <h1>Frequently Asked Questions</h1>
-          <p>
-            Quick answers to the questions we hear most — about programmes,
-            admissions, scholarships, campus life and more.
-          </p>
+          <h1>{settings.heroTitle}</h1>
+          <p>{settings.heroSubtitle}</p>
         </div>
       </section>
 
-      {/* ── FAQ Section ── */}
+      {/* FAQ Section */}
       <section className="section">
         <div className="wrap-wide">
           <div className="section-head reveal">
-            <span className="eyebrow">Got questions?</span>
-            <h2 className="section-title">We have answers</h2>
-            <p className="section-sub">
-              Use the search or filter by topic to find what you need.
-            </p>
+            <span className="eyebrow">{settings.eyebrow}</span>
+            <h2 className="section-title">{settings.title}</h2>
+            <p className="section-sub">{settings.subtitle}</p>
           </div>
 
           {/* Search */}
@@ -112,7 +121,7 @@ export default function FaqClient() {
             </span>
             <input
               type="search"
-              placeholder="Search questions…"
+              placeholder={settings.searchPlaceholder}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               aria-label="Search frequently asked questions"
@@ -125,7 +134,15 @@ export default function FaqClient() {
             role="toolbar"
             aria-label="Filter questions by category"
           >
-            {FAQ_CATEGORIES.map((cat) => (
+            <button
+              key="All"
+              className={`faq-filter-btn${activeCategory === "All" ? " active" : ""}`}
+              onClick={() => setActiveCategory("All")}
+              aria-pressed={activeCategory === "All"}
+            >
+              All
+            </button>
+            {categories.items.map((cat) => (
               <button
                 key={cat}
                 className={`faq-filter-btn${activeCategory === cat ? " active" : ""}`}
@@ -145,27 +162,24 @@ export default function FaqClient() {
         </div>
       </section>
 
-      {/* ── CTA band ── */}
+      {/* CTA band */}
       <section className="cta-section">
         <div className="wrap-wide">
           <div className="cta-band reveal">
             <div className="cta-band__inner">
               <div>
                 <span className="eyebrow" style={{ color: "var(--gold-400)" }}>
-                  Enter to Learn — Go Forth to Serve
+                  {settings.ctaEyebrow}
                 </span>
-                <h2>Ready to join PCM?</h2>
-                <p>
-                  Applications for the 2083 intake are open. Take the first step
-                  towards your future today.
-                </p>
+                <h2>{settings.ctaTitle}</h2>
+                <p>{settings.ctaText}</p>
               </div>
               <div className="cta-band__actions">
-                <Link className="faq-btn faq-btn-gold faq-btn-lg" href="/admission">
-                  Apply Now <ArrowRight />
+                <Link className="faq-btn faq-btn-gold faq-btn-lg" href={settings.ctaPrimaryHref}>
+                  {settings.ctaPrimaryLabel} <ArrowRight />
                 </Link>
-                <Link className="faq-btn faq-btn-ghost-dark faq-btn-lg" href="/contact">
-                  Contact Us
+                <Link className="faq-btn faq-btn-ghost-dark faq-btn-lg" href={settings.ctaSecondaryHref}>
+                  {settings.ctaSecondaryLabel}
                 </Link>
               </div>
             </div>

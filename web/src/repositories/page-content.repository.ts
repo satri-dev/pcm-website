@@ -1,10 +1,9 @@
 // src/repositories/page-content.repository.ts
-import { ObjectId, IndexDescription, UpdateFilter } from "mongodb";
+import { ObjectId } from "mongodb";
 import { getDb } from "@/core/lib/db";
 import {
   PageContent,
   PageContentDocument,
-  PageContentInput,
   PAGE_CONTENT_COLLECTION,
 } from "@/types/page-content";
 
@@ -12,52 +11,53 @@ function fromDocument(doc: PageContentDocument): PageContent {
   return {
     id: doc._id!.toString(),
     slug: doc.slug,
-    label: doc.label,
-    hero: doc.hero,
-    sections: doc.sections ?? [],
-    updatedAt: (doc.updatedAt ?? new Date()).toISOString(),
+    content: doc.content,
+    createdAt: doc.createdAt.toISOString(),
+    updatedAt: doc.updatedAt.toISOString(),
   };
 }
 
-function clean<T extends Record<string, unknown>>(obj: T): T {
-  for (const key of Object.keys(obj)) {
-    if (obj[key] === undefined) delete obj[key];
-  }
-  return obj;
-}
-
-export async function getPageContentBySlug(slug: string) {
+export async function getPageContentBySlug(slug: string): Promise<PageContent | null> {
   const db = await getDb();
   const doc = await db
     .collection<PageContentDocument>(PAGE_CONTENT_COLLECTION)
     .findOne({ slug });
+  
   return doc ? fromDocument(doc) : null;
 }
 
 export async function upsertPageContent(
   slug: string,
-  input: PageContentInput,
-  existing?: PageContent | null
-) {
+  content: Record<string, unknown>
+): Promise<PageContent> {
   const db = await getDb();
   const now = new Date();
+  
+  const doc = await db
+    .collection<PageContentDocument>(PAGE_CONTENT_COLLECTION)
+    .findOneAndUpdate(
+      { slug },
+      {
+        $set: {
+          content,
+          updatedAt: now,
+        },
+        $setOnInsert: {
+          slug,
+          createdAt: now,
+        },
+      },
+      {
+        upsert: true,
+        returnDocument: "after",
+      }
+    );
+  
+  return fromDocument(doc as PageContentDocument);
+}
 
-  const doc: Omit<PageContentDocument, "_id"> = clean({
-    slug,
-    label: input.label?.trim() || existing?.label || slug,
-    hero: input.hero ?? existing?.hero ?? { title: "", subtitle: "" },
-    sections: input.sections ?? existing?.sections ?? [],
-    updatedAt: now,
-  });
-
-  if (existing) {
-    const update: UpdateFilter<PageContentDocument> = { $set: doc };
-    await db
-      .collection<PageContentDocument>(PAGE_CONTENT_COLLECTION)
-      .updateOne({ _id: new ObjectId(existing.id) }, update);
-    return fromDocument({ ...doc, _id: new ObjectId(existing.id) });
-  }
-
+export async function deletePageContent(slug: string): Promise<boolean> {
+  const db = await getDb();
   const result = await db
     .collection<PageContentDocument>(PAGE_CONTENT_COLLECTION)
     .insertOne(doc as PageContentDocument);
@@ -328,6 +328,8 @@ const DEFAULT_CONTENT: Omit<PageContentDocument, "_id" | "updatedAt">[] = [
 
 export async function seedDefaultPageContents() {
   const db = await getDb();
+  await db.createCollection(PAGE_CONTENT_COLLECTION).catch(() => {});
+
   const col = db.collection<PageContentDocument>(PAGE_CONTENT_COLLECTION);
   const now = new Date();
 
@@ -349,24 +351,17 @@ export function ensurePageContentsReady() {
   return readyPromise;
 }
 
+// Ensure indexes
 let indexesReady: Promise<void> | null = null;
-export function ensurePageContentsIndexes() {
+export function ensurePageContentIndexes() {
   if (!indexesReady) {
     indexesReady = (async () => {
       const db = await getDb();
+      await db.createCollection(PAGE_CONTENT_COLLECTION).catch(() => {});
+
       const col = db.collection<PageContentDocument>(PAGE_CONTENT_COLLECTION);
-      const wanted: IndexDescription[] = [{ key: { slug: 1 }, name: "slug", unique: true }];
-
-      const existing = await col.listIndexes().toArray();
-      for (const idx of existing) {
-        if (idx.name === "_id_") continue;
-        const match = wanted.find((w) => w.name === idx.name);
-        if (!match || JSON.stringify(match.key) !== JSON.stringify(idx.key)) {
-          await col.dropIndex(idx.name).catch(() => {});
-        }
-      }
-
-      await col.createIndexes(wanted);
+      
+      await col.createIndex({ slug: 1 }, { unique: true, name: "uniq_slug" });
     })();
   }
   return indexesReady;

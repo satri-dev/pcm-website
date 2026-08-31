@@ -27,6 +27,7 @@ import { listResults } from "@/repositories/results.repository";
 import { listGallery } from "@/repositories/gallery.repository";
 import { listFacilities } from "@/repositories/facilities.repository";
 import { listBlogs } from "@/repositories/blog.repository";
+import AdmissionModal from "@/components/shared/AdmissionModal";
 
 function GallerySectionLoading() {
   return (
@@ -149,6 +150,7 @@ export default async function HomePage() {
 
   return (
     <>
+
       <BreadcrumbSchema />
       <EducationalOrganizationSchema />
       <HeroSlider slides={homepage.heroSlides} />
@@ -170,6 +172,7 @@ export default async function HomePage() {
       <BlogsSection blogs={blogsData.items} />
       <TestimonialsSection testimonials={homepage.testimonials} />
       <CTASection cta={homepage.cta} />
+      <AdmissionModal />
     </>
   );
 }
