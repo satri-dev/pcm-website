@@ -13,7 +13,7 @@ export default function ChatWidget() {
   const whatsappMessage = encodeURIComponent("Hello! I'd like to know more about admissions at PCM.");
 
   return (
-    <div className="fixed bottom-6 right-6 z-150 flex flex-col items-end gap-3">
+    <div className="fixed bottom-6 right-[6.4rem] z-150 flex flex-col items-end gap-3">
       {/* Chat Options - Show when open */}
       {isOpen && (
         <div className="flex flex-col gap-3 animate-in slide-in-from-bottom-2 fade-in duration-200">

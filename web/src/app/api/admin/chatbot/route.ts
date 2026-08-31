@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import * as z from "zod";
 import { requireApiSession } from "@/core/lib/api-guard";
 import {
@@ -6,6 +7,7 @@ import {
   createChatbotEntry,
   ensureChatbotIndexes,
 } from "@/repositories/chatbot.repository";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 import {
   CHATBOT_CHANNELS,
   ChatbotChannel,
@@ -56,5 +58,6 @@ export async function POST(req: NextRequest) {
     ...data,
     channel: data.channel as ChatbotChannel,
   });
+  revalidateTag(CACHE_TAGS.chatbot, "max");
   return NextResponse.json(created, { status: 201 });
 }
