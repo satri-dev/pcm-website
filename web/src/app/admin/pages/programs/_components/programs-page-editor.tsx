@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Save, ExternalLink, AlertCircle, ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import { Save, ExternalLink, AlertCircle, CheckCircle2, ChevronDown } from "lucide-react";
 import type { PageContent } from "@/types/page-content";
 import type { Program } from "@/types/programs";
 
@@ -12,6 +12,15 @@ interface ProgramsPageEditorProps {
   availablePrograms: Program[];
 }
 
+const SECTIONS = [
+  { id: "hero", title: "Hero Section", desc: "Hero title and subtitle" },
+  { id: "intro", title: "Intro Section", desc: "Section heading and body" },
+  { id: "featured", title: "Featured Programs", desc: "Select which programs to feature" },
+  { id: "comparison", title: "Comparison Table", desc: "Heading, column headers and program data" },
+  { id: "cta", title: "Call-to-Action", desc: "CTA heading, body and phone" },
+];
+const ALL_SECTION_IDS = SECTIONS.map((s) => s.id);
+
 export default function ProgramsPageEditor({
   initialContent,
   availablePrograms,
@@ -19,7 +28,25 @@ export default function ProgramsPageEditor({
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [expandedPrograms, setExpandedPrograms] = useState<Set<string>>(new Set());
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(ALL_SECTION_IDS));
+
+  const toggleSection = (id: string) => {
+    setExpandedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const allExpanded = expandedSections.size === SECTIONS.length;
+
+  const toggleAll = () => {
+    setExpandedSections(allExpanded ? new Set() : new Set(ALL_SECTION_IDS));
+  };
 
   // Initialize form state with defaults
   const content = initialContent?.content || {};
@@ -35,6 +62,7 @@ export default function ProgramsPageEditor({
     comparisonTable: {
       heading: (content.comparisonTable as any)?.heading || "Compare the programs",
       columns: (content.comparisonTable as any)?.columns || ["Program", "Focus", "Duration", "Credits", "Ideal for"],
+      rows: (content.comparisonTable as any)?.rows || {},
     },
     cta: {
       heading: (content.cta as any)?.heading || "Ready to choose your program?",
@@ -44,55 +72,6 @@ export default function ProgramsPageEditor({
     featuredProgramRefs: (content.featuredProgramRefs as string[]) || ["bcsit", "bba", "bba-finance"],
     programPages: (content.programPages as any) || {},
   });
-
-  const toggleProgram = (slug: string) => {
-    setExpandedPrograms((prev) => {
-      const next = new Set(prev);
-      if (next.has(slug)) {
-        next.delete(slug);
-      } else {
-        next.add(slug);
-      }
-      return next;
-    });
-  };
-
-  const updateProgramPageField = (slug: string, path: string[], value: any) => {
-    setFormData((prev) => {
-      const programPages = { ...prev.programPages };
-      if (!programPages[slug]) {
-        programPages[slug] = {};
-      }
-      
-      let current: any = programPages[slug];
-      for (let i = 0; i < path.length - 1; i++) {
-        if (!current[path[i]]) {
-          current[path[i]] = {};
-        }
-        current = current[path[i]];
-      }
-      current[path[path.length - 1]] = value;
-      
-      return { ...prev, programPages };
-    });
-  };
-
-  const addGrowthItem = (slug: string) => {
-    const current = formData.programPages[slug]?.growthSection?.items || [];
-    updateProgramPageField(slug, ["growthSection", "items"], [
-      ...current,
-      { title: "", description: "" },
-    ]);
-  };
-
-  const removeGrowthItem = (slug: string, index: number) => {
-    const current = formData.programPages[slug]?.growthSection?.items || [];
-    updateProgramPageField(
-      slug,
-      ["growthSection", "items"],
-      current.filter((_: any, i: number) => i !== index)
-    );
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,6 +109,40 @@ export default function ProgramsPageEditor({
         columns: newColumns,
       },
     });
+  };
+
+  const handleCompareRowChange = (slug: string, field: string, value: string) => {
+    setFormData((prev) => {
+      const rows = { ...(prev.comparisonTable.rows || {}) };
+      rows[slug] = { ...(rows[slug] || {}), [field]: value };
+      return {
+        ...prev,
+        comparisonTable: { ...prev.comparisonTable, rows },
+      };
+    });
+  };
+
+  const focusMap: Record<string, { focus: string; idealFor: string }> = {
+    bba: { focus: "General management & leadership", idealFor: "Future managers & entrepreneurs" },
+    "bba-finance": { focus: "Finance, investment & banking", idealFor: "Analysts & finance professionals" },
+    bcsit: { focus: "IT + business management", idealFor: "Developers, data & IT specialists" },
+  };
+
+  const stripHtml = (html?: string) =>
+    (html || "").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
+
+  // Resolve the effective value shown for a compare cell (override first, then derived)
+  const compareCell = (p: Program, field: "focus" | "duration" | "credits" | "idealFor") => {
+    const override = formData.comparisonTable.rows?.[p.slug]?.[field];
+    if (override && override.trim() !== "") return override;
+    const mapped = focusMap[p.slug] || { focus: p.intro || "", idealFor: "" };
+    switch (field) {
+      case "focus": return stripHtml(mapped.focus);
+      case "duration": return p.duration;
+      case "credits": return String(p.creditHours);
+      case "idealFor": return mapped.idealFor;
+      default: return "";
+    }
   };
 
   const toggleFeaturedProgram = (slug: string) => {
@@ -181,13 +194,33 @@ export default function ProgramsPageEditor({
 
         <h2 className="text-xl font-bold mb-4">Programs Listing Page</h2>
 
+        <div className="pp-toolbar" style={{ marginBottom: "1rem" }}>
+          <span className="pp-toolbar__stat">
+            <CheckCircle2 size={15} />
+            {expandedSections.size} of {SECTIONS.length} sections expanded
+          </span>
+          <button
+            type="button"
+            className="admin-btn admin-btn--sm ml-auto"
+            onClick={toggleAll}
+          >
+            {allExpanded ? "Collapse all" : "Expand all"}
+          </button>
+        </div>
+
         {/* Hero Section - EDITABLE */}
-        <div className="admin-panel" style={{ marginBottom: "1.5rem" }}>
-          <div className="admin-panel__head">
-            <h2 className="admin-panel__title">Hero Section</h2>
+        <section className={`pp-section ${expandedSections.has("hero") ? "is-expanded" : ""}`}>
+          <button type="button" className="pp-section__toggle" aria-expanded={expandedSections.has("hero")} onClick={() => toggleSection("hero")}>
+            <span className="pp-section__num">1</span>
+            <span className="pp-section__text">
+              <span className="pp-section__title">Hero Section</span>
+              <span className="pp-section__desc">Hero title and subtitle</span>
+            </span>
             <span className="badge badge--green">Editable</span>
-          </div>
-          <div className="admin-panel__body">
+            <span className="pp-section__chevron"><ChevronDown size={18} /></span>
+          </button>
+          {expandedSections.has("hero") && (
+          <div className="pp-section__body">
             <div className="form-grid">
               <div className="field field--full">
                 <label htmlFor="hero-title">Hero Title</label>
@@ -221,15 +254,22 @@ export default function ProgramsPageEditor({
               </div>
             </div>
           </div>
-        </div>
+          )}
+        </section>
 
         {/* Intro Section - EDITABLE */}
-        <div className="admin-panel" style={{ marginBottom: "1.5rem" }}>
-          <div className="admin-panel__head">
-            <h2 className="admin-panel__title">Intro Section</h2>
+        <section className={`pp-section ${expandedSections.has("intro") ? "is-expanded" : ""}`}>
+          <button type="button" className="pp-section__toggle" aria-expanded={expandedSections.has("intro")} onClick={() => toggleSection("intro")}>
+            <span className="pp-section__num">2</span>
+            <span className="pp-section__text">
+              <span className="pp-section__title">Intro Section</span>
+              <span className="pp-section__desc">Section heading and body</span>
+            </span>
             <span className="badge badge--green">Editable</span>
-          </div>
-          <div className="admin-panel__body">
+            <span className="pp-section__chevron"><ChevronDown size={18} /></span>
+          </button>
+          {expandedSections.has("intro") && (
+          <div className="pp-section__body">
             <div className="form-grid">
               <div className="field field--full">
                 <label htmlFor="intro-heading">Section Heading</label>
@@ -263,15 +303,22 @@ export default function ProgramsPageEditor({
               </div>
             </div>
           </div>
-        </div>
+          )}
+        </section>
 
         {/* Featured Programs - EDITABLE (selection only) */}
-        <div className="admin-panel" style={{ marginBottom: "1.5rem" }}>
-          <div className="admin-panel__head">
-            <h2 className="admin-panel__title">Featured Programs</h2>
+        <section className={`pp-section ${expandedSections.has("featured") ? "is-expanded" : ""}`}>
+          <button type="button" className="pp-section__toggle" aria-expanded={expandedSections.has("featured")} onClick={() => toggleSection("featured")}>
+            <span className="pp-section__num">3</span>
+            <span className="pp-section__text">
+              <span className="pp-section__title">Featured Programs</span>
+              <span className="pp-section__desc">Select which programs to feature</span>
+            </span>
             <span className="badge badge--green">Editable</span>
-          </div>
-          <div className="admin-panel__body">
+            <span className="pp-section__chevron"><ChevronDown size={18} /></span>
+          </button>
+          {expandedSections.has("featured") && (
+          <div className="pp-section__body">
             <p className="text-sm text-[var(--admin-muted)] mb-4">
               Select which programs to feature on the page. Program details are managed in the Programs section.
             </p>
@@ -334,17 +381,25 @@ export default function ProgramsPageEditor({
               </div>
             </div>
           </div>
-        </div>
+          )}
+        </section>
 
-        {/* Comparison Table - EDITABLE (labels only) */}
-        <div className="admin-panel" style={{ marginBottom: "1.5rem" }}>
-          <div className="admin-panel__head">
-            <h2 className="admin-panel__title">Comparison Table</h2>
+        {/* Comparison Table - EDITABLE */}
+        <section className={`pp-section ${expandedSections.has("comparison") ? "is-expanded" : ""}`}>
+          <button type="button" className="pp-section__toggle" aria-expanded={expandedSections.has("comparison")} onClick={() => toggleSection("comparison")}>
+            <span className="pp-section__num">4</span>
+            <span className="pp-section__text">
+              <span className="pp-section__title">Comparison Table</span>
+              <span className="pp-section__desc">Heading, column headers and program data</span>
+            </span>
             <span className="badge badge--green">Editable</span>
-          </div>
-          <div className="admin-panel__body">
+            <span className="pp-section__chevron"><ChevronDown size={18} /></span>
+          </button>
+          {expandedSections.has("comparison") && (
+          <div className="pp-section__body">
             <p className="text-sm text-[var(--admin-muted)] mb-4">
-              Edit table heading and column labels. The table data comes from program records.
+              Edit table heading, column labels, and the comparison data for each program. A blank data field
+              falls back to the value from the program record.
             </p>
             <div className="form-grid">
               <div className="field field--full">
@@ -381,16 +436,76 @@ export default function ProgramsPageEditor({
                 </div>
               </div>
             </div>
+
+            <div className="mt-6 pt-5 border-t border-border">
+              <h4 className="text-sm font-semibold mb-1">Program Data</h4>
+              <p className="text-sm text-[var(--admin-muted)] mb-4">
+                Program is read-only (from the system). Focus, Duration, Credits and Ideal for are editable —
+                leave a cell blank to keep the value from the program record.
+              </p>
+              {availablePrograms.length === 0 ? (
+                <p className="text-sm text-[var(--admin-muted)]">No programs in the system yet.</p>
+              ) : (
+                <div className="table-wrap" style={{ overflowX: "auto" }}>
+                  <table className="admin-table" style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr>
+                        {["Program", "Focus", "Duration", "Credits", "Ideal for"].map((label, idx) => (
+                          <th key={label}>{formData.comparisonTable.columns?.[idx] || label}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {availablePrograms.map((p) => (
+                        <tr key={p.slug}>
+                          <td className="whitespace-nowrap font-medium">{p.code}</td>
+                          {(["focus", "duration", "credits", "idealFor"] as const).map((field) => {
+                            const isNumeric = field === "duration" || field === "credits";
+                            return (
+                              <td key={field} style={{ textAlign: isNumeric ? "center" : "left" }}>
+                                <input
+                                  type="text"
+                                  value={formData.comparisonTable.rows?.[p.slug]?.[field] || ""}
+                                  onChange={(e) => handleCompareRowChange(p.slug, field, e.target.value)}
+                                  placeholder={compareCell(p, field)}
+                                  aria-label={`${p.name} ${field === "idealFor" ? "Ideal for" : field}`}
+                                  style={{
+                                    width: "100%",
+                                    minWidth: isNumeric ? 70 : 130,
+                                    textAlign: isNumeric ? "center" : "left",
+                                    border: "1px solid var(--admin-border, #d4d4d8)",
+                                    background: "var(--admin-surface, #fff)",
+                                    borderRadius: 6,
+                                    padding: "6px 8px",
+                                  }}
+                                />
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+          )}
+        </section>
 
         {/* CTA Section - EDITABLE */}
-        <div className="admin-panel" style={{ marginBottom: "1.5rem" }}>
-          <div className="admin-panel__head">
-            <h2 className="admin-panel__title">Call-to-Action Section</h2>
+        <section className={`pp-section ${expandedSections.has("cta") ? "is-expanded" : ""}`}>
+          <button type="button" className="pp-section__toggle" aria-expanded={expandedSections.has("cta")} onClick={() => toggleSection("cta")}>
+            <span className="pp-section__num">5</span>
+            <span className="pp-section__text">
+              <span className="pp-section__title">Call-to-Action</span>
+              <span className="pp-section__desc">CTA heading, body and phone</span>
+            </span>
             <span className="badge badge--green">Editable</span>
-          </div>
-          <div className="admin-panel__body">
+            <span className="pp-section__chevron"><ChevronDown size={18} /></span>
+          </button>
+          {expandedSections.has("cta") && (
+          <div className="pp-section__body">
             <div className="form-grid">
               <div className="field field--full">
                 <label htmlFor="cta-heading">CTA Heading</label>
@@ -439,170 +554,8 @@ export default function ProgramsPageEditor({
               </div>
             </div>
           </div>
-        </div>
-
-        <h2 className="text-xl font-bold mb-4 mt-8">Individual Program Pages</h2>
-
-        {/* Per-Program Collapsible Sections */}
-        {availablePrograms.map((program) => {
-          const isExpanded = expandedPrograms.has(program.slug);
-          const programPage = formData.programPages[program.slug] || {};
-          
-          return (
-            <div key={program.slug} className="admin-panel" style={{ marginBottom: "1rem" }}>
-              <div 
-                className="admin-panel__head cursor-pointer hover:bg-gray-50 transition-colors"
-                onClick={() => toggleProgram(program.slug)}
-              >
-                <div className="flex items-center gap-3">
-                  {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                  <h3 className="admin-panel__title">{program.name} ({program.code})</h3>
-                </div>
-                <span className="badge badge--blue">/programs/{program.slug}</span>
-              </div>
-              
-              {isExpanded && (
-                <div className="admin-panel__body">
-                  {/* Hero Tagline */}
-                  <div className="field field--full mb-4">
-                    <label>Hero Tagline</label>
-                    <input
-                      type="text"
-                      value={programPage.hero?.tagline || ""}
-                      onChange={(e) => updateProgramPageField(program.slug, ["hero", "tagline"], e.target.value)}
-                      placeholder="e.g., Design your career in business leadership"
-                    />
-                  </div>
-
-                  {/* Overview Section */}
-                  <h4 className="font-semibold mb-2">Overview Section</h4>
-                  <div className="field field--full mb-2">
-                    <label>Overview Title</label>
-                    <input
-                      type="text"
-                      value={programPage.overview?.title || ""}
-                      onChange={(e) => updateProgramPageField(program.slug, ["overview", "title"], e.target.value)}
-                      placeholder="Program Overview"
-                    />
-                  </div>
-                  <div className="field field--full mb-4">
-                    <label>Overview Body (one paragraph per line)</label>
-                    <textarea
-                      rows={4}
-                      value={(programPage.overview?.body || []).join("\n")}
-                      onChange={(e) => updateProgramPageField(program.slug, ["overview", "body"], e.target.value.split("\n"))}
-                      placeholder="Enter each paragraph on a new line..."
-                    />
-                  </div>
-
-                  {/* Growth Section */}
-                  <h4 className="font-semibold mb-2">Growth Section (e.g., "How BBA students grow at PCM")</h4>
-                  <div className="field field--full mb-2">
-                    <label>Growth Section Title</label>
-                    <input
-                      type="text"
-                      value={programPage.growthSection?.title || ""}
-                      onChange={(e) => updateProgramPageField(program.slug, ["growthSection", "title"], e.target.value)}
-                      placeholder="How BBA students grow at PCM"
-                    />
-                  </div>
-
-                  {(programPage.growthSection?.items || []).map((item: any, idx: number) => (
-                    <div key={idx} className="border rounded p-3 mb-3 bg-gray-50">
-                      <div className="flex items-center justify-between mb-2">
-                        <h5 className="text-sm font-semibold">Growth Item {idx + 1}</h5>
-                        <button
-                          type="button"
-                          onClick={() => removeGrowthItem(program.slug, idx)}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                      <div className="field field--full mb-2">
-                        <label>Title</label>
-                        <input
-                          type="text"
-                          value={item.title || ""}
-                          onChange={(e) => {
-                            const items = [...(programPage.growthSection?.items || [])];
-                            items[idx] = { ...items[idx], title: e.target.value };
-                            updateProgramPageField(program.slug, ["growthSection", "items"], items);
-                          }}
-                          placeholder="Industry exposure"
-                        />
-                      </div>
-                      <div className="field field--full">
-                        <label>Description</label>
-                        <textarea
-                          rows={2}
-                          value={item.description || ""}
-                          onChange={(e) => {
-                            const items = [...(programPage.growthSection?.items || [])];
-                            items[idx] = { ...items[idx], description: e.target.value };
-                            updateProgramPageField(program.slug, ["growthSection", "items"], items);
-                          }}
-                          placeholder="Guest lectures and workshops..."
-                        />
-                      </div>
-                    </div>
-                  ))}
-
-                  <button
-                    type="button"
-                    onClick={() => addGrowthItem(program.slug)}
-                    className="admin-btn admin-btn--sm mb-4"
-                  >
-                    <Plus size={16} />
-                    Add Growth Item
-                  </button>
-
-                  {/* Callout */}
-                  <h4 className="font-semibold mb-2">Callout Box</h4>
-                  <div className="field field--full mb-2">
-                    <label>Callout Title</label>
-                    <input
-                      type="text"
-                      value={programPage.callout?.title || ""}
-                      onChange={(e) => updateProgramPageField(program.slug, ["callout", "title"], e.target.value)}
-                      placeholder="Non-credit courses"
-                    />
-                  </div>
-                  <div className="field field--full mb-4">
-                    <label>Callout Body</label>
-                    <textarea
-                      rows={3}
-                      value={programPage.callout?.body || ""}
-                      onChange={(e) => updateProgramPageField(program.slug, ["callout", "body"], e.target.value)}
-                      placeholder="Every semester includes non-credit courses..."
-                    />
-                  </div>
-
-                  {/* CTA */}
-                  <h4 className="font-semibold mb-2">Page CTA</h4>
-                  <div className="field field--full mb-2">
-                    <label>CTA Title</label>
-                    <input
-                      type="text"
-                      value={programPage.cta?.title || ""}
-                      onChange={(e) => updateProgramPageField(program.slug, ["cta", "title"], e.target.value)}
-                      placeholder="Ready to apply for BBA?"
-                    />
-                  </div>
-                  <div className="field field--full">
-                    <label>CTA Body</label>
-                    <textarea
-                      rows={2}
-                      value={programPage.cta?.body || ""}
-                      onChange={(e) => updateProgramPageField(program.slug, ["cta", "body"], e.target.value)}
-                      placeholder="Apply online in minutes..."
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+          )}
+        </section>
 
         {/* Save Button */}
         <div className="flex items-center justify-end gap-3 mt-6">

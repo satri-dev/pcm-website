@@ -22,19 +22,14 @@ export default async function ProgramsPage() {
   const content = (pageContentData?.content || {}) as Partial<ProgramsPageContent>;
   const programs = programsData.items;
 
-  // Map featured program slugs to actual program objects
-  const featuredProgramSlugs = content.featuredProgramRefs || ["bcsit", "bba", "bba-finance"];
-  const featuredPrograms = featuredProgramSlugs
-    .map((slug) => programs.find((p) => p.slug === slug))
-    .filter((p): p is NonNullable<typeof p> => p !== undefined);
-
   return (
     <ProgramsClient
       hero={content.hero}
       intro={content.intro}
       comparisonTable={content.comparisonTable}
       cta={content.cta}
-      programs={featuredPrograms}
+      // Show all active programs in the system on the cards + comparison table
+      programs={programs}
     />
   );
 }

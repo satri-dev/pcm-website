@@ -48,6 +48,11 @@ const ArrowIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
 );
 
+// Strip HTML tags and collapse whitespace for plain-text display
+function stripHtml(html?: string) {
+  return (html || "").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
+}
+
 // Helper to map program to card format
 function mapProgramToCard(program: Program) {
   const slugMap: Record<string, { badge: string; image: string }> = {
@@ -63,9 +68,9 @@ function mapProgramToCard(program: Program) {
     alt: `${program.name} students at PCM`,
     href: `/programs/${program.slug}`,
     title: program.name,
-    summary: program.intro || "",
+    summary: stripHtml(program.intro) || "",
     duration: program.duration,
-    credits: "120 Cr", // Could be added to Program type
+    credits: `${program.creditHours} Cr`,
     seats: program.seats.toString(),
   };
 }
@@ -77,14 +82,29 @@ function mapProgramToComparisonRow(program: Program) {
     "bba-finance": { focus: "Finance, investment & banking", idealFor: "Analysts & finance professionals" },
     bcsit: { focus: "IT + business management", idealFor: "Developers, data & IT specialists" },
   };
-  const mapped = focusMap[program.slug] || { focus: program.intro || "", idealFor: "" };
+  const mapped = focusMap[program.slug] || { focus: stripHtml(program.intro), idealFor: "" };
   
   return {
     program: program.code,
     focus: mapped.focus,
     duration: program.duration,
-    credits: "120", // Could be added to Program type
+    credits: String(program.creditHours),
     idealFor: mapped.idealFor,
+  };
+}
+
+// Apply admin-editable per-program overrides, falling back to derived values for blanks
+function applyComparisonOverrides(
+  row: { program: string; focus: string; duration: string; credits: string; idealFor: string },
+  override?: { focus?: string; duration?: string; credits?: string; idealFor?: string }
+) {
+  if (!override) return row;
+  return {
+    ...row,
+    focus: override.focus?.trim() ? override.focus : row.focus,
+    duration: override.duration?.trim() ? override.duration : row.duration,
+    credits: override.credits?.trim() ? override.credits : row.credits,
+    idealFor: override.idealFor?.trim() ? override.idealFor : row.idealFor,
   };
 }
 
@@ -117,7 +137,9 @@ export default function ProgramsClient({
   };
   
   const cards = programs.map(mapProgramToCard);
-  const compareRows = programs.map(mapProgramToComparisonRow);
+  const compareRows = programs.map((program) =>
+    applyComparisonOverrides(mapProgramToComparisonRow(program), comparisonTable?.rows?.[program.slug])
+  );
 
   useEffect(() => {
     const root = rootRef.current;
