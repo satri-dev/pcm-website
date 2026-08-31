@@ -73,6 +73,15 @@ const ChevronRight = () => (
     <path d="m9 18 6-6-6-6" />
   </svg>
 );
+const stripHtml = (html?: string) =>
+  (html || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ")
+    .trim();
 
 export default async function ProgramPage({
   params,
@@ -127,13 +136,23 @@ export default async function ProgramPage({
     
     // Quick Facts
     quickFacts: {
+      // Values: page-content overrides take priority, then DB program, then hardcoded defaults
       level: programPage.quickFacts?.level || dbProgram?.level || hardcodedProgram?.quickFacts?.level || "Bachelor",
       duration: programPage.quickFacts?.duration || dbProgram?.duration || hardcodedProgram?.quickFacts?.duration || "4 Years",
-      semesters: programPage.quickFacts?.semesters || hardcodedProgram?.quickFacts?.semesters || 8,
-      creditHours: programPage.quickFacts?.creditHours || hardcodedProgram?.quickFacts?.creditHours || 0,
-      eligibility: programPage.quickFacts?.eligibility || hardcodedProgram?.quickFacts?.eligibility || "10+2",
-      affiliation: programPage.quickFacts?.affiliation || hardcodedProgram?.quickFacts?.affiliation || "Pokhara University",
-      labels: programPage.quickFacts?.labels,
+      semesters: programPage.quickFacts?.semesters || dbProgram?.semesters || hardcodedProgram?.quickFacts?.semesters || 8,
+      creditHours: programPage.quickFacts?.creditHours || dbProgram?.creditHours || hardcodedProgram?.quickFacts?.creditHours || 0,
+      eligibility: stripHtml(programPage.quickFacts?.eligibility || dbProgram?.eligibility || hardcodedProgram?.quickFacts?.eligibility) || "10+2",
+      affiliation: programPage.quickFacts?.affiliation || dbProgram?.affiliation || hardcodedProgram?.quickFacts?.affiliation || "Pokhara University",
+      // Labels come from page content (CMS-editable) with defaults
+      labels: {
+        heading: programPage.quickFacts?.labels?.heading || "Quick facts",
+        level: programPage.quickFacts?.labels?.level || "Level",
+        duration: programPage.quickFacts?.labels?.duration || "Duration",
+        semesters: programPage.quickFacts?.labels?.semesters || "Semesters",
+        creditHours: programPage.quickFacts?.labels?.creditHours || "Credit hours",
+        eligibility: programPage.quickFacts?.labels?.eligibility || "Eligibility",
+        affiliation: programPage.quickFacts?.labels?.affiliation || "Affiliation",
+      },
     },
     
     // Curriculum (from hardcoded for now)
@@ -162,9 +181,18 @@ export default async function ProgramPage({
     
     // CTA
     cta: {
-      title: programPage.cta?.title,
-      body: programPage.cta?.body,
-      buttons: programPage.cta?.buttons,
+      title: programPage.cta?.title || `Ready to apply for ${dbProgram?.code || slug.toUpperCase()}?`,
+      body: programPage.cta?.body || "Apply online in minutes, or reach out and we'll guide you through every step.",
+      buttons: {
+        primary: {
+          text: programPage.cta?.buttons?.primary?.text || `Apply for ${dbProgram?.code || slug.toUpperCase()}`,
+          url: programPage.cta?.buttons?.primary?.url || "/admission",
+        },
+        secondary: {
+          text: programPage.cta?.buttons?.secondary?.text || "Ask a question",
+          url: programPage.cta?.buttons?.secondary?.url || "/contact",
+        },
+      },
     },
   };
 
