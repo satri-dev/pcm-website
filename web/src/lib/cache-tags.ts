@@ -53,4 +53,7 @@ export const CACHE_TAGS = {
   
   // Chatbot
   chatbot: "chatbot",
+  // Footer
+  footerSettings: "footer-settings",
+  footerLinks: "footer-links",
 } as const;
