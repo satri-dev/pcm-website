@@ -70,7 +70,18 @@ export interface ProgramsPageContent {
   };
   comparisonTable: {
     heading: string;
-    columns: string[]; // e.g., ["Program", "Duration", "Seats", "Status"]
+    columns: string[]; // e.g., ["Program", "Focus", "Duration", "Credits", "Ideal for"]
+    // Per-program comparison cell overrides (keyed by program slug). Only programs
+    // in the system are shown/editable. A blank/absent field falls back to the
+    // value derived from the program record.
+    rows?: {
+      [slug: string]: {
+        focus?: string;
+        duration?: string;
+        credits?: string;
+        idealFor?: string;
+      };
+    };
   };
   cta: {
     heading: string;
@@ -169,7 +180,7 @@ export interface ProgramsPageContent {
 export const PROGRAMS_PAGE_SCHEMA = {
   hero: { title: "editable", subtitle: "editable" },
   intro: { heading: "editable", body: "editable" },
-  comparisonTable: { heading: "editable", columns: "editable" },
+  comparisonTable: { heading: "editable", columns: "editable", rows: "editable" },
   cta: { heading: "editable", body: "editable", phone: "editable" },
   featuredProgramRefs: "editable", // Admin can reorder/select which programs to feature
   programPages: "editable", // Per-program page content
