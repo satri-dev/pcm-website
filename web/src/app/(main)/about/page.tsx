@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import AboutClient from "./AboutClient";
 import { getAboutData } from "@/lib/data/about";
+import { getPageCopy } from "@/lib/data/page-content";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700", "800"],

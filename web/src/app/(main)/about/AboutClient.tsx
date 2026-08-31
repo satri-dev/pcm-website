@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import "./about.css";
-import type { PageContent, PageContentSection } from "@/types/page-content";
+import type { PageContentSection } from "@/types/page-content";
 
 // Fallback copy used only when the database has no content yet, so the page
 // never looks broken before an admin writes the About copy.
@@ -90,7 +90,16 @@ function CheckIcon() {
   );
 }
 
-export default function AboutClient({ content }: { content: any }) {
+type AboutClientContent = {
+  hero?: { title?: string; subtitle?: string };
+  sections?: PageContentSection[] | null;
+};
+
+export default function AboutClient({
+  content,
+}: {
+  content: AboutClientContent | null;
+}) {
   const rootRef = useRef<HTMLDivElement>(null);
 
   const heroTitle =
