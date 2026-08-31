@@ -17,11 +17,14 @@ const createSchema = z.object({
   code: z.string().max(50),
   level: z.enum(PROGRAM_LEVELS as unknown as [string, ...string[]]),
   duration: z.string().max(50),
+  semesters: z.number().int().min(1),
+  creditHours: z.number().int().min(0),
   seats: z.number().int().min(0),
   status: z.enum(PROGRAM_STATUSES as unknown as [string, ...string[]]),
   image: z.string().optional(),
   intro: z.string().max(5000),
   eligibility: z.string().max(5000),
+  affiliation: z.string().max(200),
 });
 
 export async function GET(request: NextRequest) {

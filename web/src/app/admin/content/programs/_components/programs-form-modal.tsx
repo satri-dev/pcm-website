@@ -29,11 +29,14 @@ const programSchema = z.object({
   code: z.string().min(1, "Code is required"),
   level: z.enum(["Bachelor", "Bachelor (Finance)", "Bachelor (IT)"]),
   duration: z.string().min(1, "Duration is required"),
+  semesters: z.number().int().min(1, "At least 1 semester required"),
+  creditHours: z.number().int().min(0, "Credit hours cannot be negative"),
   seats: z.number().int().min(1, "At least 1 seat required"),
   status: z.enum(["open", "closed"]),
   image: z.string().optional(),
   intro: z.string().min(1, "Intro is required"),
   eligibility: z.string().min(1, "Eligibility is required"),
+  affiliation: z.string().min(1, "Affiliation is required"),
 });
 
 type ProgramSchema = z.infer<typeof programSchema>;
@@ -72,11 +75,14 @@ export default function ProgramsFormModal({
       code: "",
       level: "Bachelor",
       duration: "",
+      semesters: 8,
+      creditHours: 0,
       seats: 48,
       status: "open",
       image: "",
       intro: "",
       eligibility: "",
+      affiliation: "",
     },
   });
 
@@ -102,11 +108,14 @@ export default function ProgramsFormModal({
         code: program.code,
         level: program.level,
         duration: program.duration,
+        semesters: program.semesters,
+        creditHours: program.creditHours,
         seats: program.seats,
         status: program.status,
         image: program.image || "",
         intro: program.intro,
         eligibility: program.eligibility,
+        affiliation: program.affiliation,
       });
       setImage(program.image || "");
       setIntroHtml(program.intro);
@@ -118,11 +127,14 @@ export default function ProgramsFormModal({
         code: "",
         level: "Bachelor",
         duration: "",
+        semesters: 8,
+        creditHours: 0,
         seats: 48,
         status: "open",
         image: "",
         intro: "",
         eligibility: "",
+        affiliation: "",
       });
       setImage("");
       setIntroHtml("");
@@ -143,11 +155,14 @@ export default function ProgramsFormModal({
       code: data.code,
       level: data.level as ProgramLevel,
       duration: data.duration,
+      semesters: data.semesters,
+      creditHours: data.creditHours,
       seats: data.seats,
       status: data.status as ProgramStatus,
       image: data.image || undefined,
       intro: data.intro,
       eligibility: data.eligibility,
+      affiliation: data.affiliation,
       views: program?.views || 0,
       createdAt: program?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -262,6 +277,36 @@ export default function ProgramsFormModal({
                 />
                 {errors.duration && (
                   <div className="field__err">{errors.duration.message}</div>
+                )}
+              </div>
+
+              <div className={fieldValue("semesters")}>
+                <label htmlFor="program-semesters">
+                  Semesters <span className="req">*</span>
+                </label>
+                <input
+                  id="program-semesters"
+                  type="number"
+                  {...register("semesters", { valueAsNumber: true })}
+                  min={1}
+                />
+                {errors.semesters && (
+                  <div className="field__err">{errors.semesters.message}</div>
+                )}
+              </div>
+
+              <div className={fieldValue("creditHours")}>
+                <label htmlFor="program-credit-hours">
+                  Credit Hours <span className="req">*</span>
+                </label>
+                <input
+                  id="program-credit-hours"
+                  type="number"
+                  {...register("creditHours", { valueAsNumber: true })}
+                  min={0}
+                />
+                {errors.creditHours && (
+                  <div className="field__err">{errors.creditHours.message}</div>
                 )}
               </div>
 
@@ -387,6 +432,25 @@ export default function ProgramsFormModal({
                   <div className="field__err">
                     {errors.eligibility.message}
                   </div>
+                )}
+              </div>
+
+              <div className="form-section">
+                <b>Affiliation</b>
+              </div>
+
+              <div className={fieldValue("affiliation")}>
+                <label htmlFor="program-affiliation">
+                  Affiliation <span className="req">*</span>
+                </label>
+                <input
+                  id="program-affiliation"
+                  type="text"
+                  {...register("affiliation")}
+                  placeholder="e.g. Pokhara University"
+                />
+                {errors.affiliation && (
+                  <div className="field__err">{errors.affiliation.message}</div>
                 )}
               </div>
             </div>
