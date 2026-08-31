@@ -185,10 +185,10 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
               <Wrench size={22} />
             </div>
             <div>
-              <h3 className="m-0 text-lg font-bold text-[var(--admin-ink)]">
+              <h3 className="m-0 text-lg font-bold text-(--admin-ink)">
                 Under construction
               </h3>
-              <p className="mt-1 mb-3 text-[0.9rem] text-[var(--admin-muted)]">
+              <p className="mt-1 mb-3 text-[0.9rem] text-(--admin-muted)">
                 The editor for this {found.kind} will be wired up here
                 incrementally. The public version is live now at its current
                 path.
