@@ -1,10 +1,13 @@
-// src/app/api/admin/pages/[slug]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
+import { z } from "zod";
+import { revalidatePath, revalidateTag } from "next/cache";
+import {
+  ensurePageContentsReady,
+  getPageContentBySlug,
+  upsertPageContent,
+} from "@/repositories/page-content.repository";
 import { requireApiSession } from "@/core/lib/api-guard";
-import { upsertPageContent, getPageContentBySlug } from "@/repositories/page-content.repository";
-import { filterEditableFields, PROGRAMS_PAGE_SCHEMA } from "@/types/page-content";
-import { CACHE_TAGS } from "@/lib/cache-tags";
+import { CACHE_TAGS, pageContentTag } from "@/lib/cache-tags";
 
 const sectionSchema = z.object({
   key: z.string().trim().min(1).max(200),
@@ -61,6 +64,7 @@ export async function GET(_request: NextRequest, ctx: RouteCtx) {
     console.error(`GET /api/admin/pages/${slugString}`, err);
     return errorResponse(err, "Failed to load page content");
   }
+<<<<<<< HEAD
 
   return NextResponse.json(content);
 }
@@ -81,12 +85,25 @@ export async function PUT(
 >>>>>>> 4759ccc (feat: enhance about page and board of directors section with dynamic metadata and content management):web/src/app/api/admin/pages/[...slug]/route.ts
   let body: unknown;
 
+=======
+}
+
+export async function PUT(request: NextRequest, ctx: RouteCtx) {
+  const guard = await requireApiSession(["admin", "editor"]);
+  if (!guard.ok) return guard.response;
+
+  const { slug } = await ctx.params;
+  const slugString = normalizeSlug(slug);
+
+  let body: unknown;
+>>>>>>> 4759ccc (feat: enhance about page and board of directors section with dynamic metadata and content management)
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
+<<<<<<< HEAD
   if (typeof body !== "object" || body === null) {
     return NextResponse.json(
       { error: "Request body must be an object" },
@@ -101,6 +118,16 @@ export async function PUT(
     filteredContent = filterEditableFields(body as Record<string, unknown>, PROGRAMS_PAGE_SCHEMA);
   }
 
+=======
+  const parsed = bodySchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Validation failed", issues: parsed.error.flatten() },
+      { status: 422 }
+    );
+  }
+
+>>>>>>> 4759ccc (feat: enhance about page and board of directors section with dynamic metadata and content management)
   try {
     await ensurePageContentsReady();
     const existing = await getPageContentBySlug(slugString);
@@ -113,6 +140,7 @@ export async function PUT(
     console.error(`PUT /api/admin/pages/${slugString}`, err);
     return errorResponse(err, "Failed to save page content");
   }
+<<<<<<< HEAD
 }
 
 export async function DELETE(
@@ -147,3 +175,6 @@ export async function DELETE(
     );
   }
 }
+=======
+}
+>>>>>>> 4759ccc (feat: enhance about page and board of directors section with dynamic metadata and content management)
