@@ -2,11 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import {
-  recruitmentPartners,
-  careerServices,
-  placementStats,
-} from "@/feature/placements/data/placements";
+import type { PlacementsPageSettings } from "@/types/placements-page-settings";
 import PartnerGrid from "@/feature/placements/components/PartnerGrid";
 import CareerServicesList from "@/feature/placements/components/CareerServicesList";
 import StatsBar from "@/feature/placements/components/StatsBar";
@@ -41,7 +37,11 @@ const ArrowRight = () => (
   </svg>
 );
 
-export default function PlacementsClient() {
+interface Props {
+  settings: PlacementsPageSettings;
+}
+
+export default function PlacementsClient({ settings }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
 
   /* Reveal-on-scroll */
@@ -96,12 +96,8 @@ export default function PlacementsClient() {
               <ChevronRight />
               <span>Placements &amp; Careers</span>
             </nav>
-            <h1>Placements &amp; Careers</h1>
-            <p>
-              PCM prepares graduates not just for exams but for careers — with
-              strong recruiter partnerships, career guidance and a 90%
-              placement rate across BBA, BBA-Finance and BCSIT programmes.
-            </p>
+            <h1>{settings.heroTitle}</h1>
+            <p>{settings.heroSubtitle}</p>
           </div>
         </section>
 
@@ -111,24 +107,17 @@ export default function PlacementsClient() {
             <div className="split reveal">
               {/* Left content */}
               <div className="split__content">
-                <span className="eyebrow">Career outcomes</span>
-                <h2 className="section-title">From classroom to career</h2>
-                <p>
-                  Our academic programmes are designed in close consultation
-                  with industry partners, ensuring graduates are equipped with
-                  practical skills and professional readiness from day one.
-                </p>
-                <p>
-                  Through campus recruitment drives, internship placements and
-                  career mentorship, PCM graduates consistently secure roles
-                  at Nepal&apos;s leading organisations shortly after
-                  completing their studies.
-                </p>
+                <span className="eyebrow">{settings.classEyebrow}</span>
+                <h2 className="section-title">{settings.classTitle}</h2>
+                {settings.classParagraphs.map((para, i) => (
+                  <p key={i}>{para}</p>
+                ))}
                 <div className="pill-row">
-                  <span className="pill">90% Placement Rate</span>
-                  <span className="pill">Campus Drives</span>
-                  <span className="pill">Internships</span>
-                  <span className="pill">Career Guidance</span>
+                  {settings.classPills.map((pill, i) => (
+                    <span key={i} className="pill">
+                      {pill}
+                    </span>
+                  ))}
                 </div>
               </div>
 
@@ -136,14 +125,18 @@ export default function PlacementsClient() {
               <div className="split__media">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/assets/img/about-graduation.jpg"
-                  alt="PCM graduation ceremony"
+                  src={settings.classImageSrc}
+                  alt={settings.classImageAlt}
                   width={800}
                   height={600}
                 />
                 <div className="est-badge">
-                  <span className="est-badge__value">90%</span>
-                  <span className="est-badge__label">Placement Rate</span>
+                  <span className="est-badge__value">
+                    {settings.badgeValue}
+                  </span>
+                  <span className="est-badge__label">
+                    {settings.badgeLabel}
+                  </span>
                 </div>
               </div>
             </div>
@@ -154,14 +147,11 @@ export default function PlacementsClient() {
         <section className="section tone-sky">
           <div className="wrap-wide">
             <div className="section-head center reveal">
-              <span className="eyebrow">Industry connect</span>
-              <h2 className="section-title">Recruitment partners</h2>
-              <p className="section-sub">
-                Our graduates are recruited by leading organisations across
-                three major sectors in Nepal.
-              </p>
+              <span className="eyebrow">{settings.partnersEyebrow}</span>
+              <h2 className="section-title">{settings.partnersTitle}</h2>
+              <p className="section-sub">{settings.partnersSubtitle}</p>
             </div>
-            <PartnerGrid partners={recruitmentPartners} />
+            <PartnerGrid partners={settings.partners} />
           </div>
         </section>
 
@@ -173,8 +163,8 @@ export default function PlacementsClient() {
               <div className="split__media">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/assets/img/about-2.jpg"
-                  alt="Career guidance session at PCM"
+                  src={settings.guidanceImageSrc}
+                  alt={settings.guidanceImageAlt}
                   width={800}
                   height={600}
                 />
@@ -182,21 +172,17 @@ export default function PlacementsClient() {
 
               {/* Right content */}
               <div className="split__content">
-                <span className="eyebrow">Student support</span>
-                <h2 className="section-title">Career guidance at every step</h2>
-                <p>
-                  Our dedicated placement cell works year-round to prepare
-                  students for the job market — from the first semester to
-                  final placement.
-                </p>
-                <CareerServicesList services={careerServices} />
+                <span className="eyebrow">{settings.guidanceEyebrow}</span>
+                <h2 className="section-title">{settings.guidanceTitle}</h2>
+                <p>{settings.guidanceParagraph}</p>
+                <CareerServicesList services={settings.services} />
               </div>
             </div>
           </div>
         </section>
 
         {/* ── Stats bar (full-width, no section wrapper) ── */}
-        <StatsBar stats={placementStats} />
+        <StatsBar stats={settings.stats} />
 
         {/* ── CTA band ── */}
         <section className="cta-section">
@@ -204,22 +190,27 @@ export default function PlacementsClient() {
             <div className="cta-band reveal">
               <div className="cta-band__inner">
                 <div>
-                  <span className="eyebrow" style={{ color: "var(--gold-400)" }}>
-                    Enter to Learn — Go Forth to Serve
+                  <span
+                    className="eyebrow"
+                    style={{ color: "var(--gold-400)" }}
+                  >
+                    {settings.ctaEyebrow}
                   </span>
-                  <h2>Your career starts at PCM</h2>
-                  <p>
-                    Join thousands of PCM alumni thriving across Nepal&apos;s
-                    banks, tech companies and enterprises. Applications for
-                    2083 are open.
-                  </p>
+                  <h2>{settings.ctaTitle}</h2>
+                  <p>{settings.ctaText}</p>
                 </div>
                 <div className="cta-band__actions">
-                  <Link className="pl-btn pl-btn-gold pl-btn-lg" href="/admission">
-                    Apply Now <ArrowRight />
+                  <Link
+                    className="pl-btn pl-btn-gold pl-btn-lg"
+                    href={settings.ctaPrimaryHref}
+                  >
+                    {settings.ctaPrimaryLabel} <ArrowRight />
                   </Link>
-                  <Link className="pl-btn pl-btn-ghost-dark pl-btn-lg" href="/programs">
-                    Explore Programs
+                  <Link
+                    className="pl-btn pl-btn-ghost-dark pl-btn-lg"
+                    href={settings.ctaSecondaryHref}
+                  >
+                    {settings.ctaSecondaryLabel}
                   </Link>
                 </div>
               </div>

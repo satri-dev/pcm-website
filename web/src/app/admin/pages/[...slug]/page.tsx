@@ -31,6 +31,8 @@ import {
 } from "@/repositories/topbar.repository";
 import FooterManager from "../_components/footer-manager";
 import { getFooterSettings } from "@/repositories/footer.repository";
+import PlacementsPageSettings from "../_components/placements-page-settings";
+import { getPlacementsPageSettings } from "@/repositories/placements-settings.repository";
 
 interface RouteCtx {
   params: Promise<{ slug: string | string[] }>;
@@ -148,6 +150,19 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
           subtitle="Sections · Footer Content & Settings"
         />
         <FooterManager settings={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "placements") {
+    const settings = await getPlacementsPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content & SEO"
+        />
+        <PlacementsPageSettings initial={settings} />
       </>
     );
   }

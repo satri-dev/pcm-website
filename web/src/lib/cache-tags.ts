@@ -56,6 +56,9 @@ export const CACHE_TAGS = {
   downloads: "downloads",
   downloadsSettings: "downloads-settings",
   
+  // Placements
+  placementsSettings: "placements-settings",
+
   // Chatbot
   chatbot: "chatbot",
 } as const;

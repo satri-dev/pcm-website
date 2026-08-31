@@ -29,6 +29,7 @@ export const mainPages: PagesSectionEntry[] = [
   { slug: "life", label: "Life at PCM", publicHref: "/life" },
   { slug: "news", label: "News", publicHref: "/news" },
   { slug: "notices", label: "Notices", publicHref: "/notices" },
+  { slug: "placements", label: "Placements", publicHref: "/placements", live: true },
   { slug: "programs", label: "Programs", publicHref: "/programs" },
   { slug: "results", label: "Results", publicHref: "/results" },
   { slug: "testimonials", label: "Testimonials", publicHref: "/testimonials" },
