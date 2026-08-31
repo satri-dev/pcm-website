@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import BlogsClient from "./BlogsClient";
+import { getPageCopy } from "@/lib/data/page-content";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700", "800"],
@@ -16,10 +17,11 @@ export const metadata: Metadata = {
   alternates: { canonical: "/blogs" },
 };
 
-export default function BlogsPage() {
+export default async function BlogsPage() {
+  const content = await getPageCopy("blogs");
   return (
     <div className={poppins.variable}>
-      <BlogsClient />
+      <BlogsClient content={content} />
     </div>
   );
 }

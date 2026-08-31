@@ -303,6 +303,41 @@ const DEFAULT_CONTENT: Omit<PageContentDocument, "_id" | "updatedAt">[] = [
     ],
   },
   {
+    slug: "blogs",
+    label: "Blogs",
+    hero: {
+      title: "PCM Blog & Articles",
+      subtitle:
+        "Ideas, insights and stories from the Pokhara College of Management community.",
+    },
+    sections: [
+      {
+        key: "intro",
+        eyebrow: "Articles",
+        title: "Latest articles",
+        subtitle:
+          "Career guidance, industry trends and practical advice for students and parents.",
+      },
+    ],
+  },
+  {
+    slug: "blog-student",
+    label: "Student Blogs",
+    hero: {
+      title: "Student Blogs",
+      subtitle: "Life at PCM, told by the people who live it — our students.",
+    },
+    sections: [
+      {
+        key: "intro",
+        eyebrow: "Voices from campus",
+        title: "Student stories",
+        subtitle:
+          "First-person accounts of campus life, internships, festivals and growth at PCM.",
+      },
+    ],
+  },
+  {
     slug: "clubs",
     label: "Student Clubs",
     hero: {

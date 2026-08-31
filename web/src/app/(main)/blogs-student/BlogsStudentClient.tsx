@@ -4,8 +4,27 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useMemo, useRef, useState } from "react";
 import { studentBlogsData } from "@/data/news";
+import type { PageContentSection } from "@/types/page-content";
 
 const PER_PAGE = 3;
+
+const FALLBACK_HERO = {
+  title: "Student Blogs",
+  subtitle: "Life at PCM, told by the people who live it — our students.",
+};
+
+const FALLBACK_INTRO: PageContentSection = {
+  key: "intro",
+  eyebrow: "Voices from campus",
+  title: "Student stories",
+  subtitle:
+    "First-person accounts of campus life, internships, festivals and growth at PCM.",
+};
+
+type BlogContent = {
+  hero?: { title?: string; subtitle?: string };
+  sections?: PageContentSection[] | null;
+};
 
 const categories = [
   { value: "all", label: "All categories" },
@@ -43,7 +62,7 @@ function BlogCardSvg({ color }: { color: string }) {
   );
 }
 
-function BlogsStudentInner() {
+function BlogsStudentInner({ content }: { content: BlogContent | null }) {
   const searchParams = useSearchParams();
   const gridRef = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState("");
@@ -52,6 +71,12 @@ function BlogsStudentInner() {
     const p = parseInt(searchParams.get("p") || "1", 10);
     return isNaN(p) || p < 1 ? 1 : p;
   });
+
+  const hero = {
+    title: content?.hero?.title?.trim() || FALLBACK_HERO.title,
+    subtitle: content?.hero?.subtitle?.trim() || FALLBACK_HERO.subtitle,
+  };
+  const intro = content?.sections?.[0] ?? FALLBACK_INTRO;
 
   const filteredItems = useMemo(() => {
     return studentBlogsData.filter((post) => {
@@ -105,8 +130,8 @@ function BlogsStudentInner() {
             <ChevRight className="w-3 h-3 opacity-50" />
             <span>Student Blogs</span>
           </nav>
-          <h1 className="text-[clamp(2rem,4vw,3rem)] font-semibold" style={{ color: '#ffffff' }}>Student Blogs</h1>
-          <p className="max-w-[56ch]" style={{ color: 'rgba(255,255,255,0.7)' }}>Life at PCM, told by the people who live it — our students.</p>
+          <h1 className="text-[clamp(2rem,4vw,3rem)] font-semibold" style={{ color: '#ffffff' }}>{hero.title}</h1>
+          <p className="max-w-[56ch]" style={{ color: 'rgba(255,255,255,0.7)' }}>{hero.subtitle}</p>
         </div>
       </section>
 
@@ -116,9 +141,9 @@ function BlogsStudentInner() {
           {/* Header row */}
           <div className="flex justify-between items-end gap-4 flex-wrap mb-[clamp(2rem,4vw,2.75rem)]">
             <div className="max-w-[640px] grid gap-3.5">
-              <span className="inline-flex items-center gap-2 text-[0.74rem] tracking-[0.2em] uppercase text-[#21409a]">Voices from campus</span>
-              <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] leading-tight text-[#16285b] font-semibold">Student stories</h2>
-              <p className="text-gray-500">First-person accounts of campus life, internships, festivals and growth at PCM.</p>
+              <span className="inline-flex items-center gap-2 text-[0.74rem] tracking-[0.2em] uppercase text-[#21409a]">{intro.eyebrow}</span>
+              <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] leading-tight text-[#16285b] font-semibold">{intro.title}</h2>
+              <p className="text-gray-500">{intro.subtitle}</p>
             </div>
             <Link className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg font-bold text-sm border border-gray-200 text-[#16285b] hover:border-[#21409a] hover:text-[#21409a] transition-colors" href="/blogs">
               All Articles <ArrowRight className="w-4 h-4" />
@@ -242,10 +267,10 @@ function BlogsStudentInner() {
   );
 }
 
-export default function BlogsStudentClient() {
+export default function BlogsStudentClient({ content }: { content: BlogContent | null }) {
   return (
     <Suspense>
-      <BlogsStudentInner />
+      <BlogsStudentInner content={content} />
     </Suspense>
   );
 }
