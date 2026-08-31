@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   deleteNews,
   getNewsById,
@@ -8,6 +9,7 @@ import {
   hardDeleteNews,
 } from "@/repositories/news.repository";
 import { requireApiSession } from "@/core/lib/api-guard";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 const seoSchema = z.object({
   title: z.string().max(60).optional(),
@@ -84,6 +86,8 @@ export async function PATCH(
         if (!restored) {
           return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
+        revalidateTag(CACHE_TAGS.newsList, "max");
+        revalidatePath("/news");
         return NextResponse.json({ ok: true });
       } catch {
         return NextResponse.json(
@@ -99,6 +103,8 @@ export async function PATCH(
         if (!deleted) {
           return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
+        revalidateTag(CACHE_TAGS.newsList, "max");
+        revalidatePath("/news");
         return NextResponse.json({ ok: true });
       } catch {
         return NextResponse.json(
@@ -132,6 +138,9 @@ export async function PATCH(
     if (!updated) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+    revalidateTag(CACHE_TAGS.newsList, "max");
+    revalidateTag(CACHE_TAGS.news(updated.slug), "max");
+    revalidatePath("/news");
     return NextResponse.json(updated);
   } catch (err) {
     if (isMongoError(err) && err.code === 11000) {
@@ -160,6 +169,8 @@ export async function DELETE(
     if (!deleted) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+    revalidateTag(CACHE_TAGS.newsList, "max");
+    revalidatePath("/news");
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json(

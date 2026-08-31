@@ -4,139 +4,17 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import Pagination from "../Pagination";
 import "../pcm-pages.css";
-
-const notices = [
-  {
-    cat: "notice",
-    tag: "Notice",
-    title: "Entrance Examination Schedule - 2083",
-    href: "/assets/pdf/entrance-schedule-2083.pdf",
-    text: "The Pokhara University entrance examination for the 2083 intake will be held on Ashar 29, 2083 at 8:00 AM. Admit cards are available at the college office.",
-    date: "Ashar 21, 2083",
-  },
-  {
-    cat: "admission",
-    tag: "Admission",
-    title: "Admission Form Deadline",
-    href: "/assets/pdf/admission-open-2083.pdf",
-    text: "Applications for BBA, BBA-Finance and BCSIT close on Ashar 26, 2083. Apply online or in person before the deadline.",
-    date: "Ashar 18, 2083",
-  },
-  {
-    cat: "scholarship",
-    tag: "Scholarship",
-    title: "Scholarship Applications Open",
-    href: "/assets/pdf/scholarship-open-2083.pdf",
-    text: "Merit and need-based scholarship applications for the 2083 intake are now open. Submit your supporting documents to the administration office.",
-    date: "Ashar 10, 2083",
-  },
-  {
-    cat: "results",
-    tag: "Results",
-    title: "Semester Result Publication",
-    href: "/assets/pdf/semester-result-publication.pdf",
-    text: "The results of the recent semester examinations have been published. Students can collect their transcript from the examination section.",
-    date: "Ashar 02, 2083",
-  },
-  {
-    cat: "events",
-    tag: "Events",
-    title: "Annual Fest 2083 Dates Announced",
-    href: "/assets/pdf/annual-fest-2083.pdf",
-    text: "The annual fest will take place in the third week of Shrawan. Club representatives should meet the faculty coordinator for planning.",
-    date: "Jestha 28, 2083",
-  },
-  {
-    cat: "notice",
-    tag: "Notice",
-    title: "Tuition Fee Structure for 2083",
-    href: "/assets/pdf/fee-structure-2083.pdf",
-    text: "The approved tuition and fee structure for the 2083 intake has been published. Students and guardians may collect a copy from the administration office.",
-    date: "Shrawan 15, 2083",
-  },
-  {
-    cat: "events",
-    tag: "Events",
-    title: "Annual Sports Day - 2083",
-    href: "/assets/pdf/sports-day-2083.pdf",
-    text: "PCM's annual sports day will be held on the college grounds. Students from all batches are encouraged to register their teams by the deadline.",
-    date: "Shrawan 12, 2083",
-  },
-  {
-    cat: "notice",
-    tag: "Notice",
-    title: "Library & Reading Room Timings",
-    href: "/assets/pdf/library-timings-2083.pdf",
-    text: "The library will remain open on weekdays and Saturday mornings during examination season. Revised timings are effective from this week.",
-    date: "Shrawan 08, 2083",
-  },
-  {
-    cat: "notice",
-    tag: "Notice",
-    title: "Campus Picnic & Educational Excursion",
-    href: "/assets/pdf/picnic-excursion-2083.pdf",
-    text: "The college will organise a combined picnic and educational excursion for all batches next month. Contribution details are available at the student desk.",
-    date: "Shrawan 05, 2083",
-  },
-  {
-    cat: "results",
-    tag: "Results",
-    title: "Mid-Term Examination Routine - 2083",
-    href: "/assets/pdf/mid-term-routine-2083.pdf",
-    text: "The mid-term examination routine for all programs has been finalised. Subject-wise dates are published and displayed on the notice board.",
-    date: "Ashar 30, 2083",
-  },
-  {
-    cat: "notice",
-    tag: "Notice",
-    title: "Convocation & Degree Distribution - 2081 Batch",
-    href: "/assets/pdf/convocation-2081.pdf",
-    text: "Graduates of the 2081 batch are invited to collect their degrees and transcripts. Dress code and schedule details are provided in the notice.",
-    date: "Ashar 25, 2083",
-  },
-];
-
-const popular = [
-  {
-    day: "21",
-    month: "Ashar",
-    title: "Entrance Examination Schedule - 2083",
-    href: "/assets/pdf/entrance-schedule-2083.pdf",
-    views: "3.2k views",
-  },
-  {
-    day: "18",
-    month: "Ashar",
-    title: "Admission Form Deadline",
-    href: "/assets/pdf/admission-open-2083.pdf",
-    views: "2.8k views",
-  },
-  {
-    day: "10",
-    month: "Ashar",
-    title: "Scholarship Applications Open",
-    href: "/assets/pdf/scholarship-open-2083.pdf",
-    views: "2.1k views",
-  },
-  {
-    day: "02",
-    month: "Ashar",
-    title: "Semester Result Publication",
-    href: "/assets/pdf/semester-result-publication.pdf",
-    views: "1.9k views",
-  },
-  {
-    day: "28",
-    month: "Jestha",
-    title: "Annual Fest 2083 Dates Announced",
-    href: "/assets/pdf/annual-fest-2083.pdf",
-    views: "1.3k views",
-  },
-];
+import type { NoticesPageSettings } from "@/types/notices-page-settings";
+import type { Notice as DbNotice } from "@/types/notices";
 
 const PER_PAGE = 10;
 
-export default function NoticesClient() {
+interface Props {
+  settings: NoticesPageSettings;
+  noticeItems: DbNotice[];
+}
+
+export default function NoticesClient({ settings, noticeItems }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [tab, setTab] = useState<"latest" | "popular">("latest");
   const [query, setQuery] = useState("");
@@ -166,10 +44,18 @@ export default function NoticesClient() {
     return () => io.disconnect();
   }, []);
 
-  const filtered = notices.filter((n) => {
-    const matchesCat = cat === "all" || n.cat === cat;
+  const popular = noticeItems.slice(0, 5).map(n => ({
+    day: n.date?.slice(8, 10) || "",
+    month: n.date?.slice(5, 7) || "",
+    title: n.title,
+    href: n.fileUrl || "#",
+    views: `${n.views ?? 0} views`,
+  }));
+
+  const filtered = noticeItems.filter((n) => {
+    const matchesCat = cat === "all" || n.category?.toLowerCase() === cat;
     const q = query.trim().toLowerCase();
-    const matchesQuery = !q || `${n.title} ${n.text}`.toLowerCase().includes(q);
+    const matchesQuery = !q || `${n.title} ${n.description || ""}`.toLowerCase().includes(q);
     return matchesCat && matchesQuery;
   });
 
@@ -213,10 +99,9 @@ export default function NoticesClient() {
               </svg>{" "}
               <span>Notices</span>
             </nav>
-            <h1>Notices</h1>
+            <h1>{settings.heroTitle}</h1>
             <p>
-              Official announcements from the administration — admissions,
-              exams, results and events.
+              {settings.heroSubtitle}
             </p>
           </div>
         </section>
@@ -224,8 +109,8 @@ export default function NoticesClient() {
         <section className="section">
           <div className="wrap-wide" style={{ maxWidth: 900 }}>
             <div className="section-head reveal">
-              <span className="eyebrow">Announcements</span>
-              <h2 className="section-title">Latest notices</h2>
+              <span className="eyebrow">{settings.sectionEyebrow}</span>
+              <h2 className="section-title">{settings.sectionTitle}</h2>
             </div>
             <div className="tabs reveal">
               <div className="tabs__list" role="tablist">
@@ -293,7 +178,7 @@ export default function NoticesClient() {
                     <option value="events">Events</option>
                   </select>
                   <span className="page-tools__count">
-                    {filtered.length} of {notices.length} shown
+                    {filtered.length} of {noticeItems.length} shown
                   </span>
                 </div>
 
@@ -305,11 +190,11 @@ export default function NoticesClient() {
                       style={{ transitionDelay: `${i * 50}ms` }}
                     >
                       <div className="notice-item__body">
-                        <span className="news-card__tag">{n.tag}</span>
+                        <span className="news-card__tag">{n.category || "Notice"}</span>
                         <h3>
-                          <a href={n.href}>{n.title}</a>
+                          <a href={n.fileUrl || "#"}>{n.title}</a>
                         </h3>
-                        <p>{n.text}</p>
+                        <p>{n.description || ""}</p>
                       </div>
                       <div className="notice-item__date">
                         <svg
@@ -367,9 +252,9 @@ export default function NoticesClient() {
                 textAlign: "center",
               }}
             >
-              <h3>Get notices by email</h3>
+              <h3>{settings.subscribeTitle}</h3>
               <p style={{ color: "var(--muted)", margin: ".5rem 0 1.2rem" }}>
-                Subscribe to receive admission and exam updates directly.
+                {settings.subscribeText}
               </p>
               <Link className="btn btn-primary" href="/contact">
                 Contact the Administration{" "}
@@ -394,17 +279,16 @@ export default function NoticesClient() {
               <div className="cta-band__inner">
                 <div>
                   <span className="eyebrow on-dark">
-                    Enter to Learn — Go Forth to Serve
+                    {settings.ctaEyebrow}
                   </span>
-                  <h2>A step towards your future</h2>
+                  <h2>{settings.ctaTitle}</h2>
                   <p>
-                    Applications for the 2083 intake are open across all three
-                    programs. Take the first step today.
+                    {settings.ctaText}
                   </p>
                 </div>
                 <div className="cta-band__actions">
-                  <Link className="btn btn-gold btn-lg" href="/admission">
-                    Apply Now{" "}
+                  <Link className="btn btn-gold btn-lg" href={settings.ctaPrimaryHref}>
+                    {settings.ctaPrimaryLabel}{" "}
                     <svg
                       viewBox="0 0 24 24"
                       fill="none"
@@ -418,9 +302,9 @@ export default function NoticesClient() {
                   </Link>
                   <Link
                     className="btn btn-ghost on-dark btn-lg"
-                    href="/programs"
+                    href={settings.ctaSecondaryHref}
                   >
-                    Explore Programs
+                    {settings.ctaSecondaryLabel}
                   </Link>
                 </div>
               </div>

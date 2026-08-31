@@ -2,129 +2,15 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import type { EventsPageSettings } from "@/types/events-page-settings";
+import type { EventItem as DbEventItem } from "@/types/events";
 import Pagination from "../Pagination";
 import "../pcm-pages.css";
 
-type EventItem = {
-  id: string;
-  title: string;
-  type: string;
-  date: string;
-  location: string;
-  seats: number;
-  desc: string;
-};
-
-const events: EventItem[] = [
-  {
-    id: "e1",
-    title: "Annual Fest 2083",
-    type: "Festival",
-    date: "2026-09-18",
-    location: "PCM Campus, Nadipur",
-    seats: 500,
-    desc: "The flagship celebration of the PCM year — music, dance, food stalls, inter-batch competitions and performances by students.",
-  },
-  {
-    id: "e2",
-    title: "Guest Lecture: Careers in Banking",
-    type: "Seminar",
-    date: "2026-08-22",
-    location: "Seminar Hall",
-    seats: 120,
-    desc: "Industry leaders from the banking sector share real-world insight on building a career in finance and banking.",
-  },
-  {
-    id: "e3",
-    title: "Coding Bootcamp for BCSIT",
-    type: "Workshop",
-    date: "2026-08-15",
-    location: "IT Lab",
-    seats: 60,
-    desc: "A hands-on weekend bootcamp covering modern web development — open to all BCSIT students.",
-  },
-  {
-    id: "e4",
-    title: "Annapurna Educational Tour",
-    type: "Tour",
-    date: "2026-09-05",
-    location: "Annapurna Region",
-    seats: 45,
-    desc: "Our annual field trip into the Annapurna region — combining outdoor learning, teamwork and unforgettable views.",
-  },
-  {
-    id: "e5",
-    title: "Inter-Batch Sports Tournament",
-    type: "Sports",
-    date: "2026-08-29",
-    location: "Sports Ground",
-    seats: 0,
-    desc: "Friendly competition across batches in football, volleyball and basketball. Come cheer your batch!",
-  },
-  {
-    id: "e6",
-    title: "Career Day 2083",
-    type: "Seminar",
-    date: "2026-10-10",
-    location: "Main Hall",
-    seats: 200,
-    desc: "Panel talks, resume reviews and one-on-one mentoring with professionals from banking, technology and consulting.",
-  },
-  {
-    id: "e7",
-    title: "Inter-College Debate Championship",
-    type: "Workshop",
-    date: "2026-09-26",
-    location: "Seminar Hall",
-    seats: 150,
-    desc: "Debaters from colleges across Pokhara battle it out on current affairs and campus topics.",
-  },
-  {
-    id: "e8",
-    title: "Model United Nations (MUN) Workshop",
-    type: "Workshop",
-    date: "2026-10-03",
-    location: "Seminar Hall",
-    seats: 80,
-    desc: "A beginner-friendly introduction to MUN procedure, committee rules and resolution drafting.",
-  },
-  {
-    id: "e9",
-    title: "Bhirkot Community Service Trip",
-    type: "Tour",
-    date: "2026-10-17",
-    location: "Bhirkot",
-    seats: 40,
-    desc: "A weekend of community service — teaching, cleaning drives and interaction with local students.",
-  },
-  {
-    id: "e10",
-    title: "Sports Week 2083",
-    type: "Sports",
-    date: "2026-11-01",
-    location: "Sports Ground",
-    seats: 0,
-    desc: "A full week of tournaments, prize distributions and house-level rivalry across every sport.",
-  },
-  {
-    id: "e11",
-    title: "FinTech Guest Lecture",
-    type: "Seminar",
-    date: "2026-11-14",
-    location: "Main Hall",
-    seats: 180,
-    desc: "Digital payments, neobanking and the future of finance — insights from industry practitioners.",
-  },
-  {
-    id: "e12",
-    title: "Magh Mini Fest",
-    type: "Festival",
-    date: "2026-12-25",
-    location: "PCM Campus, Nadipur",
-    seats: 300,
-    desc: "A mid-year celebration with cultural performances, stalls and inter-batch competitions to close the year.",
-  },
-];
+interface Props {
+  settings: EventsPageSettings;
+  eventItems: DbEventItem[];
+}
 
 const TYPE_ICONS: Record<string, string> = {
   Workshop: "\u{1F6E0}\uFE0F",
@@ -229,7 +115,7 @@ const ArrowRight = (
 
 const PER_PAGE = 10;
 
-export default function EventsClient() {
+export default function EventsClient({ settings, eventItems }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(1);
 
@@ -256,9 +142,9 @@ export default function EventsClient() {
     return () => io.disconnect();
   }, []);
 
-  const totalPages = Math.max(1, Math.ceil(events.length / PER_PAGE));
+  const totalPages = Math.max(1, Math.ceil(eventItems.length / PER_PAGE));
   const current = Math.min(page, totalPages);
-  const visible = events.slice((current - 1) * PER_PAGE, current * PER_PAGE);
+  const visible = eventItems.slice((current - 1) * PER_PAGE, current * PER_PAGE);
 
   return (
     <div ref={rootRef} className="pcm-page">
@@ -306,11 +192,8 @@ export default function EventsClient() {
                 <path d="m9 18 6-6-6-6" />
               </svg>
             </nav>
-            <h1>Events &amp; Workshops</h1>
-            <p>
-              Fests, seminars, workshops, tours and competitions - find your
-              next moment at PCM.
-            </p>
+            <h1>{settings.heroTitle}</h1>
+            <p>{settings.heroSubtitle}</p>
           </div>
         </section>
 
@@ -318,11 +201,10 @@ export default function EventsClient() {
           <div className="wrap-wide">
             <div className="section-head-row">
               <div className="section-head reveal">
-                <span className="eyebrow">Campus calendar</span>
-                <h2 className="section-title">What&apos;s happening at PCM</h2>
+                <span className="eyebrow">{settings.sectionEyebrow}</span>
+                <h2 className="section-title">{settings.sectionTitle}</h2>
                 <p className="section-sub">
-                  Upcoming events across the college. Follow along, or join us
-                  on campus.
+                  {settings.sectionSubtitle}
                 </p>
               </div>
               <Link className="btn btn-ghost reveal" href="/contact">
@@ -354,7 +236,7 @@ export default function EventsClient() {
                     </div>
                     <div className="event-card__body">
                       <h3>{e.title}</h3>
-                      <p className="event-card__desc">{e.desc}</p>
+                      <p className="event-card__desc">{e.description}</p>
                       <div className="event-card__meta">
                         <span>
                           {PinIcon}
@@ -394,23 +276,22 @@ export default function EventsClient() {
               <div className="cta-band__inner">
                 <div>
                   <span className="eyebrow on-dark">
-                    Enter to Learn — Go Forth to Serve
+                    {settings.ctaEyebrow}
                   </span>
-                  <h2>A step towards your future</h2>
+                  <h2>{settings.ctaTitle}</h2>
                   <p>
-                    Applications for the 2083 intake are open across all three
-                    programs. Take the first step today.
+                    {settings.ctaText}
                   </p>
                 </div>
                 <div className="cta-band__actions">
-                  <Link className="btn btn-gold btn-lg" href="/admission">
-                    Apply Now {ArrowRight}
+                  <Link className="btn btn-gold btn-lg" href={settings.ctaPrimaryHref}>
+                    {settings.ctaPrimaryLabel} {ArrowRight}
                   </Link>
                   <Link
                     className="btn btn-ghost on-dark btn-lg"
-                    href="/programs"
+                    href={settings.ctaSecondaryHref}
                   >
-                    Explore Programs
+                    {settings.ctaSecondaryLabel}
                   </Link>
                 </div>
               </div>

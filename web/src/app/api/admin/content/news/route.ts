@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   createNews,
   ensureNewsIndexes,
@@ -7,6 +8,7 @@ import {
 } from "@/repositories/news.repository";
 import { NEWS_CATEGORIES, NEWS_STATUSES } from "@/types/news";
 import { requireApiSession } from "@/core/lib/api-guard";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 const seoSchema = z.object({
   title: z.string().max(60).optional(),
@@ -80,6 +82,9 @@ export async function POST(request: NextRequest) {
 
   try {
     const created = await createNews(parsed.data);
+    revalidateTag(CACHE_TAGS.newsList, "max");
+    revalidateTag(CACHE_TAGS.news(created.slug), "max");
+    revalidatePath("/news");
     return NextResponse.json(created, { status: 201 });
   } catch (err) {
     if (

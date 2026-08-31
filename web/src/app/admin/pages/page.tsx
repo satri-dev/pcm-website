@@ -65,6 +65,7 @@ const pageIcons: Record<string, LucideIcon> = {
   "gpa-converter": Calculator,
   life: Heart,
   news: Newspaper,
+  "news-article": Newspaper,
   notices: ClipboardList,
   programs: Layers,
   results: BarChart3,

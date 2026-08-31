@@ -2,30 +2,69 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { newsData } from "@/data/news";
+import type { NewsPageSettings } from "@/types/news-page-settings";
+import type { News } from "@/types/news";
+import type { Notice } from "@/types/notices";
 import Pagination from "../Pagination";
 import "../pcm-pages.css"
 
-const featured = newsData[0];
-const stories = newsData.slice(1);
-const PER_PAGE = 10;
+interface Props {
+  settings: NewsPageSettings;
+  newsItems: News[];
+  notices: Notice[];
+}
 
-const officialNotices = [
-  { day: "06", month: "Jul", title: "Admissions open for BBA, BBA-Finance & BCSIT - 2083 intake", ago: "1 month ago" },
-  { day: "24", month: "Jun", title: "Entrance examination schedule published for all programs", ago: "2 months ago" },
-  { day: "10", month: "Jun", title: "Scholarship applications now being accepted for new students", ago: "2 months ago" },
-  { day: "28", month: "May", title: "Semester examination routine released by Pokhara University", ago: "3 months ago" },
+const MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
+
+function noticeDates(notices: Notice[], limit = 5) {
+  return notices.slice(0, limit).map((n) => {
+    const d = new Date(`${n.date}T00:00:00`);
+    return {
+      slug: n.slug,
+      title: n.title,
+      day: String(d.getDate()).padStart(2, "0"),
+      month: MONTHS[d.getMonth()] ?? "",
+      ts: d.getTime(),
+    };
+  });
+}
+
+function relativeTime(ts: number) {
+  const diffMs = Date.now() - ts;
+  const days = Math.floor(diffMs / 86400000);
+  if (days >= 365) return `${Math.floor(days / 365)} year${Math.floor(days / 365) > 1 ? "s" : ""} ago`;
+  if (days >= 30) return `${Math.floor(days / 30)} month${Math.floor(days / 30) > 1 ? "s" : ""} ago`;
+  if (days >= 1) return `${days} day${days > 1 ? "s" : ""} ago`;
+  return "today";
+}
 
 const ArrowRight = (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
 );
 
-export default function NewsClient() {
+export default function NewsClient({ settings, newsItems, notices }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(1);
   const [subscribed, setSubscribed] = useState(false);
   const [email, setEmail] = useState("");
+  const [agoMap, setAgoMap] = useState<Record<string, string>>({});
+
+  const featured = newsItems[0];
+  const stories = newsItems.slice(1);
+  const PER_PAGE = 10;
+  const sidebarNotices = noticeDates(notices);
+
+  useEffect(() => {
+    const map: Record<string, string> = {};
+    noticeDates(notices).forEach((n) => {
+      map[n.slug] = relativeTime(n.ts);
+    });
+    setAgoMap(map);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -61,8 +100,8 @@ export default function NewsClient() {
           <svg className="page-hero__peaks" viewBox="0 0 1440 400" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg"><path d="M0 400 L0 250 L300 120 L560 260 L820 90 L1120 240 L1440 120 L1440 400Z" fill="#4167C9" opacity=".2"/><path d="M0 400 L0 300 L360 200 L680 320 L980 210 L1280 300 L1440 240 L1440 400Z" fill="#14265A" opacity=".45"/></svg>
           <div className="wrap-wide page-hero__inner">
             <nav className="crumbs" aria-label="Breadcrumb"><Link href="/">Home</Link> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg> <span>News &amp; Notices</span></nav>
-            <h1>News &amp; Notices</h1>
-            <p>Achievements, events and official announcements from across the PCM campus.</p>
+            <h1>{settings.heroTitle}</h1>
+            <p>{settings.heroSubtitle}</p>
           </div>
         </section>
 
@@ -71,13 +110,16 @@ export default function NewsClient() {
             <Link className="card news-featured reveal" href={`/news/${featured.slug}`}>
               <div className="news-featured__media">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={featured.image} alt="BBA student Prabhat awarded entrepreneurship grant" loading="lazy" />
-                <span className="news-card__date"><b>24</b>Jul 2026</span>
+                <img src={featured.image || "/assets/img/news-default.jpg"} alt="BBA student Prabhat awarded entrepreneurship grant" loading="lazy" />
+                <span className="news-card__date"><b>{featured.publishedAt || ""}</b></span>
               </div>
               <div className="news-featured__body">
-                <span className="news-card__tag">Featured · Achievement</span>
+                <span className="news-card__tag">{settings.featuredEyebrow} · {featured.category || "News"}</span>
                 <h2>{featured.title}</h2>
-                <p>{featured.excerpt}</p>
+                <div
+                  className="prose prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{ __html: featured.excerpt }}
+                />
                 <span className="link-arrow">Read the full story {ArrowRight}</span>
               </div>
             </Link>
@@ -87,19 +129,22 @@ export default function NewsClient() {
         <section className="section tone-sky">
           <div className="wrap-wide with-aside">
             <div>
-              <div className="section-head reveal"><span className="eyebrow">Newsroom</span><h2 className="section-title">More stories</h2></div>
+              <div className="section-head reveal"><span className="eyebrow">{settings.storiesEyebrow}</span><h2 className="section-title">{settings.storiesTitle}</h2></div>
               <div className="grid g-2" style={{ marginTop: "1.8rem" }}>
                 {visible.map((s, i) => (
                   <article key={s.slug} className="card news-card reveal is-inview" style={{ transitionDelay: `${i * 70}ms` }}>
                     <Link href={`/news/${s.slug}`} className="news-card__media" aria-label={s.title}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={s.image} alt={s.title} loading="lazy" />
-                      <span className="news-card__date">{s.date}</span>
+                      <img src={s.image || "/assets/img/news-default.jpg"} alt={s.title} loading="lazy" />
+                      <span className="news-card__date">{s.publishedAt || ""}</span>
                     </Link>
                     <div className="news-card__body">
-                      <span className="news-card__tag">{s.tag}</span>
+                      <span className="news-card__tag">{s.category || "News"}</span>
                       <h3><Link href={`/news/${s.slug}`}>{s.title}</Link></h3>
-                      <p>{s.excerpt}</p>
+                      <div
+                        className="prose prose-sm max-w-none"
+                        dangerouslySetInnerHTML={{ __html: s.excerpt }}
+                      />
                       <div className="news-card__foot"><Link className="link-arrow" href={`/news/${s.slug}`}>Read story {ArrowRight}</Link></div>
                     </div>
                   </article>
@@ -110,20 +155,20 @@ export default function NewsClient() {
 
             <aside className="reveal">
               <div className="notice-list">
-                <div className="notice-list__head"><h3>Official Notices</h3></div>
-                {officialNotices.map((n) => (
-                  <div key={n.title} className="notice-item">
+                <div className="notice-list__head"><h3>{settings.sidebarNoticesTitle}</h3></div>
+                {sidebarNotices.map((n) => (
+                  <div key={n.slug + n.title} className="notice-item">
                     <div className="notice-item__cal"><b>{n.day}</b><span>{n.month}</span></div>
                     <div>
-                      <h4>{n.title}</h4>
-                      <small>{n.ago}</small>
+                      <Link href="/notices"><h4>{n.title}</h4></Link>
+                      <small>{agoMap[n.slug] || "recent"}</small>
                     </div>
                   </div>
                 ))}
               </div>
               <div className="aside-card" style={{ marginTop: "1.4rem", position: "static" }}>
-                <h3>Stay updated</h3>
-                <p style={{ color: "var(--muted)", fontSize: ".92rem" }}>Follow PCM on social media or subscribe to receive notices in your inbox.</p>
+                <h3>{settings.newsletterTitle}</h3>
+                <p style={{ color: "var(--muted)", fontSize: ".92rem" }}>{settings.newsletterText}</p>
                 <form style={{ marginTop: ".8rem" }} onSubmit={(e) => { e.preventDefault(); setSubscribed(true); setEmail(""); }}>
                   <div className={`form-success${subscribed ? " is-visible" : ""}`} style={{ padding: ".7rem 1rem", fontSize: ".85rem" }}>
                     Subscribed! Watch your inbox for updates.
@@ -143,13 +188,13 @@ export default function NewsClient() {
           <div className="cta-band reveal">
             <div className="cta-band__inner">
               <div>
-                <span className="eyebrow on-dark">Enter to Learn — Go Forth to Serve</span>
-                <h2>A step towards your future</h2>
-                <p>Applications for the 2083 intake are open across all three programs. Take the first step today.</p>
+                <span className="eyebrow on-dark">{settings.ctaEyebrow}</span>
+                <h2>{settings.ctaTitle}</h2>
+                <p>{settings.ctaText}</p>
               </div>
               <div className="cta-band__actions">
-                <Link className="btn btn-gold btn-lg" href="/admission">Apply Now {ArrowRight}</Link>
-                <Link className="btn btn-ghost on-dark btn-lg" href="/about">More Info</Link>
+                <Link className="btn btn-gold btn-lg" href={settings.ctaPrimaryHref}>{settings.ctaPrimaryLabel} {ArrowRight}</Link>
+                <Link className="btn btn-ghost on-dark btn-lg" href={settings.ctaSecondaryHref}>{settings.ctaSecondaryLabel}</Link>
               </div>
             </div>
           </div>

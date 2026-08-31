@@ -1,61 +1,107 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { newsData, getNewsBySlug } from "@/data/news";
+import { getPublishedNewsBySlugCached, getPublishedNews } from "@/lib/data/news";
+import { getNewsArticleSettingsCached } from "@/lib/data/news-article-settings";
 
-export function generateStaticParams() {
-  return newsData.map((n) => ({ slug: n.slug }));
+export async function generateStaticParams() {
+  const items = await getPublishedNews();
+  return items.map((n) => ({ slug: n.slug }));
 }
 
-export function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
-  return params.then(({ slug }) => {
-    const post = getNewsBySlug(slug);
-    if (!post) return {};
-    return { title: `${post.title} | PCM News`, description: post.excerpt };
-  });
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const post = await getPublishedNewsBySlugCached(slug);
+  const settings = await getNewsArticleSettingsCached();
+  if (!post) return {};
+  return {
+    title: post.seo?.title ||
+      `${post.title} ${settings.seoTitleSuffix.trim()}`.trim(),
+    description: post.seo?.description || post.excerpt,
+    keywords: post.seo?.keywords,
+  };
 }
 
 export default async function NewsDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const post = getNewsBySlug(slug);
+  const [post, settings, allNews] = await Promise.all([
+    getPublishedNewsBySlugCached(slug),
+    getNewsArticleSettingsCached(),
+    getPublishedNews(),
+  ]);
   if (!post) notFound();
+
+  const related = settings.showRelated
+    ? allNews.filter((n) => n.slug !== post.slug).slice(0, 3)
+    : [];
 
   return (
     <section className="py-[clamp(3rem,6vw,5rem)]">
       <div className="container max-w-[820px]">
         <nav className="font-mono text-[0.74rem] uppercase tracking-wide text-muted-foreground mb-4">
-          <Link href="/news" className="text-pcm-blue hover:underline">News</Link>
+          <Link href={settings.backToAllHref} className="text-pcm-blue hover:underline">
+            {settings.backToAllLabel}
+          </Link>
           <span className="mx-2">/</span>
-          <span>{post.tag}</span>
+          <span>{settings.breadcrumbLabel}</span>
         </nav>
 
         <span className="inline-block px-3 py-1 rounded-full bg-secondary border border-border text-pcm-blue font-mono text-[0.66rem] uppercase tracking-wide mb-3">
-          {post.tag}
+          {post.category}
         </span>
         <h1 className="text-[clamp(1.7rem,3.4vw,2.4rem)] font-display font-semibold text-pcm-navy">
           {post.title}
         </h1>
-        <p className="mt-2 font-mono text-sm text-muted-foreground">{post.date}</p>
+        <p className="mt-2 font-mono text-sm text-muted-foreground">
+          {settings.publishedLabel} {settings.publishedLabelPrefix} {post.publishedAt}
+          {post.author ? ` · ${settings.bylinePrefix} ${post.author}` : ""}
+        </p>
 
         <div className="relative aspect-[16/9] rounded-2xl overflow-hidden my-7 shadow-pcm-md">
-          <Image 
-            src={post.image} 
-            alt={post.title} 
-            fill 
+          <Image
+            src={post.image || "/assets/img/news-default.jpg"}
+            alt={post.title}
+            fill
             priority
             sizes="(max-width: 768px) 100vw, 820px"
-            className="object-cover" 
+            className="object-cover"
           />
         </div>
 
-        <article className="prose grid gap-4 max-w-none">
-          {post.body.map((para, i) => (
-            <p key={i} className="text-muted-foreground leading-relaxed max-w-[72ch]">
-              {para}
-            </p>
-          ))}
-        </article>
+        <div
+          className="prose prose-lg max-w-none [&_:where(p)]:text-muted-foreground [&_:where(p)]:leading-relaxed"
+          dangerouslySetInnerHTML={{ __html: post.content || post.excerpt }}
+        />
       </div>
+
+      {related.length > 0 && (
+        <div className="container max-w-[1100px] mt-16">
+          <h2 className="text-[clamp(1.3rem,2.4vw,1.7rem)] font-display font-semibold text-pcm-navy mb-6">
+            {settings.relatedTitle}
+          </h2>
+          <div className="grid gap-6 sm:grid-cols-3">
+            {related.map((s) => (
+              <Link key={s.slug} href={`/news/${s.slug}`} className="group">
+                <div className="relative aspect-[16/10] rounded-xl overflow-hidden mb-3">
+                  <Image
+                    src={s.image || "/assets/img/news-default.jpg"}
+                    alt={s.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
+                <span className="font-mono text-[0.66rem] uppercase tracking-wide text-pcm-blue">
+                  {s.category}
+                </span>
+                <h3 className="mt-1 text-[0.98rem] font-semibold text-pcm-navy group-hover:underline">
+                  {s.title}
+                </h3>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   );
 }

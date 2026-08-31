@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   createNotice,
   ensureNoticeIndexes,
@@ -7,6 +8,7 @@ import {
 } from "@/repositories/notices.repository";
 import { NOTICE_CATEGORIES, NOTICE_STATUSES } from "@/types/notices";
 import { requireApiSession } from "@/core/lib/api-guard";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 const createSchema = z.object({
   title: z.string().min(3).max(200),
@@ -77,6 +79,9 @@ export async function POST(request: NextRequest) {
 
   try {
     const created = await createNotice(parsed.data);
+    revalidateTag(CACHE_TAGS.noticesList, "max");
+    revalidateTag(CACHE_TAGS.notice(created.slug), "max");
+    revalidatePath("/notices");
     return NextResponse.json(created, { status: 201 });
   } catch (err) {
     if (
