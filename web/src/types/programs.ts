@@ -24,11 +24,14 @@ export interface Program {
   code: string;
   level: ProgramLevel;
   duration: string;
+  semesters: number;
+  creditHours: number;
   seats: number;
   status: ProgramStatus;
   image?: string;
   intro: string;
   eligibility: string;
+  affiliation: string;
   views: number;
   createdAt: string;
   updatedAt: string;
@@ -43,11 +46,14 @@ export interface ProgramDocument {
   code: string;
   level: ProgramLevel;
   duration: string;
+  semesters: number;
+  creditHours: number;
   seats: number;
   status: ProgramStatus;
   image?: string;
   intro: string;
   eligibility: string;
+  affiliation: string;
   views: number;
   createdAt: Date;
   updatedAt: Date;
@@ -61,11 +67,14 @@ export interface ProgramCreateInput {
   code: string;
   level: ProgramLevel;
   duration: string;
+  semesters: number;
+  creditHours: number;
   seats: number;
   status: ProgramStatus;
   image?: string;
   intro: string;
   eligibility: string;
+  affiliation: string;
   views?: number;
 }
 

@@ -88,12 +88,20 @@ export default function ProgramsViewModal({
               <Clock size={14} />
               {program.duration}
             </span>
+            <span>{program.semesters} semesters</span>
+            <span>{program.creditHours} credit hrs</span>
             <span className="inline-flex items-center gap-1.5">
               <Users size={14} />
               {program.seats} seats
             </span>
             <span>{program.views.toLocaleString()} views</span>
           </div>
+
+          {program.affiliation && (
+            <div className="flex items-center gap-2 flex-wrap mb-4">
+              <span className="badge badge--blue">{program.affiliation}</span>
+            </div>
+          )}
 
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 m-0 mb-4 text-sm">
             <dt className="font-semibold">Slug</dt>
