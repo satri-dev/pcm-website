@@ -1,48 +1,60 @@
 import type { Metadata } from "next";
 import DownloadsClient from "./DownloadsClient";
-// Caching is handled by cacheComponents in next.config.ts — no segment config needed.
-// When the backend is connected, use unstable_cacheLife("frequent") inside the component.
+import { getPublishedDownloads } from "@/lib/data/downloads";
+import { getDownloadsSettings } from "@/lib/data/downloads-page-settings";
+import { DOWNLOADS_PAGE_SETTINGS_DEFAULTS } from "@/types/downloads-page-settings";
 
-export const metadata: Metadata = {
-  title: "Downloads | Pokhara College of Management",
-  description:
-    "Download official PCM documents — prospectus, admission forms, BBA and BCSIT syllabi, and scholarship application forms for the 2083 intake.",
-  keywords: [
-    "PCM downloads",
-    "PCM prospectus 2083",
-    "PCM admission form",
-    "BBA syllabus",
-    "BCSIT syllabus",
-    "scholarship form PCM",
-    "Pokhara College of Management forms",
-  ],
-  openGraph: {
-    title: "Downloads | Pokhara College of Management",
-    description:
-      "Official documents for PCM admissions — prospectus, forms and syllabi for the 2083 intake.",
-    url: "https://www.pcm.edu.np/downloads",
-    images: [
-      {
-        url: "/assets/img/about-1.jpg",
-        width: 1200,
-        height: 630,
-        alt: "PCM official documents",
-      },
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = {
+    ...DOWNLOADS_PAGE_SETTINGS_DEFAULTS,
+    ...(await getDownloadsSettings()),
+  };
+  const title = settings.heroTitle;
+  const description = settings.heroSubtitle;
+
+  return {
+    title: `${title} | Pokhara College of Management`,
+    description,
+    keywords: [
+      "PCM downloads",
+      "PCM prospectus",
+      "PCM admission form",
+      "BBA syllabus",
+      "BCSIT syllabus",
+      "scholarship form PCM",
+      "Pokhara College of Management forms",
     ],
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Downloads | Pokhara College of Management",
-    description:
-      "Download PCM prospectus, admission forms, syllabi and scholarship forms.",
-    images: ["/assets/img/about-1.jpg"],
-  },
-  alternates: {
-    canonical: "https://www.pcm.edu.np/downloads",
-  },
-};
+    openGraph: {
+      title: `${title} | Pokhara College of Management`,
+      description,
+      url: "https://www.pcm.edu.np/downloads",
+      images: [
+        {
+          url: "/assets/img/about-1.jpg",
+          width: 1200,
+          height: 630,
+          alt: "PCM official documents",
+        },
+      ],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} | Pokhara College of Management`,
+      description,
+      images: ["/assets/img/about-1.jpg"],
+    },
+    alternates: {
+      canonical: "https://www.pcm.edu.np/downloads",
+    },
+  };
+}
 
-export default function DownloadsPage() {
-  return <DownloadsClient />;
+export default async function DownloadsPage() {
+  const [items, settings] = await Promise.all([
+    getPublishedDownloads(),
+    getDownloadsSettings(),
+  ]);
+
+  return <DownloadsClient items={items} settings={settings} />;
 }

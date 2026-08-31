@@ -5,6 +5,9 @@ import { Wrench } from "lucide-react";
 import PageHeader from "../../_components/dashboard/page-header";
 import NavMenuManager from "../_components/nav-menu-manager";
 import PageContentManager from "../_components/page-content-manager";
+import DownloadsPageSettings from "../_components/downloads-page-settings";
+import GalleryPageSettings from "../_components/gallery-page-settings";
+import FaqPageSettings from "../_components/faq-page-settings";
 import { findEntry, resolveEntryContentSlug } from "../_config";
 import {
   ensureNavMenusReady,
@@ -14,8 +17,11 @@ import {
   ensurePageContentsReady,
   getPageContentBySlug,
 } from "@/repositories/page-content.repository";
+import { getDownloadsPageSettings } from "@/repositories/downloads-settings.repository";
 import type { PageContent } from "@/types/page-content";
 import { connection } from "next/server";
+import { getGalleryPageSettings } from "@/repositories/gallery-settings.repository";
+import { getFaqPageSettings } from "@/repositories/faq-content.repository";
 
 interface RouteCtx {
   params: Promise<{ slug: string | string[] }>;
@@ -47,8 +53,50 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
     const items = await listNavMenu();
     return (
       <>
-        <PageHeader title={found.entry.label} subtitle="Sections · Navbar menus" />
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Sections · Navbar menus"
+        />
         <NavMenuManager initialData={items} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "downloads") {
+    const settings = await getDownloadsPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Copy & metadata"
+        />
+        <DownloadsPageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if(found.entry.slug=== "faq"){
+    const settings = await getFaqPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Copy & metadata"
+        />
+        <FaqPageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "gallery") {
+    const settings = await getGalleryPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Copy & metadata"
+        />
+        <GalleryPageSettings initial={settings} />
       </>
     );
   }
@@ -64,7 +112,10 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
     }
     return (
       <>
-        <PageHeader title={found.entry.label} subtitle="Pages · Copy & metadata" />
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Copy & metadata"
+        />
         <PageContentManager slug={contentSlug} initialContent={content} />
       </>
     );
@@ -72,14 +123,14 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
 
   return (
     <>
-      <PageHeader
-        title={found.entry.label}
-        subtitle="Sections · Overview"
-      />
+      <PageHeader title={found.entry.label} subtitle="Sections · Overview" />
       <div className="admin-panel">
         <div className="admin-panel__body p-6">
           <div className="flex items-start gap-4">
-            <div className="p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.08)" }}>
+            <div
+              className="p-3 rounded-xl"
+              style={{ background: "rgba(255,255,255,0.08)" }}
+            >
               <Wrench size={22} />
             </div>
             <div>

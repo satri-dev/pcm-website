@@ -1,11 +1,9 @@
 "use client";
 
-import type { DownloadCategory } from "../types";
-
 interface Props {
-  categories: DownloadCategory[];
-  active: DownloadCategory;
-  onChange: (cat: DownloadCategory) => void;
+  categories: string[];
+  active: string;
+  onChange: (cat: string) => void;
 }
 
 export default function FilterChips({ categories, active, onChange }: Props) {

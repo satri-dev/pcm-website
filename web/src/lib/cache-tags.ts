@@ -44,6 +44,10 @@ export const CACHE_TAGS = {
   resultsList: "results-list",
   result: (slug: string) => `result-${slug}`,
   
+  // Downloads
+  downloads: "downloads",
+  downloadsSettings: "downloads-settings",
+  
   // Chatbot
   chatbot: "chatbot",
 } as const;
