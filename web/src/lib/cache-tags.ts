@@ -64,6 +64,9 @@ export const CACHE_TAGS = {
   // Placements
   placementsSettings: "placements-settings",
 
+  // Careers
+  careersSettings: "careers-settings",
+
   // Chatbot
   chatbot: "chatbot",
 } as const;

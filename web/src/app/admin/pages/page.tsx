@@ -28,6 +28,7 @@ import {
   BarChart3,
   Map,
   Users,
+  Briefcase,
   type LucideIcon,
 } from "lucide-react";
 
@@ -59,6 +60,7 @@ const pageIcons: Record<string, LucideIcon> = {
   "blog-student": BookOpen,
   clubs: Sparkles,
   contact: Mail,
+  career: Briefcase,
   downloads: Download,
   events: Megaphone,
   gallery: Images,

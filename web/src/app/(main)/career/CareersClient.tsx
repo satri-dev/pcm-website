@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { jobOpenings, applicationSteps, workBenefits } from "@/feature/careers/data/careers";
+import type { CareersPageSettings } from "@/types/careers-page-settings";
 import JobCard from "@/feature/careers/components/JobCard";
 import BenefitCard from "@/feature/careers/components/BenefitCard";
 import "./careers.css";
@@ -17,7 +17,7 @@ const CheckIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
 );
 
-export default function CareersClient() {
+export default function CareersClient({ settings }: { settings: CareersPageSettings }) {
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -45,8 +45,8 @@ export default function CareersClient() {
             <ChevronRight />
             <span>Careers</span>
           </nav>
-          <h1>Careers at PCM</h1>
-          <p>Join a team that cares about education — current openings at Pokhara College of Management.</p>
+          <h1>{settings.heroTitle}</h1>
+          <p>{settings.heroSubtitle}</p>
         </div>
       </section>
 
@@ -54,12 +54,12 @@ export default function CareersClient() {
       <section className="section">
         <div className="wrap-wide">
           <div className="section-head reveal">
-            <span className="eyebrow">Work with us</span>
-            <h2 className="section-title">Current openings</h2>
-            <p className="section-sub">We are always looking for passionate educators and committed staff. Positions are filled as vacancies arise.</p>
+            <span className="eyebrow">{settings.openingsEyebrow}</span>
+            <h2 className="section-title">{settings.openingsTitle}</h2>
+            <p className="section-sub">{settings.openingsSubtitle}</p>
           </div>
           <div className="career-jobs-grid">
-            {jobOpenings.map((job, i) => (
+            {settings.openings.map((job, i) => (
               <div key={job.id} className="reveal" style={{ transitionDelay: `${i * 70}ms` }}>
                 <JobCard item={job} />
               </div>
@@ -72,24 +72,23 @@ export default function CareersClient() {
       <section className="section tone-sky">
         <div className="wrap-wide split">
           <div className="split__content reveal">
-            <span className="eyebrow">How to apply</span>
-            <h2 className="section-title">A simple, transparent process</h2>
-            <p>We welcome applications from qualified candidates who share our commitment to quality education.</p>
+            <span className="eyebrow">{settings.applyEyebrow}</span>
+            <h2 className="section-title">{settings.applyTitle}</h2>
+            <p>{settings.applyParagraph}</p>
             <ul className="checklist">
-              {applicationSteps.map(step => (
+              {settings.applySteps.map(step => (
                 <li key={step.id}><CheckIcon />{step.text}</li>
               ))}
             </ul>
             <div className="pill-row">
-              <span className="pill">Send CV</span>
-              <span className="pill">Interview</span>
-              <span className="pill">Demo Class</span>
-              <span className="pill">Offer</span>
+              {settings.applyPills.map(pill => (
+                <span key={pill} className="pill">{pill}</span>
+              ))}
             </div>
           </div>
           <div className="split__media reveal">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/assets/img/hero-3.jpg" alt="PCM campus and classrooms" loading="lazy" />
+            <img src={settings.applyImageSrc} alt={settings.applyImageAlt} loading="lazy" />
           </div>
         </div>
       </section>
@@ -98,12 +97,12 @@ export default function CareersClient() {
       <section className="section">
         <div className="wrap-wide">
           <div className="section-head center reveal">
-            <span className="eyebrow">Why work at PCM</span>
-            <h2 className="section-title">A place where good teaching thrives</h2>
-            <p className="section-sub">Our faculty and staff are the heart of the college — we invest in them.</p>
+            <span className="eyebrow">{settings.benefitsEyebrow}</span>
+            <h2 className="section-title">{settings.benefitsTitle}</h2>
+            <p className="section-sub">{settings.benefitsSubtitle}</p>
           </div>
           <div className="career-benefits-grid">
-            {workBenefits.map((benefit, i) => (
+            {settings.benefits.map((benefit, i) => (
               <div key={benefit.id} className="reveal" style={{ transitionDelay: `${i * 70}ms` }}>
                 <BenefitCard item={benefit} />
               </div>
@@ -118,16 +117,19 @@ export default function CareersClient() {
           <div className="cta-band reveal">
             <div className="cta-band__inner">
               <div>
-                <span className="eyebrow" style={{ color: "var(--gold-400)" }}>Enter to Learn — Go Forth to Serve</span>
-                <h2>Ready to join our team?</h2>
-                <p>Send your CV and cover letter — we would love to hear from you.</p>
+                <span className="eyebrow" style={{ color: "var(--gold-400)" }}>{settings.ctaEyebrow}</span>
+                <h2>{settings.ctaTitle}</h2>
+                <p>{settings.ctaText}</p>
               </div>
               <div className="cta-band__actions">
-                <a className="career-btn career-btn-gold career-btn-lg" href="mailto:careers@pcm.edu.np?subject=Job Application - PCM">
-                  Email careers@pcm.edu.np <ArrowRight />
+                <a
+                  className="career-btn career-btn-gold career-btn-lg"
+                  href={`mailto:${settings.ctaEmailAddress}?subject=${encodeURIComponent(settings.ctaEmailSubject)}`}
+                >
+                  {settings.ctaPrimaryLabel} <ArrowRight />
                 </a>
-                <Link className="career-btn career-btn-ghost-dark career-btn-lg" href="/contact">
-                  Contact the college
+                <Link className="career-btn career-btn-ghost-dark career-btn-lg" href={settings.ctaSecondaryHref}>
+                  {settings.ctaSecondaryLabel}
                 </Link>
               </div>
             </div>

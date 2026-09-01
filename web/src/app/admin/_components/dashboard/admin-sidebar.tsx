@@ -51,6 +51,7 @@ import {
   AlignJustify,
   type LucideIcon,
   DownloadIcon,
+  UserCheck2,
 } from "lucide-react";
 
 interface NavItem {
@@ -190,6 +191,18 @@ const pagesNav: PagesSectionNavItem[] = [
     ready: true,
   },
   { label: "Contact", href: "/admin/pages/contact", icon: Mail, ready: true },
+  {
+    label: "Placements",
+    href: "/admin/pages/placements",
+    icon: UserCheck2,
+    ready: true,
+  },
+  {
+    label: "Career",
+    href: "admin/pages/career",
+    icon: Users,
+    ready:true
+  },
 ];
 
 const sectionsNav: PagesSectionNavItem[] = [
