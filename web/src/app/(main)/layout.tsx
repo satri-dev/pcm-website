@@ -6,7 +6,6 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ChatbotWidget from "@/components/shared/ChatbotWidget";
 import ChatWidget from "@/components/shared/ChatWidget";
-import AdmissionModal from "@/components/shared/AdmissionModal";
 import { getNavbarItems } from "@/lib/data/navigation";
 
 export default async function MainLayout({
