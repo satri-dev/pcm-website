@@ -66,4 +66,7 @@ export const CACHE_TAGS = {
 
   // Chatbot
   chatbot: "chatbot",
+  
+  // Contact
+  contact: "contact",
 } as const;
