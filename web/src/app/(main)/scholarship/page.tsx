@@ -1,46 +1,43 @@
 import type { Metadata } from "next";
+import { getScholarshipSettings } from "@/lib/data/scholarship-page-settings";
+import { getPublishedScholarships } from "@/lib/data/scholarships";
 import ScholarshipClient from "./ScholarshipClient";
-// Caching is handled by cacheComponents in next.config.ts — no segment config needed.
 
-export const metadata: Metadata = {
-  title: "Scholarships | Pokhara College of Management",
-  description:
-    "PCM offers merit-based, Pokhara University, need-based and category scholarships. Learn how to apply and get financial support for your BBA or BCSIT studies.",
-  keywords: [
-    "PCM scholarships",
-    "Pokhara College of Management financial aid",
-    "merit scholarship BBA",
-    "BCSIT scholarship Nepal",
-    "Pokhara University scholarship",
-    "need-based scholarship PCM",
-  ],
-  openGraph: {
-    title: "Scholarships | Pokhara College of Management",
-    description:
-      "Explore merit, PU, need-based and category scholarships available to PCM students in Pokhara.",
-    url: "https://www.pcm.edu.np/scholarship",
-    images: [
-      {
-        url: "/assets/img/about-graduation.jpg",
-        width: 1200,
-        height: 630,
-        alt: "PCM graduation ceremony — scholarship recipients",
-      },
-    ],
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Scholarships | Pokhara College of Management",
-    description:
-      "Merit, PU and need-based scholarships available at PCM. Apply today.",
-    images: ["/assets/img/about-graduation.jpg"],
-  },
-  alternates: {
-    canonical: "https://www.pcm.edu.np/scholarship",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getScholarshipSettings();
+  const canonical = "https://www.pcm.edu.np/scholarship";
+  return {
+    title: settings.seoTitle,
+    description: settings.seoDescription,
+    keywords: settings.seoKeywords,
+    openGraph: {
+      title: settings.seoTitle,
+      description: settings.seoDescription,
+      url: canonical,
+      images: [
+        {
+          url: settings.ogImage,
+          width: 1200,
+          height: 630,
+          alt: "PCM graduation ceremony — scholarship recipients",
+        },
+      ],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: settings.seoTitle,
+      description: settings.seoDescription,
+      images: [settings.ogImage],
+    },
+    alternates: { canonical },
+  };
+}
 
-export default function ScholarshipPage() {
-  return <ScholarshipClient />;
+export default async function ScholarshipPage() {
+  const [settings, scholarships] = await Promise.all([
+    getScholarshipSettings(),
+    getPublishedScholarships(),
+  ]);
+  return <ScholarshipClient settings={settings} scholarships={scholarships} />;
 }
