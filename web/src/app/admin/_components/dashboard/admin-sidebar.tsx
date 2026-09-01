@@ -201,7 +201,7 @@ const pagesNav: PagesSectionNavItem[] = [
     label: "Career",
     href: "admin/pages/career",
     icon: Users,
-    ready:true
+    ready: true,
   },
 ];
 
