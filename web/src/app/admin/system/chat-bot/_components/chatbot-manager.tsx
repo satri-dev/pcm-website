@@ -6,7 +6,7 @@ import ChatbotTable from "./chatbot-table";
 import ChatbotFormModal from "./chatbot-form-modal";
 import ChatbotViewModal from "./chatbot-view-modal";
 import { ChatbotEntry } from "../types/chatbot";
-import { Plus, RefreshCw, Bot } from "lucide-react";
+import { Plus, RefreshCw, BotMessageSquare } from "lucide-react";
 import { SoftDeleteDialog } from "@/components/shared/SoftDeleteDialog";
 
 interface ChatbotManagerProps {
@@ -87,7 +87,7 @@ export default function ChatbotManager({ initialData }: ChatbotManagerProps) {
       <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
         <div>
           <h2 className="m-0 text-2xl font-bold text-[var(--admin-ink)] flex items-center gap-2">
-            <Bot size={24} /> Chatbot Knowledge Base
+            <BotMessageSquare size={24} /> Chatbot Knowledge Base
           </h2>
           <p className="mt-1 mb-0 text-[0.9rem] text-[var(--admin-muted)]">
             Manage chatbot responses, keywords, and channel configurations.

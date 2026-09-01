@@ -7,7 +7,7 @@
 // "Other" entry is shown; otherwise a canned "contact us" fallback.
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { MessageCircle, Send, X, Bot } from "lucide-react";
+import { BotMessageSquare, Send, X, Bot } from "lucide-react";
 
 interface ChatEntry {
   id: string;
@@ -340,7 +340,7 @@ export default function ChatbotWidget() {
         {isOpen ? (
           <X className="w-6 h-6 sm:w-7 sm:h-7" />
         ) : (
-          <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7" />
+          <BotMessageSquare className="w-6 h-6 sm:w-7 sm:h-7" />
         )}
       </button>
 
