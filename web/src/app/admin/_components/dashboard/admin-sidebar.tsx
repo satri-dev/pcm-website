@@ -199,7 +199,7 @@ const pagesNav: PagesSectionNavItem[] = [
   },
   {
     label: "Career",
-    href: "admin/pages/career",
+    href: "/admin/pages/career",
     icon: Users,
     ready: true,
   },

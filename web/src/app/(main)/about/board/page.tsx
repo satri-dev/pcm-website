@@ -9,6 +9,7 @@ import { RevealBox } from "../legacy/reveal-box";
 import { BoardGrid } from "./BoardGrid";
 import { getPageCopy } from "@/lib/data/page-content";
 import type { PageContentSection } from "@/types/page-content";
+import { Suspense } from "react";
 
 const FALLBACK_HERO = {
   title: "Board of Directors",
