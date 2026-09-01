@@ -52,6 +52,8 @@ import {
   type LucideIcon,
   DownloadIcon,
   UserCheck2,
+  DollarSign,
+  FileQuestionMark,
 } from "lucide-react";
 
 interface NavItem {
@@ -201,6 +203,18 @@ const pagesNav: PagesSectionNavItem[] = [
     label: "Career",
     href: "/admin/pages/career",
     icon: Users,
+    ready: true,
+  },
+  {
+    label: "Scholarship",
+    href: "/admin/pages/scholarship",
+    icon: DollarSign,
+    ready: true,
+  },
+  {
+    label: "FAQ",
+    href: "/admin/pages/faq",
+    icon: HelpCircle,
     ready: true,
   },
 ];
