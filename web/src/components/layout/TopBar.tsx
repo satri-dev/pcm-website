@@ -51,16 +51,19 @@ export default async function TopBar() {
                 </Link>
               ) : (
                 <div className="hidden md:inline-flex relative group">
-                  <span className="inline-flex items-center gap-1 hover:text-pcm-green transition-colors whitespace-nowrap cursor-pointer">
+                  <button 
+                    type="button"
+                    className="inline-flex items-center gap-1 hover:text-pcm-green transition-colors whitespace-nowrap cursor-pointer bg-transparent border-none text-inherit"
+                  >
                     {link.label}{" "}
                     <ChevronDown className="w-3 h-3 transition-transform group-hover:rotate-180" />
-                  </span>
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 min-w-[190px] p-2 bg-white rounded-xl border border-border shadow-pcm-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                  </button>
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 min-w-[190px] p-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[110] pointer-events-none group-hover:pointer-events-auto">
                     {link.dropdownItems?.map((item, idx) => (
                       <Link
                         key={idx}
                         href={item.href}
-                        className="block px-3 py-2 rounded-md text-sm font-semibold text-pcm-navy hover:bg-secondary hover:text-pcm-blue"
+                        className="block px-3 py-2.5 rounded-md text-sm font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                       >
                         {item.label}
                       </Link>
