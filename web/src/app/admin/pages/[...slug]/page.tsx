@@ -43,6 +43,8 @@ import ResultsPageSettings from "../_components/results-page-settings";
 import { getResultsPageSettings } from "@/repositories/results-page-settings.repository";
 import NoticesPageSettings from "../_components/notices-page-settings";
 import { getNoticesPageSettings } from "@/repositories/notices-page-settings.repository";
+import CareersPageSettings from "../_components/careers-page-settings";
+import { getCareersPageSettings } from "@/repositories/careers-page-settings.repository";
 
 interface RouteCtx {
   params: Promise<{ slug: string | string[] }>;
@@ -238,6 +240,19 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
           subtitle="Pages · Content & SEO"
         />
         <NoticesPageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "career") {
+    const settings = await getCareersPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content & SEO"
+        />
+        <CareersPageSettings initial={settings} />
       </>
     );
   }
