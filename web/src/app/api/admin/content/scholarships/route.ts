@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   createScholarship,
   ensureScholarshipIndexes,
@@ -7,6 +8,7 @@ import {
 } from "@/repositories/scholarships.repository";
 import { SCHOLARSHIP_TYPES } from "@/types/scholarships";
 import { requireApiSession } from "@/core/lib/api-guard";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 const createSchema = z.object({
   title: z.string().min(3).max(200),
@@ -64,6 +66,8 @@ export async function POST(request: NextRequest) {
 
   try {
     const created = await createScholarship(parsed.data);
+    revalidateTag(CACHE_TAGS.scholarshipsList, "max");
+    revalidatePath("/scholarship");
     return NextResponse.json(created, { status: 201 });
   } catch (err) {
     if (

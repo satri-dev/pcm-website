@@ -1,5 +1,6 @@
 import type { DownloadItem } from "../types";
-import { CATEGORY_ICONS, formatDate, formatSize } from "../data/downloads";
+import { CATEGORY_ICONS } from "../data/downloads";
+import { formatDate, formatSize } from "../data/format";
 
 interface Props {
   item: DownloadItem;
@@ -65,7 +66,10 @@ export default function DownloadCard({ item }: Props) {
         <span className="dl-card__cat">{item.category}</span>
       </div>
       <h3 className="dl-card__title">{item.title}</h3>
-      <p className="dl-card__desc">{item.description}</p>
+      <p
+        className="dl-card__desc"
+        dangerouslySetInnerHTML={{ __html: item.description ?? "" }}
+      />
       <div className="dl-card__meta">
         <span className="dl-card__meta-item">
           <CalIcon />
@@ -73,7 +77,8 @@ export default function DownloadCard({ item }: Props) {
         </span>
         <span className="dl-card__meta-item">
           <FileIcon />
-          {formatSize(item.sizeKb)}
+          {item.fileType ? `${item.fileType} · ` : ""}
+          {formatSize(item.fileSize)}
         </span>
       </div>
       <div className="dl-card__foot">

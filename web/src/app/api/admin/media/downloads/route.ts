@@ -10,6 +10,8 @@ import {
   DOWNLOAD_STATUSES,
 } from "@/app/admin/media/downloads/types/download";
 import { requireApiSession } from "@/core/lib/api-guard";
+import { revalidateTag } from "next/cache";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 const createSchema = z.object({
   title: z.string().min(3).max(200),
@@ -78,6 +80,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const created = await createDownload(parsed.data);
+    revalidateTag(CACHE_TAGS.downloads, { expire: 0 });
     return NextResponse.json(created, { status: 201 });
   } catch {
     return NextResponse.json(

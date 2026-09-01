@@ -115,7 +115,14 @@ function isSectionFilled(id: string, f: ProgramPageContent): boolean {
       return f.admissionRequirements.length > 0;
     case "quickFacts":
       return Boolean(
-        f.quickFacts.level ||
+        f.quickFacts.labels.heading ||
+          f.quickFacts.labels.level ||
+          f.quickFacts.labels.duration ||
+          f.quickFacts.labels.semesters ||
+          f.quickFacts.labels.creditHours ||
+          f.quickFacts.labels.eligibility ||
+          f.quickFacts.labels.affiliation ||
+          f.quickFacts.level ||
           f.quickFacts.duration ||
           f.quickFacts.semesters ||
           f.quickFacts.creditHours ||
@@ -361,13 +368,13 @@ function defaults(initialContent: Partial<ProgramPageContent>): ProgramPageConte
       eligibility: initialContent?.quickFacts?.eligibility ?? "",
       affiliation: initialContent?.quickFacts?.affiliation ?? "",
       labels: {
-        heading: initialContent?.quickFacts?.labels?.heading ?? "",
-        level: initialContent?.quickFacts?.labels?.level ?? "",
-        duration: initialContent?.quickFacts?.labels?.duration ?? "",
-        semesters: initialContent?.quickFacts?.labels?.semesters ?? "",
-        creditHours: initialContent?.quickFacts?.labels?.creditHours ?? "",
-        eligibility: initialContent?.quickFacts?.labels?.eligibility ?? "",
-        affiliation: initialContent?.quickFacts?.labels?.affiliation ?? "",
+        heading: initialContent?.quickFacts?.labels?.heading || "Quick facts",
+        level: initialContent?.quickFacts?.labels?.level || "Level",
+        duration: initialContent?.quickFacts?.labels?.duration || "Duration",
+        semesters: initialContent?.quickFacts?.labels?.semesters || "Semesters",
+        creditHours: initialContent?.quickFacts?.labels?.creditHours || "Credit hours",
+        eligibility: initialContent?.quickFacts?.labels?.eligibility || "Eligibility",
+        affiliation: initialContent?.quickFacts?.labels?.affiliation || "Affiliation",
       },
     },
     curriculum: initialContent?.curriculum ?? [],
@@ -395,16 +402,16 @@ function defaults(initialContent: Partial<ProgramPageContent>): ProgramPageConte
       body: initialContent?.callout?.body ?? "",
     },
     cta: {
-      title: initialContent?.cta?.title ?? "",
-      body: initialContent?.cta?.body ?? "",
+      title: initialContent?.cta?.title || "Ready to apply?",
+      body: initialContent?.cta?.body || "Apply online in minutes, or reach out and we'll guide you through every step.",
       buttons: {
         primary: {
-          text: initialContent?.cta?.buttons?.primary?.text ?? "",
-          url: initialContent?.cta?.buttons?.primary?.url ?? "",
+          text: initialContent?.cta?.buttons?.primary?.text || "Apply Now",
+          url: initialContent?.cta?.buttons?.primary?.url || "/admission",
         },
         secondary: {
-          text: initialContent?.cta?.buttons?.secondary?.text ?? "",
-          url: initialContent?.cta?.buttons?.secondary?.url ?? "",
+          text: initialContent?.cta?.buttons?.secondary?.text || "Ask a question",
+          url: initialContent?.cta?.buttons?.secondary?.url || "/contact",
         },
       },
     },
@@ -794,8 +801,8 @@ export default function ProgramPageEditor({
             onToggle={() => toggleSection("quickFacts")}
           >
             <SubSection
-              title="Field Labels"
-              desc="Customize the labels shown in the Quick Facts sidebar."
+              title="Field Values"
+              desc="Override the sidebar fact values. Values come from the program record by default — leave a field blank to keep the default."
             >
               <Field label="Section Heading" className="field--full">
                 <input
@@ -813,105 +820,6 @@ export default function ProgramPageEditor({
                   placeholder="Quick facts"
                 />
               </Field>
-              <Field label="Level">
-                <input
-                  type="text"
-                  value={formData.quickFacts.labels.level}
-                  onChange={(e) =>
-                    update((f) => ({
-                      ...f,
-                      quickFacts: {
-                        ...f.quickFacts,
-                        labels: { ...f.quickFacts.labels, level: e.target.value },
-                      },
-                    }))
-                  }
-                  placeholder="Level"
-                />
-              </Field>
-              <Field label="Duration">
-                <input
-                  type="text"
-                  value={formData.quickFacts.labels.duration}
-                  onChange={(e) =>
-                    update((f) => ({
-                      ...f,
-                      quickFacts: {
-                        ...f.quickFacts,
-                        labels: { ...f.quickFacts.labels, duration: e.target.value },
-                      },
-                    }))
-                  }
-                  placeholder="Duration"
-                />
-              </Field>
-              <Field label="Semesters">
-                <input
-                  type="text"
-                  value={formData.quickFacts.labels.semesters}
-                  onChange={(e) =>
-                    update((f) => ({
-                      ...f,
-                      quickFacts: {
-                        ...f.quickFacts,
-                        labels: { ...f.quickFacts.labels, semesters: e.target.value },
-                      },
-                    }))
-                  }
-                  placeholder="Semesters"
-                />
-              </Field>
-              <Field label="Credit Hours">
-                <input
-                  type="text"
-                  value={formData.quickFacts.labels.creditHours}
-                  onChange={(e) =>
-                    update((f) => ({
-                      ...f,
-                      quickFacts: {
-                        ...f.quickFacts,
-                        labels: { ...f.quickFacts.labels, creditHours: e.target.value },
-                      },
-                    }))
-                  }
-                  placeholder="Credit hours"
-                />
-              </Field>
-              <Field label="Eligibility">
-                <input
-                  type="text"
-                  value={formData.quickFacts.labels.eligibility}
-                  onChange={(e) =>
-                    update((f) => ({
-                      ...f,
-                      quickFacts: {
-                        ...f.quickFacts,
-                        labels: { ...f.quickFacts.labels, eligibility: e.target.value },
-                      },
-                    }))
-                  }
-                  placeholder="Eligibility"
-                />
-              </Field>
-              <Field label="Affiliation">
-                <input
-                  type="text"
-                  value={formData.quickFacts.labels.affiliation}
-                  onChange={(e) =>
-                    update((f) => ({
-                      ...f,
-                      quickFacts: {
-                        ...f.quickFacts,
-                        labels: { ...f.quickFacts.labels, affiliation: e.target.value },
-                      },
-                    }))
-                  }
-                  placeholder="Affiliation"
-                />
-              </Field>
-            </SubSection>
-
-            <SubSection title="Field Values" desc="The actual values displayed in the sidebar.">
               <Field label="Level">
                 <input
                   type="text"
@@ -941,13 +849,14 @@ export default function ProgramPageEditor({
               <Field label="Semesters">
                 <input
                   type="number"
+                  min={0}
                   value={formData.quickFacts.semesters || ""}
                   onChange={(e) =>
                     update((f) => ({
                       ...f,
                       quickFacts: {
                         ...f.quickFacts,
-                        semesters: parseInt(e.target.value) || 0,
+                        semesters: e.target.value === "" ? 0 : Number(e.target.value),
                       },
                     }))
                   }
@@ -957,17 +866,18 @@ export default function ProgramPageEditor({
               <Field label="Credit Hours">
                 <input
                   type="number"
+                  min={0}
                   value={formData.quickFacts.creditHours || ""}
                   onChange={(e) =>
                     update((f) => ({
                       ...f,
                       quickFacts: {
                         ...f.quickFacts,
-                        creditHours: parseInt(e.target.value) || 0,
+                        creditHours: e.target.value === "" ? 0 : Number(e.target.value),
                       },
                     }))
                   }
-                  placeholder="126"
+                  placeholder="120"
                 />
               </Field>
               <Field label="Eligibility">

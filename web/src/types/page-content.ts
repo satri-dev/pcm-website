@@ -70,7 +70,18 @@ export interface ProgramsPageContent {
   };
   comparisonTable: {
     heading: string;
-    columns: string[]; // e.g., ["Program", "Duration", "Seats", "Status"]
+    columns: string[]; // e.g., ["Program", "Focus", "Duration", "Credits", "Ideal for"]
+    // Per-program comparison cell overrides (keyed by program slug). Only programs
+    // in the system are shown/editable. A blank/absent field falls back to the
+    // value derived from the program record.
+    rows?: {
+      [slug: string]: {
+        focus?: string;
+        duration?: string;
+        credits?: string;
+        idealFor?: string;
+      };
+    };
   };
   cta: {
     heading: string;
@@ -169,10 +180,120 @@ export interface ProgramsPageContent {
 export const PROGRAMS_PAGE_SCHEMA = {
   hero: { title: "editable", subtitle: "editable" },
   intro: { heading: "editable", body: "editable" },
-  comparisonTable: { heading: "editable", columns: "editable" },
+  comparisonTable: { heading: "editable", columns: "editable", rows: "editable" },
   cta: { heading: "editable", body: "editable", phone: "editable" },
   featuredProgramRefs: "editable", // Admin can reorder/select which programs to feature
   programPages: "editable", // Per-program page content
+} as const;
+
+// Contact page specific content schema
+export interface ContactPageContent {
+  hero: {
+    title: string;
+    subtitle: string;
+  };
+  contactDetails: {
+    sectionHeading: string; // "We're here to help"
+    sectionBody: string;
+    address: {
+      label: string; // "Visit us"
+      value: string; // "Gyan Marg, Nadipur..."
+      mapUrl?: string; // Optional Google Maps link
+    };
+    phone: {
+      label: string; // "Call us"
+      value: string; // "(061) 544761, 570124"
+      tel: string; // "061544761"
+    };
+    email: {
+      label: string; // "Email us"
+      value: string; // "info@pcm.edu.np"
+    };
+    hours: {
+      label: string; // "Opening hours"
+      value: string; // "Sun–Fri: 6:00 AM – 4:00 PM • Sat: Closed"
+    };
+  };
+  contactForm: {
+    heading: string; // "Send us a message"
+    fields: {
+      name: { label: string; placeholder: string };
+      phone: { label: string; placeholder: string };
+      email: { label: string; placeholder: string };
+      subject: {
+        label: string;
+        options: string[]; // ["Admissions enquiry", "Program information", ...]
+      };
+      message: { label: string; placeholder: string };
+    };
+    submitButtonText: string;
+    successMessage: string;
+    noteMessage: string;
+  };
+  mapEmbed: {
+    title: string; // iframe title for accessibility
+    embedUrl: string; // Google Maps embed URL
+  };
+  cta: {
+    eyebrow: string;
+    heading: string;
+    body: string;
+    buttons: {
+      primary: {
+        text: string;
+        url: string;
+      };
+      secondary: {
+        text: string;
+        url: string;
+      };
+    };
+  };
+  seo: {
+    title: string;
+    description: string;
+    keywords: string[];
+  };
+}
+
+export const CONTACT_PAGE_SCHEMA = {
+  hero: { title: "editable", subtitle: "editable" },
+  contactDetails: {
+    sectionHeading: "editable",
+    sectionBody: "editable",
+    address: { label: "editable", value: "editable", mapUrl: "editable" },
+    phone: { label: "editable", value: "editable", tel: "editable" },
+    email: { label: "editable", value: "editable" },
+    hours: { label: "editable", value: "editable" },
+  },
+  contactForm: {
+    heading: "editable",
+    fields: {
+      name: { label: "editable", placeholder: "editable" },
+      phone: { label: "editable", placeholder: "editable" },
+      email: { label: "editable", placeholder: "editable" },
+      subject: { label: "editable", options: "editable" },
+      message: { label: "editable", placeholder: "editable" },
+    },
+    submitButtonText: "editable",
+    successMessage: "editable",
+    noteMessage: "editable",
+  },
+  mapEmbed: { title: "editable", embedUrl: "editable" },
+  cta: {
+    eyebrow: "editable",
+    heading: "editable",
+    body: "editable",
+    buttons: {
+      primary: { text: "editable", url: "editable" },
+      secondary: { text: "editable", url: "editable" },
+    },
+  },
+  seo: {
+    title: "editable",
+    description: "editable",
+    keywords: "editable",
+  },
 } as const;
 
 // Helper to validate that only editable fields are being updated

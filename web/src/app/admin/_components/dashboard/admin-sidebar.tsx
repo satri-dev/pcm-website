@@ -50,6 +50,8 @@ import {
   BadgeCheck,
   AlignJustify,
   type LucideIcon,
+  DownloadIcon,
+  UserCheck2,
 } from "lucide-react";
 
 interface NavItem {
@@ -89,12 +91,13 @@ interface PagesSectionNavItem {
 }
 
 const pagesNav: PagesSectionNavItem[] = [
-  { label: "Home", href: "/admin/pages/home", icon: Home },
+  { label: "Home", href: "/admin/pages/home", icon: Home, ready: true },
   {
     label: "About",
     href: "/admin/pages/about",
     icon: Info,
     collapsible: true,
+    ready: true,
     subItems: [
       { label: "Overview", href: "/admin/pages/about" },
       { label: "Board of Directors", href: "/admin/pages/about/board" },
@@ -104,54 +107,154 @@ const pagesNav: PagesSectionNavItem[] = [
       { label: "Campus Map", href: "/admin/pages/about/campus-map" },
     ],
   },
-  { label: "Admission", href: "/admin/pages/admission", icon: DoorOpen },
-  { 
-    label: "Programs", 
-    href: "/admin/pages/programs", 
+  {
+    label: "Admission",
+    href: "/admin/pages/admission",
+    icon: DoorOpen,
+    ready: true,
+  },
+  {
+    label: "Programs",
+    href: "/admin/pages/programs",
     icon: Layers,
     collapsible: true,
-    subItems: [] // Will be populated dynamically
+    ready: true,
+    subItems: [], // Will be populated dynamically
   },
-  { label: "News", href: "/admin/pages/news", icon: Newspaper },
-  { label: "Notices", href: "/admin/pages/notices", icon: AlertCircle },
-  { label: "Results", href: "/admin/pages/results", icon: BarChart3 },
-  { label: "Events", href: "/admin/pages/events", icon: CalendarDays },
-  { label: "Gallery", href: "/admin/pages/gallery", icon: ImageIcon },
+  {
+    label: "News",
+    href: "/admin/pages/news",
+    icon: Newspaper,
+    collapsible: true,
+    ready: true,
+    subItems: [{ label: "News Article", href: "/admin/pages/news-article" }],
+  },
+  {
+    label: "Notices",
+    href: "/admin/pages/notices",
+    icon: AlertCircle,
+    ready: true,
+  },
+  {
+    label: "Results",
+    href: "/admin/pages/results",
+    icon: BarChart3,
+    ready: true,
+  },
+  {
+    label: "Events",
+    href: "/admin/pages/events",
+    icon: CalendarDays,
+    ready: true,
+  },
+  {
+    label: "Gallery",
+    href: "/admin/pages/gallery",
+    icon: ImageIcon,
+    ready: true,
+  },
+  {
+    label: "Downloads",
+    href: "/admin/pages/downloads",
+    icon: DownloadIcon,
+    ready: true,
+  },
   {
     label: "Blogs",
     href: "/admin/pages/blogs",
     icon: Pencil,
     collapsible: true,
+    ready: true,
     subItems: [
       { label: "Blogs", href: "/admin/pages/blogs" },
       { label: "Student Blogs", href: "/admin/pages/blog-student" },
     ],
   },
-  { label: "Clubs", href: "/admin/pages/clubs", icon: Sparkles },
-  { label: "Alumni", href: "/admin/pages/alumni", icon: GraduationCap },
-  { label: "Life at PCM", href: "/admin/pages/life", icon: Heart },
-  { label: "Testimonials", href: "/admin/pages/testimonials", icon: Quote },
-  { label: "GPA Converter", href: "/admin/pages/gpa-converter", icon: Calculator },
-  { label: "Contact", href: "/admin/pages/contact", icon: Mail },
+  { label: "Clubs", href: "/admin/pages/clubs", icon: Sparkles, ready: true },
+  {
+    label: "Alumni",
+    href: "/admin/pages/alumni",
+    icon: GraduationCap,
+    ready: true,
+  },
+  { label: "Life at PCM", href: "/admin/pages/life", icon: Heart, ready: true },
+  {
+    label: "Testimonials",
+    href: "/admin/pages/testimonials",
+    icon: Quote,
+    ready: true,
+  },
+  {
+    label: "GPA Converter",
+    href: "/admin/pages/gpa-converter",
+    icon: Calculator,
+    ready: true,
+  },
+  { label: "Contact", href: "/admin/pages/contact", icon: Mail, ready: true },
+  {
+    label: "Placements",
+    href: "/admin/pages/placements",
+    icon: UserCheck2,
+    ready: true,
+  },
+  {
+    label: "Career",
+    href: "admin/pages/career",
+    icon: Users,
+    ready: true,
+  },
 ];
 
 const sectionsNav: PagesSectionNavItem[] = [
   { label: "Navbar", href: "/admin/pages/navbar", icon: PanelTop, ready: true },
-  { label: "Topbar", href: "/admin/pages/topbar", icon: AlignJustify },
-  { label: "Footer", href: "/admin/pages/footer", icon: PanelBottom },
-  { label: "CTA Banners", href: "/admin/pages/cta", icon: Megaphone },
-  { label: "Apply Now Buttons", href: "/admin/pages/apply-now", icon: BadgeCheck },
-  { label: "Tickers", href: "/admin/pages/tickers", icon: TrendingUp },
-  { label: "Chat Widget", href: "/admin/pages/chat-widget", icon: MessageCircle },
-  { label: "Admission Modal", href: "/admin/pages/admission-modal", icon: Ticket },
+  {
+    label: "Topbar",
+    href: "/admin/pages/topbar",
+    icon: AlignJustify,
+    ready: true,
+  },
+  {
+    label: "Footer",
+    href: "/admin/pages/footer",
+    icon: PanelBottom,
+    ready: true,
+  },
+  {
+    label: "CTA Banners",
+    href: "/admin/pages/cta",
+    icon: Megaphone,
+    ready: true,
+  },
+  {
+    label: "Apply Now Buttons",
+    href: "/admin/pages/apply-now",
+    icon: BadgeCheck,
+    ready: true,
+  },
+  {
+    label: "Tickers",
+    href: "/admin/pages/tickers",
+    icon: TrendingUp,
+    ready: true,
+  },
+  {
+    label: "Chat Widget",
+    href: "/admin/pages/chat-widget",
+    icon: MessageCircle,
+    ready: true,
+  },
+  {
+    label: "Admission Modal",
+    href: "/admin/pages/admission-modal",
+    icon: Ticket,
+    ready: true,
+  },
 ];
 
 const navigation: NavSection[] = [
   {
     title: "Overview",
-    items: [
-      { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-    ],
+    items: [{ label: "Dashboard", href: "/admin", icon: LayoutDashboard }],
   },
   {
     title: "Content",
@@ -210,7 +313,11 @@ const navigation: NavSection[] = [
     items: [
       { label: "Faculty & Staff", href: "/admin/people/faculty", icon: Users },
       { label: "Board of Directors", href: "/admin/people/bod", icon: Shield },
-      { label: "Leadership Messages", href: "/admin/people/leadership-message", icon: MessageCircle },
+      {
+        label: "Leadership Messages",
+        href: "/admin/people/leadership-message",
+        icon: MessageCircle,
+      },
       { label: "Alumni", href: "/admin/people/alumni", icon: UserCheck },
       { label: "Clubs", href: "/admin/people/clubs", icon: Circle },
     ],
@@ -258,7 +365,11 @@ const navigation: NavSection[] = [
       { label: "System Trash", href: "/admin/system/trash", icon: Trash2 },
       { label: "Backups", href: "/admin/system/backups", icon: HardDrive },
       { label: "SEO & Meta", href: "/admin/system/seo", icon: Search },
-      { label: "Users & Roles", href: "/admin/system/users", icon: ShieldCheck },
+      {
+        label: "Users & Roles",
+        href: "/admin/system/users",
+        icon: ShieldCheck,
+      },
       { label: "Settings", href: "/admin/system/settings", icon: Settings },
     ],
   },
@@ -276,18 +387,20 @@ export default function AdminSidebar() {
   const [user, setUser] = useState<UserInfo | null>(null);
   const fetchedRef = useRef(false);
   const [pagesOpen, setPagesOpen] = useState<boolean>(
-    () => pathname === "/admin/pages" || pathname.startsWith("/admin/pages/")
+    () => pathname === "/admin/pages" || pathname.startsWith("/admin/pages/"),
   );
-  const [programsOpen, setProgramsOpen] = useState<boolean>(
-    () => pathname.startsWith("/admin/pages/programs/")
+  const [programsOpen, setProgramsOpen] = useState<boolean>(() =>
+    pathname.startsWith("/admin/pages/programs/"),
   );
-  const [aboutOpen, setAboutOpen] = useState<boolean>(
-    () => pathname.startsWith("/admin/pages/about/")
+  const [aboutOpen, setAboutOpen] = useState<boolean>(() =>
+    pathname.startsWith("/admin/pages/about/"),
   );
-  const [blogsOpen, setBlogsOpen] = useState<boolean>(
-    () => pathname.startsWith("/admin/pages/blog")
+  const [blogsOpen, setBlogsOpen] = useState<boolean>(() =>
+    pathname.startsWith("/admin/pages/blog"),
   );
-  const [programs, setPrograms] = useState<{ slug: string; name: string; code: string }[]>([]);
+  const [programs, setPrograms] = useState<
+    { slug: string; name: string; code: string }[]
+  >([]);
 
   useEffect(() => {
     if (fetchedRef.current) return;
@@ -316,14 +429,17 @@ export default function AdminSidebar() {
       .catch(() => {});
 
     // Fetch current user session
-    authClient.getSession().then(({ data }) => {
-      if (data?.user) {
-        setUser({
-          name: data.user.name,
-          email: data.user.email,
-        });
-      }
-    }).catch(() => {});
+    authClient
+      .getSession()
+      .then(({ data }) => {
+        if (data?.user) {
+          setUser({
+            name: data.user.name,
+            email: data.user.email,
+          });
+        }
+      })
+      .catch(() => {});
 
     // Fetch programs for sidebar navigation
     fetch("/api/admin/content/programs?pageSize=50")
@@ -331,18 +447,32 @@ export default function AdminSidebar() {
         console.log("[AdminSidebar] Programs API response status:", res.status);
         if (!res.ok) {
           const text = await res.text();
-          console.error("[AdminSidebar] Programs API failed:", res.status, text);
+          console.error(
+            "[AdminSidebar] Programs API failed:",
+            res.status,
+            text,
+          );
           return null;
         }
         return res.json();
       })
-      .then((data: { items: { slug: string; name: string; code: string }[] } | null) => {
-        console.log("[AdminSidebar] Programs loaded:", data);
-        if (data?.items) {
-          console.log("[AdminSidebar] Setting programs state with", data.items.length, "items");
-          setPrograms(data.items);
-        }
-      })
+      .then(
+        (
+          data: {
+            items: { slug: string; name: string; code: string }[];
+          } | null,
+        ) => {
+          console.log("[AdminSidebar] Programs loaded:", data);
+          if (data?.items) {
+            console.log(
+              "[AdminSidebar] Setting programs state with",
+              data.items.length,
+              "items",
+            );
+            setPrograms(data.items);
+          }
+        },
+      )
       .catch((err) => {
         console.error("[AdminSidebar] Failed to load programs:", err);
       });
@@ -366,7 +496,7 @@ export default function AdminSidebar() {
 
   function renderSubLink(item: PagesSectionNavItem, active: boolean) {
     const Icon = item.icon;
-    
+
     // Handle collapsible items (Programs is dynamic; About/Blogs use static sub-items)
     if (item.collapsible) {
       const isPrograms = item.label === "Programs";
@@ -389,7 +519,7 @@ export default function AdminSidebar() {
         : (item.subItems ?? []);
 
       const hasSubActive = subLinks.some(
-        (s) => current === s.href || current.startsWith(s.href + "/")
+        (s) => current === s.href || current.startsWith(s.href + "/"),
       );
 
       return (
@@ -407,28 +537,28 @@ export default function AdminSidebar() {
             <button
               type="button"
               className={`admin-nav-link admin-nav-link--sub${active || hasSubActive ? " active" : ""}`}
-              style={{ 
-                flex: "0 0 auto", 
+              style={{
+                flex: "0 0 auto",
                 paddingLeft: "0.3rem",
                 paddingRight: "0.65rem",
-                borderLeft: "none"
+                borderLeft: "none",
               }}
               onClick={(e) => {
                 e.stopPropagation();
                 setOpen(!isOpen);
               }}
             >
-              <ChevronDown 
-                className="admin-nav-group__chevron" 
-                size={14} 
-                style={{ 
+              <ChevronDown
+                className="admin-nav-group__chevron"
+                size={14}
+                style={{
                   transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
-                  transition: "transform 0.2s"
-                }} 
+                  transition: "transform 0.2s",
+                }}
               />
             </button>
           </div>
-          
+
           {isOpen && (
             <div>
               {subLinks.length > 0 ? (
@@ -442,7 +572,10 @@ export default function AdminSidebar() {
                   </Link>
                 ))
               ) : (
-                <div className="admin-nav-link admin-nav-link--nested" style={{ opacity: 0.5, cursor: "default" }}>
+                <div
+                  className="admin-nav-link admin-nav-link--nested"
+                  style={{ opacity: 0.5, cursor: "default" }}
+                >
                   Loading... (0 found)
                 </div>
               )}
@@ -451,7 +584,7 @@ export default function AdminSidebar() {
         </div>
       );
     }
-    
+
     // Regular non-collapsible links
     return (
       <Link
@@ -522,14 +655,21 @@ export default function AdminSidebar() {
                 </button>
 
                 {pagesOpen && (
-                  <div id="pages-sections-panel" className="pages-sections-panel">
-                    <div className="admin-nav-sec admin-nav-sec--sub">Pages</div>
+                  <div
+                    id="pages-sections-panel"
+                    className="pages-sections-panel"
+                  >
+                    <div className="admin-nav-sec admin-nav-sec--sub">
+                      Pages
+                    </div>
                     {pagesNav.map((item) =>
-                      renderSubLink(item, current.startsWith(item.href))
+                      renderSubLink(item, current.startsWith(item.href)),
                     )}
-                    <div className="admin-nav-sec admin-nav-sec--sub">Sections</div>
+                    <div className="admin-nav-sec admin-nav-sec--sub">
+                      Sections
+                    </div>
                     {sectionsNav.map((item) =>
-                      renderSubLink(item, current.startsWith(item.href))
+                      renderSubLink(item, current.startsWith(item.href)),
                     )}
                   </div>
                 )}

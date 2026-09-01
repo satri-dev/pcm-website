@@ -44,14 +44,22 @@ export async function generateMetadata(): Promise<Metadata> {
 function hasContent(section: PageContentSection): boolean {
   return Boolean(
     section.eyebrow?.trim() ||
-      section.title?.trim() ||
-      section.subtitle?.trim() ||
-      (section.paragraphs?.length ?? 0) > 0 ||
-      (section.checklist?.length ?? 0) > 0
+    section.title?.trim() ||
+    section.subtitle?.trim() ||
+    (section.paragraphs?.length ?? 0) > 0 ||
+    (section.checklist?.length ?? 0) > 0,
   );
 }
 
-export default async function BoardPage() {
+export default function BoardPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <BoardPageContent />
+    </Suspense>
+  );
+}
+
+async function BoardPageContent() {
   const content = await getPageCopy("about/board");
 
   const hero = {

@@ -12,7 +12,7 @@ import type { ListProgramsOptions } from "@/repositories/programs.repository";
  */
 export async function getProgramsList(options: ListProgramsOptions = {}) {
   "use cache";
-  cacheLife("content");
+  cacheLife("frequent");
   cacheTag(CACHE_TAGS.programsList);
   
   return await listPrograms(options);

@@ -9,6 +9,8 @@ import {
   PROGRAM_COLLECTION,
 } from "@/types/programs";
 
+const EPOCH_ISO = "1970-01-01T00:00:00.000Z";
+
 function fromDocument(doc: ProgramDocument): Program {
   return {
     id: doc._id!.toString(),
@@ -17,14 +19,17 @@ function fromDocument(doc: ProgramDocument): Program {
     code: doc.code,
     level: doc.level,
     duration: doc.duration,
+    semesters: doc.semesters ?? 0,
+    creditHours: doc.creditHours ?? 0,
     seats: doc.seats ?? 0,
     status: doc.status,
     image: doc.image,
     intro: doc.intro,
     eligibility: doc.eligibility,
+    affiliation: doc.affiliation ?? "",
     views: doc.views ?? 0,
-    createdAt: (doc.createdAt ?? new Date()).toISOString(),
-    updatedAt: (doc.updatedAt ?? new Date()).toISOString(),
+    createdAt: doc.createdAt?.toISOString() ?? EPOCH_ISO,
+    updatedAt: doc.updatedAt?.toISOString() ?? EPOCH_ISO,
     deletedAt: doc.deletedAt?.toISOString(),
     deletedBy: doc.deletedBy,
   };
@@ -38,11 +43,14 @@ function toDocument(input: ProgramCreateInput): Omit<ProgramDocument, "_id"> {
     code: input.code.trim(),
     level: input.level,
     duration: input.duration.trim(),
+    semesters: input.semesters >= 0 ? Math.trunc(input.semesters) : 0,
+    creditHours: input.creditHours >= 0 ? Math.trunc(input.creditHours) : 0,
     seats: input.seats >= 0 ? Math.trunc(input.seats) : 0,
     status: input.status,
     image: input.image || undefined,
     intro: input.intro,
     eligibility: input.eligibility,
+    affiliation: input.affiliation,
     views: input.views && input.views >= 0 ? Math.trunc(input.views) : 0,
     createdAt: now,
     updatedAt: now,
@@ -131,11 +139,14 @@ export async function updateProgram(id: string, patch: ProgramUpdateInput) {
     "code",
     "level",
     "duration",
+    "semesters",
+    "creditHours",
     "seats",
     "status",
     "image",
     "intro",
     "eligibility",
+    "affiliation",
   ];
   for (const key of allowed) {
     if (key in patch && patch[key] !== undefined) set[key] = patch[key];

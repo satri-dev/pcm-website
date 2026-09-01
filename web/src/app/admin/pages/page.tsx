@@ -5,6 +5,7 @@ import {
   Calculator,
   ClipboardList,
   DoorOpen,
+  Download,
   GraduationCap,
   Heart,
   Home,
@@ -27,6 +28,8 @@ import {
   BarChart3,
   Map,
   Users,
+  Briefcase,
+  Award,
   type LucideIcon,
 } from "lucide-react";
 
@@ -58,15 +61,19 @@ const pageIcons: Record<string, LucideIcon> = {
   "blog-student": BookOpen,
   clubs: Sparkles,
   contact: Mail,
+  career: Briefcase,
+  downloads: Download,
   events: Megaphone,
   gallery: Images,
   "gpa-converter": Calculator,
   life: Heart,
   news: Newspaper,
+  "news-article": Newspaper,
   notices: ClipboardList,
   programs: Layers,
   results: BarChart3,
-  testimonials: Quote,
+  testimonial: Quote,
+  scholarship: Award,
 };
 
 const sectionIcons: Record<string, LucideIcon> = {

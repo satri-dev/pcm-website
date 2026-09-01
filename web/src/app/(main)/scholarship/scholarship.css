@@ -183,6 +183,26 @@
   color: var(--muted-c); font-size: .95rem; line-height: 1.65;
 }
 
+/* ── Scholarship card (DB-driven) image + tag ── */
+.pcm-scholarship .scholarship-card__image {
+  margin: calc(-1 * clamp(1.5rem,3vw,2.25rem)) calc(-1 * clamp(1.5rem,3vw,2.25rem)) 0;
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  overflow: hidden; aspect-ratio: 16/9; background: var(--surface-tint);
+}
+.pcm-scholarship .scholarship-card__image img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+.pcm-scholarship .scholarship-card--has-image {
+  padding-top: 0;
+}
+.pcm-scholarship .scholarship-card__tag {
+  justify-self: start;
+  font-size: .7rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; padding: .32rem .7rem;
+  border-radius: var(--r-full);
+  background: var(--surface-tint); color: var(--brand-600);
+}
+
 /* ── How to apply — split layout ── */
 .pcm-scholarship .how-to-apply {
   display: grid;

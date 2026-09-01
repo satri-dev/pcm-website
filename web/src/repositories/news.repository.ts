@@ -122,6 +122,14 @@ export async function getNewsById(id: string) {
   return doc ? fromDocument(doc) : null;
 }
 
+export async function getPublishedNewsBySlug(slug: string) {
+  const db = await getDb();
+  const doc = await db
+    .collection<NewsDocument>(NEWS_COLLECTION)
+    .findOne({ slug, status: "published", deletedAt: { $exists: false } });
+  return doc ? fromDocument(doc) : null;
+}
+
 export async function createNews(input: NewsCreateInput) {
   const db = await getDb();
   const doc = toDocument(input);

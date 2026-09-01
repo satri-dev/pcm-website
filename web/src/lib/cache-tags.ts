@@ -31,19 +31,49 @@ export const CACHE_TAGS = {
   // News
   newsList: "news-list",
   news: (slug: string) => `news-${slug}`,
+  newsSettings: "news-settings",
+  newsArticleSettings: "news-article-settings",
   
   // Notices
   noticesList: "notices-list",
   notice: (slug: string) => `notice-${slug}`,
+  noticesSettings: "notices-settings",
   
   // Events
   eventsList: "events-list",
   event: (slug: string) => `event-${slug}`,
+  eventsSettings: "events-settings",
   
   // Results
   resultsList: "results-list",
   result: (slug: string) => `result-${slug}`,
+  resultsSettings: "results-settings",
   
+  // Footer
+  footerSettings: "footer-settings",
+  footerLinks: "footer-links",
+  
+  // TopBar
+  topBarLinks: "topbar-links",
+  topBarContact: "topbar-contact",
+  
+  // Downloads
+  downloads: "downloads",
+  downloadsSettings: "downloads-settings",
+  
+  // Placements
+  placementsSettings: "placements-settings",
+
+  // Careers
+  careersSettings: "careers-settings",
+
+  // Scholarships
+  scholarshipsList: "scholarships-list",
+  scholarshipPageSettings: "scholarship-page-settings",
+
   // Chatbot
   chatbot: "chatbot",
+  
+  // Contact
+  contact: "contact",
 } as const;

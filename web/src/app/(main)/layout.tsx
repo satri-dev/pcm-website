@@ -6,24 +6,35 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ChatbotWidget from "@/components/shared/ChatbotWidget";
 import ChatWidget from "@/components/shared/ChatWidget";
-import AdmissionModal from "@/components/shared/AdmissionModal";
 import { getNavbarItems } from "@/lib/data/navigation";
 
-export default async function MainLayout({ children }: { children: ReactNode }) {
-  const navItems = await getNavbarItems();
-
+export default async function MainLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   return (
     <>
       <Suspense fallback={null}>
         <AnnouncementTicker />
       </Suspense>
-      <TopBar />
-      <Navbar items={navItems} />
+      <Suspense fallback={null}>
+        <TopBar />
+      </Suspense>
+      <Suspense fallback={null}>
+        <NavbarWithData />
+      </Suspense>
       <main id="main">{children}</main>
-      <Footer />
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
       <ChatWidget />
       <ChatbotWidget />
-      
     </>
   );
+}
+
+async function NavbarWithData() {
+  const navItems = await getNavbarItems();
+  return <Navbar items={navItems} />;
 }

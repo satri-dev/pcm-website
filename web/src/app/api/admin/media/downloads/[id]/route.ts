@@ -8,6 +8,8 @@ import {
   hardDeleteDownload,
 } from "@/repositories/download.repository";
 import { requireApiSession } from "@/core/lib/api-guard";
+import { revalidateTag } from "next/cache";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 const updateSchema = z
   .object({
@@ -79,6 +81,7 @@ export async function PATCH(
         if (!restored) {
           return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
+        revalidateTag(CACHE_TAGS.downloads, { expire: 0 });
         return NextResponse.json({ ok: true });
       } catch {
         return NextResponse.json(
@@ -94,6 +97,7 @@ export async function PATCH(
         if (!deleted) {
           return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
+        revalidateTag(CACHE_TAGS.downloads, { expire: 0 });
         return NextResponse.json({ ok: true });
       } catch {
         return NextResponse.json(
@@ -127,6 +131,7 @@ export async function PATCH(
     if (!updated) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+    revalidateTag(CACHE_TAGS.downloads, { expire: 0 });
     return NextResponse.json(updated);
   } catch (err) {
     if (isMongoError(err) && err.code === 11000) {

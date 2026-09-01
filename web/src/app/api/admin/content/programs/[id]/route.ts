@@ -21,11 +21,14 @@ const updateSchema = z
     code: z.string().min(1).max(50),
     level: z.enum(["Bachelor", "Bachelor (Finance)", "Bachelor (IT)"]),
     duration: z.string().min(1).max(50),
+    semesters: z.number().int().min(1),
+    creditHours: z.number().int().min(0),
     seats: z.number().int().min(0),
     status: z.enum(["open", "closed"]),
     image: z.string().optional(),
     intro: z.string().min(1).max(5000),
     eligibility: z.string().min(1).max(5000),
+    affiliation: z.string().min(1).max(200),
     views: z.number().int().min(0).optional(),
   })
   .partial();

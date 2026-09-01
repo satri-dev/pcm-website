@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   createResult,
   ensureResultIndexes,
@@ -7,6 +8,7 @@ import {
 } from "@/repositories/results.repository";
 import { RESULT_PROGRAMS, RESULT_STATUSES } from "@/types/results";
 import { requireApiSession } from "@/core/lib/api-guard";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 const createSchema = z.object({
   title: z.string().min(3).max(200),
@@ -69,6 +71,9 @@ export async function POST(request: NextRequest) {
 
   try {
     const created = await createResult(parsed.data);
+    revalidateTag(CACHE_TAGS.resultsList, "max");
+    revalidateTag(CACHE_TAGS.result(created.slug), "max");
+    revalidatePath("/results");
     return NextResponse.json(created, { status: 201 });
   } catch (err) {
     if (

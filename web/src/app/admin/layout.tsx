@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { Toaster } from "sonner";
 import AdminShell from "./_components/dashboard/admin-shell";
 import "./admin.css";
 
@@ -23,6 +24,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       }}
     >
       <AdminShell>{children}</AdminShell>
+      <Toaster position="top-right" richColors />
     </div>
   );
 }

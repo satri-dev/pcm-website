@@ -371,6 +371,32 @@ const DEFAULT_CONTENT: Omit<PageContentDocument, "_id" | "updatedAt">[] = [
       },
     ],
   },
+  {
+    slug: "downloads",
+    label: "Downloads",
+    hero: {
+      title: "Downloads",
+      subtitle:
+        "Access prospectuses, admission forms, syllabi and scholarship application forms — all in one place.",
+    },
+    sections: [
+      {
+        key: "intro",
+        eyebrow: "Resources",
+        title: "Official documents & forms",
+        subtitle:
+          "Download the files you need. All documents are current for the 2083 intake.",
+      },
+      {
+        key: "cta",
+        eyebrow: "Enter to Learn — Go Forth to Serve",
+        title: "A step towards your future",
+        paragraphs: [
+          "Applications for the 2083 intake are open across all three programs. Take the first step today.",
+        ],
+      },
+    ],
+  },
 ];
 
 export async function seedDefaultPageContents() {

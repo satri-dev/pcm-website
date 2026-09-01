@@ -1,15 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
-import {
-  scholarshipTypes,
-  applicationSteps,
-  scholarshipFaqs,
-} from "@/feature/scholarship/data/scholarship";
-import ScholarshipCard from "@/feature/scholarship/components/ScholarshipCard";
-import HowToApply from "@/feature/scholarship/components/HowToApply";
-import ScholarshipFaqs from "@/feature/scholarship/components/ScholarshipFaqs";
+import { useEffect, useRef, useState } from "react";
+import type { ScholarshipPageSettings } from "@/types/scholarship-page-settings";
+import type { Scholarship } from "@/types/scholarships";
 import "./scholarship.css";
 
 /* ── SVG icons ── */
@@ -23,9 +17,39 @@ const ArrowRight = () => (
     <path d="M5 12h14M13 6l6 6-6 6" />
   </svg>
 );
+const CheckIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+);
+const ChevronDown = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="m6 9 6 6 6-6" />
+  </svg>
+);
 
-export default function ScholarshipClient() {
+function ScholarshipCard({ item }: { item: Scholarship }) {
+  return (
+    <article className="scholarship-card">
+      <span className="scholarship-card__tag">{item.type}</span>
+      <h3>{item.title}</h3>
+      <div
+        className="prose prose-sm max-w-none"
+        dangerouslySetInnerHTML={{ __html: item.desc }}
+      />
+    </article>
+  );
+}
+
+export default function ScholarshipClient({
+  settings,
+  scholarships,
+}: {
+  settings: ScholarshipPageSettings;
+  scholarships: Scholarship[];
+}) {
   const rootRef = useRef<HTMLDivElement>(null);
+  const [openFaq, setOpenFaq] = useState<string | null>(null);
 
   /* Reveal-on-scroll */
   useEffect(() => {
@@ -70,11 +94,8 @@ export default function ScholarshipClient() {
             <ChevronRight />
             <span>Scholarships</span>
           </nav>
-          <h1>Scholarships at PCM</h1>
-          <p>
-            We believe financial barriers should never stand in the way of a
-            quality education. Explore how PCM supports deserving students.
-          </p>
+          <h1>{settings.heroTitle}</h1>
+          <p>{settings.heroSubtitle}</p>
         </div>
       </section>
 
@@ -82,20 +103,24 @@ export default function ScholarshipClient() {
       <section className="section">
         <div className="wrap-wide">
           <div className="section-head center reveal">
-            <span className="eyebrow">Support programmes</span>
-            <h2 className="section-title">Ways we support you</h2>
-            <p className="section-sub">
-              Four distinct pathways to make your studies at PCM more affordable.
-            </p>
+            <span className="eyebrow">{settings.supportEyebrow}</span>
+            <h2 className="section-title">{settings.supportTitle}</h2>
+            <p className="section-sub">{settings.supportSubtitle}</p>
           </div>
 
-          <div className="scholarship-grid">
-            {scholarshipTypes.map((item) => (
-              <div key={item.id} className="reveal">
-                <ScholarshipCard item={item} />
-              </div>
-            ))}
-          </div>
+          {scholarships.length > 0 ? (
+            <div className="scholarship-grid">
+              {scholarships.map((item) => (
+                <div key={item.id} className="reveal">
+                  <ScholarshipCard item={item} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="section-sub" style={{ textAlign: "center" }}>
+              Scholarship details will be published here soon.
+            </p>
+          )}
         </div>
       </section>
 
@@ -103,16 +128,40 @@ export default function ScholarshipClient() {
       <section className="section tone-sky">
         <div className="wrap-wide">
           <div className="section-head reveal">
-            <span className="eyebrow">Simple process</span>
-            <h2 className="section-title">How to apply</h2>
-            <p className="section-sub">
-              Scholarship consideration is built into the admission process —
-              no separate application needed in most cases.
-            </p>
+            <span className="eyebrow">{settings.applyEyebrow}</span>
+            <h2 className="section-title">{settings.applyTitle}</h2>
+            <p className="section-sub">{settings.applySubtitle}</p>
           </div>
 
-          <div className="reveal">
-            <HowToApply steps={applicationSteps} />
+          <div className="how-to-apply reveal">
+            <div className="how-to-apply__content">
+              <ol className="checklist" aria-label="How to apply for a scholarship">
+                {settings.applySteps.map((step, i) => (
+                  <li key={step.id} className="checklist__item">
+                    <span className="checklist__num" aria-hidden="true">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className="checklist__icon" aria-hidden="true">
+                      <CheckIcon />
+                    </span>
+                    <span className="checklist__text">{step.text}</span>
+                  </li>
+                ))}
+              </ol>
+              <div className="how-to-apply__cta">
+                <Link href={settings.applyCtaHref} className="sc-btn sc-btn-primary sc-btn-lg">
+                  {settings.applyCtaLabel} <ArrowRight />
+                </Link>
+              </div>
+            </div>
+            <div className="how-to-apply__image">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={settings.applyImageSrc}
+                alt={settings.applyImageAlt}
+                loading="lazy"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -121,15 +170,43 @@ export default function ScholarshipClient() {
       <section className="section">
         <div className="wrap-wide">
           <div className="section-head center reveal">
-            <span className="eyebrow">Common questions</span>
-            <h2 className="section-title">Scholarship FAQs</h2>
-            <p className="section-sub">
-              A few quick answers to what students ask most.
-            </p>
+            <span className="eyebrow">{settings.faqEyebrow}</span>
+            <h2 className="section-title">{settings.faqTitle}</h2>
+            <p className="section-sub">{settings.faqSubtitle}</p>
           </div>
 
-          <div className="reveal">
-            <ScholarshipFaqs faqs={scholarshipFaqs} />
+          <div className="sc-faqs reveal">
+            {settings.faqs.map((faq) => {
+              const isOpen = openFaq === faq.id;
+              return (
+                <div
+                  key={faq.id}
+                  className={`faq-callout${isOpen ? " faq-callout--open" : ""}`}
+                >
+                  <button
+                    className="faq-callout__header"
+                    onClick={() => setOpenFaq(isOpen ? null : faq.id)}
+                    aria-expanded={isOpen}
+                    aria-controls={`sfaq-body-${faq.id}`}
+                    id={`sfaq-btn-${faq.id}`}
+                  >
+                    <span className="faq-callout__q">{faq.question}</span>
+                    <span className="faq-callout__chevron" aria-hidden="true">
+                      <ChevronDown />
+                    </span>
+                  </button>
+                  <div
+                    className="faq-callout__body"
+                    id={`sfaq-body-${faq.id}`}
+                    role="region"
+                    aria-labelledby={`sfaq-btn-${faq.id}`}
+                    hidden={!isOpen}
+                  >
+                    <p>{faq.answer}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -141,20 +218,17 @@ export default function ScholarshipClient() {
             <div className="cta-band__inner">
               <div>
                 <span className="eyebrow" style={{ color: "var(--gold-400)" }}>
-                  Enter to Learn — Go Forth to Serve
+                  {settings.ctaEyebrow}
                 </span>
-                <h2>Talk to us about scholarships</h2>
-                <p>
-                  Our admissions team is happy to walk you through every option
-                  and help you find the support that fits.
-                </p>
+                <h2>{settings.ctaTitle}</h2>
+                <p>{settings.ctaText}</p>
               </div>
               <div className="cta-band__actions">
-                <Link className="sc-btn sc-btn-gold sc-btn-lg" href="/admission">
-                  Apply Now <ArrowRight />
+                <Link className="sc-btn sc-btn-gold sc-btn-lg" href={settings.ctaPrimaryHref}>
+                  {settings.ctaPrimaryLabel} <ArrowRight />
                 </Link>
-                <Link className="sc-btn sc-btn-ghost-dark sc-btn-lg" href="/contact">
-                  More Info
+                <Link className="sc-btn sc-btn-ghost-dark sc-btn-lg" href={settings.ctaSecondaryHref}>
+                  {settings.ctaSecondaryLabel}
                 </Link>
               </div>
             </div>
