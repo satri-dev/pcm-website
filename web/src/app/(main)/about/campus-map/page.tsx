@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import "../legacy/legacy.css";
-import { PageHero } from "../legacy/page-hero";
+import { Poppins } from "next/font/google";
+import Link from "next/link";
+import "../about.css";
 import { SectionHead } from "../legacy/section-head";
 import { CheckList } from "../legacy/check-list";
 import { CtaBand } from "../legacy/cta-band";
@@ -16,19 +17,31 @@ export const metadata: Metadata = {
   alternates: { canonical: "/about/campus-map" },
 };
 
+const poppins = Poppins({
+  weight: ["400", "500", "600", "700", "800"],
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-poppins",
+});
+
 export default async function CampusMapPage() {
   const content = await getPageCopy("about/campus-map");
   const hero = (content as any)?.hero ?? {
     title: "Campus Map",
     subtitle: "Find your way around the PCM campus — tap a marker to see what's nearby.",
   };
-  const explore = await getSection(content, "explore", {
+  
+  // Get sections without fallbacks first, then apply defaults only if section doesn't exist
+  const exploreSection = await getSection(content, "explore", null);
+  const explore = exploreSection ?? {
     key: "explore",
     eyebrow: "Getting around",
     title: "Explore the Nadipur campus",
     subtitle: "Click a marker on the map or a place in the list to learn more about each spot.",
-  });
-  const location = await getSection(content, "location", {
+  };
+  
+  const locationSection = await getSection(content, "location", null);
+  const location = locationSection ?? {
     key: "location",
     eyebrow: "Location",
     title: "Easy to reach, hard to leave",
@@ -40,73 +53,100 @@ export default async function CampusMapPage() {
       "Close to Pokhara Buses Park and public transport",
       "Safe neighbourhood with parking nearby",
     ],
-  });
-  const cta = await getSection(content, "cta", {
+  };
+  
+  const ctaSection = await getSection(content, "cta", null);
+  const cta = ctaSection ?? {
     key: "cta",
     title: "Come visit us at Nadipur",
     paragraphs: [
       "Drop by the campus for a tour, or talk to our admissions team about joining the 2083 intake.",
     ],
-  });
+  };
 
   return (
-    <main id="main">
-      <PageHero
-        crumbs={[{ label: "Home", href: "/" }, { label: "About", href: "/about" }, { label: "Campus Map" }]}
-        title={hero.title}
-        subtitle={hero.subtitle}
-      />
-      <section className="section">
-        <div className="wrap-wide">
-          <div className="section-head-row">
-            <SectionHead
-              eyebrow={explore.eyebrow ?? ""}
-              title={explore.title ?? "Explore the Nadipur campus"}
-              subtitle={explore.subtitle}
-            />
-            <a className="btn btn-ghost reveal is-inview" href="/about/facility">
-              Browse facilities <ArrowRightIcon />
-            </a>
-          </div>
-          <CampusMapExplorer />
-        </div>
-      </section>
-      <section className="section section--soft">
-        <div className="wrap-wide split">
-          <RevealBox className="split__media">
-            <div style={{ borderRadius: 22, overflow: "hidden", boxShadow: "var(--shadow-lg)", aspectRatio: "4/3" }}>
-              <img src="/assets/img/about-2.jpg" alt="PCM campus at Nadipur, Pokhara" loading="lazy" />
-            </div>
-            <div className="est-badge">
-              <b>PU</b>
-              <span>Affiliated</span>
-            </div>
-          </RevealBox>
-          <RevealBox className="split__content">
-            <span className="eyebrow">{location.eyebrow}</span>
-            <h2 className="section-title">{location.title}</h2>
-            <p className="mt-4">{location.paragraphs?.[0]}</p>
-            <CheckList
-              className="check-list mt-5"
-              items={location.checklist ?? []}
-            />
-            <a
-              className="btn btn-primary mt-6"
-              href="https://maps.google.com/?q=Pokhara+College+of+Management+Nadipur"
-              target="_blank"
-              rel="noopener"
+    <div className={poppins.variable}>
+      <div className="pcm-about">
+        <main id="main">
+          <section className="page-hero">
+            <svg
+              className="page-hero__peaks"
+              viewBox="0 0 1440 400"
+              preserveAspectRatio="xMidYMax slice"
+              xmlns="http://www.w3.org/2000/svg"
             >
-              Get Directions <ArrowRightIcon />
-            </a>
-          </RevealBox>
-        </div>
-      </section>
-      <CtaBand
-        title={cta.title ?? "Come visit us at Nadipur"}
-        text={cta.paragraphs?.[0] ?? "Drop by the campus for a tour, or talk to our admissions team about joining the 2083 intake."}
-        primary={{ label: "Apply Now", href: "/admission.html" }}
-        secondary={{ label: "Contact Us", href: "/contact.html" }}
-      />
-    </main>
+              <path d="M0 400 L0 250 L300 120 L560 260 L820 90 L1120 240 L1440 120 L1440 400Z" fill="#4167C9" opacity=".2" />
+              <path d="M0 400 L0 300 L360 200 L680 320 L980 210 L1280 300 L1440 240 L1440 400Z" fill="#14265A" opacity=".45" />
+            </svg>
+            <div className="wrap-wide page-hero__inner">
+              <nav className="crumbs" aria-label="Breadcrumb">
+                <Link href="/">Home</Link>{" "}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>{" "}
+                <Link href="/about">About</Link>{" "}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>{" "}
+                <span>Campus Map</span>
+              </nav>
+              <h1>{hero.title}</h1>
+              <p>{hero.subtitle}</p>
+            </div>
+          </section>
+          <section className="section">
+            <div className="wrap-wide">
+              <div className="section-head-row">
+                <SectionHead
+                  eyebrow={explore.eyebrow || ""}
+                  title={explore.title || "Explore the Nadipur campus"}
+                  subtitle={explore.subtitle || ""}
+                />
+                <a className="btn btn-ghost reveal is-inview" href="/about/facility">
+                  Browse facilities <ArrowRightIcon />
+                </a>
+              </div>
+              <CampusMapExplorer />
+            </div>
+          </section>
+          <section className="section section--soft">
+            <div className="wrap-wide split">
+              <RevealBox className="split__media">
+                <div style={{ borderRadius: 22, overflow: "hidden", boxShadow: "var(--shadow-lg)", aspectRatio: "4/3" }}>
+                  <img src="/assets/img/about-2.jpg" alt="PCM campus at Nadipur, Pokhara" loading="lazy" />
+                </div>
+                <div className="est-badge">
+                  <b>PU</b>
+                  <span>Affiliated</span>
+                </div>
+              </RevealBox>
+              <RevealBox className="split__content">
+                <span className="eyebrow">{location.eyebrow || "Location"}</span>
+                <h2 className="section-title">{location.title || "Easy to reach, hard to leave"}</h2>
+                {location.paragraphs && location.paragraphs[0] && (
+                  <p className="mt-4">{location.paragraphs[0]}</p>
+                )}
+                {location.checklist && location.checklist.length > 0 && (
+                  <CheckList
+                    className="check-list mt-5"
+                    items={location.checklist}
+                  />
+                )}
+                <a
+                  className="btn btn-primary mt-6"
+                  href="https://maps.google.com/?q=Pokhara+College+of+Management+Nadipur"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  Get Directions <ArrowRightIcon />
+                </a>
+              </RevealBox>
+            </div>
+          </section>
+          <CtaBand
+            title={cta.title || "Come visit us at Nadipur"}
+            text={cta.paragraphs?.[0] || "Drop by the campus for a tour, or talk to our admissions team about joining the 2083 intake."}
+            primary={{ label: "Apply Now", href: "/admission" }}
+            secondary={{ label: "Contact Us", href: "/contact" }}
+          />
+        </main>
+      </div>
+    </div>
   );
 }

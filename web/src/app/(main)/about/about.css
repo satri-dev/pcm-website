@@ -791,6 +791,688 @@
 }
 
 /* ============================================================
+   Sub-pages — shared components (board, message, faculty,
+   facilities, campus map). Kept under .pcm-about so the whole
+   about section shares one scoped stylesheet with /about.
+   ============================================================ */
+
+/* ---------- Grid variants ---------- */
+.pcm-about .g-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 1024px) {
+  .pcm-about .g-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .pcm-about .g-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Spacing utilities ---------- */
+.pcm-about .mt-4 { margin-top: 1.5rem; }
+.pcm-about .mt-5 { margin-top: 2rem; }
+.pcm-about .mt-6 { margin-top: 2.5rem; }
+
+/* ---------- Section soft tint (facilities / campus map) ---------- */
+.pcm-about .section--soft {
+  background: var(--surface-tint);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+/* ---------- Section head row (head + action link) ---------- */
+.pcm-about .section-head-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: clamp(2rem, 4vw, 2.75rem);
+}
+
+.pcm-about .section-head-row .section-head {
+  margin-bottom: 0;
+}
+
+/* ---------- Checklist ---------- */
+.pcm-about .checklist,
+.pcm-about .check-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.pcm-about .checklist li,
+.pcm-about .check-list li {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.pcm-about .checklist svg,
+.pcm-about .check-list svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  color: var(--gold-500);
+  flex: none;
+  margin-top: 0.2rem;
+}
+
+.pcm-about .checklist b,
+.pcm-about .check-list b {
+  color: var(--navy);
+}
+
+/* ---------- Monograms ---------- */
+.pcm-about .bod-card__monogram,
+.pcm-about .fac-card__monogram,
+.pcm-about .leader-card__monogram {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--brand-600), var(--brand-900));
+  color: #fff;
+  font-weight: 800;
+  font-size: 2.4rem;
+}
+
+/* ---------- Board card ---------- */
+.pcm-about .bod-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.4rem;
+  padding: 1.75rem 1.5rem 1.5rem;
+}
+
+.pcm-about .bod-card__media {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin-bottom: 0.55rem;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 3px solid var(--gold-400);
+  box-shadow: var(--shadow-md);
+}
+
+.pcm-about .bod-card__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pcm-about .bod-card h3 {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.pcm-about .bod-card__role {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--brand-600);
+}
+
+.pcm-about .bod-card__social {
+  display: flex;
+  justify-content: center;
+  gap: 0.55rem;
+  margin-top: 0.55rem;
+  padding-top: 0.8rem;
+  border-top: 1px dashed var(--line);
+  width: 100%;
+}
+
+/* ---------- Faculty card ---------- */
+.pcm-about .fac-card {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.75rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+  transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+
+.pcm-about .fac-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+}
+
+.pcm-about .fac-card__photo {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  margin-inline: auto;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--surface-tint);
+  border: 3px solid var(--gold-400);
+}
+
+.pcm-about .fac-card__photo svg,
+.pcm-about .fac-card__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pcm-about .fac-card h3 {
+  font-size: 1.15rem;
+}
+
+.pcm-about .fac-card h3 + span {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--brand-600);
+}
+
+.pcm-about .fac-card__social {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  padding-top: 0.25rem;
+  border-top: 1px dashed var(--line);
+}
+
+/* ---------- Social round icons (shared by cards) ---------- */
+.pcm-about .bod-card__social a,
+.pcm-about .fac-card__social a,
+.pcm-about .leader-card__social a {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface-tint);
+  color: var(--navy);
+  transition: background 0.25s var(--ease), color 0.25s var(--ease);
+}
+
+.pcm-about .bod-card__social a:hover,
+.pcm-about .fac-card__social a:hover,
+.pcm-about .leader-card__social a:hover {
+  background: var(--brand-600);
+  color: #fff;
+}
+
+.pcm-about .bod-card__social svg,
+.pcm-about .fac-card__social svg,
+.pcm-about .leader-card__social svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* ---------- Leader (message) stack ---------- */
+.pcm-about .leader-stack {
+  display: grid;
+  gap: 2.25rem;
+  margin-top: 2rem;
+}
+
+.pcm-about .leader-card {
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: clamp(1.4rem, 3vw, 2.4rem);
+  align-items: center;
+  padding: clamp(1.25rem, 2.5vw, 1.75rem);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.3s var(--ease), transform 0.3s var(--ease);
+}
+
+.pcm-about .leader-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+}
+
+.pcm-about .leader-card__media {
+  position: relative;
+  border-radius: var(--r);
+  overflow: hidden;
+  aspect-ratio: 4 / 3.3;
+  box-shadow: var(--shadow-md);
+}
+
+.pcm-about .leader-card__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pcm-about .leader-card__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(20, 38, 90, 0.05), rgba(20, 38, 90, 0.5));
+}
+
+.pcm-about .leader-card__chip {
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.95rem;
+  border-radius: var(--r-full);
+  background: rgba(255, 255, 255, 0.94);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--navy);
+  box-shadow: var(--shadow-sm);
+}
+
+.pcm-about .leader-card__body .eyebrow {
+  font-size: 0.7rem;
+}
+
+.pcm-about .leader-card__name {
+  margin-top: 0.4rem;
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  color: var(--navy);
+}
+
+.pcm-about .leader-card__role {
+  margin-top: 0.2rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--brand-600);
+}
+
+.pcm-about .leader-card__text {
+  margin-top: 0.9rem;
+  color: var(--body-c);
+  font-size: 0.98rem;
+  line-height: 1.72;
+  max-height: 19.5em;
+  overflow-y: auto;
+  padding-right: 0.35rem;
+}
+
+.pcm-about .leader-card__text::-webkit-scrollbar {
+  width: 5px;
+}
+
+.pcm-about .leader-card__text::-webkit-scrollbar-thumb {
+  background: var(--line-2);
+  border-radius: var(--r-full);
+}
+
+.pcm-about .leader-card__social {
+  display: flex;
+  gap: 0.55rem;
+  margin-top: 1.1rem;
+}
+
+.pcm-about .leader-card:nth-child(even) .leader-card__media {
+  order: 2;
+}
+
+@media (max-width: 820px) {
+  .pcm-about .leader-card {
+    grid-template-columns: 1fr;
+  }
+
+  .pcm-about .leader-card:nth-child(even) .leader-card__media {
+    order: 0;
+  }
+}
+
+/* ---------- Facilities filter chips ---------- */
+.pcm-about .filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 1.5rem;
+}
+
+.pcm-about .filter-chip {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 600;
+  padding: 0.45rem 1rem;
+  border-radius: var(--r-full);
+  cursor: pointer;
+  transition: all 0.25s var(--ease);
+}
+
+.pcm-about .filter-chip:hover {
+  border-color: var(--brand-600);
+  color: var(--brand-600);
+}
+
+.pcm-about .filter-chip.is-active {
+  background: var(--brand-600);
+  border-color: var(--brand-600);
+  color: #fff;
+}
+
+/* ---------- Facilities grid & cards ---------- */
+.pcm-about .facilities-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.4rem;
+}
+
+.pcm-about .facility-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  overflow: hidden;
+  transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease), border-color 0.3s var(--ease);
+}
+
+.pcm-about .facility-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--brand-600);
+  box-shadow: var(--shadow-md);
+}
+
+.pcm-about .facility-card__media {
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+}
+
+.pcm-about .facility-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s var(--ease);
+}
+
+.pcm-about .facility-card:hover .facility-card__media img {
+  transform: scale(1.05);
+}
+
+.pcm-about .facility-card__body {
+  position: relative;
+  padding: 1.5rem 1.35rem 1.35rem;
+}
+
+.pcm-about .facility-card__icon {
+  position: absolute;
+  top: -1.1rem;
+  left: 1.35rem;
+  width: 2.4rem;
+  height: 2.4rem;
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  font-size: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.pcm-about .facility-card__cat {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brand-600);
+  background: var(--surface-tint);
+  padding: 0.22rem 0.6rem;
+  border-radius: var(--r-full);
+}
+
+.pcm-about .facility-card__body h3 {
+  margin: 0.7rem 0 0.5rem;
+  font-size: 1.2rem;
+  color: var(--navy);
+}
+
+.pcm-about .facility-card__body p {
+  font-size: 0.92rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 1024px) {
+  .pcm-about .facilities-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .pcm-about .facilities-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Campus map ---------- */
+.pcm-about .campus-map-wrap {
+  display: grid;
+  grid-template-columns: 1.7fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+  margin-top: 2.5rem;
+}
+
+.pcm-about .campus-map__stage {
+  position: relative;
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  background: #eaf0fb;
+  box-shadow: var(--shadow-sm);
+  aspect-ratio: 16 / 9;
+}
+
+.pcm-about .campus-map__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.pcm-about .campus-map__markers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.pcm-about .campus-map__marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--mk, #21409a);
+  border: 3px solid #fff;
+  color: #fff;
+  font-size: 1.15rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(22, 40, 91, 0.35);
+  pointer-events: auto;
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+  animation: pcm-mk-pulse 2.4s var(--ease) infinite;
+}
+
+.pcm-about .campus-map__marker:hover,
+.pcm-about .campus-map__marker.is-active {
+  transform: translate(-50%, -50%) scale(1.18);
+  box-shadow: 0 6px 18px rgba(22, 40, 91, 0.45);
+}
+
+@keyframes pcm-mk-pulse {
+  0%, 100% { box-shadow: 0 4px 12px rgba(22, 40, 91, 0.35), 0 0 0 0 rgba(33, 64, 154, 0.35); }
+  50% { box-shadow: 0 4px 12px rgba(22, 40, 91, 0.35), 0 0 0 9px rgba(33, 64, 154, 0); }
+}
+
+.pcm-about .campus-map__popup {
+  position: absolute;
+  z-index: 6;
+  width: 240px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 1rem 1.1rem 1.1rem;
+  box-shadow: var(--shadow-lg);
+}
+
+.pcm-about .campus-map__popup-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--muted);
+}
+
+.pcm-about .campus-map__popup-icon {
+  font-size: 1.6rem;
+}
+
+.pcm-about .campus-map__popup-body h4 {
+  margin: 0.4rem 0 0.1rem;
+  font-size: 1.05rem;
+  color: var(--navy);
+}
+
+.pcm-about .campus-map__popup-cat {
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brand-600);
+}
+
+.pcm-about .campus-map__popup-body p {
+  margin-top: 0.5rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.pcm-about .campus-map__side {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 1.4rem;
+}
+
+.pcm-about .campus-map__side h3 {
+  font-size: 1.1rem;
+  color: var(--navy);
+  margin-bottom: 1rem;
+}
+
+.pcm-about .campus-map__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.9rem;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px dashed var(--line);
+}
+
+.pcm-about .campus-map__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.pcm-about .campus-map__legend-item i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.pcm-about .campus-map__list {
+  display: grid;
+  gap: 0.5rem;
+  max-height: 420px;
+  overflow: auto;
+}
+
+.pcm-about .campus-map__place {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.6rem 0.7rem;
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+  transition: border-color 0.25s var(--ease), background 0.25s var(--ease);
+}
+
+.pcm-about .campus-map__place:hover {
+  background: var(--surface-tint);
+}
+
+.pcm-about .campus-map__place.is-active {
+  border-color: var(--brand-600);
+  background: var(--surface-tint);
+}
+
+.pcm-about .campus-map__place i {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 0.95rem;
+  font-style: normal;
+}
+
+.pcm-about .campus-map__place span {
+  display: grid;
+  gap: 0.05rem;
+}
+
+.pcm-about .campus-map__place b {
+  font-size: 0.9rem;
+  color: var(--navy);
+}
+
+.pcm-about .campus-map__place small {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 1024px) {
+  .pcm-about .campus-map-wrap {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .pcm-about .campus-map__stage {
+    aspect-ratio: 4 / 3;
+  }
+}
+
+/* ============================================================
    Dark mode — .dark class toggled on <html>
    ============================================================ */
 .dark .pcm-about {
@@ -863,4 +1545,17 @@
 .dark .pcm-about .achv__card {
   background: var(--surface-soft);
   border-color: var(--line);
+}
+
+.dark .pcm-about .fac-card,
+.dark .pcm-about .bod-card,
+.dark .pcm-about .leader-card,
+.dark .pcm-about .facility-card,
+.dark .pcm-about .campus-map__side {
+  background: var(--surface-soft);
+  border-color: var(--line);
+}
+
+.dark .pcm-about .campus-map__stage {
+  background: #16203a;
 }
