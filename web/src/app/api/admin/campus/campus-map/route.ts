@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   createCampusMap,
   ensureCampusMapIndexes,
@@ -10,6 +11,7 @@ import {
   CAMPUS_MAP_STATUSES,
 } from "@/app/admin/campus/campus-map/types/campus";
 import { requireApiSession } from "@/core/lib/api-guard";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 const createSchema = z.object({
   name: z.string().min(2).max(200),
@@ -66,6 +68,8 @@ export async function POST(request: NextRequest) {
 
   try {
     const created = await createCampusMap(parsed.data);
+    revalidateTag(CACHE_TAGS.campusMapList, "max");
+    revalidatePath("/about/campus-map");
     return NextResponse.json(created, { status: 201 });
   } catch {
     return NextResponse.json(

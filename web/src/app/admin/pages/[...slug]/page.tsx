@@ -57,6 +57,8 @@ import FacultyPageSettings from "../_components/faculty-page-settings";
 import { getFacultyPageSettings } from "@/repositories/faculty-page-settings.repository";
 import FacilitiesPageSettings from "../_components/facilities-page-settings";
 import { getFacilitiesPageSettings } from "@/repositories/facilities-page-settings.repository";
+import CampusMapPageSettings from "../_components/campus-map-page-settings";
+import { getCampusMapPageSettings } from "@/repositories/campus-map-page-settings.repository";
 
 interface RouteCtx {
   params: Promise<{ slug: string | string[] }>;
@@ -345,6 +347,19 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
           subtitle="Pages · Content & SEO"
         />
         <FacilitiesPageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "about/campus-map") {
+    const settings = await getCampusMapPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content & SEO"
+        />
+        <CampusMapPageSettings initial={settings} />
       </>
     );
   }

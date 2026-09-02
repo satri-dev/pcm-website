@@ -37,6 +37,10 @@ export const CACHE_TAGS = {
   // Campus & Facilities
   facilitiesList: "facilities-list",
   facilitiesSettings: "facilities-settings",
+
+  // Campus Map
+  campusMapList: "campus-map-list",
+  campusMapSettings: "campus-map-settings",
   
   // Gallery
   galleryList: "gallery-list",

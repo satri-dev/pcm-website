@@ -2,72 +2,41 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useReveal } from "../legacy/use-reveal";
-import { categoryColors, landmarks as fallbackLandmarks, type Landmark } from "./data";
 
-interface CampusMapApiItem {
+export interface CampusMapLandmark {
   id: string;
   name: string;
   category: string;
   icon: string;
-  positionX: number;
-  positionY: number;
-  description: string;
+  x: number;
+  y: number;
+  desc: string;
 }
 
-interface CampusMapResponse {
-  items: CampusMapApiItem[];
-  total: number;
-  page: number;
-  pageSize: number;
-  pages: number;
-}
+const categoryColors: Record<string, string> = {
+  Academic: "#21409A",
+  Administration: "#64748B",
+  Library: "#E0A400",
+  IT: "#0E8A5F",
+  Sports: "#16A34A",
+  "Student Life": "#D97706",
+  General: "#64748B",
+};
 
 function clamp(v: number, min: number, max: number) {
   return Math.max(min, Math.min(max, v));
 }
 
-export function CampusMapExplorer() {
+export function CampusMapExplorer({
+  landmarks,
+}: {
+  landmarks: CampusMapLandmark[];
+}) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [stageSize, setStageSize] = useState({ w: 0, h: 0 });
-  const [landmarks, setLandmarks] = useState<Landmark[]>([]);
-  const [loading, setLoading] = useState(true);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const markerRefs = useRef(new Map<string, HTMLButtonElement>());
   const reveal = useReveal<HTMLDivElement>();
-
-  useEffect(() => {
-    let active = true;
-
-    async function load() {
-      try {
-        const res = await fetch("/api/admin/campus/campus-map?page=1&pageSize=100&status=published");
-        if (!res.ok) throw new Error("Failed to load campus map");
-        const data: CampusMapResponse = await res.json();
-        if (!active) return;
-        setLandmarks(
-          data.items.map((item) => ({
-            id: item.id,
-            name: item.name,
-            category: item.category,
-            icon: item.icon,
-            x: item.positionX,
-            y: item.positionY,
-            desc: item.description,
-          })),
-        );
-      } catch {
-        if (!active) return;
-        setLandmarks(fallbackLandmarks);
-      } finally {
-        if (active) setLoading(false);
-      }
-    }
-
-    load();
-    return () => {
-      active = false;
-    };
-  }, []);
 
   useEffect(() => {
     const el = stageRef.current;
@@ -80,7 +49,7 @@ export function CampusMapExplorer() {
 
   const active = landmarks.find((l) => l.id === activeId) ?? null;
 
-  const select = (lm: Landmark, scroll = false) => {
+  const select = (lm: CampusMapLandmark, scroll = false) => {
     setActiveId(lm.id);
     if (scroll) {
       markerRefs.current.get(lm.id)?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
@@ -96,10 +65,6 @@ export function CampusMapExplorer() {
       : undefined;
 
   const categories = [...new Set(landmarks.map((l) => l.category))];
-
-  if (loading) {
-    return <p style={{ padding: "1rem 0", color: "var(--muted)" }}>Loading campus map…</p>;
-  }
 
   if (landmarks.length === 0) {
     return <p style={{ padding: "1rem 0", color: "var(--muted)" }}>No campus landmarks found.</p>;
@@ -135,7 +100,7 @@ export function CampusMapExplorer() {
                 else markerRefs.current.delete(lm.id);
               }}
               className={`campus-map__marker${lm.id === activeId ? " is-active" : ""}`}
-              style={{ left: `${lm.x}%`, top: `${lm.y}%`, ["--mk" as string]: `#${categoryColors[lm.category]}` }}
+              style={{ left: `${lm.x}%`, top: `${lm.y}%`, ["--mk" as string]: `#${categoryColors[lm.category] ?? categoryColors.General}` }}
               aria-label={lm.name}
               onClick={() => select(lm)}
             >
@@ -162,20 +127,20 @@ export function CampusMapExplorer() {
         <div className="campus-map__legend">
           {categories.map((c) => (
             <span key={c} className="campus-map__legend-item">
-              <i style={{ background: `#${categoryColors[c]}` }} />
+              <i style={{ background: `#${categoryColors[c] ?? categoryColors.General}` }} />
               {c}
             </span>
           ))}
         </div>
         <div className="campus-map__list">
-          {landmarks.map((lm: Landmark) => (
+          {landmarks.map((lm) => (
             <button
               key={lm.id}
               type="button"
               className={`campus-map__place${lm.id === activeId ? " is-active" : ""}`}
               onClick={() => select(lm, true)}
             >
-              <i style={{ background: `#${categoryColors[lm.category]}` }}>{lm.icon}</i>
+              <i style={{ background: `#${categoryColors[lm.category] ?? categoryColors.General}` }}>{lm.icon}</i>
               <span>
                 <b>{lm.name}</b>
                 <small>{lm.category}</small>

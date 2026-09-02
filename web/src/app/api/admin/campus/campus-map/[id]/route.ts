@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   deleteCampusMap,
   getCampusMapById,
@@ -8,6 +9,12 @@ import {
   hardDeleteCampusMap,
 } from "@/repositories/campus-map.repository";
 import { requireApiSession } from "@/core/lib/api-guard";
+import { CACHE_TAGS } from "@/lib/cache-tags";
+
+function revalidateCampusMap() {
+  revalidateTag(CACHE_TAGS.campusMapList, "max");
+  revalidatePath("/about/campus-map");
+}
 
 const updateSchema = z
   .object({
@@ -58,6 +65,7 @@ export async function PATCH(
         if (!restored) {
           return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
+        revalidateCampusMap();
         return NextResponse.json({ ok: true });
       } catch {
         return NextResponse.json(
@@ -73,6 +81,7 @@ export async function PATCH(
         if (!deleted) {
           return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
+        revalidateCampusMap();
         return NextResponse.json({ ok: true });
       } catch {
         return NextResponse.json(
@@ -106,6 +115,7 @@ export async function PATCH(
     if (!updated) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+    revalidateCampusMap();
     return NextResponse.json(updated);
   } catch {
     return NextResponse.json(
@@ -128,6 +138,7 @@ export async function DELETE(
     if (!deleted) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+    revalidateCampusMap();
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json(
