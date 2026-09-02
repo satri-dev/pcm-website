@@ -8,40 +8,34 @@ import type { ProgramsPageContent } from "@/types/page-content";
 
 const IMG = "/images";
 
-// Fallback coordinators data (can be moved to CMS later)
-const coordinators = [
-  {
-    photo: `${IMG}/people/leader_hariadhikari.jpg`,
-    chip: "HA",
-    eyebrow: "BBA Coordinator",
-    name: "Hari Adhikari",
-    role: "BBA Coordinator",
-    text: "Every semester I watch BBA students grow from nervous first-years into confident professionals — and that happens because PCM gives them the platform, the mentors and the opportunities to actually lead. If you are serious about management, this is the place to build the foundation of your career, and I will be here to guide you at every step.",
-  },
-  {
-    photo: `${IMG}/people/leader_hariadhikari.jpg`,
-    chip: "HA",
-    eyebrow: "BBA-Finance Coordinator",
-    name: "Hari Adhikari",
-    role: "BBA-Finance Coordinator",
-    text: "Finance is the language every business speaks, and at PCM our BBA-Finance programme makes sure you speak it fluently. You will pair a rigorous Pokhara University curriculum with practical exposure to banking, markets and investment — so you graduate ready to make an impact from day one.",
-  },
-  {
-    photo: `${IMG}/people/leader_haribaral.jpg`,
-    chip: "EH",
-    eyebrow: "BCSIT Coordinator",
-    name: "Er. Hari Prasad Baral",
-    role: "BCSIT Coordinator",
-    text: "Technology changes fast, and our BCSIT programme is designed to keep you ahead of that change. You will learn to think like an engineer — not just code — through hands-on labs, projects and real industry exposure, so you graduate ready to build the digital future.",
-  },
-];
+interface CoordinatorData {
+  programSlug: string;
+  programCode: string;
+  coordinator: {
+    name: string;
+    initials: string;
+    image: string;
+    role: string;
+    quote: string;
+  } | null;
+}
+
+interface CoordinatorsContent {
+  visible: boolean;
+  eyebrow: string;
+  heading: string;
+  description: string;
+  visiblePrograms: string[];
+}
 
 interface ProgramsClientProps {
   hero?: ProgramsPageContent["hero"];
   intro?: ProgramsPageContent["intro"];
   comparisonTable?: ProgramsPageContent["comparisonTable"];
   cta?: ProgramsPageContent["cta"];
+  coordinatorsContent?: CoordinatorsContent;
   programs: Program[];
+  coordinatorsData?: CoordinatorData[];
 }
 
 const ArrowIcon = () => (
@@ -113,7 +107,9 @@ export default function ProgramsClient({
   intro,
   comparisonTable,
   cta,
+  coordinatorsContent,
   programs,
+  coordinatorsData = [],
 }: ProgramsClientProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   
@@ -135,11 +131,70 @@ export default function ProgramsClient({
     body: "Apply online in minutes, or reach out and we'll guide you through every step.",
     phone: "(061) 544761",
   };
+  const coordinatorsContentData = coordinatorsContent || {
+    visible: true,
+    eyebrow: "Your guides at PCM",
+    heading: "Meet your program coordinators",
+    description: "Each program has a dedicated coordinator who will guide you from your first semester to your final project.",
+    visiblePrograms: programs.map((p) => p.slug), // All visible by default
+  };
   
   const cards = programs.map(mapProgramToCard);
   const compareRows = programs.map((program) =>
     applyComparisonOverrides(mapProgramToComparisonRow(program), comparisonTable?.rows?.[program.slug])
   );
+
+  // Map coordinators data to display format, filtering by visibility
+  const coordinatorsDisplay = coordinatorsData
+    .filter((c) => 
+      c.coordinator && 
+      c.coordinator.name && 
+      c.coordinator.quote &&
+      coordinatorsContentData.visiblePrograms.includes(c.programSlug)
+    )
+    .map((c) => ({
+      photo: c.coordinator!.image || `${IMG}/people/leader_hariadhikari.jpg`,
+      chip: c.coordinator!.initials || c.programCode.substring(0, 2).toUpperCase(),
+      eyebrow: c.coordinator!.role || `${c.programCode} Coordinator`,
+      name: c.coordinator!.name,
+      role: c.coordinator!.role || `${c.programCode} Coordinator`,
+      text: c.coordinator!.quote,
+      programSlug: c.programSlug,
+    }));
+
+  // Fallback coordinators if no data from CMS
+  const fallbackCoordinators = [
+    {
+      photo: `${IMG}/people/leader_hariadhikari.jpg`,
+      chip: "HA",
+      eyebrow: "BBA Coordinator",
+      name: "Hari Adhikari",
+      role: "BBA Coordinator",
+      text: "Every semester I watch BBA students grow from nervous first-years into confident professionals — and that happens because PCM gives them the platform, the mentors and the opportunities to actually lead. If you are serious about management, this is the place to build the foundation of your career, and I will be here to guide you at every step.",
+      programSlug: "bachelor-in-business-administration",
+    },
+    {
+      photo: `${IMG}/people/leader_hariadhikari.jpg`,
+      chip: "HA",
+      eyebrow: "BBA-Finance Coordinator",
+      name: "Hari Adhikari",
+      role: "BBA-Finance Coordinator",
+      text: "Finance is the language every business speaks, and at PCM our BBA-Finance programme makes sure you speak it fluently. You will pair a rigorous Pokhara University curriculum with practical exposure to banking, markets and investment — so you graduate ready to make an impact from day one.",
+      programSlug: "bachelor-in-business-administration-finance",
+    },
+    {
+      photo: `${IMG}/people/leader_haribaral.jpg`,
+      chip: "EH",
+      eyebrow: "BCSIT Coordinator",
+      name: "Er. Hari Prasad Baral",
+      role: "BCSIT Coordinator",
+      text: "Technology changes fast, and our BCSIT programme is designed to keep you ahead of that change. You will learn to think like an engineer — not just code — through hands-on labs, projects and real industry exposure, so you graduate ready to build the digital future.",
+      programSlug: "bachelor-of-computer-science-and-information-technology",
+    },
+  ].filter((c) => coordinatorsContentData.visiblePrograms.includes(c.programSlug));
+
+  // Use CMS data if available, otherwise fallback (also filtered by visibility)
+  const finalCoordinators = coordinatorsDisplay.length > 0 ? coordinatorsDisplay : fallbackCoordinators;
 
   useEffect(() => {
     const root = rootRef.current;
@@ -249,14 +304,15 @@ export default function ProgramsClient({
           </div>
         </section>
 
+        {coordinatorsContentData.visible && (
         <section className="section">
           <div className="wrap-wide">
             <div className="section-head center reveal">
-              <span className="eyebrow">Your guides at PCM</span>
-              <h2 className="section-title">Meet your program coordinators</h2>
-              <p className="section-sub">Each program has a dedicated coordinator who will guide you from your first semester to your final project.</p>
+              <span className="eyebrow">{coordinatorsContentData.eyebrow}</span>
+              <h2 className="section-title">{coordinatorsContentData.heading}</h2>
+              <p className="section-sub">{coordinatorsContentData.description}</p>
             </div>
-            {coordinators.map((person, i) => (
+            {finalCoordinators.map((person, i) => (
               <article key={person.role} className="leader-card reveal" style={i === 0 ? { marginTop: "2.5rem" } : { marginTop: "1.6rem" }}>
                 <div className="leader-card__media">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -268,12 +324,13 @@ export default function ProgramsClient({
                   <h3 className="leader-card__name">{person.name}</h3>
                   <div className="leader-card__role">{person.role}</div>
                   <p className="leader-card__text">{person.text}</p>
-                  <Link className="link-arrow" style={{ marginTop: "1.1rem" }} href="/about/message">Read my full message <ArrowIcon /></Link>
+                  <Link className="link-arrow" style={{ marginTop: "1.1rem" }} href={`/programs/${person.programSlug}`}>Learn more about {person.eyebrow} <ArrowIcon /></Link>
                 </div>
               </article>
             ))}
           </div>
         </section>
+        )}
 
         <section className="cta-section">
           <div className="wrap-wide">

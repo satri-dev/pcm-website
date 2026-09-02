@@ -88,6 +88,13 @@ export interface ProgramsPageContent {
     body: string;
     phone: string;
   };
+  coordinators?: {
+    visible: boolean;
+    eyebrow: string;
+    heading: string;
+    description: string;
+    visiblePrograms: string[];
+  };
   featuredProgramRefs: string[]; // Array of program slugs (NOT full program objects)
   
   // Per-program page content (keyed by slug)
@@ -181,6 +188,13 @@ export const PROGRAMS_PAGE_SCHEMA = {
   hero: { title: "editable", subtitle: "editable" },
   intro: { heading: "editable", body: "editable" },
   comparisonTable: { heading: "editable", columns: "editable", rows: "editable" },
+  coordinators: { 
+    visible: "editable", 
+    eyebrow: "editable", 
+    heading: "editable", 
+    description: "editable",
+    visiblePrograms: "editable"
+  },
   cta: { heading: "editable", body: "editable", phone: "editable" },
   featuredProgramRefs: "editable", // Admin can reorder/select which programs to feature
   programPages: "editable", // Per-program page content
