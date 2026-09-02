@@ -22,6 +22,14 @@ export const NAV_MENU_TYPES: readonly NavMenuType[] = [
 
 export const NAV_MENU_COLLECTION = "nav-menus";
 
+// Navbar settings (logo & CTA button)
+export interface NavbarSettings {
+  logoUrl: string;
+  ctaLabel: string;
+  ctaHref: string;
+  ctaEnabled: boolean;
+}
+
 // UI-facing shape.
 export interface NavMenuItem {
   id: string;

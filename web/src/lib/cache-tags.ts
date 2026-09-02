@@ -6,6 +6,7 @@
 export const CACHE_TAGS = {
   // Navigation
   navMenu: "nav-menu",
+  navbar: "navbar",
   
   // Programs
   programsList: "programs-list",
@@ -85,4 +86,7 @@ export const CACHE_TAGS = {
   
   // Contact
   contact: "contact",
+
+  // Admission Modal
+  admissionModal: "admission-modal",
 } as const;

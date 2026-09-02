@@ -6,7 +6,7 @@ import {
   getHomepage,
   updateHomepage,
 } from "@/repositories/homepage.repository";
-import { HomepageUpdateInput, MAX_HERO_SLIDES } from "@/types/homepage";
+import { HomepageUpdateInput } from "@/types/homepage";
 
 export async function GET() {
   const guard = await requireApiSession();
@@ -33,8 +33,7 @@ export async function PUT(req: NextRequest) {
     const patch: HomepageUpdateInput = {};
 
     if (body.heroSlides !== undefined) {
-      const slides = Array.isArray(body.heroSlides) ? body.heroSlides : [];
-      patch.heroSlides = slides.slice(0, MAX_HERO_SLIDES);
+      patch.heroSlides = Array.isArray(body.heroSlides) ? body.heroSlides : [];
     }
     if (body.welcomeStats !== undefined) patch.welcomeStats = body.welcomeStats;
     if (body.whyChooseReasons !== undefined)

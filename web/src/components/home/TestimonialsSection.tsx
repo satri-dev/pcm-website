@@ -1,89 +1,143 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
+import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
 import type { HomepageTestimonial } from "@/types/homepage";
 
 export default function TestimonialsSection({ testimonials }: { testimonials: HomepageTestimonial[] }) {
-  const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const next = useCallback(() => {
+    setActiveIndex((i) => (i + 1) % testimonials.length);
+  }, [testimonials.length]);
+
+  const prev = useCallback(() => {
+    setActiveIndex((i) => (i - 1 + testimonials.length) % testimonials.length);
+  }, [testimonials.length]);
+
+  // Auto-advance every 8 seconds
+  useEffect(() => {
+    const timer = setInterval(next, 8000);
+    return () => clearInterval(timer);
+  }, [next]);
+
+  if (!testimonials || testimonials.length === 0) {
+    return null;
+  }
+
+  const activeTestimonial = testimonials[activeIndex];
 
   return (
-    <section className="py-[clamp(4rem,8vw,6rem)] bg-secondary/30">
-      <div className="container">
-        <div className="max-w-3xl mx-auto text-center mb-12">
-          <span className="inline-block px-4 py-2 rounded-full bg-pcm-blue/10 text-pcm-blue text-sm font-mono uppercase tracking-wider mb-4">
+    <section className="py-[clamp(4rem,8vw,6rem)] bg-gradient-to-b from-gray-50 to-white">
+      <div className="container px-4">
+        {/* Header */}
+        <div className="max-w-3xl mx-auto text-center mb-16">
+          <span className="inline-block px-4 py-2 rounded-full bg-pcm-green/10 text-pcm-green text-sm font-semibold uppercase tracking-wider mb-4">
             Voices of PCM
           </span>
-          <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-display font-semibold text-pcm-navy mb-4">
+          <h2 className="text-[clamp(2rem,4vw,2.8rem)] font-display font-bold text-pcm-navy mb-4">
             What our achievers say
           </h2>
-          <p className="text-muted-foreground text-lg">
-            Graduates on the Dean's List reflect on their four-year journey — the mentorship, the friendships, and the confidence they carry forward.
+          <p className="text-gray-600 text-base lg:text-lg">
+            Graduates on the Dean's List reflect on their four-year journey at PCM
           </p>
         </div>
 
-        <div className="max-w-5xl mx-auto">
-          <div className="grid lg:grid-cols-[300px,1fr] gap-12 items-center">
-            {/* Featured testimonial */}
-            <div className="text-center">
-              <div className="w-48 h-48 mx-auto rounded-full overflow-hidden mb-6">
-                <Image
-                  src={testimonials[activeTestimonial].photo}
-                  alt={testimonials[activeTestimonial].name}
-                  width={192}
-                  height={192}
-                  className="object-cover w-full h-full"
-                />
+        {/* Testimonial Card */}
+        <div className="max-w-5xl mx-auto relative">
+          <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+            <div className="relative px-6 py-12 lg:px-16 lg:py-16">
+              {/* Quote Icon Background */}
+              <div className="absolute top-8 right-8 opacity-5">
+                <Quote className="w-32 h-32 lg:w-48 lg:h-48 text-pcm-blue" />
               </div>
-              <h3 className="text-xl font-display font-semibold text-pcm-navy mb-1">
-                {testimonials[activeTestimonial].name}
-              </h3>
-              <p className="text-muted-foreground">
-                {testimonials[activeTestimonial].role}
-              </p>
-            </div>
 
-            {/* Quote */}
-            <div className="lg:text-left text-center">
-              <blockquote className="text-lg lg:text-xl text-muted-foreground leading-relaxed mb-8 italic">
-                "{testimonials[activeTestimonial].quote}"
-              </blockquote>
-
-              {/* Testimonial selector */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {testimonials.map((testimonial, index) => (
-                  <button
-                    key={testimonial.id}
-                    onClick={() => setActiveTestimonial(index)}
-                    className={`flex items-center gap-3 p-3 rounded-lg border transition-all text-left ${
-                      index === activeTestimonial
-                        ? "bg-pcm-blue text-white border-pcm-blue"
-                        : "bg-card border-border hover:border-pcm-blue/50"
-                    }`}
-                  >
-                    <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+              {/* Content */}
+              <div className="relative z-10">
+                {/* Photo - Centered */}
+                <div className="flex justify-center mb-8">
+                  <div className="relative">
+                    <div className="w-24 h-24 lg:w-28 lg:h-28 rounded-full overflow-hidden ring-4 ring-pcm-green/20 shadow-lg">
                       <Image
-                        src={testimonial.photo}
-                        alt={testimonial.name}
-                        width={48}
-                        height={48}
+                        src={activeTestimonial.photo}
+                        alt={activeTestimonial.name}
+                        width={112}
+                        height={112}
                         className="object-cover w-full h-full"
                       />
                     </div>
-                    <div className="min-w-0">
-                      <div className={`font-semibold text-sm line-clamp-1 ${
-                        index === activeTestimonial ? "text-white" : "text-pcm-navy"
-                      }`}>
-                        {testimonial.name}
-                      </div>
-                      <div className={`text-xs line-clamp-1 ${
-                        index === activeTestimonial ? "text-white/80" : "text-muted-foreground"
-                      }`}>
-                        {testimonial.role}
-                      </div>
+                    {/* Quote badge */}
+                    <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-pcm-green rounded-full flex items-center justify-center shadow-lg">
+                      <Quote className="w-5 h-5 text-white" />
                     </div>
-                  </button>
-                ))}
+                  </div>
+                </div>
+
+                {/* Quote */}
+                <blockquote className="text-center max-w-3xl mx-auto mb-8">
+                  <p className="text-lg lg:text-xl text-gray-700 leading-relaxed font-normal">
+                    "{activeTestimonial.quote}"
+                  </p>
+                </blockquote>
+
+                {/* Author Info - Centered */}
+                <div className="text-center">
+                  <h3 className="text-xl lg:text-2xl font-display font-bold text-pcm-navy mb-1">
+                    {activeTestimonial.name}
+                  </h3>
+                  <p className="text-sm lg:text-base text-gray-500 font-medium">
+                    {activeTestimonial.role}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Navigation Bar */}
+            <div className="bg-gray-50 px-6 py-6 border-t border-gray-100">
+              <div className="flex items-center justify-between max-w-md mx-auto">
+                {/* Prev Button */}
+                <button
+                  type="button"
+                  onClick={prev}
+                  aria-label="Previous testimonial"
+                  className="flex items-center justify-center w-11 h-11 rounded-full bg-white border-2 border-gray-200 text-pcm-navy hover:border-pcm-green hover:bg-pcm-green hover:text-white transition-all shadow-sm"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+
+                {/* Dot Indicators */}
+                <div className="flex items-center gap-2">
+                  {testimonials.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setActiveIndex(index)}
+                      aria-label={`Go to testimonial ${index + 1}`}
+                      className={`transition-all rounded-full ${
+                        index === activeIndex 
+                          ? "w-8 h-2.5 bg-pcm-green" 
+                          : "w-2.5 h-2.5 bg-gray-300 hover:bg-gray-400"
+                      }`}
+                    />
+                  ))}
+                </div>
+
+                {/* Next Button */}
+                <button
+                  type="button"
+                  onClick={next}
+                  aria-label="Next testimonial"
+                  className="flex items-center justify-center w-11 h-11 rounded-full bg-white border-2 border-gray-200 text-pcm-navy hover:border-pcm-green hover:bg-pcm-green hover:text-white transition-all shadow-sm"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Counter */}
+              <div className="text-center mt-4">
+                <span className="text-xs lg:text-sm text-gray-500 font-medium">
+                  {activeIndex + 1} of {testimonials.length}
+                </span>
               </div>
             </div>
           </div>

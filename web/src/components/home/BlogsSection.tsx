@@ -57,9 +57,10 @@ export default function BlogsSection({ blogs }: { blogs: Blog[] }) {
                 <h3 className="font-display font-semibold text-pcm-navy mb-2 line-clamp-2">
                   {blog.title}
                 </h3>
-                <p className="text-muted-foreground line-clamp-3">
-                  {blog.excerpt}
-                </p>
+                <div 
+                  className="prose prose-sm max-w-none text-muted-foreground line-clamp-3"
+                  dangerouslySetInnerHTML={{ __html: blog.excerpt }}
+                />
                 <div className="mt-4">
                   <span className="inline-flex items-center gap-2 text-pcm-blue hover:text-pcm-blue-700 font-semibold text-sm transition-colors group-hover:gap-3">
                     Read article <ArrowRight className="w-3 h-3 transition-all" />

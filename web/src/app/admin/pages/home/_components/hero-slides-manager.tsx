@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import type { HeroSlide } from "@/types/homepage";
-import { MAX_HERO_SLIDES } from "@/types/homepage";
 import { Plus, Trash2, GripVertical, Save } from "lucide-react";
+import ImageUpload from "@/components/cloudinary/ImageUpload";
+import Image from "next/image";
 
 interface Props {
   slides: HeroSlide[];
@@ -13,7 +14,7 @@ interface Props {
 function emptySlide(): HeroSlide {
   return {
     id: `slide-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-    image: "/images/hero-1.jpg",
+    image: "", // Empty by default, will be uploaded via Cloudinary
     badge: "",
     heading: "",
     accent: "",
@@ -88,41 +89,23 @@ export default function HeroSlidesManager({ slides, onSave }: Props) {
     }
   };
 
-  const atMax = items.length >= MAX_HERO_SLIDES;
-
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-bold text-[var(--admin-ink)] m-0">Hero Slides</h3>
           <p className="text-sm text-[var(--admin-muted)] mt-1 m-0">
-            Manage the hero carousel on the home page. Maximum {MAX_HERO_SLIDES} slides.
+            Manage the hero carousel on the home page. No maximum limit.
           </p>
         </div>
-        <div className="flex gap-2 items-center">
-          {atMax && (
-            <span className="text-xs text-[var(--admin-muted)]">
-              Maximum {MAX_HERO_SLIDES} slides reached
-            </span>
-          )}
-          <button
-            type="button"
-            onClick={() => setItems((prev) => [...prev, emptySlide()])}
-            disabled={atMax}
-            className="admin-btn"
-            title={atMax ? `Maximum ${MAX_HERO_SLIDES} slides allowed` : "Add new slide"}
-          >
-            <Plus size={14} /> Add Slide ({items.length}/{MAX_HERO_SLIDES})
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className="admin-btn admin-btn--primary"
-          >
-            <Save size={14} /> {saving ? "Saving…" : "Save"}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setItems((prev) => [...prev, emptySlide()])}
+          className="admin-btn"
+          title="Add new slide"
+        >
+          <Plus size={14} /> Add Slide ({items.length})
+        </button>
       </div>
 
       <div className="space-y-6">
@@ -180,13 +163,39 @@ export default function HeroSlidesManager({ slides, onSave }: Props) {
                   placeholder="in the heart of Pokhara"
                 />
               </div>
-              <div className="field">
-                <label>Image path</label>
-                <input
-                  value={slide.image}
-                  onChange={(e) => update(idx, { image: e.target.value })}
-                  placeholder="/images/hero-1.jpg"
-                />
+              <div className="field" style={{ gridColumn: "1 / -1" }}>
+                <label>Hero Image (Cloudinary)</label>
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        value={slide.image}
+                        onChange={(e) => update(idx, { image: e.target.value })}
+                        placeholder="https://res.cloudinary.com/..."
+                        className="w-full"
+                      />
+                      <div className="mt-2">
+                        <ImageUpload
+                          onUpload={(result) => update(idx, { image: result.secure_url })}
+                        />
+                      </div>
+                    </div>
+                    {slide.image && (
+                      <div className="flex-shrink-0 w-32 h-20 relative rounded-lg overflow-hidden border border-[var(--admin-border)]">
+                        <Image
+                          src={slide.image}
+                          alt="Preview"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-xs text-[var(--admin-muted)]">
+                    Upload via Cloudinary or paste an existing URL. Recommended size: 1920x1080px
+                  </span>
+                </div>
               </div>
               <div className="field" style={{ gridColumn: "1 / -1" }}>
                 <label>Subtitle</label>
@@ -284,6 +293,18 @@ export default function HeroSlidesManager({ slides, onSave }: Props) {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Save Button at Bottom */}
+      <div className="mt-6 flex justify-end">
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving}
+          className="admin-btn admin-btn--primary"
+        >
+          <Save size={14} /> {saving ? "Saving…" : "Save"}
+        </button>
       </div>
     </div>
   );

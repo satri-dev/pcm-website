@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { AdmissionConfig, AdmissionStep, AdmissionDetail } from "@/types/homepage";
 import { Plus, Trash2, Save } from "lucide-react";
+import ImageUpload from "@/components/cloudinary/ImageUpload";
+import Image from "next/image";
 
 interface Props {
   admission: AdmissionConfig;
@@ -31,14 +33,6 @@ export default function AdmissionManager({ admission, onSave }: Props) {
             Configure the admission steps and details sidebar.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={saving}
-          className="admin-btn admin-btn--primary"
-        >
-          <Save size={14} /> {saving ? "Saving…" : "Save"}
-        </button>
       </div>
 
       {/* Header fields */}
@@ -65,12 +59,39 @@ export default function AdmissionManager({ admission, onSave }: Props) {
             rows={2}
           />
         </div>
-        <div className="field">
-          <label>Poster image path</label>
-          <input
-            value={data.posterImage}
-            onChange={(e) => setData((d) => ({ ...d, posterImage: e.target.value }))}
-          />
+        <div className="field" style={{ gridColumn: "1 / -1" }}>
+          <label>Poster Image (Cloudinary)</label>
+          <div className="flex flex-col gap-3">
+            <div className="flex items-start gap-3">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={data.posterImage}
+                  onChange={(e) => setData((d) => ({ ...d, posterImage: e.target.value }))}
+                  placeholder="https://res.cloudinary.com/..."
+                  className="w-full"
+                />
+                <div className="mt-2">
+                  <ImageUpload
+                    onUpload={(result) => setData((d) => ({ ...d, posterImage: result.secure_url }))}
+                  />
+                </div>
+              </div>
+              {data.posterImage && (
+                <div className="flex-shrink-0 w-32 h-32 relative rounded-lg overflow-hidden border border-[var(--admin-border)]">
+                  <Image
+                    src={data.posterImage}
+                    alt="Poster preview"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              )}
+            </div>
+            <span className="text-xs text-[var(--admin-muted)]">
+              Upload via Cloudinary or paste an existing URL. Recommended size: 800x1000px (portrait)
+            </span>
+          </div>
         </div>
       </div>
 
@@ -206,6 +227,18 @@ export default function AdmissionManager({ admission, onSave }: Props) {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Save Button at Bottom */}
+      <div className="mt-6 flex justify-end">
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving}
+          className="admin-btn admin-btn--primary"
+        >
+          <Save size={14} /> {saving ? "Saving…" : "Save"}
+        </button>
       </div>
     </div>
   );

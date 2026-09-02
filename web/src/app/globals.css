@@ -218,15 +218,15 @@
 /* Announcement Ticker */
 .ticker-inner {
   display: flex;
-  animation: scroll 30s linear infinite;
+  animation: scroll 15s linear infinite;
   will-change: transform;
 }
 
 .ticker-item {
   flex-shrink: 0;
-  padding-left: 2rem;
-  padding-right: 2rem;
-  font-size: 0.875rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  font-size: 0.8125rem;
   white-space: nowrap;
 }
 
@@ -234,6 +234,14 @@
   .ticker-item {
     padding-left: 3rem;
     padding-right: 3rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .ticker-item {
+    padding-left: 4rem;
+    padding-right: 4rem;
   }
 }
 

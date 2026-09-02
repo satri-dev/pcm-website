@@ -138,9 +138,10 @@ export default function NewsSection({ news, notices, results, events }: Props) {
                     <h3 className="font-display font-semibold text-pcm-navy mb-2 line-clamp-2">
                       {item.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground line-clamp-3">
-                      {item.excerpt}
-                    </p>
+                    <div 
+                      className="prose prose-sm max-w-none text-sm text-muted-foreground line-clamp-3"
+                      dangerouslySetInnerHTML={{ __html: item.excerpt }}
+                    />
                   </div>
                 </Link>
               ))}

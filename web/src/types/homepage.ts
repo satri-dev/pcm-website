@@ -3,7 +3,8 @@
 // home page section content that is not already backed by its own collection.
 
 export const HOMEPAGE_COLLECTION = "homepage";
-export const MAX_HERO_SLIDES = 5;
+// No maximum limit on hero slides
+export const MAX_HERO_SLIDES = Number.MAX_SAFE_INTEGER;
 
 /* ── Hero ─────────────────────────────────────────────── */
 

@@ -31,14 +31,6 @@ export default function CTAManager({ cta, onSave }: Props) {
             The call-to-action banner at the bottom of the home page.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={saving}
-          className="admin-btn admin-btn--primary"
-        >
-          <Save size={14} /> {saving ? "Saving…" : "Save"}
-        </button>
       </div>
 
       <div className="form-grid">
@@ -118,6 +110,18 @@ export default function CTAManager({ cta, onSave }: Props) {
             }
           />
         </div>
+      </div>
+
+      {/* Save Button at Bottom */}
+      <div className="mt-6 flex justify-end">
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving}
+          className="admin-btn admin-btn--primary"
+        >
+          <Save size={14} /> {saving ? "Saving…" : "Save"}
+        </button>
       </div>
     </div>
   );
