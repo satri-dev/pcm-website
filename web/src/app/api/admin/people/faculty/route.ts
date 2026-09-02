@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   createFaculty,
   ensureFacultyIndexes,
@@ -7,6 +8,7 @@ import {
 } from "@/repositories/faculty.repository";
 import { FACULTY_GROUPS, type FacultyCreateInput } from "@/types/faculty";
 import { requireApiSession } from "@/core/lib/api-guard";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 const createSchema = z.object({
   name: z.string().min(2).max(200),
@@ -60,6 +62,8 @@ export async function POST(request: NextRequest) {
 
   try {
     const created = await createFaculty(parsed.data as FacultyCreateInput);
+    revalidateTag(CACHE_TAGS.facultyList, "max");
+    revalidatePath("/about/faculty");
     return NextResponse.json(created, { status: 201 });
   } catch {
     return NextResponse.json(

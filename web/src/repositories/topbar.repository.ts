@@ -41,6 +41,7 @@ function mapContactDocument(doc: TopBarContactDocument): TopBarContact {
 
 // Links Management
 export async function listTopBarLinks(): Promise<TopBarLink[]> {
+  "use cache";
   const db = await getDb();
   const docs = await db
     .collection<TopBarDocument>(COLLECTION_LINKS)
@@ -119,6 +120,7 @@ export async function deleteTopBarLink(id: string): Promise<boolean> {
 
 // Contact Information Management
 export async function getTopBarContact(): Promise<TopBarContact | null> {
+  "use cache";
   const db = await getDb();
   const doc = await db
     .collection<TopBarContactDocument>(COLLECTION_CONTACT)

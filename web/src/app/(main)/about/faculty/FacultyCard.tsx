@@ -2,7 +2,6 @@
 
 import { useReveal } from "../legacy/use-reveal";
 import { SocialLinks } from "../legacy/social-links";
-import type { Person } from "./data";
 
 function initials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -12,7 +11,13 @@ function initials(name: string) {
   return (first + last).toUpperCase();
 }
 
-export function FacultyCard({ person, index }: { person: Person; index: number }) {
+export function FacultyCard({
+  person,
+  index,
+}: {
+  person: { name: string; role: string; photo: string };
+  index: number;
+}) {
   const reveal = useReveal<HTMLDivElement>(index * 60);
   return (
     <div ref={reveal.ref} className={`fac-card ${reveal.revealClass}`} style={reveal.style}>

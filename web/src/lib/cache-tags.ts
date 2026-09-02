@@ -29,6 +29,10 @@ export const CACHE_TAGS = {
   // Board of Directors
   boardList: "board-list",
   boardSettings: "board-settings",
+
+  // Faculty & Staff
+  facultyList: "faculty-list",
+  facultySettings: "faculty-settings",
   
   // Gallery
   galleryList: "gallery-list",

@@ -31,6 +31,7 @@ function fromDocument(doc: NavbarSettingsDocument): NavbarSettings {
  * Creates it from defaults if it doesn't exist.
  */
 export async function getNavbarSettings(): Promise<NavbarSettings> {
+  "use cache";
   const db = await getDb();
   const col = db.collection<NavbarSettingsDocument>(NAVBAR_SETTINGS_COLLECTION);
   let doc = await col.findOne({});
