@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   deleteFacility,
   getFacilityById,
@@ -8,6 +9,12 @@ import {
   hardDeleteFacility,
 } from "@/repositories/facilities.repository";
 import { requireApiSession } from "@/core/lib/api-guard";
+import { CACHE_TAGS } from "@/lib/cache-tags";
+
+function revalidateFacilities() {
+  revalidateTag(CACHE_TAGS.facilitiesList, "max");
+  revalidatePath("/about/facility");
+}
 
 const updateSchema = z
   .object({
@@ -66,6 +73,7 @@ export async function PATCH(
         if (!restored) {
           return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
+        revalidateFacilities();
         return NextResponse.json({ ok: true });
       } catch {
         return NextResponse.json(
@@ -81,6 +89,7 @@ export async function PATCH(
         if (!deleted) {
           return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
+        revalidateFacilities();
         return NextResponse.json({ ok: true });
       } catch {
         return NextResponse.json(
@@ -114,6 +123,7 @@ export async function PATCH(
     if (!updated) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+    revalidateFacilities();
     return NextResponse.json(updated);
   } catch {
     return NextResponse.json(
@@ -136,6 +146,7 @@ export async function DELETE(
     if (!deleted) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+    revalidateFacilities();
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json(

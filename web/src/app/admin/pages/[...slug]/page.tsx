@@ -55,6 +55,8 @@ import BoardPageSettings from "../_components/board-page-settings";
 import { getBoardPageSettings } from "@/repositories/board-page-settings.repository";
 import FacultyPageSettings from "../_components/faculty-page-settings";
 import { getFacultyPageSettings } from "@/repositories/faculty-page-settings.repository";
+import FacilitiesPageSettings from "../_components/facilities-page-settings";
+import { getFacilitiesPageSettings } from "@/repositories/facilities-page-settings.repository";
 
 interface RouteCtx {
   params: Promise<{ slug: string | string[] }>;
@@ -330,6 +332,19 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
           subtitle="Pages · Content & SEO"
         />
         <FacultyPageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "about/facility") {
+    const settings = await getFacilitiesPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content & SEO"
+        />
+        <FacilitiesPageSettings initial={settings} />
       </>
     );
   }

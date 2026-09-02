@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   createFacility,
   ensureFacilityIndexes,
@@ -7,6 +8,7 @@ import {
 } from "@/repositories/facilities.repository";
 import { FACILITY_CATEGORIES, FACILITY_STATUSES} from "@/app/admin/campus/facilities/types/facilities";
 import { requireApiSession } from "@/core/lib/api-guard";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 const createSchema = z.object({
   name: z.string().min(2).max(200),
@@ -70,6 +72,8 @@ export async function POST(request: NextRequest) {
 
   try {
     const created = await createFacility(parsed.data);
+    revalidateTag(CACHE_TAGS.facilitiesList, "max");
+    revalidatePath("/about/facility");
     return NextResponse.json(created, { status: 201 });
   } catch {
     return NextResponse.json(

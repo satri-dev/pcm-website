@@ -33,6 +33,10 @@ export const CACHE_TAGS = {
   // Faculty & Staff
   facultyList: "faculty-list",
   facultySettings: "faculty-settings",
+
+  // Campus & Facilities
+  facilitiesList: "facilities-list",
+  facilitiesSettings: "facilities-settings",
   
   // Gallery
   galleryList: "gallery-list",

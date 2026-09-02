@@ -13,7 +13,7 @@ export const mainPages: PagesSectionEntry[] = [
   { slug: "about/board", label: "Board of Directors", publicHref: "/about/board", live: true },
   { slug: "about/message", label: "Message from the Chair", publicHref: "/about/message" },
   { slug: "about/faculty", label: "Faculty & Staff", publicHref: "/about/faculty", live: true },
-  { slug: "about/facility", label: "Campus & Facilities", publicHref: "/about/facility" },
+  { slug: "about/facility", label: "Campus & Facilities", publicHref: "/about/facility", live: true },
   { slug: "about/campus-map", label: "Campus Map", publicHref: "/about/campus-map" },
   { slug: "admission", label: "Admission", publicHref: "/admission" },
   { slug: "alumni", label: "Alumni", publicHref: "/alumni", live: true },
