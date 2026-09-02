@@ -4,12 +4,25 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Save, ExternalLink, AlertCircle, CheckCircle2, ChevronDown } from "lucide-react";
+import { toast } from "sonner";
 import type { PageContent } from "@/types/page-content";
 import type { Program } from "@/types/programs";
 
 interface ProgramsPageEditorProps {
   initialContent: PageContent | null;
   availablePrograms: Program[];
+  coordinatorsFromPrograms: Array<{
+    programSlug: string;
+    programName: string;
+    programCode: string;
+    coordinator: {
+      name: string;
+      initials: string;
+      image: string;
+      role: string;
+      quote: string;
+    } | null;
+  }>;
 }
 
 const SECTIONS = [
@@ -17,6 +30,7 @@ const SECTIONS = [
   { id: "intro", title: "Intro Section", desc: "Section heading and body" },
   { id: "featured", title: "Featured Programs", desc: "Select which programs to feature" },
   { id: "comparison", title: "Comparison Table", desc: "Heading, column headers and program data" },
+  { id: "coordinators", title: "Coordinators Section", desc: "Section visibility, eyebrow, heading and description" },
   { id: "cta", title: "Call-to-Action", desc: "CTA heading, body and phone" },
 ];
 const ALL_SECTION_IDS = SECTIONS.map((s) => s.id);
@@ -24,11 +38,12 @@ const ALL_SECTION_IDS = SECTIONS.map((s) => s.id);
 export default function ProgramsPageEditor({
   initialContent,
   availablePrograms,
+  coordinatorsFromPrograms,
 }: ProgramsPageEditorProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(ALL_SECTION_IDS));
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set()); // Start with all collapsed
 
   const toggleSection = (id: string) => {
     setExpandedSections((prev) => {
@@ -64,6 +79,13 @@ export default function ProgramsPageEditor({
       columns: (content.comparisonTable as any)?.columns || ["Program", "Focus", "Duration", "Credits", "Ideal for"],
       rows: (content.comparisonTable as any)?.rows || {},
     },
+    coordinators: {
+      visible: (content.coordinators as any)?.visible !== false, // Default to true
+      eyebrow: (content.coordinators as any)?.eyebrow || "Your guides at PCM",
+      heading: (content.coordinators as any)?.heading || "Meet your program coordinators",
+      description: (content.coordinators as any)?.description || "Each program has a dedicated coordinator who will guide you from your first semester to your final project.",
+      visiblePrograms: (content.coordinators as any)?.visiblePrograms || availablePrograms.map((p) => p.slug), // All programs visible by default
+    },
     cta: {
       heading: (content.cta as any)?.heading || "Ready to choose your program?",
       body: (content.cta as any)?.body || "Apply online in minutes, or reach out and we'll guide you through every step.",
@@ -91,9 +113,14 @@ export default function ProgramsPageEditor({
       }
 
       router.refresh();
-      alert("Programs page content updated successfully!");
+      toast.success("Programs page updated successfully!");
+      
+      // Log for debugging
+      console.log("Saved coordinators config:", formData.coordinators);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Save failed");
+      const errorMsg = err instanceof Error ? err.message : "Failed to save changes";
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setSaving(false);
     }
@@ -494,9 +521,172 @@ export default function ProgramsPageEditor({
         </section>
 
         {/* CTA Section - EDITABLE */}
+        <section className={`pp-section ${expandedSections.has("coordinators") ? "is-expanded" : ""}`}>
+          <button type="button" className="pp-section__toggle" aria-expanded={expandedSections.has("coordinators")} onClick={() => toggleSection("coordinators")}>
+            <span className="pp-section__num">5</span>
+            <span className="pp-section__text">
+              <span className="pp-section__title">Coordinators Section</span>
+              <span className="pp-section__desc">Section visibility, eyebrow, heading and description</span>
+            </span>
+            <span className="badge badge--green">Editable</span>
+            <span className="pp-section__chevron"><ChevronDown size={18} /></span>
+          </button>
+          {expandedSections.has("coordinators") && (
+          <div className="pp-section__body">
+            <div className="form-grid">
+              <div className="field field--full">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.coordinators.visible}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        coordinators: { ...formData.coordinators, visible: e.target.checked },
+                      })
+                    }
+                  />
+                  <span className="font-semibold">Show Coordinators Section on Programs Page</span>
+                </label>
+                <span className="hint">When unchecked, the coordinators section will be hidden from the programs page</span>
+              </div>
+              <div className="field field--full">
+                <label htmlFor="coord-eyebrow">Eyebrow Text</label>
+                <input
+                  id="coord-eyebrow"
+                  type="text"
+                  value={formData.coordinators.eyebrow}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      coordinators: { ...formData.coordinators, eyebrow: e.target.value },
+                    })
+                  }
+                  placeholder="Your guides at PCM"
+                />
+              </div>
+              <div className="field field--full">
+                <label htmlFor="coord-heading">Section Heading</label>
+                <input
+                  id="coord-heading"
+                  type="text"
+                  value={formData.coordinators.heading}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      coordinators: { ...formData.coordinators, heading: e.target.value },
+                    })
+                  }
+                  placeholder="Meet your program coordinators"
+                />
+              </div>
+              <div className="field field--full">
+                <label htmlFor="coord-description">Section Description</label>
+                <textarea
+                  id="coord-description"
+                  rows={3}
+                  value={formData.coordinators.description}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      coordinators: { ...formData.coordinators, description: e.target.value },
+                    })
+                  }
+                  placeholder="Each program has a dedicated coordinator..."
+                />
+                <span className="hint">This text appears below the heading</span>
+              </div>
+              <div className="mt-4 space-y-3" style={{ gridColumn: "1 / -1" }}>
+                <h4 className="text-sm font-semibold">Coordinator Visibility</h4>
+                <p className="text-sm text-[var(--admin-muted)] mb-3">
+                  Select which program coordinators to show on the programs page. Coordinator details (photo, name, role, quote) are managed in each program's page editor.
+                </p>
+                <div className="space-y-2">
+                  {coordinatorsFromPrograms.map((item) => {
+                    const isVisible = formData.coordinators.visiblePrograms.includes(item.programSlug);
+                    const hasCoordinator = item.coordinator && item.coordinator.name && item.coordinator.quote;
+                    
+                    return (
+                      <div key={item.programSlug} className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg bg-gray-50">
+                        <input
+                          type="checkbox"
+                          checked={isVisible}
+                          onChange={(e) => {
+                            const newVisible = e.target.checked
+                              ? [...formData.coordinators.visiblePrograms, item.programSlug]
+                              : formData.coordinators.visiblePrograms.filter((s) => s !== item.programSlug);
+                            setFormData({
+                              ...formData,
+                              coordinators: {
+                                ...formData.coordinators,
+                                visiblePrograms: newVisible,
+                              },
+                            });
+                          }}
+                          className="mt-1"
+                          disabled={!hasCoordinator}
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-semibold text-sm">{item.programName}</span>
+                            <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-800 rounded">{item.programCode}</span>
+                          </div>
+                          {hasCoordinator ? (
+                            <div className="text-sm text-gray-700">
+                              <div className="flex items-center gap-2">
+                                {item.coordinator!.image && (
+                                  <img 
+                                    src={item.coordinator!.image} 
+                                    alt={item.coordinator!.name}
+                                    className="w-10 h-10 rounded-full object-cover"
+                                  />
+                                )}
+                                <div>
+                                  <div className="font-medium">{item.coordinator!.name}</div>
+                                  <div className="text-xs text-gray-600">{item.coordinator!.role}</div>
+                                </div>
+                              </div>
+                              {item.coordinator!.quote && (
+                                <p className="mt-2 text-xs text-gray-600 italic line-clamp-2">
+                                  "{item.coordinator!.quote.substring(0, 120)}{item.coordinator!.quote.length > 120 ? '...' : ''}"
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="text-sm text-gray-500 italic">
+                              No coordinator information yet. 
+                              <Link 
+                                href={`/admin/pages/programs/${item.programSlug}`}
+                                className="text-blue-600 hover:text-blue-800 ml-1"
+                                target="_blank"
+                              >
+                                Add coordinator →
+                              </Link>
+                            </div>
+                          )}
+                        </div>
+                        <Link
+                          href={`/admin/pages/programs/${item.programSlug}`}
+                          className="text-xs text-blue-600 hover:text-blue-800 inline-flex items-center gap-1 whitespace-nowrap"
+                          target="_blank"
+                        >
+                          <ExternalLink size={12} />
+                          Edit
+                        </Link>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+          )}
+        </section>
+
+        {/* CTA Section - EDITABLE */}
         <section className={`pp-section ${expandedSections.has("cta") ? "is-expanded" : ""}`}>
           <button type="button" className="pp-section__toggle" aria-expanded={expandedSections.has("cta")} onClick={() => toggleSection("cta")}>
-            <span className="pp-section__num">5</span>
+            <span className="pp-section__num">6</span>
             <span className="pp-section__text">
               <span className="pp-section__title">Call-to-Action</span>
               <span className="pp-section__desc">CTA heading, body and phone</span>

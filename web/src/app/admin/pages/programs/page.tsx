@@ -24,6 +24,18 @@ export default async function EditProgramsPage() {
     listPrograms({ pageSize: 100 }),
   ]);
 
+  // Extract coordinator data from each program's page content
+  const programPages = (pageContent?.content as any)?.programPages || {};
+  const coordinatorsFromPrograms = programsData.items.map((program) => {
+    const programPageContent = programPages[program.slug];
+    return {
+      programSlug: program.slug,
+      programName: program.name,
+      programCode: program.code,
+      coordinator: programPageContent?.coordinator || null,
+    };
+  });
+
   return (
     <>
       <PageHeader 
@@ -33,6 +45,7 @@ export default async function EditProgramsPage() {
       <ProgramsPageEditor 
         initialContent={pageContent}
         availablePrograms={programsData.items}
+        coordinatorsFromPrograms={coordinatorsFromPrograms}
       />
     </>
   );

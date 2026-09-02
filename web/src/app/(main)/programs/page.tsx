@@ -4,6 +4,19 @@ import { getPageContent } from "@/lib/data/page-content";
 import ProgramsClient from "./ProgramsClient";
 import type { ProgramsPageContent } from "@/types/page-content";
 
+// Type for program coordinator data
+interface ProgramCoordinator {
+  name: string;
+  initials: string;
+  image: string;
+  role: string;
+  quote: string;
+}
+
+interface ProgramPageContent {
+  coordinator?: ProgramCoordinator;
+}
+
 // Programs page now uses cache components for hybrid data (programs + page_content)
 export const metadata: Metadata = {
   title: "Programs | BBA, BBA-Finance & BCSIT at PCM Pokhara",
@@ -22,14 +35,27 @@ export default async function ProgramsPage() {
   const content = (pageContentData?.content || {}) as Partial<ProgramsPageContent>;
   const programs = programsData.items;
 
+  // Extract coordinator data from programPages nested in the programs page content
+  const coordinatorsData = programs.map((program) => {
+    const programPageContent = (content as any)?.programPages?.[program.slug];
+    
+    return {
+      programSlug: program.slug,
+      programCode: program.code,
+      coordinator: programPageContent?.coordinator || null,
+    };
+  });
+
   return (
     <ProgramsClient
       hero={content.hero}
       intro={content.intro}
       comparisonTable={content.comparisonTable}
       cta={content.cta}
+      coordinatorsContent={content.coordinators}
       // Show all active programs in the system on the cards + comparison table
       programs={programs}
+      coordinatorsData={coordinatorsData}
     />
   );
 }

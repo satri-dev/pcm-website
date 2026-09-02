@@ -46,15 +46,15 @@ export default function CurriculumTabs({ semesters, totalCredits }: Props) {
                 <table className="ctable">
                   <thead>
                     <tr>
-                      <th>Code</th>
-                      <th>Course Description</th>
-                      <th>Credit Hours</th>
+                      <th style={{ textAlign: "left" }}>Code</th>
+                      <th style={{ textAlign: "left" }}>Course Description</th>
+                      <th style={{ textAlign: "left" }}>Credit Hours</th>
                     </tr>
                   </thead>
                   <tbody>
                     {sem.courses.map((course) => (
                       <tr key={`${course.code}-${course.description}`}>
-                        <td>{course.code}</td>
+                        <td style={{ textAlign: "left" }}>{course.code}</td>
                         <td
                           style={{
                             fontFamily: "var(--ff-body)",
@@ -64,7 +64,7 @@ export default function CurriculumTabs({ semesters, totalCredits }: Props) {
                         >
                           {course.description}
                         </td>
-                        <td>{course.credits}</td>
+                        <td style={{ textAlign: "left" }}>{course.credits}</td>
                       </tr>
                     ))}
                   </tbody>
