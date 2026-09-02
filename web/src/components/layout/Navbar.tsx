@@ -25,13 +25,13 @@ export default function Navbar({ items }: { items: NavMenuItem[] }) {
   const navLinkClass = (href: string, base = "px-[0.85rem] py-[0.6rem] text-[0.925rem] font-semibold rounded-md transition-colors") =>
     `${base} ${
       pathname === href
-        ? "text-pcm-blue bg-secondary"
-        : "text-pcm-navy hover:text-pcm-blue hover:bg-secondary"
+        ? "text-pcm-blue bg-pcm-blue/10"
+        : "text-pcm-navy hover:text-pcm-blue hover:bg-pcm-blue/10"
     }`;
 
   return (
     <>
-      <header className="sticky top-0 z-101 bg-white backdrop-blur-md border-b border-border shadow-sm w-full">
+      <header className="sticky top-0 z-101 bg-white/90 backdrop-blur-[14px] border-b border-border shadow-sm w-full supports-[backdrop-filter]:bg-white/90">
         <div className="container flex items-center justify-between gap-3 sm:gap-6 min-h-16 sm:min-h-18.5 w-full mx-auto px-4 sm:px-6">
           <Link href="/" className="inline-flex items-center gap-2 sm:gap-3" aria-label="Pokhara College of Management — home">
             <Image
@@ -74,9 +74,17 @@ export default function Navbar({ items }: { items: NavMenuItem[] }) {
                 }
 
                 if (item.type === "mega") {
+                  const isMegaActive = item.columns.some(col => 
+                    col.links.some(link => pathname === link.href)
+                  );
+                  
                   return (
                     <li key={item.id} className="relative group">
-                      <span className="px-[0.85rem] py-[0.6rem] text-[0.925rem] font-semibold text-pcm-navy rounded-md hover:text-pcm-blue hover:bg-secondary transition-colors cursor-pointer inline-flex items-center gap-1">
+                      <span className={`px-[0.85rem] py-[0.6rem] text-[0.925rem] font-semibold rounded-md transition-colors cursor-pointer inline-flex items-center gap-1 ${
+                        isMegaActive 
+                          ? "text-pcm-blue bg-pcm-blue/10"
+                          : "text-pcm-navy hover:text-pcm-blue hover:bg-pcm-blue/10"
+                      }`}>
                         {item.label} <ChevronDown className="w-3.5 h-3.5 transition-transform group-hover:rotate-180" />
                       </span>
                       <div className="absolute top-full right-0 mt-2 min-w-170 p-5 bg-white rounded-xl border border-border shadow-pcm-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 grid grid-cols-4 gap-5">
@@ -86,7 +94,11 @@ export default function Navbar({ items }: { items: NavMenuItem[] }) {
                             <ul className="space-y-1">
                               {col.links.map((link) => (
                                 <li key={`${link.label}-${link.href}`}>
-                                  <Link href={link.href} className="block px-2 py-1.5 text-sm text-pcm-navy hover:text-pcm-blue hover:bg-secondary rounded-md transition-colors">
+                                  <Link href={link.href} className={`block px-2 py-1.5 text-sm rounded-md transition-colors ${
+                                    pathname === link.href
+                                      ? "text-pcm-blue bg-pcm-blue/10"
+                                      : "text-pcm-navy hover:text-pcm-blue hover:bg-pcm-blue/10"
+                                  }`}>
                                     {link.label}
                                   </Link>
                                 </li>
@@ -176,10 +188,10 @@ export default function Navbar({ items }: { items: NavMenuItem[] }) {
                       <li key={item.id}>
                         <Link
                           href={item.href || "#"}
-                          className={`block px-4 py-3 text-base font-semibold rounded-lg hover:bg-secondary transition-colors ${
+                          className={`block px-4 py-3 text-base font-semibold rounded-lg transition-colors ${
                             pathname === (item.href || "#")
-                              ? "text-pcm-blue bg-secondary"
-                              : "text-pcm-navy"
+                              ? "text-pcm-blue bg-pcm-blue/10"
+                              : "text-pcm-navy hover:bg-pcm-blue/10"
                           }`}
                           onClick={() => setMobileMenuOpen(false)}
                         >
@@ -190,11 +202,17 @@ export default function Navbar({ items }: { items: NavMenuItem[] }) {
                   }
 
                   if (item.type === "dropdown") {
+                    const isDropdownActive = item.children.some(child => pathname === child.href);
+                    
                     return (
                       <li key={item.id}>
                         <button
                           onClick={() => toggleDropdown(item.id)}
-                          className="w-full flex items-center justify-between px-4 py-3 text-base font-semibold text-pcm-navy rounded-lg hover:bg-secondary transition-colors"
+                          className={`w-full flex items-center justify-between px-4 py-3 text-base font-semibold rounded-lg transition-colors ${
+                            isDropdownActive
+                              ? "text-pcm-blue bg-pcm-blue/10"
+                              : "text-pcm-navy hover:bg-pcm-blue/10"
+                          }`}
                         >
                           {item.label}
                           <ChevronDown className={`w-4 h-4 transition-transform ${openDropdown === item.id ? "rotate-180" : ""}`} />
@@ -205,7 +223,11 @@ export default function Navbar({ items }: { items: NavMenuItem[] }) {
                               <li key={`${link.label}-${link.href}`}>
                                 <Link
                                   href={link.href}
-                                  className="block px-4 py-2 text-sm text-pcm-navy/80 hover:text-pcm-blue hover:bg-secondary rounded-md transition-colors"
+                                  className={`block px-4 py-2 text-sm rounded-md transition-colors ${
+                                    pathname === link.href
+                                      ? "text-pcm-blue bg-pcm-blue/10"
+                                      : "text-pcm-navy/80 hover:text-pcm-blue hover:bg-pcm-blue/10"
+                                  }`}
                                   onClick={() => setMobileMenuOpen(false)}
                                 >
                                   {link.label}
@@ -219,11 +241,19 @@ export default function Navbar({ items }: { items: NavMenuItem[] }) {
                   }
 
                   if (item.type === "mega") {
+                    const isMobileMegaActive = item.columns.some(col => 
+                      col.links.some(link => pathname === link.href)
+                    );
+                    
                     return (
                       <li key={item.id}>
                         <button
                           onClick={() => toggleDropdown(item.id)}
-                          className="w-full flex items-center justify-between px-4 py-3 text-base font-semibold text-pcm-navy rounded-lg hover:bg-secondary transition-colors"
+                          className={`w-full flex items-center justify-between px-4 py-3 text-base font-semibold rounded-lg transition-colors ${
+                            isMobileMegaActive
+                              ? "text-pcm-blue bg-pcm-blue/10"
+                              : "text-pcm-navy hover:bg-pcm-blue/10"
+                          }`}
                         >
                           {item.label}
                           <ChevronDown className={`w-4 h-4 transition-transform ${openDropdown === item.id ? "rotate-180" : ""}`} />
@@ -240,7 +270,11 @@ export default function Navbar({ items }: { items: NavMenuItem[] }) {
                                     <li key={`${link.label}-${link.href}`}>
                                       <Link
                                         href={link.href}
-                                        className="block px-4 py-2.5 text-sm text-pcm-navy/70 hover:text-pcm-blue hover:bg-secondary rounded-md transition-colors"
+                                        className={`block px-4 py-2.5 text-sm rounded-md transition-colors ${
+                                          pathname === link.href
+                                            ? "text-pcm-blue bg-pcm-blue/10"
+                                            : "text-pcm-navy/70 hover:text-pcm-blue hover:bg-pcm-blue/10"
+                                        }`}
                                         onClick={() => setMobileMenuOpen(false)}
                                       >
                                         {link.label}
