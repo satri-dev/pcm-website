@@ -14,7 +14,9 @@ import {
   Save,
   Trash2,
 } from "lucide-react";
+import { toast } from "sonner";
 import type { Program } from "@/types/programs";
+import ImageUpload from "@/components/cloudinary/ImageUpload";
 
 /* ----------------------------------------------------------------
    Types
@@ -428,7 +430,7 @@ export default function ProgramPageEditor({
   const [saved, setSaved] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set(["hero", "overview"])
+    new Set() // All sections collapsed initially
   );
   const [formData, setFormData] = useState<ProgramPageContent>(() => defaults(initialContent));
 
@@ -475,9 +477,12 @@ export default function ProgramPageEditor({
 
       setDirty(false);
       setSaved(true);
+      toast.success(`${program.name} page content saved successfully`);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Save failed");
+      const errorMsg = err instanceof Error ? err.message : "Save failed";
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setSaving(false);
     }
@@ -491,13 +496,6 @@ export default function ProgramPageEditor({
         <div className="pp-banner pp-banner--error" role="alert">
           <AlertCircle size={16} />
           {error}
-        </div>
-      )}
-
-      {saved && !error && (
-        <div className="pp-banner pp-banner--success" role="status">
-          <CheckCircle2 size={16} />
-          {program.name} page content saved successfully.
         </div>
       )}
 
@@ -1265,21 +1263,46 @@ export default function ProgramPageEditor({
                 />
               </Field>
               <Field
-                label="Image URL"
-                hint="Path to the coordinator photo"
+                label="Coordinator Image"
+                hint="Upload coordinator photo via Cloudinary"
                 className="field--full"
               >
-                <input
-                  type="text"
-                  value={formData.coordinator.image}
-                  onChange={(e) =>
-                    update((f) => ({
-                      ...f,
-                      coordinator: { ...f.coordinator, image: e.target.value },
-                    }))
-                  }
-                  placeholder="/assets/img/people/coordinator_name.jpg"
-                />
+                <div className="space-y-2">
+                  <ImageUpload
+                    onUpload={(result) =>
+                      update((f) => ({
+                        ...f,
+                        coordinator: { ...f.coordinator, image: result.secure_url },
+                      }))
+                    }
+                  />
+                  {formData.coordinator.image && (
+                    <div className="flex items-center gap-3 rounded-md border border-gray-200 bg-gray-50 p-3">
+                      <img
+                        src={formData.coordinator.image}
+                        alt="Coordinator preview"
+                        className="h-16 w-16 rounded-md object-cover"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-600 truncate">
+                          {formData.coordinator.image}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          update((f) => ({
+                            ...f,
+                            coordinator: { ...f.coordinator, image: "" },
+                          }))
+                        }
+                        className="text-sm text-red-600 hover:text-red-700"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
+                </div>
               </Field>
               <Field label="Quote" className="field--full">
                 <textarea
