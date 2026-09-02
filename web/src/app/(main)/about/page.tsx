@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
-import AboutClient from "./AboutClient";
-import { getPageCopy } from "@/lib/data/page-content";
+import AboutServer from "./AboutServer";
+import { getAboutSettings } from "@/lib/data/about-page-settings";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700", "800"],
@@ -11,41 +11,34 @@ const poppins = Poppins({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const content = await getPageCopy("about");
-
-  const title = [content?.hero?.title?.trim() || content?.label?.trim() || "About Us", "Pokhara College of Management"]
-    .filter(Boolean)
-    .join(" | ");
-  const description =
-    content?.hero?.subtitle?.trim() ||
-    "Learn about Pokhara College of Management — our story, mission, values and what makes PCM different.";
-
+  const settings = await getAboutSettings();
+  const canonical = "https://www.pcm.edu.np/about";
   return {
-    title,
-    description,
-    alternates: { canonical: "/about" },
+    title: settings.seoTitle,
+    description: settings.seoDescription,
+    keywords: settings.seoKeywords,
+    alternates: { canonical },
     openGraph: {
       type: "website",
       siteName: "Pokhara College of Management",
-      title,
-      description,
+      title: settings.seoTitle,
+      description: settings.seoDescription,
       locale: "en_US",
-      images: [{ url: "/assets/img/about-1.jpg" }],
+      images: [{ url: settings.ogImage }],
     },
     twitter: {
       card: "summary_large_image",
-      title,
-      description,
-      images: ["/assets/img/about-1.jpg"],
+      title: settings.seoTitle,
+      description: settings.seoDescription,
+      images: [settings.ogImage],
     },
   };
 }
 
 export default async function AboutPage() {
-  const content = await getPageCopy("about");
   return (
     <div className={poppins.variable}>
-      <AboutClient content={content} />
+      <AboutServer />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { requireApiSession } from "@/core/lib/api-guard";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 import {
@@ -46,6 +46,8 @@ export async function PUT(req: NextRequest) {
 
     const data = await updateHomepage(patch);
     revalidateTag(CACHE_TAGS.homepage, "max");
+    revalidatePath("/about");
+    revalidatePath("/");
     return NextResponse.json(data);
   } catch (err) {
     console.error("Failed to update homepage:", err);

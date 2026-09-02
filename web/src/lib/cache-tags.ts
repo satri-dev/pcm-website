@@ -23,6 +23,7 @@ export const CACHE_TAGS = {
   
   // About
   about: "about",
+  aboutSettings: "about-settings",
   
   // Gallery
   galleryList: "gallery-list",
