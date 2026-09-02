@@ -5,14 +5,8 @@ import "../about.css";
 import { CtaBand } from "../legacy/cta-band";
 import { FacultyGrid } from "./FacultyGrid";
 import { StatsGrid } from "./StatsGrid";
-import { stats } from "./data";
-import { getPageCopy, getSection } from "@/lib/data/page-content";
-
-export const metadata: Metadata = {
-  title: "Staff & Faculty | Pokhara College of Management",
-  description: "Meet the faculty and staff of Pokhara College of Management.",
-  alternates: { canonical: "/about/faculty" },
-};
+import { getFacultySettings } from "@/lib/data/faculty-page-settings";
+import { getPublishedFaculty } from "@/lib/data/faculty";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700", "800"],
@@ -21,33 +15,53 @@ const poppins = Poppins({
   variable: "--font-poppins",
 });
 
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getFacultySettings();
+  const canonical = "https://www.pcm.edu.np/about/faculty";
+  return {
+    title: settings.seoTitle,
+    description: settings.seoDescription,
+    keywords: settings.seoKeywords,
+    alternates: { canonical },
+    openGraph: {
+      type: "website",
+      siteName: "Pokhara College of Management",
+      title: settings.seoTitle,
+      description: settings.seoDescription,
+      locale: "en_US",
+      images: [{ url: settings.ogImage }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: settings.seoTitle,
+      description: settings.seoDescription,
+      images: [settings.ogImage],
+    },
+  };
+}
+
 export default async function FacultyPage() {
-  const content = await getPageCopy("about/faculty");
-  const hero = (content as any)?.hero ?? {
-    title: "Staff & Faculty",
-    subtitle: "The dedicated people behind PCM — qualified, experienced and genuinely invested in your success.",
-  };
-  
-  const statsSection = await getSection(content, "stats", null);
-  const statsContent = statsSection ?? {
-    key: "stats",
-    eyebrow: "By the numbers",
-    title: "A legacy measured in outcomes",
-  };
-  
-  const ctaSection = await getSection(content, "cta", null);
-  const cta = ctaSection ?? {
-    key: "cta",
-    title: "Join a college that cares",
-    paragraphs: [
-      "Experience the PCM difference for yourself — apply for the 2083 intake today.",
-    ],
-  };
+  const [settings, groups] = await Promise.all([
+    getFacultySettings(),
+    getPublishedFaculty(),
+  ]);
+
+  const leadership = groups.leadership.map((m) => ({
+    name: m.name,
+    role: m.role,
+    photo: m.photo,
+  }));
+  const team = groups.team.map((m) => ({
+    name: m.name,
+    role: m.role,
+    photo: m.photo,
+  }));
 
   return (
     <div className={poppins.variable}>
       <div className="pcm-about">
         <main id="main">
+          {/* ── Hero ── */}
           <section className="page-hero">
             <svg
               className="page-hero__peaks"
@@ -66,21 +80,34 @@ export default async function FacultyPage() {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>{" "}
                 <span>Staff & Faculty</span>
               </nav>
-              <h1>{hero.title}</h1>
-              <p>{hero.subtitle}</p>
+              <h1>{settings.heroTitle}</h1>
+              <p>{settings.heroSubtitle}</p>
             </div>
           </section>
-          <FacultyGrid />
-          <StatsGrid
-            stats={stats}
-            eyebrow={statsContent.eyebrow || "By the numbers"}
-            title={statsContent.title || "A legacy measured in outcomes"}
+
+          {/* ── Faculty & leadership grid ── */}
+          <FacultyGrid
+            leadership={leadership}
+            team={team}
+            leadershipEyebrow={settings.leadershipEyebrow}
+            leadershipTitle={settings.leadershipTitle}
+            teamEyebrow={settings.teamEyebrow}
+            teamTitle={settings.teamTitle}
           />
+
+          {/* ── By the numbers ── */}
+          <StatsGrid
+            stats={settings.stats}
+            eyebrow={settings.statsEyebrow}
+            title={settings.statsTitle}
+          />
+
+          {/* ── CTA band ── */}
           <CtaBand
-            title={cta.title || "Join a college that cares"}
-            text={cta.paragraphs?.[0] || "Experience the PCM difference for yourself — apply for the 2083 intake today."}
-            primary={{ label: "Apply Now", href: "/admission" }}
-            secondary={{ label: "More Info", href: "/about" }}
+            title={settings.ctaTitle}
+            text={settings.ctaText}
+            primary={{ label: settings.ctaPrimaryLabel, href: settings.ctaPrimaryHref }}
+            secondary={{ label: settings.ctaSecondaryLabel, href: settings.ctaSecondaryHref }}
           />
         </main>
       </div>
