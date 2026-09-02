@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   createAlumni,
   ensureAlumniIndexes,
@@ -7,6 +8,7 @@ import {
 } from "@/repositories/alumni.repository";
 import { ALUMNI_SECTORS, ALUMNI_PROGRAMS, type AlumniCreateInput } from "@/types/alumni";
 import { requireApiSession } from "@/core/lib/api-guard";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 const createSchema = z.object({
   name: z.string().min(2).max(200),
@@ -61,6 +63,8 @@ export async function POST(request: NextRequest) {
 
   try {
     const created = await createAlumni(parsed.data as AlumniCreateInput);
+    revalidateTag(CACHE_TAGS.alumniList, "max");
+    revalidatePath("/alumni");
     return NextResponse.json(created, { status: 201 });
   } catch {
     return NextResponse.json(

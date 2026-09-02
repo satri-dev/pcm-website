@@ -71,6 +71,10 @@ export const CACHE_TAGS = {
   scholarshipsList: "scholarships-list",
   scholarshipPageSettings: "scholarship-page-settings",
 
+  // Alumni
+  alumniList: "alumni-list",
+  alumniSettings: "alumni-settings",
+
   // Chatbot
   chatbot: "chatbot",
   

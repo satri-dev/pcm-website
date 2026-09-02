@@ -47,6 +47,8 @@ import CareersPageSettings from "../_components/careers-page-settings";
 import { getCareersPageSettings } from "@/repositories/careers-page-settings.repository";
 import ScholarshipPageSettings from "../_components/scholarship-page-settings";
 import { getScholarshipPageSettings } from "@/repositories/scholarship-page-settings.repository";
+import AlumniPageSettings from "../_components/alumni-page-settings";
+import { getAlumniPageSettings } from "@/repositories/alumni-page-settings.repository";
 
 interface RouteCtx {
   params: Promise<{ slug: string | string[] }>;
@@ -268,6 +270,19 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
           subtitle="Pages · Content & SEO"
         />
         <ScholarshipPageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "alumni") {
+    const settings = await getAlumniPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content & SEO"
+        />
+        <AlumniPageSettings initial={settings} />
       </>
     );
   }

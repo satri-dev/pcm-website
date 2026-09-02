@@ -217,6 +217,13 @@ const pagesNav: PagesSectionNavItem[] = [
     icon: HelpCircle,
     ready: true,
   },
+  {
+    label: "Alumni",
+    href: "/admin/pages/alumni",
+    icon: UserCheck,
+    ready: true,
+  },
+
 ];
 
 const sectionsNav: PagesSectionNavItem[] = [

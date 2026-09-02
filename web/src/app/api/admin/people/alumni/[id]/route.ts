@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   deleteAlumni,
   getAlumniById,
@@ -7,6 +8,7 @@ import {
 } from "@/repositories/alumni.repository";
 import { ALUMNI_SECTORS, ALUMNI_PROGRAMS, type AlumniUpdateInput } from "@/types/alumni";
 import { requireApiSession } from "@/core/lib/api-guard";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 const updateSchema = z
   .object({
@@ -76,6 +78,8 @@ export async function PATCH(
     if (!updated) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+    revalidateTag(CACHE_TAGS.alumniList, "max");
+    revalidatePath("/alumni");
     return NextResponse.json(updated);
   } catch (err) {
     if (isMongoError(err) && err.code === 11000) {
@@ -104,6 +108,8 @@ export async function DELETE(
     if (!deleted) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+    revalidateTag(CACHE_TAGS.alumniList, "max");
+    revalidatePath("/alumni");
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json(

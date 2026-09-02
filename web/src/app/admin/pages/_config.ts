@@ -16,7 +16,7 @@ export const mainPages: PagesSectionEntry[] = [
   { slug: "about/facility", label: "Campus & Facilities", publicHref: "/about/facility" },
   { slug: "about/campus-map", label: "Campus Map", publicHref: "/about/campus-map" },
   { slug: "admission", label: "Admission", publicHref: "/admission" },
-  { slug: "alumni", label: "Alumni", publicHref: "/alumni" },
+  { slug: "alumni", label: "Alumni", publicHref: "/alumni", live: true },
   { slug: "career", label: "Career", publicHref: "/career", live: true },
   { slug: "blogs", label: "Blogs", publicHref: "/blogs" },
   { slug: "blog-student", label: "Student Blogs", publicHref: "/blogs-student" },
