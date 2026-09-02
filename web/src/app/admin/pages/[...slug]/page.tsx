@@ -51,6 +51,8 @@ import AlumniPageSettings from "../_components/alumni-page-settings";
 import { getAlumniPageSettings } from "@/repositories/alumni-page-settings.repository";
 import AboutPageSettings from "../_components/about-page-settings";
 import { getAboutPageSettings } from "@/repositories/about-page-settings.repository";
+import BoardPageSettings from "../_components/board-page-settings";
+import { getBoardPageSettings } from "@/repositories/board-page-settings.repository";
 
 interface RouteCtx {
   params: Promise<{ slug: string | string[] }>;
@@ -298,6 +300,19 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
           subtitle="Pages · Content & SEO"
         />
         <AboutPageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "about/board") {
+    const settings = await getBoardPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content & SEO"
+        />
+        <BoardPageSettings initial={settings} />
       </>
     );
   }

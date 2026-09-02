@@ -2,7 +2,7 @@
 
 import { useReveal } from "../legacy/use-reveal";
 import { SocialLinks } from "../legacy/social-links";
-import type { BoardMember } from "./data";
+import type { BoardMember } from "./BoardGrid";
 
 function initials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);

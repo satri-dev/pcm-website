@@ -24,6 +24,10 @@ export const CACHE_TAGS = {
   // About
   about: "about",
   aboutSettings: "about-settings",
+
+  // Board of Directors
+  boardList: "board-list",
+  boardSettings: "board-settings",
   
   // Gallery
   galleryList: "gallery-list",

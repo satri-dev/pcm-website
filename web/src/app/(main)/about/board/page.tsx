@@ -7,15 +7,8 @@ import { CheckList } from "../legacy/check-list";
 import { CtaBand } from "../legacy/cta-band";
 import { RevealBox } from "../legacy/reveal-box";
 import { BoardGrid } from "./BoardGrid";
-import { getPageCopy } from "@/lib/data/page-content";
-import type { PageContentSection } from "@/types/page-content";
-import { Suspense } from "react";
-
-const FALLBACK_HERO = {
-  title: "Board of Directors",
-  subtitle:
-    "The people steering PCM — guiding vision, governance and growth since 2002.",
-};
+import { getBoardSettings } from "@/lib/data/board-page-settings";
+import { getPublishedBoard } from "@/lib/data/board";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700", "800"],
@@ -25,60 +18,41 @@ const poppins = Poppins({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const content = await getPageCopy("about/board");
-  const title = [
-    content?.hero?.title?.trim() || content?.label?.trim() || "Board of Directors",
-    "Pokhara College of Management",
-  ]
-    .filter(Boolean)
-    .join(" | ");
-  const description =
-    content?.hero?.subtitle?.trim() ||
-    "Meet the Board of Directors of Pokhara College of Management — the leadership guiding our vision, governance and growth since 2002.";
+  const settings = await getBoardSettings();
+  const canonical = "https://www.pcm.edu.np/about/board";
   return {
-    title,
-    description,
-    alternates: { canonical: "/about/board" },
+    title: settings.seoTitle,
+    description: settings.seoDescription,
+    keywords: settings.seoKeywords,
+    alternates: { canonical },
+    openGraph: {
+      type: "website",
+      siteName: "Pokhara College of Management",
+      title: settings.seoTitle,
+      description: settings.seoDescription,
+      locale: "en_US",
+      images: [{ url: settings.ogImage }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: settings.seoTitle,
+      description: settings.seoDescription,
+      images: [settings.ogImage],
+    },
   };
 }
 
-function hasContent(section: PageContentSection): boolean {
-  return Boolean(
-    section.eyebrow?.trim() ||
-    section.title?.trim() ||
-    section.subtitle?.trim() ||
-    (section.paragraphs?.length ?? 0) > 0 ||
-    (section.checklist?.length ?? 0) > 0,
-  );
-}
-
-export default function BoardPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <BoardPageContent />
-    </Suspense>
-  );
-}
-
-async function BoardPageContent() {
-  const content = await getPageCopy("about/board");
-
-  const hero = {
-    title: content?.hero?.title?.trim() || FALLBACK_HERO.title,
-    subtitle: content?.hero?.subtitle?.trim() || FALLBACK_HERO.subtitle,
-  };
-
-  const sections = (content?.sections ?? []).filter(hasContent);
-
-  const intro = sections[0];
-  const rest = sections.slice(1);
-  const cta = rest.find((s) => s.key === "cta") ?? rest[rest.length - 1];
-  const bodySections = cta ? rest.filter((s) => s !== cta) : rest;
+export default async function BoardPage() {
+  const [settings, members] = await Promise.all([
+    getBoardSettings(),
+    getPublishedBoard(),
+  ]);
 
   return (
     <div className={poppins.variable}>
       <div className="pcm-about">
         <main id="main">
+          {/* ── Hero ── */}
           <section className="page-hero">
             <svg
               className="page-hero__peaks"
@@ -95,75 +69,64 @@ async function BoardPageContent() {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>{" "}
                 <span>Board of Directors</span>
               </nav>
-              <h1>{hero.title}</h1>
-              <p>{hero.subtitle}</p>
+              <h1>{settings.heroTitle}</h1>
+              <p>{settings.heroSubtitle}</p>
             </div>
           </section>
 
+          {/* ── Board grid ── */}
           <section className="section">
             <div className="wrap-wide">
-              {intro ? (
-                <SectionHead
-                  eyebrow={intro.eyebrow ?? ""}
-                  title={intro.title ?? ""}
-                  subtitle={intro.subtitle}
-                />
-              ) : (
-                <SectionHead
-                  eyebrow="Governance"
-                  title="Our Board of Directors"
-                  subtitle="A committed leadership team that keeps PCM rooted in quality, integrity and service."
-                />
-              )}
-              <BoardGrid />
-              {intro?.paragraphs ? (
-                <div className="split" style={{ marginTop: "1.6rem" }}>
-                  <RevealBox>
-                    {intro.paragraphs.map((p, i) => (
-                      <p key={i} style={i === 0 ? { marginTop: "1rem" } : undefined}>
-                        {p}
-                      </p>
-                    ))}
-                    {intro.checklist ? <CheckList className="checklist" items={intro.checklist} /> : null}
-                  </RevealBox>
-                </div>
-              ) : null}
+              <SectionHead
+                eyebrow={settings.headEyebrow}
+                title={settings.headTitle}
+                subtitle={settings.headSubtitle}
+              />
+              <BoardGrid members={members} />
             </div>
           </section>
 
-          {bodySections.map((section, i) => (
-            <section key={section.key || i} className={i % 2 === 1 ? "section tone-sky" : "section"}>
-              <div className="wrap-wide">
-                <SectionHead
-                  eyebrow={section.eyebrow ?? ""}
-                  title={section.title ?? ""}
-                  subtitle={section.subtitle}
-                  center
-                />
-                {section.paragraphs ? (
-                  <div className="split" style={{ marginTop: "1.4rem" }}>
-                    <RevealBox>
-                      {section.paragraphs.map((p, pi) => (
-                        <p key={pi} style={pi === 0 ? { marginTop: "1rem" } : undefined}>
-                          {p}
-                        </p>
-                      ))}
-                      {section.checklist ? <CheckList className="checklist" items={section.checklist} /> : null}
-                    </RevealBox>
+          {/* ── Our promise (split) ── */}
+          <section className="section tone-sky">
+            <div className="wrap-wide split">
+              <RevealBox>
+                <span className="eyebrow">{settings.promiseEyebrow}</span>
+                <h2 className="section-title">{settings.promiseTitle}</h2>
+                {settings.promiseParagraphs.map((p, i) => (
+                  <p key={i} style={i === 0 ? { marginTop: "1rem" } : undefined}>
+                    {p}
+                  </p>
+                ))}
+                {settings.promiseChecklist.length > 0 && (
+                  <div style={{ marginTop: "1.2rem" }}>
+                    <CheckList className="checklist" items={settings.promiseChecklist} />
                   </div>
-                ) : null}
+                )}
+              </RevealBox>
+              <div className="split__media">
+                <div style={{ borderRadius: "22px", overflow: "hidden", boxShadow: "var(--shadow-lg)", aspectRatio: "4/3", position: "relative" }}>
+                  <img
+                    className="split-media-img"
+                    src={settings.promiseImageSrc}
+                    alt={settings.promiseImageAlt}
+                    loading="lazy"
+                    style={{ objectFit: "cover", width: "100%", height: "100%" }}
+                  />
+                </div>
+                <div className="est-badge">
+                  <b>{settings.promiseBadgeValue}</b>
+                  <span>{settings.promiseBadgeLabel}</span>
+                </div>
               </div>
-            </section>
-          ))}
+            </div>
+          </section>
 
+          {/* ── CTA band ── */}
           <CtaBand
-            title={cta?.title ?? "A step towards your future"}
-            text={
-              cta?.paragraphs?.[0] ??
-              "Applications for the 2083 intake are open across all three programs. Take the first step today."
-            }
-            primary={{ label: "Apply Now", href: "/admission" }}
-            secondary={{ label: "Explore Programs", href: "/programs" }}
+            title={settings.ctaTitle}
+            text={settings.ctaText}
+            primary={{ label: settings.ctaPrimaryLabel, href: settings.ctaPrimaryHref }}
+            secondary={{ label: settings.ctaSecondaryLabel, href: settings.ctaSecondaryHref }}
           />
         </main>
       </div>
