@@ -24,6 +24,7 @@ export interface FooterSettings {
   // Newsletter
   newsletterTitle: string;
   newsletterDescription: string;
+  newsletterButtonText: string;
   
   // Bottom
   copyrightText: string;
@@ -54,6 +55,7 @@ export interface FooterSettingsUpdateInput {
   affiliationBadge?: string;
   newsletterTitle?: string;
   newsletterDescription?: string;
+  newsletterButtonText?: string;
   copyrightText?: string;
   developerName?: string;
   developerUrl?: string;

@@ -37,7 +37,7 @@ export default function ProgramsSection({ programs }: { programs: ProgramType[] 
                 <h3 className="text-[1.32rem] font-display font-semibold text-pcm-navy">
                   <Link href={`/programs/${p.slug}`}>{p.name}</Link>
                 </h3>
-                <p className="text-sm text-muted-foreground">{p.intro}</p>
+                <div className="text-sm text-muted-foreground prose prose-sm max-w-none prose-p:my-0" dangerouslySetInnerHTML={{ __html: p.intro }} />
                 <div className="flex flex-wrap gap-x-6 gap-y-1 mt-2 pt-3 border-t border-dashed border-border">
                   <div>
                     <b className="block text-pcm-blue leading-none">{p.duration}</b>

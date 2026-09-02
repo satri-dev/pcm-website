@@ -7,13 +7,12 @@ import {
   HomepageUpdateInput,
   HOMEPAGE_COLLECTION,
   DEFAULT_HOMEPAGE_DATA,
-  MAX_HERO_SLIDES,
 } from "@/types/homepage";
 
 function fromDocument(doc: HomepageDocument): HomepageData {
   return {
     id: doc._id!.toString(),
-    heroSlides: doc.heroSlides.slice(0, MAX_HERO_SLIDES),
+    heroSlides: doc.heroSlides, // No limit applied
     welcomeStats: doc.welcomeStats,
     whyChooseReasons: doc.whyChooseReasons,
     testimonials: doc.testimonials,
@@ -36,12 +35,6 @@ export async function getHomepage(): Promise<HomepageData> {
     const insert = { ...DEFAULT_HOMEPAGE_DATA, createdAt: now, updatedAt: now };
     const result = await col.insertOne(insert as HomepageDocument);
     doc = { ...insert, _id: result.insertedId };
-  } else if (doc.heroSlides.length > MAX_HERO_SLIDES) {
-    await col.updateOne(
-      { _id: doc._id },
-      { $set: { heroSlides: doc.heroSlides.slice(0, MAX_HERO_SLIDES), updatedAt: new Date() } }
-    );
-    doc.heroSlides = doc.heroSlides.slice(0, MAX_HERO_SLIDES);
   }
   return fromDocument(doc);
 }
@@ -64,9 +57,7 @@ export async function updateHomepage(
   ];
   for (const key of allowed) {
     if (key in patch && patch[key] !== undefined) {
-      set[key] = key === "heroSlides"
-        ? (patch[key] as unknown[]).slice(0, MAX_HERO_SLIDES)
-        : patch[key];
+      set[key] = patch[key]; // No limit applied to heroSlides
     }
   }
 

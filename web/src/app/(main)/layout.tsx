@@ -7,6 +7,7 @@ import Footer from "@/components/layout/Footer";
 import ChatbotWidget from "@/components/shared/ChatbotWidget";
 import ChatWidget from "@/components/shared/ChatWidget";
 import { getNavbarItems } from "@/lib/data/navigation";
+import { getNavbarSettings } from "@/repositories/navbar-settings.repository";
 
 export default async function MainLayout({
   children,
@@ -36,5 +37,6 @@ export default async function MainLayout({
 
 async function NavbarWithData() {
   const navItems = await getNavbarItems();
-  return <Navbar items={navItems} />;
+  const settings = await getNavbarSettings();
+  return <Navbar items={navItems} settings={settings} />;
 }

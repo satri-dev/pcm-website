@@ -39,25 +39,15 @@ export default function StatsManager({ stats, onSave }: Props) {
             Animated counter stats shown below the welcome text.
           </p>
         </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() =>
-              setItems((prev) => [...prev, { value: 0, suffix: "", label: "" }])
-            }
-            className="admin-btn"
-          >
-            <Plus size={14} /> Add Stat
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className="admin-btn admin-btn--primary"
-          >
-            <Save size={14} /> {saving ? "Saving…" : "Save"}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() =>
+            setItems((prev) => [...prev, { value: 0, suffix: "", label: "" }])
+          }
+          className="admin-btn"
+        >
+          <Plus size={14} /> Add Stat
+        </button>
       </div>
 
       <div className="space-y-3">
@@ -101,6 +91,18 @@ export default function StatsManager({ stats, onSave }: Props) {
             </button>
           </div>
         ))}
+      </div>
+
+      {/* Save Button at Bottom */}
+      <div className="mt-6 flex justify-end">
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving}
+          className="admin-btn admin-btn--primary"
+        >
+          <Save size={14} /> {saving ? "Saving…" : "Save"}
+        </button>
       </div>
     </div>
   );

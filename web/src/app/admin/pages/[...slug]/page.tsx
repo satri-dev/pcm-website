@@ -76,13 +76,15 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
   if (found.entry.slug === "navbar") {
     await ensureNavMenusReady();
     const items = await listNavMenu();
+    const { getNavbarSettings } = await import("@/repositories/navbar-settings.repository");
+    const settings = await getNavbarSettings();
     return (
       <>
         <PageHeader
           title={found.entry.label}
           subtitle="Sections · Navbar menus"
         />
-        <NavMenuManager initialData={items} />
+        <NavMenuManager initialData={items} initialSettings={settings} />
       </>
     );
   }

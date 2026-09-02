@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/refs */
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react-hooks/set-state-in-effect */
+ 
 import { useEffect, useRef, useState } from "react";
 import { RoleDefinition, PermissionKey } from "../types";
 

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { X, GraduationCap, ArrowRight } from "lucide-react";
 import { newsData } from "@/data/news";
+import type { AdmissionModalSettings } from "@/types/admission-modal";
 
 const tabs = [
   { id: "news", label: "Latest News" },
@@ -36,18 +37,25 @@ const eventData = [
   { date: "18 Sep 2026", title: "Annual Fest 2083" },
 ];
 
-export default function AdmissionModal() {
+interface AdmissionModalProps {
+  settings: AdmissionModalSettings;
+}
+
+export default function AdmissionModal({ settings }: AdmissionModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("news");
 
   useEffect(() => {
-    // Show modal on page load after 2 seconds
+    // Only show modal if enabled
+    if (!settings.enabled) return;
+
+    // Show modal on page load after configured delay
     const timer = setTimeout(() => {
       setIsOpen(true);
-    }, 2000);
+    }, settings.delaySeconds * 1000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [settings.enabled, settings.delaySeconds]);
 
   useEffect(() => {
     // Prevent body scroll when modal is open
@@ -167,7 +175,8 @@ export default function AdmissionModal() {
     }
   };
 
-  if (!isOpen) return null;
+  // Don't render anything if modal is disabled
+  if (!settings.enabled || !isOpen) return null;
 
   return (
     <div
@@ -202,7 +211,7 @@ export default function AdmissionModal() {
 
           {/* Eyebrow */}
           <span className="inline-block px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-pcm-blue/10 text-pcm-blue text-[0.65rem] sm:text-xs font-mono uppercase tracking-wider mb-1.5 sm:mb-2">
-            Admissions Open · 2083 Intake
+            {settings.eyebrow}
           </span>
 
           {/* Title */}
@@ -210,12 +219,12 @@ export default function AdmissionModal() {
             id="admissionModalTitle"
             className="text-base sm:text-lg md:text-xl font-display font-bold text-pcm-navy mb-1.5 sm:mb-2 px-2"
           >
-            Join BBA, BBA-Finance & BCSIT
+            {settings.heading}
           </h2>
 
           {/* Description */}
           <p className="text-xs sm:text-sm text-muted-foreground px-1 sm:px-2 leading-relaxed">
-            Applications are open for the 2083 intake at Pokhara College of Management. Seats are limited and the deadline is close.
+            {settings.description}
           </p>
         </div>
 
@@ -249,24 +258,24 @@ export default function AdmissionModal() {
         <div className="border-t border-border p-3 sm:p-4 md:p-5 bg-secondary/30">
           <div className="flex flex-col gap-2 sm:gap-2.5 mb-2 sm:mb-3">
             <Link
-              href="/admission"
+              href={settings.primaryButton.href}
               className="w-full h-9 sm:h-10 md:h-11 rounded-lg bg-pcm-green text-pcm-navy font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-2 hover:bg-pcm-green/90 transition-colors"
               onClick={closeModal}
             >
-              Apply Now <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              {settings.primaryButton.label} <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </Link>
             <Link
-              href="/admission"
+              href={settings.secondaryButton.href}
               className="w-full h-9 sm:h-10 md:h-11 rounded-lg bg-white border-2 border-pcm-navy text-pcm-navy font-bold text-xs sm:text-sm inline-flex items-center justify-center hover:bg-pcm-navy hover:text-white transition-colors"
               onClick={closeModal}
             >
-              Entrance Details
+              {settings.secondaryButton.label}
             </Link>
           </div>
           <p className="text-center text-[0.65rem] sm:text-xs text-muted-foreground">
             Questions? Call{" "}
-            <a href="tel:061544761" className="text-pcm-blue hover:underline font-semibold">
-              (061) 544761
+            <a href={`tel:${settings.contactPhone.replace(/[^0-9]/g, '')}`} className="text-pcm-blue hover:underline font-semibold">
+              {settings.contactPhone}
             </a>
           </p>
         </div>

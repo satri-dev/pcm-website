@@ -50,9 +50,10 @@ export default function EventsSection({ events }: { events: EventItem[] }) {
                 <h3 className="text-xl font-display font-semibold text-pcm-navy mb-2 line-clamp-2">
                   {event.title}
                 </h3>
-                <p className="text-muted-foreground line-clamp-3">
-                  {event.description}
-                </p>
+                <div 
+                  className="prose prose-sm max-w-none text-muted-foreground line-clamp-3"
+                  dangerouslySetInnerHTML={{ __html: event.description }}
+                />
               </div>
             </Link>
           ))}

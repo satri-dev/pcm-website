@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { HomepageTestimonial } from "@/types/homepage";
 import { Plus, Trash2, Save } from "lucide-react";
+import ImageUpload from "@/components/cloudinary/ImageUpload";
+import Image from "next/image";
 
 interface Props {
   testimonials: HomepageTestimonial[];
@@ -41,34 +43,24 @@ export default function TestimonialsManager({ testimonials, onSave }: Props) {
             Alumni quotes shown in the testimonials carousel.
           </p>
         </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() =>
-              setItems((prev) => [
-                ...prev,
-                {
-                  id: `t-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-                  name: "",
-                  role: "",
-                  quote: "",
-                  photo: "/images/hero-2.jpg",
-                },
-              ])
-            }
-            className="admin-btn"
-          >
-            <Plus size={14} /> Add Testimonial
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className="admin-btn admin-btn--primary"
-          >
-            <Save size={14} /> {saving ? "Saving…" : "Save"}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() =>
+            setItems((prev) => [
+              ...prev,
+              {
+                id: `t-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+                name: "",
+                role: "",
+                quote: "",
+                photo: "", // Empty by default, will be uploaded via Cloudinary
+              },
+            ])
+          }
+          className="admin-btn"
+        >
+          <Plus size={14} /> Add Testimonial
+        </button>
       </div>
 
       <div className="space-y-4">
@@ -106,13 +98,39 @@ export default function TestimonialsManager({ testimonials, onSave }: Props) {
                   placeholder="Dean's List — 2075 BS"
                 />
               </div>
-              <div className="field">
-                <label>Photo path</label>
-                <input
-                  value={t.photo}
-                  onChange={(e) => update(idx, { photo: e.target.value })}
-                  placeholder="/images/hero-2.jpg"
-                />
+              <div className="field" style={{ gridColumn: "1 / -1" }}>
+                <label>Photo (Cloudinary)</label>
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        value={t.photo}
+                        onChange={(e) => update(idx, { photo: e.target.value })}
+                        placeholder="https://res.cloudinary.com/..."
+                        className="w-full"
+                      />
+                      <div className="mt-2">
+                        <ImageUpload
+                          onUpload={(result) => update(idx, { photo: result.secure_url })}
+                        />
+                      </div>
+                    </div>
+                    {t.photo && (
+                      <div className="flex-shrink-0 w-20 h-20 relative rounded-full overflow-hidden border border-[var(--admin-border)]">
+                        <Image
+                          src={t.photo}
+                          alt="Preview"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-xs text-[var(--admin-muted)]">
+                    Upload via Cloudinary or paste an existing URL. Recommended: square photo
+                  </span>
+                </div>
               </div>
               <div className="field" style={{ gridColumn: "1 / -1" }}>
                 <label>Quote</label>
@@ -125,6 +143,18 @@ export default function TestimonialsManager({ testimonials, onSave }: Props) {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Save Button at Bottom */}
+      <div className="mt-6 flex justify-end">
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving}
+          className="admin-btn admin-btn--primary"
+        >
+          <Save size={14} /> {saving ? "Saving…" : "Save"}
+        </button>
       </div>
     </div>
   );

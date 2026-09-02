@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Phone, Mail, ChevronRight, Send } from "lucide-react";
+import { MapPin, Phone, Mail, ChevronRight } from "lucide-react";
 import {
   FaFacebook,
   FaInstagram,
@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 import { getFooterSettings, getFooterLinks } from "@/lib/data/footer";
 import CurrentYear from "@/components/shared/CurrentYear";
+import NewsletterSubscribeForm from "./NewsletterSubscribeForm";
 
 export default async function Footer() {
   const settings = await getFooterSettings();
@@ -42,6 +43,7 @@ export default async function Footer() {
   const newsletterDescription =
     settings?.newsletterDescription ||
     "Monthly highlights — events, scholarships and results. No spam, unsubscribe anytime.";
+  const newsletterButtonText = settings?.newsletterButtonText || "Subscribe";
   const copyrightText =
     settings?.copyrightText ||
     "Pokhara College of Management. All rights reserved.";
@@ -112,24 +114,7 @@ export default async function Footer() {
                 <h4 className="text-white font-mono font-semibold text-xs sm:text-[0.82rem] tracking-[0.08em] uppercase">
                   {newsletterTitle}
                 </h4>
-                <form className="grid grid-cols-[1fr_auto] gap-2 sm:gap-[0.55rem] mt-[0.2rem]">
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="Your email address"
-                    aria-label="Email address"
-                    required
-                    className="w-full min-w-0 px-3 sm:px-4 py-2.5 sm:py-[0.72rem] border border-white/22 rounded-lg sm:rounded-xl bg-white/6 text-white text-sm sm:text-[0.9rem] placeholder:text-white/45 outline-none transition-all focus:border-pcm-green focus:bg-white/10"
-                  />
-                  <button
-                    type="submit"
-                    aria-label="Subscribe to newsletter"
-                    className="inline-flex items-center gap-[0.45rem] px-3 sm:px-[1.15rem] py-2.5 sm:py-[0.72rem] rounded-lg sm:rounded-xl bg-pcm-green text-pcm-navy font-bold text-sm sm:text-[0.9rem] transition-all hover:bg-pcm-green-500 hover:-translate-y-0.5"
-                  >
-                    <span className="hidden sm:inline">Subscribe</span>
-                    <Send className="w-4 h-4" />
-                  </button>
-                </form>
+                <NewsletterSubscribeForm buttonText={newsletterButtonText} />
                 <p className="text-xs sm:text-[0.8rem] text-white/55 leading-relaxed">
                   {newsletterDescription}
                 </p>

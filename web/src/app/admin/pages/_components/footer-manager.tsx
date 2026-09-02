@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Save, Upload, Check, X, Plus, Edit, Trash2, AlertTriangle, Link as LinkIcon } from "lucide-react";
+import { Check, X, Plus, Edit, Trash2, AlertTriangle, Link as LinkIcon } from "lucide-react";
 import Image from "next/image";
 import ImageUpload from "@/components/cloudinary/ImageUpload";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -66,7 +66,6 @@ function DeleteDialog({ isOpen, linkTitle, onConfirm, onCancel }: DeleteDialogPr
 
 export default function FooterManager({ settings: initialSettings }: Props) {
   // Footer Settings State
-  const [isEditingSettings, setIsEditingSettings] = useState(false);
   const [settingsData, setSettingsData] = useState({
     logoUrl: initialSettings?.logoUrl || "",
     tagline: initialSettings?.tagline || "",
@@ -84,6 +83,7 @@ export default function FooterManager({ settings: initialSettings }: Props) {
     affiliationBadge: initialSettings?.affiliationBadge || "",
     newsletterTitle: initialSettings?.newsletterTitle || "",
     newsletterDescription: initialSettings?.newsletterDescription || "",
+    newsletterButtonText: initialSettings?.newsletterButtonText || "Subscribe",
     copyrightText: initialSettings?.copyrightText || "",
     developerName: initialSettings?.developerName || "",
     developerUrl: initialSettings?.developerUrl || "",
@@ -135,7 +135,6 @@ export default function FooterManager({ settings: initialSettings }: Props) {
         body: JSON.stringify(settingsData),
       });
       if (res.ok) {
-        setIsEditingSettings(false);
         window.location.reload();
       }
     } catch (error) {
@@ -277,32 +276,20 @@ export default function FooterManager({ settings: initialSettings }: Props) {
       />
 
       <div className="space-y-6">
-        {/* Section 1: Footer Settings (Edit Only) */}
+        {/* Section 1: Footer Settings */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                Footer Settings
-              </h3>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Manage footer logo, contact info, and social media
-              </p>
-            </div>
-            {!isEditingSettings && (
-              <button
-                onClick={() => setIsEditingSettings(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm shadow-sm"
-              >
-                <Edit className="w-4 h-4" />
-                Edit Settings
-              </button>
-            )}
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              Footer Settings
+            </h3>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+              Manage footer logo, contact info, and social media
+            </p>
           </div>
 
           <div className="p-6">
-            {isEditingSettings ? (
-              <ScrollArea className="h-[500px]">
-                <div className="space-y-4 pr-4">
+            <ScrollArea className="h-[500px]">
+              <div className="space-y-4 pr-4">
                   {/* Simplified form - only key fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
@@ -536,6 +523,19 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                     />
                   </div>
 
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                      Button Text
+                    </label>
+                    <input
+                      type="text"
+                      value={settingsData.newsletterButtonText}
+                      onChange={(e) => setSettingsData({ ...settingsData, newsletterButtonText: e.target.value })}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Subscribe"
+                    />
+                  </div>
+
                   {/* Affiliation Section */}
                   <div className="md:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Affiliation</h4>
@@ -607,32 +607,9 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                     <Check className="w-4 h-4" />
                     Save Changes
                   </button>
-                  <button
-                    onClick={() => setIsEditingSettings(false)}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium text-sm"
-                  >
-                    <X className="w-4 h-4" />
-                    Cancel
-                  </button>
                 </div>
               </div>
-              </ScrollArea>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div>
-                  <p className="text-gray-500 dark:text-gray-400 text-xs mb-1">Phone</p>
-                  <p className="text-gray-900 dark:text-gray-100">{settingsData.phone || "-"}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500 dark:text-gray-400 text-xs mb-1">Email</p>
-                  <p className="text-gray-900 dark:text-gray-100">{settingsData.email || "-"}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500 dark:text-gray-400 text-xs mb-1">WhatsApp</p>
-                  <p className="text-gray-900 dark:text-gray-100">{settingsData.whatsappNumber || "-"}</p>
-                </div>
-              </div>
-            )}
+            </ScrollArea>
           </div>
         </div>
 
@@ -673,7 +650,7 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                     </button>
                   </div>
                   <div className="space-y-3">
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <div className="col-span-2">
                         <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                           Section Title <span className="text-red-500">*</span>
@@ -697,6 +674,19 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                           className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                       </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Status
+                        </label>
+                        <select
+                          value={linkFormData.status}
+                          onChange={(e) => setLinkFormData({ ...linkFormData, status: e.target.value as "active" | "inactive" })}
+                          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="active">Active</option>
+                          <option value="inactive">Inactive</option>
+                        </select>
+                      </div>
                     </div>
 
                     <div>
@@ -714,7 +704,7 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                       </div>
                       <div className="space-y-2">
                         {linkFormData.links.map((link, index) => (
-                          <div key={index} className="flex gap-2">
+                          <div key={index} className="flex gap-2 items-center">
                             <input
                               type="text"
                               value={link.label}
@@ -729,6 +719,15 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                               className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                               placeholder="/about"
                             />
+                            <label className="flex items-center gap-1.5 px-2 py-2 text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                              <input
+                                type="checkbox"
+                                checked={link.external}
+                                onChange={(e) => updateLinkItem(index, "external", e.target.checked)}
+                                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                              />
+                              External
+                            </label>
                             {linkFormData.links.length > 1 && (
                               <button
                                 onClick={() => removeLinkItem(index)}
@@ -770,7 +769,7 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                     // Edit Mode
                     <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-700 rounded-lg p-4">
                       <div className="space-y-3">
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                           <div className="col-span-2">
                             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                               Section Title <span className="text-red-500">*</span>
@@ -793,6 +792,19 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                               className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                           </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                              Status
+                            </label>
+                            <select
+                              value={linkFormData.status}
+                              onChange={(e) => setLinkFormData({ ...linkFormData, status: e.target.value as "active" | "inactive" })}
+                              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                              <option value="active">Active</option>
+                              <option value="inactive">Inactive</option>
+                            </select>
+                          </div>
                         </div>
 
                         <div>
@@ -810,7 +822,7 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                           </div>
                           <div className="space-y-2">
                             {linkFormData.links.map((linkItem, index) => (
-                              <div key={index} className="flex gap-2">
+                              <div key={index} className="flex gap-2 items-center">
                                 <input
                                   type="text"
                                   value={linkItem.label}
@@ -825,6 +837,15 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                                   className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                   placeholder="/about"
                                 />
+                                <label className="flex items-center gap-1.5 px-2 py-2 text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                                  <input
+                                    type="checkbox"
+                                    checked={linkItem.external}
+                                    onChange={(e) => updateLinkItem(index, "external", e.target.checked)}
+                                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                  />
+                                  External
+                                </label>
                                 {linkFormData.links.length > 1 && (
                                   <button
                                     onClick={() => removeLinkItem(index)}
@@ -869,6 +890,13 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                             <span className="text-xs text-gray-500 dark:text-gray-400">
                               (Order: {link.order})
                             </span>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                              link.status === "active" 
+                                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                            }`}>
+                              {link.status}
+                            </span>
                           </div>
                           <div className="space-y-1">
                             {link.links.map((item, idx) => (
@@ -877,6 +905,11 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                                 <span className="truncate">
                                   {item.label} → {item.href}
                                 </span>
+                                {item.external && (
+                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                                    external
+                                  </span>
+                                )}
                               </div>
                             ))}
                           </div>

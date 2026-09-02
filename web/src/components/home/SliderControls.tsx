@@ -3,6 +3,8 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+const MAX_VISIBLE_DOTS = 7;
+
 export default function SliderControls({
   count,
   activeIndex,
@@ -16,6 +18,38 @@ export default function SliderControls({
   onNext: () => void;
   onDotClick: (i: number) => void;
 }) {
+  // Determine which dots to show
+  const getVisibleDots = () => {
+    if (count <= MAX_VISIBLE_DOTS) {
+      // Show all dots if count is small
+      return Array.from({ length: count }, (_, i) => i);
+    }
+
+    // For many slides, show a sliding window of dots
+    const halfWindow = Math.floor((MAX_VISIBLE_DOTS - 1) / 2);
+    let start = Math.max(0, activeIndex - halfWindow);
+    let end = Math.min(count - 1, activeIndex + halfWindow);
+
+    // Adjust if we're near the edges
+    if (end - start < MAX_VISIBLE_DOTS - 1) {
+      if (start === 0) {
+        end = Math.min(count - 1, MAX_VISIBLE_DOTS - 1);
+      } else {
+        start = Math.max(0, count - MAX_VISIBLE_DOTS);
+      }
+    }
+
+    const visible: number[] = [];
+    for (let i = start; i <= end; i++) {
+      visible.push(i);
+    }
+    return visible;
+  };
+
+  const visibleDots = getVisibleDots();
+  const showStartEllipsis = count > MAX_VISIBLE_DOTS && visibleDots[0] > 0;
+  const showEndEllipsis = count > MAX_VISIBLE_DOTS && visibleDots[visibleDots.length - 1] < count - 1;
+
   return (
     <>
       <button
@@ -35,8 +69,21 @@ export default function SliderControls({
         <ChevronRight className="w-[1.15rem] h-[1.15rem]" />
       </button>
 
-      <div className="absolute bottom-[1.6rem] left-1/2 -translate-x-1/2 z-10 flex gap-2">
-        {Array.from({ length: count }).map((_, i) => (
+      <div className="absolute bottom-[1.6rem] left-1/2 -translate-x-1/2 z-10 flex items-center gap-2">
+        {/* Show slide counter for many slides */}
+        {count > MAX_VISIBLE_DOTS && (
+          <span className="text-white/70 text-xs font-medium mr-1">
+            {activeIndex + 1}/{count}
+          </span>
+        )}
+
+        {/* Start ellipsis */}
+        {showStartEllipsis && (
+          <span className="text-white/50 text-xs pb-1">•••</span>
+        )}
+
+        {/* Visible dots */}
+        {visibleDots.map((i) => (
           <button
             key={i}
             aria-label={`Go to slide ${i + 1}`}
@@ -47,6 +94,11 @@ export default function SliderControls({
             )}
           />
         ))}
+
+        {/* End ellipsis */}
+        {showEndEllipsis && (
+          <span className="text-white/50 text-xs pb-1">•••</span>
+        )}
       </div>
     </>
   );

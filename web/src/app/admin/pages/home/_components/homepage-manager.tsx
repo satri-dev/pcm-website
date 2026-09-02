@@ -107,19 +107,19 @@ export default function HomepageManager({
         </div>
       </div>
 
-      {/* Messages */}
+      {/* Messages - Fixed at bottom */}
       {saving && (
-        <div className="mb-4 px-4 py-2 rounded-lg bg-blue-50 text-blue-700 text-sm font-medium">
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-2 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium shadow-lg animate-in slide-in-from-bottom-5">
           Saving…
         </div>
       )}
       {msg && (
-        <div className="mb-4 px-4 py-2 rounded-lg bg-green-50 text-green-700 text-sm font-medium">
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-2 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm font-medium shadow-lg animate-in slide-in-from-bottom-5">
           {msg}
         </div>
       )}
       {errMsg && (
-        <div className="mb-4 px-4 py-2 rounded-lg bg-red-50 text-red-700 text-sm font-medium">
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm font-medium shadow-lg animate-in slide-in-from-bottom-5">
           {errMsg}
         </div>
       )}

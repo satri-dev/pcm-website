@@ -39,25 +39,15 @@ export default function ReasonsManager({ reasons, onSave }: Props) {
             The 6 reason cards shown on the home page.
           </p>
         </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() =>
-              setItems((prev) => [...prev, { icon: "🎓", title: "", desc: "" }])
-            }
-            className="admin-btn"
-          >
-            <Plus size={14} /> Add Reason
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className="admin-btn admin-btn--primary"
-          >
-            <Save size={14} /> {saving ? "Saving…" : "Save"}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() =>
+            setItems((prev) => [...prev, { icon: "🎓", title: "", desc: "" }])
+          }
+          className="admin-btn"
+        >
+          <Plus size={14} /> Add Reason
+        </button>
       </div>
 
       <div className="space-y-4">
@@ -106,6 +96,18 @@ export default function ReasonsManager({ reasons, onSave }: Props) {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Save Button at Bottom */}
+      <div className="mt-6 flex justify-end">
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving}
+          className="admin-btn admin-btn--primary"
+        >
+          <Save size={14} /> {saving ? "Saving…" : "Save"}
+        </button>
       </div>
     </div>
   );

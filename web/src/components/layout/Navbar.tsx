@@ -8,9 +8,9 @@ import { Search, ArrowRight, Menu, X, ChevronDown, Phone } from "lucide-react";
 import NavDropdown from "./NavDropdown";
 import ThemeToggle from "./ThemeToggle";
 import { buttonVariants } from "@/components/ui/button";
-import type { NavMenuItem } from "@/types/nav-menu";
+import type { NavMenuItem, NavbarSettings } from "@/types/nav-menu";
 
-export default function Navbar({ items }: { items: NavMenuItem[] }) {
+export default function Navbar({ items, settings }: { items: NavMenuItem[]; settings: NavbarSettings }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -35,7 +35,7 @@ export default function Navbar({ items }: { items: NavMenuItem[] }) {
         <div className="container flex items-center justify-between gap-3 sm:gap-6 min-h-16 sm:min-h-18.5 w-full mx-auto px-4 sm:px-6">
           <Link href="/" className="inline-flex items-center gap-2 sm:gap-3" aria-label="Pokhara College of Management — home">
             <Image
-              src="/images/logo-pcm.png"
+              src={settings.logoUrl || "/images/logo-pcm.png"}
               alt="Pokhara College of Management logo"
               width={40}
               height={40}
@@ -109,14 +109,16 @@ export default function Navbar({ items }: { items: NavMenuItem[] }) {
             <button aria-label="Search the site" onClick={() => setSearchOpen(true)} className="w-9 h-9 sm:w-10.5 sm:h-10.5 hidden md:inline-grid place-items-center rounded-md border border-border text-pcm-navy hover:text-pcm-blue hover:border-pcm-blue hover:bg-secondary transition-colors">
               <Search className="w-4 h-4 sm:w-[1.15rem] sm:h-[1.15rem]" />
             </button>
-            <Link
-              href="/admission"
-              className={buttonVariants({ variant: "primary", className: "hidden sm:inline-flex text-sm sm:text-base px-3 sm:px-4 h-9 sm:h-10 text-white" })}
-            >
-              <span className="hidden sm:inline">Apply Now</span>
-              <span className="sm:hidden">Apply</span>
-              <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            </Link>
+            {settings.ctaEnabled && (
+              <Link
+                href={settings.ctaHref || "/admission"}
+                className={buttonVariants({ variant: "primary", className: "hidden sm:inline-flex text-sm sm:text-base px-3 sm:px-4 h-9 sm:h-10 text-white" })}
+              >
+                <span className="hidden sm:inline">{settings.ctaLabel || "Apply Now"}</span>
+                <span className="sm:hidden">{settings.ctaLabel?.split(" ")[0] || "Apply"}</span>
+                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              </Link>
+            )}
             <button
               onClick={() => {
                 setMobileMenuOpen(true);
@@ -145,7 +147,7 @@ export default function Navbar({ items }: { items: NavMenuItem[] }) {
             <div className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-white z-10">
               <Link href="/" className="inline-flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                 <Image
-                  src="/images/logo-pcm.png"
+                  src={settings.logoUrl || "/images/logo-pcm.png"}
                   alt="PCM"
                   width={36}
                   height={36}
@@ -262,13 +264,15 @@ export default function Navbar({ items }: { items: NavMenuItem[] }) {
 
               {/* Apply Button */}
               <div className="mt-6 pt-6 border-t border-border flex flex-col gap-3">
-                <Link
-                  href="/admission"
-                  className={buttonVariants({ variant: "primary", className: "w-full justify-center" })}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Apply Now <ArrowRight className="w-4 h-4" />
-                </Link>
+                {settings.ctaEnabled && (
+                  <Link
+                    href={settings.ctaHref || "/admission"}
+                    className={buttonVariants({ variant: "primary", className: "w-full justify-center" })}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {settings.ctaLabel || "Apply Now"} <ArrowRight className="w-4 h-4" />
+                  </Link>
+                )}
                 <a
                   href="tel:061544761"
                   className="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg border border-border text-sm font-semibold text-pcm-navy hover:bg-secondary hover:text-pcm-blue transition-colors"

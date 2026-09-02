@@ -2,12 +2,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { HeroSlide as HeroSlideType } from "@/types/homepage";
-import { MAX_HERO_SLIDES } from "@/types/homepage";
 import HeroSlide from "./HeroSlide";
 import SliderControls from "./SliderControls";
 
 export default function HeroSlider({ slides }: { slides: HeroSlideType[] }) {
-  const visibleSlides = slides.slice(0, MAX_HERO_SLIDES);
+  const visibleSlides = slides; // No limit applied
   const [index, setIndex] = useState(0);
   const count = visibleSlides.length;
 
