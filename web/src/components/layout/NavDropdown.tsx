@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 
 type NavLink = { label: string; href: string };
@@ -14,11 +15,18 @@ export default function NavDropdown({
   href: string;
   items: NavLink[];
 }) {
+  const pathname = usePathname();
+  const isActive = pathname === href || items.some(item => pathname === item.href);
+
   return (
     <li className="relative group">
       <Link
         href={href}
-        className="inline-flex items-center gap-[0.35rem] px-[0.85rem] py-[0.6rem] text-[0.925rem] font-semibold text-pcm-navy rounded-md hover:text-pcm-blue hover:bg-secondary transition-colors"
+        className={`inline-flex items-center gap-[0.35rem] px-[0.85rem] py-[0.6rem] text-[0.925rem] font-semibold rounded-md transition-colors ${
+          isActive 
+            ? "text-pcm-blue bg-pcm-blue/10" 
+            : "text-pcm-navy hover:text-pcm-blue hover:bg-pcm-blue/10"
+        }`}
       >
         {label}
         <ChevronDown className="w-[0.8rem] h-[0.8rem] transition-transform group-hover:rotate-180" />
@@ -28,7 +36,11 @@ export default function NavDropdown({
           <Link
             key={item.href}
             href={item.href}
-            className="block px-[0.85rem] py-[0.6rem] rounded-md text-[0.9rem] font-semibold text-pcm-navy hover:bg-secondary hover:text-pcm-blue transition-colors"
+            className={`block px-[0.85rem] py-[0.6rem] rounded-md text-[0.9rem] font-semibold transition-colors ${
+              pathname === item.href
+                ? "bg-pcm-blue/10 text-pcm-blue"
+                : "text-pcm-navy hover:bg-pcm-blue/10 hover:text-pcm-blue"
+            }`}
           >
             {item.label}
           </Link>
