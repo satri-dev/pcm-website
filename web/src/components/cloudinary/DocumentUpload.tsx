@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { CldUploadWidget } from "next-cloudinary";
 import { Upload } from "lucide-react";
 
@@ -17,7 +18,8 @@ export default function DocumentUpload({
   onUpload,
 }: DocumentUploadProps) {
   return (
-    <CldUploadWidget
+    <Suspense fallback={null}>
+      <CldUploadWidget
       signatureEndpoint="/api/cloudinary/sign"
       uploadPreset={
         process.env.NEXT_PUBLIC_CLOUDINARY_DOCUMENT_PRESET
@@ -25,7 +27,8 @@ export default function DocumentUpload({
       options={{
         resourceType: "raw",
         sources: ["local"],
-        multiple: false,
+        multiple: true,
+        maxFiles: 10,
         clientAllowedFormats: ["pdf", "doc", "docx"],
         maxFileSize: 5_000_000,
       }}
@@ -53,12 +56,13 @@ export default function DocumentUpload({
         <button
           type="button"
           onClick={() => open()}
-          className="admin-btn admin-btn--primary admin-btn--sm flex items-center gap-2"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#16285B] text-white font-semibold text-sm hover:bg-[#1e3a7a] transition-colors cursor-pointer"
         >
           <Upload size={14} />
           Upload Document
         </button>
       )}
     </CldUploadWidget>
+    </Suspense>
   );
 }
