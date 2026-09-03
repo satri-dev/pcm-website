@@ -2,7 +2,15 @@
 
 import { useReveal } from "../legacy/use-reveal";
 import { SocialLinks } from "../legacy/social-links";
-import type { Leader } from "./data";
+
+export interface Leader {
+  photo: string;
+  chip: string;
+  eyebrow: string;
+  name: string;
+  role: string;
+  text: string;
+}
 
 export function LeaderCard({ leader, index }: { leader: Leader; index: number }) {
   const reveal = useReveal<HTMLElement>(index * 60);

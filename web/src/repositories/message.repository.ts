@@ -15,6 +15,7 @@ function fromDocument(doc: LeadershipMessageDocument): LeadershipMessage {
     author: doc.author,
     role: doc.role || "",
     excerpt: doc.excerpt || "",
+    photo: doc.photo || "",
   };
 }
 
@@ -25,6 +26,7 @@ function toDocument(input: LeadershipMessageCreateInput): Omit<LeadershipMessage
     author: input.author.trim(),
     role: input.role || "",
     excerpt: input.excerpt || "",
+    photo: input.photo || "",
     createdAt: now,
     updatedAt: now,
   } as unknown as Omit<LeadershipMessageDocument, "_id">);
@@ -99,7 +101,7 @@ export async function updateMessage(id: string, patch: LeadershipMessageUpdateIn
 
   const set: Record<string, unknown> = { updatedAt: new Date() };
   const allowed: (keyof LeadershipMessageCreateInput)[] = [
-    "title", "author", "role", "excerpt",
+    "title", "author", "role", "excerpt", "photo",
   ];
   for (const key of allowed) {
     if (key in patch && patch[key] !== undefined) set[key] = patch[key];

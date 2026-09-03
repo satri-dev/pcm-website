@@ -11,7 +11,7 @@ export const mainPages: PagesSectionEntry[] = [
   { slug: "home", label: "Home", publicHref: "/", live: true },
   { slug: "about", label: "About", publicHref: "/about", live: true },
   { slug: "about/board", label: "Board of Directors", publicHref: "/about/board", live: true },
-  { slug: "about/message", label: "Message from the Chair", publicHref: "/about/message" },
+  { slug: "about/message", label: "Message from the Chair", publicHref: "/about/message", live: true },
   { slug: "about/faculty", label: "Faculty & Staff", publicHref: "/about/faculty", live: true },
   { slug: "about/facility", label: "Campus & Facilities", publicHref: "/about/facility", live: true },
   { slug: "about/campus-map", label: "Campus Map", publicHref: "/about/campus-map", live: true },

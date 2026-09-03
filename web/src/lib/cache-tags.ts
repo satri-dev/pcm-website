@@ -41,6 +41,10 @@ export const CACHE_TAGS = {
   // Campus Map
   campusMapList: "campus-map-list",
   campusMapSettings: "campus-map-settings",
+
+  // Leadership Messages
+  messageList: "message-list",
+  messageSettings: "message-settings",
   
   // Gallery
   galleryList: "gallery-list",
