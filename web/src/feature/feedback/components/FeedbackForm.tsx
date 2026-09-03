@@ -7,9 +7,11 @@ import type {
   FeedbackFieldConfig,
   FeedbackPageSettings,
 } from "@/types/feedback-page-settings";
+import Image from "next/image";
 
 type Status = "idle" | "submitting" | "success" | "error";
-type Value = string | number | boolean | string[];
+type UploadedFile = { url: string; filename: string };
+type Value = string | number | boolean | string[] | UploadedFile;
 
 const CheckIcon = () => (
   <svg
@@ -51,6 +53,8 @@ export default function FeedbackForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<Status>("idle");
   const [serverError, setServerError] = useState<string | null>(null);
+  // Store original filenames separately
+  const [filenames, setFilenames] = useState<Record<string, string>>({});
 
   const setValue = (id: string, value: Value) => {
     setValues((prev) => ({ ...prev, [id]: value }));
@@ -76,6 +80,7 @@ export default function FeedbackForm({
             setRating(0);
             setAnonymous(false);
             setErrors({});
+            setFilenames({});
           }}
         >
           Submit another response
@@ -417,7 +422,15 @@ export default function FeedbackForm({
 
       case "image":
       case "document": {
-        const current = typeof value === "string" ? value : "";
+        const current =
+          typeof value === "string"
+            ? value
+            : (value as UploadedFile)?.url || "";
+        const filename =
+          typeof value === "object" && value !== null
+            ? (value as UploadedFile).filename
+            : filenames[field.id] || "uploaded-file";
+
         return (
           <div
             key={field.id}
@@ -427,35 +440,62 @@ export default function FeedbackForm({
             <div className="space-y-2">
               {field.type === "image" ? (
                 <ImageUpload
-                  onUpload={(r) => setValue(field.id, r.secure_url)}
+                  onUpload={(r) => {
+                    const filename = r.original_filename
+                      ? `${r.original_filename}.${r.format}`
+                      : "uploaded-file";
+                    setValue(field.id, { url: r.secure_url, filename });
+                    setFilenames((prev) => ({
+                      ...prev,
+                      [field.id]: filename,
+                    }));
+                  }}
                 />
               ) : (
                 <DocumentUpload
-                  onUpload={(r) => setValue(field.id, r.secure_url)}
+                  onUpload={(r) => {
+                    const filename = r.original_filename
+                      ? `${r.original_filename}.${r.format}`
+                      : "uploaded-file";
+                    setValue(field.id, { url: r.secure_url, filename });
+                    setFilenames((prev) => ({
+                      ...prev,
+                      [field.id]: filename,
+                    }));
+                  }}
                 />
               )}
               {current ? (
                 <div className="flex items-center gap-3 rounded-lg border border-(--line) bg-(--surface-soft) px-3 py-2">
                   {field.type === "image" ? (
-                    <img
-                      src={current}
-                      alt={field.label}
-                      className="h-12 w-12 rounded object-cover"
-                    />
+                    <>
+                      <Image
+                        src={current}
+                        alt={field.label}
+                        className="h-12 w-12 rounded object-cover"
+                      />
+                      <span className="fb-toggle-hint flex-1 min-w-0 truncate">
+                        {filename}
+                      </span>
+                    </>
                   ) : (
-                    <span className="text-lg">📄</span>
+                    <>
+                      <span className="text-lg">📄</span>
+                      <span className="fb-toggle-hint truncate flex-1 min-w-0">
+                        {filename}
+                      </span>
+                    </>
                   )}
-                  <a
-                    href={current}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="fb-toggle-hint truncate flex-1 min-w-0 hover:underline"
-                  >
-                    {current}
-                  </a>
                   <button
                     type="button"
-                    onClick={() => setValue(field.id, "")}
+                    onClick={() => {
+                      setValue(field.id, "");
+                      setFilenames((prev) => {
+                        const next = { ...prev };
+                        delete next[field.id];
+                        return next;
+                      });
+                    }}
                     className="text-red-500 text-lg leading-none px-1"
                     aria-label={`Remove ${field.label}`}
                   >

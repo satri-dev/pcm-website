@@ -55,6 +55,7 @@ export const CACHE_TAGS = {
 
   // Feedback
   feedbackSettings: "feedback-settings",
+  feedbackList: "feedback-list",
   
   // Gallery
   galleryList: "gallery-list",

@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
+import { revalidateTag } from "next/cache";
 import { getDb } from "@/core/lib/db";
-import { getFeedbackPageSettings } from "@/repositories/feedback-page-settings.repository";
+import { CACHE_TAGS } from "@/lib/cache-tags";
+import { getFeedbackSettings } from "@/lib/data/feedback-page-settings";
+import { ensureFeedbackIndexes } from "@/repositories/feedback.repository";
 
 export async function POST(req: NextRequest) {
   try {
-    const settings = await getFeedbackPageSettings();
+    const settings = await getFeedbackSettings();
     const body = await req.json();
     const fields: Record<string, unknown> = body?.fields ?? {};
     const anonymous = Boolean(body?.anonymous);
@@ -64,12 +67,24 @@ export async function POST(req: NextRequest) {
     }
 
     const db = await getDb();
+    const cleanFields = fields as Record<string, unknown>;
+    
+    // If anonymous, remove identifying fields (name, email)
+    if (anonymous) {
+      delete cleanFields.name;
+      delete cleanFields.email;
+    }
+    
+    await ensureFeedbackIndexes();
+
     await db.collection("feedback").insertOne({
       _id: new ObjectId(),
-      ...(fields as Record<string, string | number | boolean | string[]>),
+      fields: cleanFields,
+      fieldSchema: settings.fields,
       anonymous,
       createdAt: new Date(),
     });
+    revalidateTag(CACHE_TAGS.feedbackList, "max");
 
     return NextResponse.json({ success: true, message: "Thank you for your feedback!" });
   } catch {

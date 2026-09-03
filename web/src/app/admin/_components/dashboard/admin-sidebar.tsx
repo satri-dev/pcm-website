@@ -331,6 +331,12 @@ const navigation: NavSection[] = [
         badgeKey: "applications",
       },
       {
+        label: "Feedback",
+        href: "/admin/content/feedback",
+        icon: MessageSquare,
+        badgeKey: "feedback",
+      },
+      {
         label: "Content Trash",
         href: "/admin/content/trash",
         icon: Trash2,
