@@ -1,0 +1,297 @@
+"use client";
+
+import React, { useState } from "react";
+import { FileText } from "lucide-react";
+import type { AdmissionPageContent } from "@/types/page-content";
+import ImageUpload from "@/components/cloudinary/ImageUpload";
+import DocumentUpload from "@/components/cloudinary/DocumentUpload";
+
+interface DynamicFormFieldsProps {
+  fields: AdmissionPageContent["applicationForm"]["personalInfoFields"];
+  formData: Record<string, any>;
+  onUpdate: (fieldId: string, value: any) => void;
+}
+
+const inputClass =
+  "w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm bg-white placeholder:text-gray-400 transition-all focus:outline-none focus:border-[#16285B] focus:ring-2 focus:ring-[#16285B]/10";
+
+function Label({ field }: { field: { label: string; required?: boolean } }) {
+  return (
+    <label className="block text-sm font-semibold text-gray-800 mb-1.5">
+      {field.label} {field.required && <span className="text-red-500">*</span>}
+    </label>
+  );
+}
+
+function HelpText({ text }: { text?: string }) {
+  if (!text) return null;
+  return <p className="text-xs text-gray-500 mt-1.5">{text}</p>;
+}
+
+export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFieldsProps) {
+  const [uploaded, setUploaded] = useState<Record<string, string>>({});
+
+  if (!fields || fields.length === 0) {
+    return (
+      <div className="text-center py-10 text-gray-500 text-sm">
+        <p>No fields configured yet. Please configure fields in the admin panel.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid sm:grid-cols-2 gap-x-5 gap-y-5">
+      {fields
+        .slice()
+        .sort((a, b) => a.order - b.order)
+        .map((field) => {
+          const value = formData[field.id];
+
+          // --- Text, Email, Phone, Number ---
+          if (["text", "email", "phone", "number"].includes(field.fieldType)) {
+            return (
+              <div key={field.id} className={field.fieldType === "email" ? "sm:col-span-2" : ""}>
+                <Label field={field} />
+                <input
+                  type={field.fieldType}
+                  value={value || ""}
+                  onChange={(e) => onUpdate(field.id, e.target.value)}
+                  placeholder={field.placeholder}
+                  required={field.required}
+                  className={inputClass}
+                />
+                <HelpText text={field.helpText} />
+              </div>
+            );
+          }
+
+          // --- Textarea ---
+          if (field.fieldType === "textarea") {
+            return (
+              <div key={field.id} className="sm:col-span-2">
+                <Label field={field} />
+                <textarea
+                  value={value || ""}
+                  onChange={(e) => onUpdate(field.id, e.target.value)}
+                  placeholder={field.placeholder}
+                  required={field.required}
+                  rows={4}
+                  className={`${inputClass} resize-none`}
+                />
+                <HelpText text={field.helpText} />
+              </div>
+            );
+          }
+
+          // --- Date ---
+          if (field.fieldType === "date") {
+            return (
+              <div key={field.id}>
+                <Label field={field} />
+                <input
+                  type="date"
+                  value={value || ""}
+                  onChange={(e) => onUpdate(field.id, e.target.value)}
+                  required={field.required}
+                  className={inputClass}
+                />
+                <HelpText text={field.helpText} />
+              </div>
+            );
+          }
+
+          // --- Dropdown ---
+          if (field.fieldType === "dropdown") {
+            return (
+              <div key={field.id}>
+                <Label field={field} />
+                <select
+                  value={value || ""}
+                  onChange={(e) => onUpdate(field.id, e.target.value)}
+                  required={field.required}
+                  className={inputClass}
+                >
+                  <option value="">Select {field.label}</option>
+                  {field.options?.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label || opt.value}
+                    </option>
+                  ))}
+                </select>
+                <HelpText text={field.helpText} />
+              </div>
+            );
+          }
+
+          // --- Radio ---
+          if (field.fieldType === "radio") {
+            return (
+              <div key={field.id}>
+                <Label field={field} />
+                <div className="flex flex-wrap gap-2.5">
+                  {field.options?.map((opt) => {
+                    const active = value === opt.value;
+                    return (
+                      <label
+                        key={opt.value}
+                        className={`flex items-center gap-2.5 px-4 py-2.5 rounded-lg border cursor-pointer transition-all ${
+                          active
+                            ? "border-[#16285B] bg-[#f0f4ff]"
+                            : "border-gray-200 bg-white hover:border-gray-300"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name={field.id}
+                          value={opt.value}
+                          checked={active}
+                          onChange={() => onUpdate(field.id, opt.value)}
+                          className="hidden"
+                        />
+                        <span
+                          className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center ${
+                            active ? "border-[#16285B]" : "border-gray-300"
+                          }`}
+                        >
+                          {active && <span className="w-1.5 h-1.5 rounded-full bg-[#16285B]" />}
+                        </span>
+                        <span className={`text-sm font-medium ${active ? "text-gray-900" : "text-gray-700"}`}>
+                          {opt.label || opt.value}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+                <HelpText text={field.helpText} />
+              </div>
+            );
+          }
+
+          // --- Checkbox ---
+          if (field.fieldType === "checkbox") {
+            // Single boolean checkbox (no options)
+            if (!field.options || field.options.length === 0) {
+              return (
+                <div key={field.id} className="sm:col-span-2">
+                  <label className="flex items-start gap-3 py-3.5 px-4 bg-white border border-gray-200 rounded-lg cursor-pointer hover:border-gray-300 transition-all">
+                    <input
+                      type="checkbox"
+                      checked={!!value}
+                      onChange={(e) => onUpdate(field.id, e.target.checked)}
+                      className="mt-0.5 w-4 h-4 rounded border-gray-300 cursor-pointer accent-[#51B747]"
+                    />
+                    <span className="text-sm font-medium text-gray-800 leading-snug">
+                      {field.label} {field.required && <span className="text-red-500">*</span>}
+                    </span>
+                  </label>
+                  <HelpText text={field.helpText} />
+                </div>
+              );
+            }
+
+            // Multiple choice checkboxes
+            const values: string[] = Array.isArray(value) ? value : [];
+            return (
+              <div key={field.id} className="sm:col-span-2">
+                <Label field={field} />
+                <div className="flex flex-wrap gap-2.5">
+                  {field.options?.map((opt) => {
+                    const active = values.includes(opt.value);
+                    return (
+                      <label
+                        key={opt.value}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border cursor-pointer transition-all ${
+                          active
+                            ? "border-[#16285B] bg-[#f0f4ff]"
+                            : "border-gray-200 bg-white hover:border-gray-300"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          value={opt.value}
+                          checked={active}
+                          onChange={(e) => {
+                            const next = e.target.checked
+                              ? [...values, opt.value]
+                              : values.filter((v) => v !== opt.value);
+                            onUpdate(field.id, next);
+                          }}
+                          className="w-4 h-4 rounded border-gray-300"
+                        />
+                        <span className="text-sm font-medium text-gray-700">{opt.label || opt.value}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+                <HelpText text={field.helpText} />
+              </div>
+            );
+          }
+
+          // --- File / Image upload ---
+          if (field.fieldType === "file" || field.fieldType === "image") {
+            const currentUrl = uploaded[field.id] || (typeof value === "string" ? value : "");
+
+            const handleCloudinaryUpload = (url: string) => {
+              setUploaded((prev) => ({ ...prev, [field.id]: url }));
+              onUpdate(field.id, url);
+            };
+
+            return (
+              <div key={field.id} className="sm:col-span-2">
+                <Label field={field} />
+                <div className="space-y-3">
+                  {field.fieldType === "image" ? (
+                    <ImageUpload onUpload={(r) => handleCloudinaryUpload(r.secure_url)} />
+                  ) : (
+                    <DocumentUpload onUpload={(r) => handleCloudinaryUpload(r.secure_url)} />
+                  )}
+                  {currentUrl ? (
+                    <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5">
+                      {field.fieldType === "image" ? (
+                        <img src={currentUrl} alt={field.label} className="h-12 w-12 rounded object-cover" />
+                      ) : (
+                        <FileText className="w-5 h-5 text-gray-400 shrink-0" />
+                      )}
+                      <a
+                        href={currentUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-sm text-[#16285B] truncate flex-1 min-w-0 hover:underline"
+                      >
+                        {currentUrl}
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => handleCloudinaryUpload("")}
+                        className="text-red-500 hover:text-red-700 text-lg leading-none px-1"
+                        aria-label={`Remove ${field.label}`}
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+                <HelpText text={field.helpText} />
+              </div>
+            );
+          }
+
+          // --- Fallback: safely renders any newly added / unknown field type ---
+          return (
+            <div key={field.id}>
+              <Label field={field} />
+              <input
+                type="text"
+                value={value || ""}
+                onChange={(e) => onUpdate(field.id, e.target.value)}
+                placeholder={field.placeholder}
+                className={inputClass}
+              />
+              <HelpText text={field.helpText} />
+            </div>
+          );
+        })}
+    </div>
+  );
+}
