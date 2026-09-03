@@ -1,31 +1,37 @@
-import { Metadata } from 'next';
-import LifeClient from './LifeClient';
+import type { Metadata } from "next";
+import LifeClient from "./LifeClient";
+import { getLifeSettings } from "@/lib/data/life-page-settings";
+import { getLifeGalleryPhotos } from "@/lib/data/life-gallery";
 
-export const metadata: Metadata = {
-  title: 'Life at PCM | Campus Life, Events & Clubs',
-  description: 'A typical day on campus, facilities, events, tours, workshops, seminars and the close-knit student community at Pokhara College of Management.',
-  openGraph: {
-    title: 'Life at PCM | Campus Life, Events & Clubs',
-    description: 'A typical day on campus, facilities, events, tours, workshops, seminars and the close-knit student community at Pokhara College of Management.',
-    url: 'https://www.pcm.edu.np/life',
-    type: 'website',
-    images: [
-      {
-        url: 'https://www.pcm.edu.np/assets/img/hero-5.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'Life at PCM',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Life at PCM | Campus Life, Events & Clubs',
-    description: 'A typical day on campus, facilities, events, tours, workshops, seminars and the close-knit student community at Pokhara College of Management.',
-    images: ['https://www.pcm.edu.np/assets/img/hero-5.jpg'],
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getLifeSettings();
+  return {
+    title: settings.seoTitle,
+    description: settings.seoDescription,
+    keywords: settings.seoKeywords,
+    alternates: { canonical: "/life" },
+    openGraph: {
+      type: "website",
+      siteName: "Pokhara College of Management",
+      title: settings.seoTitle,
+      description: settings.seoDescription,
+      url: "https://www.pcm.edu.np/life",
+      locale: "en_US",
+      images: [{ url: settings.ogImage }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: settings.seoTitle,
+      description: settings.seoDescription,
+      images: [settings.ogImage],
+    },
+  };
+}
 
-export default function LifePage() {
-  return <LifeClient />;
+export default async function LifePage() {
+  const [settings, gallery] = await Promise.all([
+    getLifeSettings(),
+    getLifeGalleryPhotos(4),
+  ]);
+  return <LifeClient settings={settings} gallery={gallery} />;
 }

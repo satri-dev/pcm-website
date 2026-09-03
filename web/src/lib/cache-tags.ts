@@ -49,6 +49,9 @@ export const CACHE_TAGS = {
   // Clubs
   clubsList: "clubs-list",
   clubsSettings: "clubs-settings",
+
+  // Life at PCM
+  lifeSettings: "life-settings",
   
   // Gallery
   galleryList: "gallery-list",

@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   createGallery,
   ensureGalleryIndexes,
   listGallery,
 } from "@/repositories/gallery.repository";
 import { requireApiSession } from "@/core/lib/api-guard";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 const videoSchema = z.object({
   url: z.string().min(1),
   title: z.string().optional(),
@@ -85,6 +86,8 @@ export async function POST(request: NextRequest) {
 }
 
 function revalidateGalleryPaths() {
+  revalidateTag(CACHE_TAGS.galleryList, "max");
   revalidatePath("/gallery");
+  revalidatePath("/life");
   revalidatePath("/");
 }

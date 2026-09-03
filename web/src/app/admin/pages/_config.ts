@@ -27,7 +27,7 @@ export const mainPages: PagesSectionEntry[] = [
   { slug: "faq", label: "FAQ", publicHref: "/faq", live: true },
   { slug: "gallery", label: "Gallery", publicHref: "/gallery" },
   { slug: "gpa-converter", label: "GPA Converter", publicHref: "/gpa-converter" },
-  { slug: "life", label: "Life at PCM", publicHref: "/life" },
+  { slug: "life", label: "Life at PCM", publicHref: "/life", live: true },
   { slug: "news", label: "News", publicHref: "/news", live: true },
   { slug: "news-article", label: "News Article", publicHref: "/news", live: true },
   { slug: "notices", label: "Notices", publicHref: "/notices", live: true },

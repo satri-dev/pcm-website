@@ -63,6 +63,8 @@ import MessagePageSettings from "../_components/message-page-settings";
 import { getMessagePageSettings } from "@/repositories/message-page-settings.repository";
 import ClubsPageSettings from "../_components/clubs-page-settings";
 import { getClubsPageSettings } from "@/repositories/clubs-page-settings.repository";
+import LifePageSettings from "../_components/life-page-settings";
+import { getLifePageSettings } from "@/repositories/life-page-settings.repository";
 
 interface RouteCtx {
   params: Promise<{ slug: string | string[] }>;
@@ -390,6 +392,19 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
           subtitle="Pages · Content & SEO"
         />
         <ClubsPageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "life") {
+    const settings = await getLifePageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content & SEO"
+        />
+        <LifePageSettings initial={settings} />
       </>
     );
   }
