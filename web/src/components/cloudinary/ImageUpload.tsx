@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { CldUploadWidget } from "next-cloudinary";
 import { Upload } from "lucide-react";
 
@@ -16,13 +17,15 @@ interface ImageUploadProps {
 
 export default function ImageUpload({ onUpload, className }: ImageUploadProps) {
   return (
-    <CldUploadWidget
+    <Suspense fallback={null}>
+      <CldUploadWidget
       signatureEndpoint="/api/cloudinary/sign"
       uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
       options={{
         resourceType: "image",
         sources: ["local", "url", "camera"],
-        multiple: false,
+        multiple: true,
+        maxFiles: 5,
         clientAllowedFormats: ["jpg", "jpeg", "png", "webp", "avif"],
         maxFileSize: 5_000_000,
       }}
@@ -48,7 +51,7 @@ export default function ImageUpload({ onUpload, className }: ImageUploadProps) {
           onClick={() => open()}
           className={
             className ||
-            "admin-btn admin-btn--primary admin-btn--sm flex items-center gap-2"
+            "inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#16285B] text-white font-semibold text-sm hover:bg-[#1e3a7a] transition-colors cursor-pointer"
           }
         >
           <Upload size={14} />
@@ -56,5 +59,6 @@ export default function ImageUpload({ onUpload, className }: ImageUploadProps) {
         </button>
       )}
     </CldUploadWidget>
+    </Suspense>
   );
 }
