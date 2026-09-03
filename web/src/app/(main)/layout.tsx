@@ -7,7 +7,7 @@ import Footer from "@/components/layout/Footer";
 import ChatbotWidget from "@/components/shared/ChatbotWidget";
 import ChatWidget from "@/components/shared/ChatWidget";
 import { getNavbarItems } from "@/lib/data/navigation";
-import { getNavbarSettings } from "@/repositories/navbar-settings.repository";
+import { getNavbarSettings } from "@/lib/data/navbar-settings";
 
 export default async function MainLayout({
   children,

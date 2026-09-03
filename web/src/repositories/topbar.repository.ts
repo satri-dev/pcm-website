@@ -35,13 +35,13 @@ function mapContactDocument(doc: TopBarContactDocument): TopBarContact {
     email: doc.email,
     facebookUrl: doc.facebookUrl,
     instagramUrl: doc.instagramUrl,
+    showLanguageSwitcher: doc.showLanguageSwitcher ?? true,
     updatedAt: doc.updatedAt,
   };
 }
 
 // Links Management
 export async function listTopBarLinks(): Promise<TopBarLink[]> {
-  "use cache";
   const db = await getDb();
   const docs = await db
     .collection<TopBarDocument>(COLLECTION_LINKS)
@@ -120,7 +120,6 @@ export async function deleteTopBarLink(id: string): Promise<boolean> {
 
 // Contact Information Management
 export async function getTopBarContact(): Promise<TopBarContact | null> {
-  "use cache";
   const db = await getDb();
   const doc = await db
     .collection<TopBarContactDocument>(COLLECTION_CONTACT)
@@ -135,6 +134,7 @@ export async function getTopBarContact(): Promise<TopBarContact | null> {
       email: "info@pcm.edu.np",
       facebookUrl: "https://www.facebook.com/239069093193587",
       instagramUrl: "https://www.instagram.com",
+      showLanguageSwitcher: true,
       updatedAt: now,
     };
     

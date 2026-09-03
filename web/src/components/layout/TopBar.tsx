@@ -99,10 +99,12 @@ export default async function TopBar() {
             </a>
           </span>
 
-          <span className="inline-flex items-center gap-1 font-mono text-[0.65rem] sm:text-[0.72rem] text-white/55">
-            <button className="text-pcm-green">EN</button> /{" "}
-            <button className="hover:text-pcm-green">ने</button>
-          </span>
+          {(contact?.showLanguageSwitcher ?? true) && (
+            <span className="inline-flex items-center gap-1 font-mono text-[0.65rem] sm:text-[0.72rem] text-white/55">
+              <button className="text-pcm-green">EN</button> /{" "}
+              <button className="hover:text-pcm-green">ने</button>
+            </span>
+          )}
         </div>
       </div>
     </div>

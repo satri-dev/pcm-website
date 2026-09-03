@@ -1,4 +1,4 @@
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { updateTopBarLink, deleteTopBarLink } from "@/repositories/topbar.repository";
 import { CACHE_TAGS } from "@/lib/cache-tags";
@@ -18,8 +18,10 @@ export async function PUT(request: Request, { params }: RouteContext) {
       return NextResponse.json({ error: "TopBar link not found" }, { status: 404 });
     }
     
-    // Invalidate cache
-    revalidateTag(CACHE_TAGS.topBarLinks, "max");
+    // Invalidate cache immediately for admin operations
+    revalidateTag(CACHE_TAGS.topBarLinks, { expire: 0 });
+    // Also revalidate all pages that might display the topbar
+    revalidatePath('/', 'layout');
     
     return NextResponse.json(link);
   } catch (error) {
@@ -37,8 +39,10 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
       return NextResponse.json({ error: "TopBar link not found" }, { status: 404 });
     }
     
-    // Invalidate cache
-    revalidateTag(CACHE_TAGS.topBarLinks, "max");
+    // Invalidate cache immediately for admin operations
+    revalidateTag(CACHE_TAGS.topBarLinks, { expire: 0 });
+    // Also revalidate all pages that might display the topbar
+    revalidatePath('/', 'layout');
     
     return NextResponse.json({ success: true });
   } catch (error) {
