@@ -3,11 +3,17 @@
 // album/photo model used by the gallery page components.
 
 import type { Gallery } from "@/types/gallery";
-import type { GalleryAlbum, GalleryCategory, GalleryPhoto } from "../types";
+import type {
+  GalleryAlbum,
+  GalleryCategory,
+  GalleryPhoto,
+  GalleryVideo,
+} from "../types";
 
 export interface AdaptedGallery {
   albums: GalleryAlbum[];
   photos: GalleryPhoto[];
+  videos: GalleryVideo[];
 }
 
 export function formatGalleryDate(date: string): string {
@@ -21,11 +27,43 @@ export function formatGalleryDate(date: string): string {
   return month ? `${month} ${String(d).padStart(2, "0")}, ${y}` : date;
 }
 
+export function extractYouTubeId(url: string): string | null {
+  if (!url) return null;
+  const match = url.match(
+    /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/
+  );
+  return match ? match[1] : null;
+}
+
 export function adaptGalleryItems(items: Gallery[]): AdaptedGallery {
   const albums: GalleryAlbum[] = [];
   const photos: GalleryPhoto[] = [];
+  const videos: GalleryVideo[] = [];
 
   for (const item of items) {
+    const isVideoItem = item.type === "video";
+
+    if (isVideoItem) {
+      const galleryVideos = Array.isArray(item.videos) ? item.videos : [];
+      galleryVideos.forEach((video, i) => {
+        const title = video.title?.trim() || item.title;
+        const ytId = extractYouTubeId(video.url);
+        videos.push({
+          id: `${item.id}-video-${i}`,
+          title,
+          category: item.category as GalleryCategory,
+          date: formatGalleryDate(item.date),
+          thumbnailSrc: ytId
+            ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`
+            : "/assets/img/about-2.jpg",
+          thumbnailAlt: title,
+          youtubeId: ytId || undefined,
+          description: video.tags?.join(", ") ?? "",
+        });
+      });
+      continue;
+    }
+
     const galleryPhotos = Array.isArray(item.photos) ? item.photos : [];
     const coverSrc =
       item.image ??
@@ -63,5 +101,5 @@ export function adaptGalleryItems(items: Gallery[]): AdaptedGallery {
     });
   }
 
-  return { albums, photos };
+  return { albums, photos, videos };
 }

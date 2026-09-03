@@ -18,7 +18,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Gallery, GALLERY_CATEGORIES } from "@/types/gallery";
-import { Eye, Pencil, Trash2, Search, ImageIcon } from "lucide-react";
+import { Eye, Pencil, Trash2, Search, ImageIcon, Video } from "lucide-react";
+import { youtubeId } from "./gallery-video-form-modal";
 
 interface GalleryTableProps {
   gallery: Gallery[];
@@ -45,6 +46,9 @@ export default function GalleryTable({
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (item.photos || []).some((p) =>
         (p.title || "").toLowerCase().includes(searchQuery.toLowerCase())
+      ) ||
+      (item.videos || []).some((v) =>
+        (v.title || "").toLowerCase().includes(searchQuery.toLowerCase())
       );
     const matchesCategory =
       categoryFilter === "all" || item.category === categoryFilter;
@@ -135,28 +139,53 @@ export default function GalleryTable({
               </TableRow>
             ) : (
               paginatedGallery.map((item) => {
+                const isVideo = item.type === "video";
+                const subCount = isVideo
+                  ? (item.videos || []).length
+                  : (item.photos || []).length;
                 return (
                   <TableRow key={item.id} className="hover:bg-[#fafbfe] transition-colors">
                     <TableCell className="py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-lg overflow-hidden border border-[var(--admin-line)] flex-shrink-0 bg-[var(--admin-surface-2)]">
-                          <img
-                            src={item.image}
-                            alt={item.title}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
+                        <div className="w-12 h-12 rounded-lg overflow-hidden border border-[var(--admin-line)] flex-shrink-0 bg-[var(--admin-surface-2)] flex items-center justify-center">
+                          {isVideo ? (
+                            (() => {
+                              const id = youtubeId(item.videos?.[0]?.url || "");
+                              return id ? (
+                                <img
+                                  src={`https://img.youtube.com/vi/${id}/hqdefault.jpg`}
+                                  alt={item.title}
+                                  className="w-full h-full object-cover"
+                                  loading="lazy"
+                                />
+                              ) : (
+                                <Video size={18} className="text-[var(--admin-muted)]" />
+                              );
+                            })()
+                          ) : (
+                            <img
+                              src={item.image}
+                              alt={item.title}
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          )}
                         </div>
                         <div className="cell-main">
                           <div className="font-semibold text-sm">{item.title}</div>
                           <small className="text-[var(--admin-muted)] text-[0.76rem]">
-                            {(item.photos || []).length} photos
+                            {isVideo
+                              ? `${subCount} video${subCount === 1 ? "" : "s"}`
+                              : `${subCount} photos`}
                           </small>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell className="text-sm py-3">
                       <span className="badge badge--blue">{item.category}</span>
+                      {isVideo && (
+                        <span className="badge badge--violet ml-1">Video</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-sm py-3">{formatDate(item.date)}</TableCell>
                     <TableCell className="text-sm py-3">{item.photoCount}</TableCell>

@@ -7,9 +7,16 @@ import {
   listGallery,
 } from "@/repositories/gallery.repository";
 import { requireApiSession } from "@/core/lib/api-guard";
+const videoSchema = z.object({
+  url: z.string().min(1),
+  title: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+});
+
 const createSchema = z.object({
   title: z.string().min(3).max(200),
   category: z.string().min(1, "Category is required").max(100),
+  type: z.enum(["photo", "video"]).optional(),
   image: z.string().optional(),
   photos: z.array(
     z.object({
@@ -18,6 +25,7 @@ const createSchema = z.object({
       tags: z.array(z.string()).optional(),
     })
   ).optional(),
+  videos: z.array(videoSchema).optional(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date"),
   photoCount: z.number().int().min(0).optional(),
   views: z.number().int().min(0).optional(),

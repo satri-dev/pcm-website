@@ -1,19 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useGallery } from "@/feature/gallery/hooks/useGallery";
 import FilterBar from "@/feature/gallery/components/FilterBar";
 import AlbumGrid from "@/feature/gallery/components/AlbumGrid";
 import PhotoGrid from "@/feature/gallery/components/PhotoGrid";
 import Lightbox from "@/feature/gallery/components/Lightbox";
-import type { GalleryPhoto, GalleryAlbum } from "@/feature/gallery/types";
+import VideoGrid from "@/feature/gallery/components/VideoGrid";
+import { getVideoCategories } from "@/feature/gallery/data/gallery";
+import type { GalleryPhoto, GalleryAlbum, GalleryVideo } from "@/feature/gallery/types";
 import type { GalleryPageSettings } from "@/types/gallery-settings";
 import "./gallery.css";
 
 interface GalleryClientProps {
   albums: GalleryAlbum[];
   photos: GalleryPhoto[];
+  videos: GalleryVideo[];
   settings: GalleryPageSettings;
 }
 
@@ -33,9 +36,12 @@ const ArrowRight = () => (
 export default function GalleryClient({
   albums,
   photos,
+  videos,
   settings,
 }: GalleryClientProps) {
   const rootRef = useRef<HTMLDivElement>(null);
+  const [activeVideo, setActiveVideo] = useState<GalleryVideo | null>(null);
+  const [videoCategory, setVideoCategory] = useState<string>("all");
 
   const {
     tab, setTab,
@@ -44,6 +50,16 @@ export default function GalleryClient({
     openAlbumId, openAlbum, closeAlbum, albumPhotos,
     lightbox, openLightbox, closeLightbox, lightboxNext, lightboxPrev,
   } = useGallery({ albums, photos });
+
+  /* Video category options derived from videos */
+  const videoCategories = useMemo(() => getVideoCategories(videos), [videos]);
+
+  /* Filtered videos for the current category */
+  const filteredVideos = useMemo(() => {
+    return videoCategory === "all"
+      ? videos
+      : videos.filter((v) => v.category === videoCategory);
+  }, [videos, videoCategory]);
 
   /* Reveal-on-scroll */
   useEffect(() => {
@@ -60,7 +76,7 @@ export default function GalleryClient({
     );
     items.forEach((el) => io.observe(el));
     return () => io.disconnect();
-  }, [openAlbumId, tab, category, filteredAlbums]); // re-run when view OR filter changes so new cards get observed
+  }, [openAlbumId, tab, category, filteredAlbums, videos, activeVideo, videoCategory, filteredVideos]); // re-run when view OR filter changes so new cards get observed
 
   /* Find album title for the open album */
   const openAlbum_ = albums.find((a) => a.id === openAlbumId);
@@ -141,10 +157,30 @@ export default function GalleryClient({
 
           {/* Videos tab */}
           {tab === "videos" && (
-            <div className="gal-empty reveal">
-              <VideoEmptyIcon />
-              <p>No video albums listed at this time — check back soon.</p>
-            </div>
+            <>
+              {videos.length === 0 ? (
+                <div className="gal-empty reveal">
+                  <VideoEmptyIcon />
+                  <p>No video albums listed at this time — check back soon.</p>
+                </div>
+              ) : (
+                <>
+                  {/* Video category filter */}
+                  <FilterBar
+                    categories={videoCategories}
+                    active={videoCategory}
+                    onChange={setVideoCategory}
+                  />
+
+                  {/* Video grid — click a card to play inline within it */}
+                  <VideoGrid
+                    videos={filteredVideos}
+                    onPlay={setActiveVideo}
+                    activeVideo={activeVideo}
+                  />
+                </>
+              )}
+            </>
           )}
         </div>
       </section>

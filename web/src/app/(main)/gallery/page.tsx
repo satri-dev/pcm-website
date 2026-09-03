@@ -52,9 +52,9 @@ async function GalleryContent() {
     getGalleryPageSettings(),
   ]);
 
-  const { albums, photos } = adaptGalleryItems(items);
+  const { albums, photos, videos } = adaptGalleryItems(items);
 
-  return <GalleryClient albums={albums} photos={photos} settings={settings} />;
+  return <GalleryClient albums={albums} photos={photos} videos={videos} settings={settings} />;
 }
 
 function GalleryLoading() {
