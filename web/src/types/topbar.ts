@@ -24,6 +24,7 @@ export interface TopBarContact {
   email: string;
   facebookUrl: string;
   instagramUrl: string;
+  showLanguageSwitcher: boolean;
   updatedAt: Date;
 }
 
@@ -52,4 +53,5 @@ export interface TopBarContactUpdateInput {
   email?: string;
   facebookUrl?: string;
   instagramUrl?: string;
+  showLanguageSwitcher?: boolean;
 }

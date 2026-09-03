@@ -11,7 +11,7 @@ export default async function AnnouncementTicker() {
   }
 
   return (
-    <div className="bg-pcm-navy text-white/90 overflow-hidden py-2 relative z-[9999]" aria-label="Announcement">
+    <div className="bg-pcm-navy text-white/90 overflow-hidden py-2 relative z-50" aria-label="Announcement">
       {/* Left scroll indicator */}
       <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-12 bg-gradient-to-r from-pcm-navy to-transparent pointer-events-none z-10 flex items-center justify-start pl-1 sm:pl-2">
         <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white/50 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">

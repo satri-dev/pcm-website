@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 import { requireApiSession } from "@/core/lib/api-guard";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 import {
@@ -38,7 +38,12 @@ export async function PUT(req: NextRequest) {
     if (body.ctaEnabled !== undefined) settings.ctaEnabled = body.ctaEnabled;
 
     const data = await updateNavbarSettings(settings);
-    revalidateTag(CACHE_TAGS.navbar, "max");
+    
+    // Invalidate cache immediately for admin operations
+    revalidateTag(CACHE_TAGS.navbar, { expire: 0 });
+    // Also revalidate all pages that might display the navbar
+    revalidatePath('/', 'layout');
+    
     return NextResponse.json(data);
   } catch (err) {
     console.error("Failed to update navbar settings:", err);

@@ -1,4 +1,4 @@
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { createTopBarLink, listAllTopBarLinks } from "@/repositories/topbar.repository";
 import { CACHE_TAGS } from "@/lib/cache-tags";
@@ -19,8 +19,10 @@ export async function POST(request: Request) {
     const body: TopBarLinkCreateInput = await request.json();
     const link = await createTopBarLink(body);
     
-    // Invalidate cache
-    revalidateTag(CACHE_TAGS.topBarLinks, "max");
+    // Invalidate cache immediately for admin operations
+    revalidateTag(CACHE_TAGS.topBarLinks, { expire: 0 });
+    // Also revalidate all pages that might display the topbar
+    revalidatePath('/', 'layout');
     
     return NextResponse.json(link, { status: 201 });
   } catch (error) {
