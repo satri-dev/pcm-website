@@ -21,6 +21,11 @@ export default function LeadershipMessageViewModal({ open, onOpenChange, message
           <button type="button" className="admin-icon-btn" aria-label="Close" onClick={() => onOpenChange(false)}><X size={18} /></button>
         </div>
         <div className="modal__body">
+          {message.photo && (
+            <div style={{ display: "flex", justifyContent: "center", padding: "0.4rem 0 0.9rem" }}>
+              <img src={message.photo} alt={message.author} style={{ width: 96, height: 96, borderRadius: "50%", objectFit: "cover", border: "1px solid #e2e7f0" }} />
+            </div>
+          )}
           {row("Title", message.title)}
           {row("Author", message.author)}
           {row("Role", message.role)}

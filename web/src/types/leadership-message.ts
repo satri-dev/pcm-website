@@ -19,6 +19,7 @@ export interface LeadershipMessage {
   author: string;
   role: string;
   excerpt: string;
+  photo: string;
 }
 
 export interface LeadershipMessageDocument {
@@ -27,6 +28,7 @@ export interface LeadershipMessageDocument {
   author: string;
   role: string;
   excerpt: string;
+  photo: string;
 }
 
 export interface LeadershipMessageCreateInput {
@@ -34,6 +36,7 @@ export interface LeadershipMessageCreateInput {
   author: string;
   role?: string;
   excerpt?: string;
+  photo?: string;
 }
 
 export type LeadershipMessageUpdateInput = Partial<LeadershipMessageCreateInput>;

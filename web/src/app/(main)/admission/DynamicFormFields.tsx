@@ -5,6 +5,7 @@ import { FileText } from "lucide-react";
 import type { AdmissionPageContent } from "@/types/page-content";
 import ImageUpload from "@/components/cloudinary/ImageUpload";
 import DocumentUpload from "@/components/cloudinary/DocumentUpload";
+import { provinces, districtsForProvince, municipalitiesForDistrict, wardsForMunicipality } from "@/lib/location";
 
 interface DynamicFormFieldsProps {
   fields: AdmissionPageContent["applicationForm"]["personalInfoFields"];
@@ -47,17 +48,156 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
         .map((field) => {
           const value = formData[field.id];
 
+          // --- Nepal Province cascading select ---
+          if (field.id.endsWith("_province")) {
+            return (
+              <div key={field.id}>
+                <Label field={field} />
+                <select
+                  value={value || ""}
+                  onChange={(e) => {
+                    const province = e.target.value;
+                    onUpdate(field.id, province);
+                    if (province) onUpdate(`${field.id.replace("_province", "_district")}`, "");
+                  }}
+                  required={field.required}
+                  className={inputClass}
+                >
+                  <option value="">Select {field.label}</option>
+                  {provinces.map((p) => (
+                    <option key={p.id} value={p.name}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+                <HelpText text={field.helpText} />
+              </div>
+            );
+          }
+
+          // --- Nepal District cascading select (depends on matching province) ---
+          if (field.id.endsWith("_district")) {
+            const provinceId = `${field.id.replace("_district", "_province")}`;
+            const selectedProvince = formData[provinceId] as string | undefined;
+            const districts = districtsForProvince(selectedProvince);
+            return (
+              <div key={field.id}>
+                <Label field={field} />
+                <select
+                  value={value || ""}
+                  onChange={(e) => {
+                    onUpdate(field.id, e.target.value);
+                    if (field.id.endsWith("_district") && e.target.value) {
+                      onUpdate(`${field.id.replace("_district", "_city")}`, "");
+                    }
+                  }}
+                  required={field.required}
+                  disabled={!selectedProvince}
+                  className={`${inputClass} ${!selectedProvince ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}`}
+                >
+                  <option value="">
+                    {selectedProvince ? `Select ${field.label}` : "Select province first"}
+                  </option>
+                  {Array.isArray(districts) && districts.map((d) => (
+                    <option key={d.id} value={d.name}>
+                      {d.name}
+                    </option>
+                  ))}
+                </select>
+                <HelpText text={field.helpText} />
+              </div>
+            );
+          }
+
+          // --- Nepal Municipality cascading select (depends on matching district) ---
+          if (field.id.endsWith("_city")) {
+            const districtId = `${field.id.replace("_city", "_district")}`;
+            const provinceId = `${field.id.replace("_city", "_province")}`;
+            const selectedProvince = formData[provinceId] as string | undefined;
+            const selectedDistrict = formData[districtId] as string | undefined;
+            const municipalities = municipalitiesForDistrict(selectedProvince, selectedDistrict);
+            return (
+              <div key={field.id}>
+                <Label field={field} />
+                <select
+                  value={value || ""}
+                  onChange={(e) => {
+                    onUpdate(field.id, e.target.value);
+                    if (e.target.value) {
+                      onUpdate(`${field.id.replace("_city", "_ward")}`, "");
+                    }
+                  }}
+                  required={field.required}
+                  disabled={!selectedDistrict}
+                  className={`${inputClass} ${!selectedDistrict ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}`}
+                >
+                  <option value="">
+                    {selectedDistrict ? `Select ${field.label}` : "Select district first"}
+                  </option>
+                  {Array.isArray(municipalities) && municipalities.map((m) => (
+                    <option key={m.id} value={m.name}>
+                      {m.name}
+                    </option>
+                  ))}
+                </select>
+                <HelpText text={field.helpText} />
+              </div>
+            );
+          }
+
+          // --- Nepal Ward cascading select (depends on matching municipality) ---
+          if (field.id.endsWith("_ward")) {
+            const provinceId = `${field.id.replace("_ward", "_province")}`;
+            const districtId = `${field.id.replace("_ward", "_district")}`;
+            const cityId = `${field.id.replace("_ward", "_city")}`;
+            const selectedProvince = formData[provinceId] as string | undefined;
+            const selectedDistrict = formData[districtId] as string | undefined;
+            const selectedMunicipality = formData[cityId] as string | undefined;
+            const wards = wardsForMunicipality(selectedProvince, selectedDistrict, selectedMunicipality);
+            return (
+              <div key={field.id}>
+                <Label field={field} />
+                <select
+                  value={value || ""}
+                  onChange={(e) => onUpdate(field.id, e.target.value)}
+                  required={field.required}
+                  disabled={!selectedMunicipality}
+                  className={`${inputClass} ${!selectedMunicipality ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}`}
+                >
+                  <option value="">
+                    {selectedMunicipality ? `Select ${field.label}` : "Select municipality first"}
+                  </option>
+                  {Array.isArray(wards) && wards.map((w, i) => (
+                    <option key={`${w}-${i}`} value={w}>
+                      {w}
+                    </option>
+                  ))}
+                </select>
+                <HelpText text={field.helpText} />
+              </div>
+            );
+          }
+
           // --- Text, Email, Phone, Number ---
           if (["text", "email", "phone", "number"].includes(field.fieldType)) {
+            const isPhone = field.fieldType === "phone";
+            const inputType = isPhone ? "tel" : field.fieldType;
             return (
               <div key={field.id} className={field.fieldType === "email" ? "sm:col-span-2" : ""}>
                 <Label field={field} />
                 <input
-                  type={field.fieldType}
+                  type={inputType}
                   value={value || ""}
-                  onChange={(e) => onUpdate(field.id, e.target.value)}
+                  onChange={(e) => {
+                    let next = e.target.value;
+                    if (isPhone) {
+                      next = next.replace(/\D/g, "").slice(0, 10);
+                    }
+                    onUpdate(field.id, next);
+                  }}
                   placeholder={field.placeholder}
                   required={field.required}
+                  maxLength={isPhone ? 10 : undefined}
                   className={inputClass}
                 />
                 <HelpText text={field.helpText} />

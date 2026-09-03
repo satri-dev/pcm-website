@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Edit, Trash2, Eye, EyeOff, Check, X, AlertTriangle, Phone, Mail } from "lucide-react";
 import { FaFacebook, FaInstagram } from "react-icons/fa";
 import type { TopBarLink, TopBarContact } from "@/types/topbar";
@@ -64,8 +64,8 @@ function DeleteDialog({ isOpen, linkLabel, onConfirm, onCancel }: DeleteDialogPr
 }
 
 export default function TopBarManager({ links: initialLinks, contact: initialContact }: Props) {
-  const [links] = useState(initialLinks);
-  const [contact] = useState(initialContact);
+  const [links, setLinks] = useState(initialLinks);
+  const [contact, setContact] = useState(initialContact);
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingContact, setEditingContact] = useState(false);
@@ -74,6 +74,27 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
     linkId: null,
     linkLabel: "",
   });
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  
+  // Sync links state with prop changes
+  useEffect(() => {
+    setLinks(initialLinks);
+  }, [initialLinks]);
+  
+  // Sync contact state with prop changes
+  useEffect(() => {
+    setContact(initialContact);
+  }, [initialContact]);
+  
+  // Auto-dismiss messages after 5 seconds
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
   const [formData, setFormData] = useState({
     label: "",
     href: "",
@@ -88,6 +109,7 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
     email: contact?.email || "",
     facebookUrl: contact?.facebookUrl || "",
     instagramUrl: contact?.instagramUrl || "",
+    showLanguageSwitcher: contact?.showLanguageSwitcher ?? true,
   });
 
   const resetForm = () => {
@@ -112,11 +134,15 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
       });
       if (res.ok) {
         resetForm();
+        setMessage({ type: 'success', text: 'Link created successfully!' });
         window.location.reload();
+      } else {
+        const error = await res.json();
+        setMessage({ type: 'error', text: error.error || 'Failed to create link.' });
       }
     } catch (error) {
       console.error("Failed to create link:", error);
-      alert("Failed to create link. Please try again.");
+      setMessage({ type: 'error', text: 'Failed to create link. Please try again.' });
     }
   };
 
@@ -129,11 +155,15 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
       });
       if (res.ok) {
         resetForm();
+        setMessage({ type: 'success', text: 'Link updated successfully!' });
         window.location.reload();
+      } else {
+        const error = await res.json();
+        setMessage({ type: 'error', text: error.error || 'Failed to update link.' });
       }
     } catch (error) {
       console.error("Failed to update link:", error);
-      alert("Failed to update link. Please try again.");
+      setMessage({ type: 'error', text: 'Failed to update link. Please try again.' });
     }
   };
 
@@ -162,13 +192,15 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
       });
       if (res.ok) {
         closeDeleteDialog();
+        setMessage({ type: 'success', text: 'Link deleted successfully!' });
         window.location.reload();
       } else {
-        alert("Failed to delete link. Please try again.");
+        const error = await res.json();
+        setMessage({ type: 'error', text: error.error || 'Failed to delete link.' });
       }
     } catch (error) {
       console.error("Failed to delete link:", error);
-      alert("Failed to delete link. Please try again.");
+      setMessage({ type: 'error', text: 'Failed to delete link. Please try again.' });
     }
   };
 
@@ -227,16 +259,61 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
       });
       if (res.ok) {
         setEditingContact(false);
+        setMessage({ type: 'success', text: 'Contact information updated successfully!' });
         window.location.reload();
+      } else {
+        const error = await res.json();
+        setMessage({ type: 'error', text: error.error || 'Failed to update contact information.' });
       }
     } catch (error) {
       console.error("Failed to update contact:", error);
-      alert("Failed to update contact. Please try again.");
+      setMessage({ type: 'error', text: 'Failed to update contact information. Please try again.' });
     }
   };
 
   return (
     <>
+      {/* Toast Notification */}
+      {message && (
+        <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-5 duration-300">
+          <div className={`
+            flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg max-w-md
+            ${message.type === 'success' 
+              ? 'bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700' 
+              : 'bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700'}
+          `}>
+            <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center
+              ${message.type === 'success' 
+                ? 'bg-green-100 dark:bg-green-800' 
+                : 'bg-red-100 dark:bg-red-800'}
+            `}>
+              {message.type === 'success' ? (
+                <Check className="w-3 h-3 text-green-600 dark:text-green-400" />
+              ) : (
+                <AlertTriangle className="w-3 h-3 text-red-600 dark:text-red-400" />
+              )}
+            </div>
+            <p className={`text-sm font-medium
+              ${message.type === 'success' 
+                ? 'text-green-800 dark:text-green-200' 
+                : 'text-red-800 dark:text-red-200'}
+            `}>
+              {message.text}
+            </p>
+            <button
+              onClick={() => setMessage(null)}
+              className={`ml-auto flex-shrink-0 p-1 rounded hover:bg-black/5 dark:hover:bg-white/5 transition-colors
+                ${message.type === 'success' 
+                  ? 'text-green-600 dark:text-green-400' 
+                  : 'text-red-600 dark:text-red-400'}
+              `}
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       <DeleteDialog
         isOpen={deleteDialog.isOpen}
         linkLabel={deleteDialog.linkLabel}
@@ -333,6 +410,22 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
                       placeholder="https://www.instagram.com/..."
                     />
                   </div>
+                </div>
+                <div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={contactForm.showLanguageSwitcher}
+                      onChange={(e) => setContactForm({ ...contactForm, showLanguageSwitcher: e.target.checked })}
+                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Show Language Switcher (EN / ने)
+                    </span>
+                  </label>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-6">
+                    Toggle to show or hide the language switcher in the top bar
+                  </p>
                 </div>
                 <div className="flex gap-3 pt-2">
                   <button

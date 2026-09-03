@@ -137,13 +137,8 @@ export default function ApplicationFormSection({
   ) => {
     const list = [...cf[key]];
     const next = { ...list[index], [field]: value } as DynamicField;
+    if (field === "label") next.id = generateFieldId(String(value));
     list[index] = next;
-    updateForm({ [key]: list } as Partial<AdmissionPageContent["applicationForm"]>);
-  };
-
-  const syncFieldIdFromLabel = (key: OptionsField, index: number, label: string) => {
-    const list = [...cf[key]];
-    list[index] = { ...list[index], id: generateFieldId(label) } as DynamicField;
     updateForm({ [key]: list } as Partial<AdmissionPageContent["applicationForm"]>);
   };
 
@@ -415,7 +410,6 @@ export default function ApplicationFormSection({
                           onAddOption={() => addOption(step.key, idx)}
                           onUpdateOption={(oi, prop, v) => updateOption(step.key, idx, oi, prop, v)}
                           onRemoveOption={(oi) => removeOption(step.key, idx, oi)}
-                          onLabelBlur={(label) => syncFieldIdFromLabel(step.key, idx, label)}
                         />
                       ))}
                   </div>
@@ -696,7 +690,6 @@ function FieldEditor({
   onAddOption,
   onUpdateOption,
   onRemoveOption,
-  onLabelBlur,
 }: {
   index: number;
   field: DynamicField;
@@ -708,7 +701,6 @@ function FieldEditor({
   onAddOption: () => void;
   onUpdateOption: (optionIndex: number, prop: "value" | "label", value: string) => void;
   onRemoveOption: (optionIndex: number) => void;
-  onLabelBlur: (label: string) => void;
 }) {
   return (
     <div className="border border-slate-200 rounded-lg bg-white transition hover:border-slate-300 focus-within:border-blue-400">
@@ -758,7 +750,6 @@ function FieldEditor({
               type="text"
               value={field.label}
               onChange={(e) => onChange("label", e.target.value)}
-              onBlur={(e) => onLabelBlur(e.target.value)}
               className={inputClass}
             />
           </div>

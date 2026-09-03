@@ -1,4 +1,4 @@
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { getTopBarContact, updateTopBarContact } from "@/repositories/topbar.repository";
 import { CACHE_TAGS } from "@/lib/cache-tags";
@@ -23,8 +23,10 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "TopBar contact not found" }, { status: 404 });
     }
     
-    // Invalidate cache
-    revalidateTag(CACHE_TAGS.topBarContact, "max");
+    // Invalidate cache immediately for admin operations
+    revalidateTag(CACHE_TAGS.topBarContact, { expire: 0 });
+    // Also revalidate all pages that might display the topbar
+    revalidatePath('/', 'layout');
     
     return NextResponse.json(contact);
   } catch (error) {

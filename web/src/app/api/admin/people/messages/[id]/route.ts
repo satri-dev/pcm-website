@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   deleteMessage,
   getMessageById,
   updateMessage,
 } from "@/repositories/message.repository";
 import { requireApiSession } from "@/core/lib/api-guard";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 const updateSchema = z
   .object({
@@ -13,6 +15,7 @@ const updateSchema = z
     author: z.string().min(2).max(200),
     role: z.string(),
     excerpt: z.string(),
+    photo: z.string(),
   })
   .partial();
 
@@ -72,6 +75,8 @@ export async function PATCH(
     if (!updated) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+    revalidateTag(CACHE_TAGS.messageList, "max");
+    revalidatePath("/about/message");
     return NextResponse.json(updated);
   } catch (err) {
     if (isMongoError(err) && err.code === 11000) {
@@ -100,6 +105,8 @@ export async function DELETE(
     if (!deleted) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+    revalidateTag(CACHE_TAGS.messageList, "max");
+    revalidatePath("/about/message");
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json(

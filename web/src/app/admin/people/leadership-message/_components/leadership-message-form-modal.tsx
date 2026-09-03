@@ -1,21 +1,30 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { LeadershipMessage, LEADERSHIP_ROLES } from "@/types/leadership-message";
-import { Save, X } from "lucide-react";
+import ImageUpload from "@/components/cloudinary/ImageUpload";
+import { Save, X, Trash2, UserRound, Loader2 } from "lucide-react";
 
 const msgSchema = z.object({
   title: z.string().min(2, "Title is required").max(200),
   author: z.string().min(1, "Author is required").max(200),
   role: z.string().optional(),
   excerpt: z.string().optional(),
+  photo: z.string().optional(),
 });
 
 type MsgSchema = z.infer<typeof msgSchema>;
+
+interface PersonOption {
+  name: string;
+  role: string;
+  photo: string;
+  source: "Faculty" | "Board of Directors";
+}
 
 interface LeadershipMessageFormModalProps {
   open: boolean;
@@ -25,16 +34,65 @@ interface LeadershipMessageFormModalProps {
   saving?: boolean;
 }
 
+const PEOPLE_API = [
+  { api: "/api/admin/people/faculty?pageSize=100", source: "Faculty" as const },
+  { api: "/api/admin/people/board?pageSize=100", source: "Board of Directors" as const },
+];
+
 export default function LeadershipMessageFormModal({ open, onOpenChange, message, onSave, saving = false }: LeadershipMessageFormModalProps) {
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<MsgSchema>({
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<MsgSchema>({
     resolver: zodResolver(msgSchema),
-    defaultValues: { title: "", author: "", role: "", excerpt: "" },
+    defaultValues: { title: "", author: "", role: "", excerpt: "", photo: "" },
   });
 
+  const photo = watch("photo") || "";
+  const [people, setPeople] = useState<PersonOption[]>([]);
+  const [peopleLoading, setPeopleLoading] = useState(false);
+  const [peopleError, setPeopleError] = useState("");
+
   useEffect(() => {
-    if (message) { reset({ title: message.title, author: message.author, role: message.role || "", excerpt: message.excerpt || "" }); }
-    else { reset({ title: "", author: "", role: "", excerpt: "" }); }
+    if (open) {
+      let cancelled = false;
+      setPeopleLoading(true);
+      setPeopleError("");
+      Promise.all(
+        PEOPLE_API.map(async ({ api, source }) => {
+          const res = await fetch(api);
+          if (!res.ok) throw new Error(`Failed to load ${source}`);
+          const data = await res.json();
+          const items: { name?: string; role?: string; photo?: string }[] = data.items ?? [];
+          return items
+            .filter((it) => it.name)
+            .map((it) => ({ name: String(it.name), role: String(it.role || ""), photo: String(it.photo || ""), source }));
+        })
+      )
+        .then((groups) => {
+          if (cancelled) return;
+          setPeople(groups.flat());
+        })
+        .catch((err: unknown) => {
+          if (cancelled) return;
+          setPeopleError(err instanceof Error ? err.message : "Failed to load people");
+        })
+        .finally(() => {
+          if (!cancelled) setPeopleLoading(false);
+        });
+      return () => { cancelled = true; };
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (message) { reset({ title: message.title, author: message.author, role: message.role || "", excerpt: message.excerpt || "", photo: message.photo || "" }); }
+    else { reset({ title: "", author: "", role: "", excerpt: "", photo: "" }); }
   }, [message, reset, open]);
+
+  const applyPerson = (name: string) => {
+    const person = people.find((p) => p.name === name);
+    if (!person) return;
+    setValue("author", person.name, { shouldValidate: true });
+    setValue("role", person.role, { shouldValidate: true });
+    setValue("photo", person.photo, { shouldValidate: true });
+  };
 
   const onSubmit = async (data: MsgSchema) => {
     const msgData: LeadershipMessage = {
@@ -43,11 +101,17 @@ export default function LeadershipMessageFormModal({ open, onOpenChange, message
       author: data.author,
       role: data.role || "",
       excerpt: data.excerpt || "",
+      photo: data.photo || "",
     };
     await onSave(msgData);
   };
 
   const fv = (key: keyof MsgSchema) => errors[key] ? "field is-invalid" : "field";
+
+  const grouped = people.reduce<Record<string, PersonOption[]>>((acc, p) => {
+    (acc[p.source] ||= []).push(p);
+    return acc;
+  }, {});
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -59,15 +123,58 @@ export default function LeadershipMessageFormModal({ open, onOpenChange, message
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="modal__body">
             <div className="form-grid">
-              <div className={fv("title")}><label>Title <span className="req">*</span></label><input type="text" {...register("title")} />{errors.title && <div className="field__err">{errors.title.message}</div>}</div>
-              <div className={fv("author")}><label>Author <span className="req">*</span></label><input type="text" {...register("author")} />{errors.author && <div className="field__err">{errors.author.message}</div>}</div>
+              <div className={fv("title")}><label>Title <span className="req">*</span></label><input type="text" {...register("title")} placeholder="e.g. Message from the Principal" />{errors.title && <div className="field__err">{errors.title.message}</div>}</div>
+
+              <div className="field field--full">
+                <label>Select Author from Existing People <span className="hint">(optional — or type below)</span></label>
+                <select
+                  value=""
+                  onChange={(e) => e.target.value && applyPerson(e.target.value)}
+                  disabled={peopleLoading}
+                >
+                  <option value="">{peopleLoading ? "Loading people…" : "— Choose a person —"}</option>
+                  {Object.keys(grouped).map((source) => (
+                    <optgroup key={source} label={source}>
+                      {grouped[source].map((p) => (
+                        <option key={`${source}-${p.name}`} value={p.name}>{p.name} — {p.role || "No role"}</option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+                {peopleError && <div className="field__err">{peopleError}</div>}
+              </div>
+
+              <div className={fv("author")}><label>Author Name <span className="req">*</span></label><input type="text" {...register("author")} placeholder="Type a name manually" />{errors.author && <div className="field__err">{errors.author.message}</div>}</div>
               <div className={fv("role")}><label>Role</label><select {...register("role")}><option value="">— Select —</option>{[...new Set([...(message?.role ? [message.role] : []), ...LEADERSHIP_ROLES])].map((r) => <option key={r} value={r}>{r}</option>)}</select></div>
-              <div className="field field--full"><label>Excerpt</label><textarea {...register("excerpt")} rows={4} placeholder="Short message or excerpt…" /></div>
+
+              <div className="field field--full">
+                <label>Profile Photo</label>
+                <div className="flex items-center gap-3 flex-wrap">
+                  {photo ? (
+                    <div className="relative w-16 h-16 rounded-full overflow-hidden border border-[var(--admin-line)]" style={{ width: 64, height: 64 }}>
+                      <img src={photo} alt="Author" className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center w-16 h-16 rounded-full bg-[var(--admin-surface-2)] text-[var(--admin-muted)] border border-dashed border-[var(--admin-line)]"><UserRound size={22} /></div>
+                  )}
+                  <div className="flex flex-col gap-1.5">
+                    <ImageUpload
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#16285B] text-white text-sm font-medium hover:bg-[#1e3a7a] transition-colors cursor-pointer"
+                      onUpload={(r) => setValue("photo", r.secure_url, { shouldValidate: true })}
+                    />
+                    {photo && (
+                      <button type="button" className="inline-flex items-center gap-1.5 text-[0.8rem] text-[var(--admin-red)] hover:underline" onClick={() => setValue("photo", "")}><Trash2 size={14} /> Remove</button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="field field--full"><label>Message / Excerpt</label><textarea {...register("excerpt")} rows={4} placeholder="Write the leader's message…" /></div>
             </div>
           </div>
           <div className="modal__foot">
             <button type="button" className="admin-btn" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</button>
-            <button type="submit" className="admin-btn admin-btn--primary" disabled={saving}><Save size={16} />{saving ? "Saving…" : "Save"}</button>
+            <button type="submit" className="admin-btn admin-btn--primary" disabled={saving}>{(saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />)}{saving ? "Saving…" : "Save"}</button>
           </div>
         </form>
       </DialogContent>

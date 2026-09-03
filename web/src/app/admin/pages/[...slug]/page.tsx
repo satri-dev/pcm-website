@@ -59,6 +59,10 @@ import FacilitiesPageSettings from "../_components/facilities-page-settings";
 import { getFacilitiesPageSettings } from "@/repositories/facilities-page-settings.repository";
 import CampusMapPageSettings from "../_components/campus-map-page-settings";
 import { getCampusMapPageSettings } from "@/repositories/campus-map-page-settings.repository";
+import MessagePageSettings from "../_components/message-page-settings";
+import { getMessagePageSettings } from "@/repositories/message-page-settings.repository";
+import ClubsPageSettings from "../_components/clubs-page-settings";
+import { getClubsPageSettings } from "@/repositories/clubs-page-settings.repository";
 
 interface RouteCtx {
   params: Promise<{ slug: string | string[] }>;
@@ -360,6 +364,32 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
           subtitle="Pages · Content & SEO"
         />
         <CampusMapPageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "about/message") {
+    const settings = await getMessagePageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content & SEO"
+        />
+        <MessagePageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "clubs") {
+    const settings = await getClubsPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content & SEO"
+        />
+        <ClubsPageSettings initial={settings} />
       </>
     );
   }

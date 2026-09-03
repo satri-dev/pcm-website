@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { LeadershipMessage } from "@/types/leadership-message";
-import { Eye, Pencil, Trash2, Search, MessageSquare } from "lucide-react";
+import { Eye, Pencil, Trash2, Search, MessageSquare, UserRound } from "lucide-react";
 
 interface LeadershipMessageTableProps {
   messages: LeadershipMessage[];
@@ -37,6 +37,7 @@ export default function LeadershipMessageTable({ messages, onAdd, onView, onEdit
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[52px] text-[var(--admin-muted)] font-bold text-[0.72rem] uppercase tracking-wider bg-[var(--admin-surface-2)]">PHOTO</TableHead>
               <TableHead className="w-1/2 text-[var(--admin-muted)] hover:text-[var(--admin-brand)] font-bold text-[0.72rem] uppercase tracking-wider bg-[var(--admin-surface-2)] transition-colors cursor-pointer">TITLE</TableHead>
               <TableHead className="text-[var(--admin-muted)] hover:text-[var(--admin-brand)] font-bold text-[0.72rem] uppercase tracking-wider bg-[var(--admin-surface-2)] transition-colors cursor-pointer">AUTHOR</TableHead>
               <TableHead className="text-[var(--admin-muted)] hover:text-[var(--admin-brand)] font-bold text-[0.72rem] uppercase tracking-wider bg-[var(--admin-surface-2)] transition-colors cursor-pointer">ROLE</TableHead>
@@ -45,10 +46,19 @@ export default function LeadershipMessageTable({ messages, onAdd, onView, onEdit
           </TableHeader>
           <TableBody>
             {paginated.length === 0 ? (
-              <TableRow><TableCell colSpan={4} className="text-center py-12"><div className="flex flex-col items-center"><MessageSquare size={40} className="opacity-30 mb-4" /><p>No records match your search.</p></div></TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center py-12"><div className="flex flex-col items-center"><MessageSquare size={40} className="opacity-30 mb-4" /><p>No records match your search.</p></div></TableCell></TableRow>
             ) : (
               paginated.map((item) => (
                 <TableRow key={item.id} className="hover:bg-[#fafbfe] transition-colors">
+                  <TableCell className="py-3">
+                    {item.photo ? (
+                      <img src={item.photo} alt={item.author} className="w-9 h-9 rounded-full object-cover border border-[var(--admin-line)]" />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-[var(--admin-surface-2)] border border-dashed border-[var(--admin-line)] flex items-center justify-center text-[var(--admin-muted)]">
+                        <UserRound size={16} />
+                      </div>
+                    )}
+                  </TableCell>
                   <TableCell className="py-3">
                     <div className="cell-main"><div className="font-semibold text-sm">{item.title}</div><small className="text-[var(--admin-muted)] text-[0.76rem]">{item.excerpt?.slice(0, 60)}{item.excerpt && item.excerpt.length > 60 ? "…" : ""}</small></div>
                   </TableCell>
