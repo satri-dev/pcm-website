@@ -6,14 +6,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Club } from "@/types/clubs";
-import { Save, X, Plus, Trash2 } from "lucide-react";
+import { Save, X, Plus, Trash2, UserRound, Loader2 } from "lucide-react";
 import ImageUpload from "@/components/cloudinary/ImageUpload";
 
 const clubSchema = z.object({
   name: z.string().min(2, "Club name is required").max(200),
   icon: z.string().min(1, "Icon is required"),
   tagline: z.string().min(1, "Tagline is required"),
-  image: z.string().optional(),
   desc: z.string().optional(),
   members: z.array(z.object({
     photo: z.string(),
@@ -34,25 +33,22 @@ interface ClubsFormModalProps {
 }
 
 export default function ClubsFormModal({ open, onOpenChange, club, onSave, saving = false }: ClubsFormModalProps) {
-  const { register, handleSubmit, setValue, watch, reset, control, formState: { errors } } = useForm<ClubSchema>({
+  const { register, handleSubmit, setValue, reset, control, formState: { errors } } = useForm<ClubSchema>({
     resolver: zodResolver(clubSchema),
-    defaultValues: { name: "", icon: "🎭", tagline: "", image: "", desc: "", members: [] },
+    defaultValues: { name: "", icon: "🎭", tagline: "", desc: "", members: [] },
   });
   const { fields, append, remove } = useFieldArray({ control, name: "members" });
-  const image = watch("image");
 
   useEffect(() => {
-    if (club) { reset({ name: club.name, icon: club.icon, tagline: club.tagline, image: club.image || "", desc: club.desc || "", members: club.members || [] }); }
-    else { reset({ name: "", icon: "🎭", tagline: "", image: "", desc: "", members: [] }); }
+    if (club) { reset({ name: club.name, icon: club.icon, tagline: club.tagline, desc: club.desc || "", members: club.members || [] }); }
+    else { reset({ name: "", icon: "🎭", tagline: "", desc: "", members: [] }); }
   }, [club, reset, open]);
-
-  const handleImageUpload = (result: { secure_url: string }) => { setValue("image", result.secure_url); };
 
   const onSubmit = async (data: ClubSchema) => {
     const clubData: Club = {
       id: club?.id || `club-${Date.now()}`,
       name: data.name, icon: data.icon, tagline: data.tagline,
-      image: data.image || "", desc: data.desc || "",
+      image: club?.image || "", desc: data.desc || "",
       members: data.members || [],
     };
     await onSave(clubData);
@@ -74,25 +70,34 @@ export default function ClubsFormModal({ open, onOpenChange, club, onSave, savin
               <div className={fv("icon")}><label>Icon (emoji) <span className="req">*</span></label><input type="text" {...register("icon")} placeholder="e.g. 🎭" />{errors.icon && <div className="field__err">{errors.icon.message}</div>}</div>
               <div className={fv("tagline")}><label>Tagline <span className="req">*</span></label><input type="text" {...register("tagline")} />{errors.tagline && <div className="field__err">{errors.tagline.message}</div>}</div>
               <div className={fv("desc")}><label>Description</label><textarea {...register("desc")} rows={3} /></div>
-              <div className="field field--full">
-                <label>Image</label>
-                <div className="file-field">
-                  <ImageUpload onUpload={handleImageUpload} />
-                  <input type="text" {...register("image")} placeholder="...or paste a URL" className="mt-2" />
-                </div>
-                {image && <div className="img-prev"><img src={image} alt="" style={{ height: 64, width: "auto", maxWidth: "100%", borderRadius: 8, border: "1px solid #e2e7f0" }} /></div>}
-              </div>
+
               <div className="field field--full">
                 <label className="flex items-center gap-2">Members <span className="text-xs text-[var(--admin-muted)] font-normal">({fields.length})</span></label>
                 <div className="flex flex-col gap-3 mt-2">
                   {fields.map((field, index) => (
-                    <div key={field.id} className="flex items-start gap-2 p-3 rounded-lg border border-[var(--admin-line)] bg-[var(--admin-surface)]">
+                    <div key={field.id} className="flex items-start gap-3 p-3 rounded-lg border border-[var(--admin-line)] bg-[var(--admin-surface)]">
+                      <div className="flex flex-col items-center gap-2">
+                        {field.photo ? (
+                          <div className="relative w-14 h-14 rounded-full overflow-hidden border border-[var(--admin-line)]" style={{ width: 56, height: 56 }}>
+                            <img src={field.photo} alt="Member" className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-center w-14 h-14 rounded-full bg-[var(--admin-surface-2)] text-[var(--admin-muted)] border border-dashed border-[var(--admin-line)]" style={{ width: 56, height: 56 }}><UserRound size={20} /></div>
+                        )}
+                        <ImageUpload
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#16285B] text-white text-[0.75rem] font-medium hover:bg-[#1e3a7a] transition-colors cursor-pointer"
+                          onUpload={(r) => setValue(`members.${index}.photo`, r.secure_url)}
+                        />
+                      </div>
                       <div className="flex-1 grid grid-cols-3 gap-2">
                         <input type="text" {...register(`members.${index}.name`)} placeholder="Name" className="text-sm" />
                         <input type="text" {...register(`members.${index}.position`)} placeholder="Position" className="text-sm" />
                         <input type="text" {...register(`members.${index}.program`)} placeholder="Program (optional)" className="text-sm" />
                       </div>
-                      <button type="button" className="admin-icon-btn text-[var(--admin-red)] hover:bg-red-50" onClick={() => remove(index)}><Trash2 size={14} /></button>
+                      <div className="flex flex-col items-end gap-1">
+                        <button type="button" className="admin-icon-btn text-[var(--admin-red)] hover:bg-red-50" onClick={() => remove(index)}><Trash2 size={14} /></button>
+                        <button type="button" className="admin-icon-btn" title="Remove photo" onClick={() => setValue(`members.${index}.photo`, "")}><UserRound size={14} /></button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -102,7 +107,7 @@ export default function ClubsFormModal({ open, onOpenChange, club, onSave, savin
           </div>
           <div className="modal__foot">
             <button type="button" className="admin-btn" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</button>
-            <button type="submit" className="admin-btn admin-btn--primary" disabled={saving}><Save size={16} />{saving ? "Saving..." : "Save"}</button>
+            <button type="submit" className="admin-btn admin-btn--primary" disabled={saving}>{(saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />)}{saving ? "Saving..." : "Save"}</button>
           </div>
         </form>
       </DialogContent>

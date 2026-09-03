@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   createClub,
   ensureClubIndexes,
   listClubs,
 } from "@/repositories/club.repository";
 import { requireApiSession } from "@/core/lib/api-guard";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 const clubMemberSchema = z.object({
   photo: z.string(),
@@ -64,6 +66,8 @@ export async function POST(request: NextRequest) {
 
   try {
     const created = await createClub(parsed.data);
+    revalidateTag(CACHE_TAGS.clubsList, "max");
+    revalidatePath("/clubs");
     return NextResponse.json(created, { status: 201 });
   } catch {
     return NextResponse.json(

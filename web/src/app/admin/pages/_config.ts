@@ -20,7 +20,7 @@ export const mainPages: PagesSectionEntry[] = [
   { slug: "career", label: "Career", publicHref: "/career", live: true },
   { slug: "blogs", label: "Blogs", publicHref: "/blogs" },
   { slug: "blog-student", label: "Student Blogs", publicHref: "/blogs-student" },
-  { slug: "clubs", label: "Clubs", publicHref: "/clubs" },
+  { slug: "clubs", label: "Clubs", publicHref: "/clubs", live: true },
   { slug: "contact", label: "Contact", publicHref: "/contact" },
   { slug: "downloads", label: "Downloads", publicHref: "/downloads", live: true },
   { slug: "events", label: "Events", publicHref: "/events", live: true },

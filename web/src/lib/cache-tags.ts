@@ -45,6 +45,10 @@ export const CACHE_TAGS = {
   // Leadership Messages
   messageList: "message-list",
   messageSettings: "message-settings",
+
+  // Clubs
+  clubsList: "clubs-list",
+  clubsSettings: "clubs-settings",
   
   // Gallery
   galleryList: "gallery-list",
