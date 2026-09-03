@@ -1,4 +1,4 @@
-import type { GalleryAlbum, GalleryPhoto } from "../types";
+import type { GalleryAlbum, GalleryPhoto, GalleryVideo } from "../types";
 
 // Albums and photos are now fetched from the backend and adapted server-side
 // (see src/feature/gallery/lib/adapt.ts). These arrays are fallbacks used by
@@ -23,6 +23,19 @@ export function getCategories(albums: GalleryAlbum[]): GalleryCategoryOption[] {
   const options: GalleryCategoryOption[] = [{ value: "all", label: "All" }];
   for (const album of albums) {
     const cat = album.category;
+    if (cat && !seen.has(cat)) {
+      seen.add(cat);
+      options.push({ value: cat, label: cat });
+    }
+  }
+  return options;
+}
+
+export function getVideoCategories(videos: GalleryVideo[]): GalleryCategoryOption[] {
+  const seen = new Set<string>();
+  const options: GalleryCategoryOption[] = [{ value: "all", label: "All" }];
+  for (const video of videos) {
+    const cat = video.category;
     if (cat && !seen.has(cat)) {
       seen.add(cat);
       options.push({ value: cat, label: cat });

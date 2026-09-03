@@ -14,8 +14,10 @@ function fromDocument(doc: GalleryDocument): Gallery {
     id: doc._id!.toString(),
     title: doc.title,
     category: doc.category,
+    type: doc.type ?? "photo",
     image: doc.image,
     photos: doc.photos ?? [],
+    videos: doc.videos ?? [],
     date: doc.date,
     photoCount: doc.photoCount ?? (doc.photos ?? []).length,
     views: doc.views ?? 0,
@@ -31,8 +33,10 @@ function toDocument(input: GalleryCreateInput): Omit<GalleryDocument, "_id"> {
   return clean({
     title: input.title.trim(),
     category: input.category,
+    type: input.type ?? "photo",
     image: input.image || undefined,
     photos: Array.isArray(input.photos) ? input.photos : [],
+    videos: Array.isArray(input.videos) ? input.videos : [],
     date: input.date,
     photoCount:
       typeof input.photoCount === "number" && input.photoCount >= 0
@@ -125,8 +129,10 @@ export async function updateGallery(id: string, patch: GalleryUpdateInput) {
   const allowed: (keyof GalleryCreateInput)[] = [
     "title",
     "category",
+    "type",
     "image",
     "photos",
+    "videos",
     "date",
     "photoCount",
     "views",

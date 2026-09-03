@@ -14,7 +14,15 @@ export const GALLERY_CATEGORIES: readonly GalleryCategory[] = [
 
 export const GALLERY_COLLECTION = "gallery";
 
+export type GalleryMediaType = "photo" | "video";
+
 export interface GalleryPhoto {
+  url: string;
+  title?: string;
+  tags?: string[];
+}
+
+export interface GalleryVideo {
   url: string;
   title?: string;
   tags?: string[];
@@ -24,8 +32,10 @@ export interface Gallery {
   id: string;
   title: string;
   category: GalleryCategory;
+  type?: GalleryMediaType;
   image?: string;
   photos: GalleryPhoto[];
+  videos?: GalleryVideo[];
   date: string;
   photoCount: number;
   views: number;
@@ -39,8 +49,10 @@ export interface GalleryDocument {
   _id?: import("mongodb").ObjectId;
   title: string;
   category: GalleryCategory;
+  type?: GalleryMediaType;
   image?: string;
   photos: GalleryPhoto[];
+  videos?: GalleryVideo[];
   date: string;
   photoCount: number;
   views: number;
@@ -53,8 +65,10 @@ export interface GalleryDocument {
 export interface GalleryCreateInput {
   title: string;
   category: GalleryCategory;
+  type?: GalleryMediaType;
   image?: string;
   photos?: GalleryPhoto[];
+  videos?: GalleryVideo[];
   date: string;
   photoCount?: number;
   views?: number;

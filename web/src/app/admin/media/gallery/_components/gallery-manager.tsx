@@ -4,9 +4,10 @@ import { useState } from "react";
 import { useGallery } from "../hooks/use-gallery";
 import GalleryTable from "./gallery-table";
 import GalleryFormModal from "./gallery-form-modal";
+import GalleryVideoFormModal from "./gallery-video-form-modal";
 import GalleryViewModal from "./gallery-view-modal";
 import { Gallery } from "@/types/gallery";
-import { Plus, RefreshCw } from "lucide-react";
+import { Plus, RefreshCw, Video } from "lucide-react";
 import { SoftDeleteDialog } from "@/components/shared/SoftDeleteDialog";
 
 interface GalleryManagerProps {
@@ -27,6 +28,7 @@ export default function GalleryManager({
   } = useGallery({ initialData });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Gallery | null>(null);
   const [saving, setSaving] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
@@ -40,6 +42,11 @@ export default function GalleryManager({
     setIsModalOpen(true);
   };
 
+  const handleAddVideo = () => {
+    setEditingItem(null);
+    setIsVideoModalOpen(true);
+  };
+
   const handleViewGallery = (item: Gallery) => {
     setViewingItem(item);
     setIsViewOpen(true);
@@ -47,7 +54,11 @@ export default function GalleryManager({
 
   const handleEditGallery = (item: Gallery) => {
     setEditingItem(item);
-    setIsModalOpen(true);
+    if (item.type === "video") {
+      setIsVideoModalOpen(true);
+    } else {
+      setIsModalOpen(true);
+    }
   };
 
   const handleDeleteGallery = (gallery: Gallery) => {
@@ -76,6 +87,7 @@ export default function GalleryManager({
         await createGallery(data);
       }
       setIsModalOpen(false);
+      setIsVideoModalOpen(false);
       setEditingItem(null);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Save failed");
@@ -108,6 +120,14 @@ export default function GalleryManager({
           </button>
           <button
             type="button"
+            className="admin-btn"
+            onClick={handleAddVideo}
+          >
+            <Video size={16} />
+            Add Video
+          </button>
+          <button
+            type="button"
             className="admin-btn admin-btn--primary"
             onClick={handleAddGallery}
           >
@@ -137,6 +157,14 @@ export default function GalleryManager({
       <GalleryFormModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
+        gallery={editingItem}
+        onSave={handleSaveGallery}
+        saving={saving}
+      />
+
+      <GalleryVideoFormModal
+        open={isVideoModalOpen}
+        onOpenChange={setIsVideoModalOpen}
         gallery={editingItem}
         onSave={handleSaveGallery}
         saving={saving}
