@@ -21,6 +21,7 @@ import {
   Eye,
   CreditCard,
   CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 
 interface AdmissionClientProps {
@@ -183,9 +184,12 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [stepErrors, setStepErrors] = useState<string[]>([]);
+  const [validating, setValidating] = useState(false);
   const profileInputRef = useRef<HTMLInputElement>(null);
 
   const update = useCallback((field: string, value: any) => {
+    setStepErrors([]);
     setForm((prev) => {
       const next = { ...prev, [field]: value };
       if (field === "same_address" && value === true) {
@@ -224,6 +228,28 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
 
   const removeDoc = (idx: number) => setDocFiles((prev) => prev.filter((_, i) => i !== idx));
   const removePay = (idx: number) => setPayFiles((prev) => prev.filter((_, i) => i !== idx));
+
+  const handleNext = async () => {
+    setStepErrors([]);
+    setValidating(true);
+    try {
+      const res = await fetch("/api/applications/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ step, form, documents: docFiles, paymentSlips: payFiles }),
+      });
+      const data = await res.json();
+      if (data.valid) {
+        setStep(step + 1);
+      } else {
+        setStepErrors(data.errors || ["Please fill in all required fields"]);
+      }
+    } catch {
+      setStepErrors(["Validation failed. Please try again."]);
+    } finally {
+      setValidating(false);
+    }
+  };
 
   const progressPct = Math.round((step / 6) * 100);
 
@@ -636,16 +662,31 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
                   </div>
                 )}
 
+                {/* Validation Errors */}
+                {stepErrors.length > 0 && (
+                  <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+                    <div className="flex items-center gap-2 mb-2">
+                      <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
+                      <span className="text-sm font-semibold text-red-700">Please fix the following:</span>
+                    </div>
+                    <ul className="space-y-1 ml-7">
+                      {stepErrors.map((err, i) => (
+                        <li key={i} className="text-sm text-red-600 list-disc">{err}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
                 {/* Navigation */}
                 <div className="flex justify-between items-center mt-8 pt-5 border-t border-gray-100">
                   {step > 0 ? (
-                    <button type="button" onClick={() => setStep(step - 1)} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-semibold text-sm hover:bg-gray-50 transition-colors">
+                    <button type="button" onClick={() => { setStepErrors([]); setStep(step - 1); }} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-semibold text-sm hover:bg-gray-50 transition-colors">
                       <ArrowLeft className="w-4 h-4" /> Previous
                     </button>
                   ) : <div />}
                   {step < 5 ? (
-                    <button type="button" onClick={() => setStep(step + 1)} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#16285B] text-white font-semibold text-sm hover:bg-[#1e3a7a] transition-colors">
-                      Next <ArrowRight className="w-4 h-4" />
+                    <button type="button" disabled={validating} onClick={handleNext} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#16285B] text-white font-semibold text-sm hover:bg-[#1e3a7a] transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+                      {validating ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Validating...</> : <>Next <ArrowRight className="w-4 h-4" /></>}
                     </button>
                   ) : (
                     <button type="button" disabled={submitting || !form.agree_terms} onClick={handleSubmit} className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-[#51B747] text-white font-semibold text-sm hover:bg-[#3F9E35] transition-colors disabled:opacity-60 disabled:cursor-not-allowed">

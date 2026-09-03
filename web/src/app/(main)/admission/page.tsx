@@ -182,7 +182,7 @@ const DEFAULT_ADMISSION_CONTENT: AdmissionPageContent = {
         label: "Phone Number",
         fieldType: "phone",
         placeholder: "e.g. 98XXXXXXXX",
-        required: false,
+        required: true,
         order: 7,
       },
       {
@@ -190,7 +190,7 @@ const DEFAULT_ADMISSION_CONTENT: AdmissionPageContent = {
         label: "Email Address",
         fieldType: "email",
         placeholder: "example@domain.com",
-        required: false,
+        required: true,
         order: 8,
       },
     ],
