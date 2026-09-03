@@ -39,6 +39,7 @@ export const mainPages: PagesSectionEntry[] = [
   { slug: "faq", label: "FAQ", publicHref: "/faq", live:true },
   { slug: "downloads", label: "Download", publicHref: "/downloads", live:true },
   { slug: "scholarship", label: "Scholarship", publicHref: "/scholarship", live: true },
+  { slug: "survey", label: "Survey", publicHref: "/survey", live: true },
 ];
 
 // Reusable site chrome/teaser pieces administrators configure.

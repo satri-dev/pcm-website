@@ -61,6 +61,11 @@ export const CACHE_TAGS = {
   galleryList: "gallery-list",
   gallery: (id: string) => `gallery-${id}`,
   
+  // Surveys
+  surveysList: "surveys-list",
+  survey: (slug: string) => `survey-${slug}`,
+  surveysSettings: "surveys-settings",
+
   // News
   newsList: "news-list",
   news: (slug: string) => `news-${slug}`,

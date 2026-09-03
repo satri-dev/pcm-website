@@ -55,6 +55,7 @@ import {
   UserCheck2,
   DollarSign,
   FileQuestionMark,
+  FileQuestionMarkIcon,
 } from "lucide-react";
 
 interface NavItem {
@@ -335,6 +336,12 @@ const navigation: NavSection[] = [
         href: "/admin/content/feedback",
         icon: MessageSquare,
         badgeKey: "feedback",
+      },
+      {
+        label: "Surveys",
+        href: "/admin/content/surveys",
+        icon: FileQuestionMarkIcon,
+        badgeKey: "surveys",
       },
       {
         label: "Content Trash",

@@ -19,6 +19,7 @@ const COLLECTION_LABELS: Record<string, string> = {
   programs: "Programs",
   scholarships: "Scholarships",
   faqs: "FAQs",
+  surveys: "Surveys",
 };
 
 export default function ContentTrashPage() {
@@ -96,7 +97,7 @@ export default function ContentTrashPage() {
         <div>
           <h1 className="text-2xl font-bold">Content Trash</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Trashed items from News, Notices, Results, Events, Programs, Scholarships, and FAQs
+            Trashed items from News, Notices, Results, Events, Programs, Scholarships, FAQs, and Surveys
           </p>
         </div>
         {items.length > 0 && (

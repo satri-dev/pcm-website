@@ -2,20 +2,22 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { useSurvey } from "@/feature/survey/hooks/useSurvey";
-import SurveyCard from "@/feature/survey/components/SurveyCard";
-import QuestionRenderer from "@/feature/survey/components/QuestionRenderer";
+import type { Survey } from "@/types/surveys";
+import type { SurveyPageData } from "./SurveyServer";
 import "./survey.css";
 
 /* ── SVG icons ── */
 const ChevronRight = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
 );
+const ArrowIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+);
 const ChevronLeft = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
 );
-const SendIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4Z" /></svg>
+const ClockIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
 );
 const ClipboardIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -23,29 +25,74 @@ const ClipboardIcon = () => (
     <rect x="9" y="3" width="6" height="4" rx="1" />
   </svg>
 );
-const CheckIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" width="36" height="36">
-    <path d="M20 6 9 17l-5-5" />
-  </svg>
-);
 
-export default function SurveyClient() {
+function fmtDeadline(d?: string) {
+  if (!d) return null;
+  const dt = new Date(d);
+  if (isNaN(dt.getTime())) return null;
+  return dt.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function countQuestions(questions: Survey["questions"]): number {
+  if (!questions) return 0;
+  return questions.reduce(
+    (acc, q) => acc + (q.label ? 1 : 0) + countQuestions(q.children ?? []),
+    0
+  );
+}
+
+function SurveyCard({ survey }: { survey: Survey }) {
+  const deadline = fmtDeadline(survey.endsOn);
+  const n = countQuestions(survey.questions);
+  return (
+    <Link href={`/survey/${survey.slug}`} className="sv-card">
+      <div className="sv-card__header">
+        <span className="sv-card__icon" aria-hidden="true">{survey.icon || "📋"}</span>
+        <span className="sv-card__cat">{survey.category}</span>
+      </div>
+      <h3 className="sv-card__title">{survey.title}</h3>
+      <p className="sv-card__desc">{survey.excerpt || survey.content}</p>
+      <div className="sv-card__meta">
+        <span className="sv-card__meta-item"><ClockIcon /> ~{survey.timeToRead || 1} min</span>
+        <span className="sv-card__meta-item">{n} questions</span>
+        {deadline && <span className="sv-card__meta-item sv-card__deadline">Ends {deadline}</span>}
+      </div>
+      <div className="sv-card__foot">
+        <span className="sv-card__cta">Take survey <ArrowIcon /></span>
+      </div>
+    </Link>
+  );
+}
+
+export default function SurveyClient({ data }: { data: SurveyPageData }) {
+  const { settings, surveys, page, pages, perPage } = data;
   const rootRef = useRef<HTMLDivElement>(null);
-
-  const {
-    surveys, status, activeSurvey, answers, respondent, setRespondent,
-    submitting, serverError, openSurvey, backToList, setAnswer, toggleCheckbox, submit,
-  } = useSurvey();
 
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
     const items = Array.from(root.querySelectorAll<HTMLElement>(".reveal"));
-    if (!("IntersectionObserver" in window)) { items.forEach(el => el.classList.add("is-inview")); return; }
-    const io = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("is-inview"); io.unobserve(e.target); } }), { threshold: 0.08 });
-    items.forEach(el => io.observe(el));
+    if (!("IntersectionObserver" in window)) {
+      items.forEach((el) => el.classList.add("is-inview"));
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("is-inview");
+            io.unobserve(e.target);
+          }
+        }),
+      { threshold: 0.08 }
+    );
+    items.forEach((el) => io.observe(el));
     return () => io.disconnect();
-  }, [status]);
+  }, [page]);
+
+  const pageNumbers = Array.from({ length: pages }, (_, i) => i + 1);
+  const prevHref = page > 1 ? `/survey?page=${page - 1}` : null;
+  const nextHref = page < pages ? `/survey?page=${page + 1}` : null;
 
   return (
     <div ref={rootRef} className="pcm-survey">
@@ -59,119 +106,93 @@ export default function SurveyClient() {
           <nav className="crumbs" aria-label="Breadcrumb">
             <Link href="/">Home</Link><ChevronRight /><span>Surveys</span>
           </nav>
-          <h1>Surveys &amp; Polls</h1>
-          <p>Participate in our ongoing surveys and help PCM grow and improve.</p>
+          <h1>{settings.heroTitle}</h1>
+          <p>{settings.heroSubtitle}</p>
         </div>
       </section>
 
       {/* ── Survey list ── */}
-      {status === "list" && (
-        <section className="section">
-          <div className="wrap-wide">
-            <div className="section-head center reveal">
-              <span className="eyebrow">Have your say</span>
-              <h2 className="section-title">Active surveys</h2>
-              <p className="section-sub">Click any survey to begin. Your responses are anonymous by default.</p>
-            </div>
+      <section className="section">
+        <div className="wrap-wide">
+          <div className="section-head center reveal">
+            <span className="eyebrow">{settings.listEyebrow}</span>
+            <h2 className="section-title">{settings.listTitle}</h2>
+            <p className="section-sub">{settings.listSubtitle}</p>
+          </div>
 
-            {surveys.length === 0 ? (
-              <div className="sv-empty reveal">
-                <ClipboardIcon />
-                <h3>No Active Surveys</h3>
-                <p>There are no active surveys at the moment. Please check back soon.</p>
-              </div>
-            ) : (
+          {surveys.length === 0 ? (
+            <div className="sv-empty reveal">
+              <ClipboardIcon />
+              <h3>{settings.emptyTitle}</h3>
+              <p>{settings.emptyText}</p>
+            </div>
+          ) : (
+            <>
               <div className="sv-grid">
-                {surveys.filter(s => s.isActive).map((survey, i) => (
-                  <div key={survey.id} className="reveal" style={{ transitionDelay: `${i * 70}ms` }}>
-                    <SurveyCard survey={survey} onOpen={openSurvey} />
+                {surveys.map((survey, i) => (
+                  <div key={survey.slug} className="reveal" style={{ transitionDelay: `${i * 70}ms` }}>
+                    <SurveyCard survey={survey} />
                   </div>
                 ))}
               </div>
-            )}
+
+              {pages > 1 && (
+                <nav className="pagination" aria-label="Pagination">
+                  <span className="pagination__info">
+                    Page {page} of {pages} · {perPage} per page
+                  </span>
+                  <span className="pagination__list">
+                    {prevHref ? (
+                      <Link className="pagination__btn" href={prevHref} aria-label="Previous page">
+                        <ChevronLeft /><span className="pagination__label">Prev</span>
+                      </Link>
+                    ) : (
+                      <button type="button" className="pagination__btn" aria-disabled={true} disabled aria-label="Previous page">
+                        <ChevronLeft /><span className="pagination__label">Prev</span>
+                      </button>
+                    )}
+                    {pageNumbers.map((n) => (
+                      <Link
+                        key={n}
+                        href={n === 1 ? "/survey" : `/survey?page=${n}`}
+                        className={`pagination__num${n === page ? " is-current" : ""}`}
+                        aria-current={n === page ? "page" : undefined}
+                      >
+                        {n}
+                      </Link>
+                    ))}
+                    {nextHref ? (
+                      <Link className="pagination__btn" href={nextHref} aria-label="Next page">
+                        <span className="pagination__label">Next</span><ChevronRight />
+                      </Link>
+                    ) : (
+                      <button type="button" className="pagination__btn" aria-disabled={true} disabled aria-label="Next page">
+                        <span className="pagination__label">Next</span><ChevronRight />
+                      </button>
+                    )}
+                  </span>
+                </nav>
+              )}
+            </>
+          )}
+        </div>
+      </section>
+
+      {/* ── CTA band ── */}
+      <section className="section"><div className="wrap-wide">
+        <div className="cta-band reveal">
+          <div className="cta-band__inner">
+            <div>
+              <span className="eyebrow on-dark">{settings.ctaEyebrow}</span>
+              <h2>{settings.ctaTitle}</h2>
+              <p>{settings.ctaText}</p>
+            </div>
+            <div className="cta-band__actions">
+              <Link className="btn btn-gold btn-lg" href={settings.ctaHref}>{settings.ctaLabel} <ChevronRight /></Link>
+            </div>
           </div>
-        </section>
-      )}
-
-      {/* ── Survey form ── */}
-      {(status === "form" || status === "success") && activeSurvey && (
-        <section className="section">
-          <div className="wrap-wide sv-form-wrap">
-            {/* Back button */}
-            {status === "form" && (
-              <button type="button" className="sv-back-btn" onClick={backToList}>
-                <ChevronLeft /> Back to Surveys
-              </button>
-            )}
-
-            {/* Success */}
-            {status === "success" && (
-              <div className="sv-success" role="status" aria-live="polite">
-                <div className="sv-success__icon"><CheckIcon /></div>
-                <h3>Thank You!</h3>
-                <p>Your response has been recorded. We appreciate your participation.</p>
-                <button type="button" className="sv-btn sv-btn-outline" onClick={backToList}>
-                  ← Back to Surveys
-                </button>
-              </div>
-            )}
-
-            {/* Form */}
-            {status === "form" && (
-              <>
-                <div className="sv-form-header">
-                  <h2>{activeSurvey.title}</h2>
-                  <p>{activeSurvey.description}</p>
-                </div>
-
-                {serverError && (
-                  <div className="sv-server-error" role="alert">{serverError}</div>
-                )}
-
-                <form onSubmit={submit} noValidate>
-                  {/* Respondent name (optional) */}
-                  <div className="sv-respondent-field">
-                    <label htmlFor="sv-respondent">
-                      Your name <span className="sv-hint">(optional — leave blank for anonymous)</span>
-                    </label>
-                    <input
-                      id="sv-respondent"
-                      type="text"
-                      className="sv-input"
-                      placeholder="Enter your name or leave blank"
-                      value={respondent}
-                      onChange={(e) => setRespondent(e.target.value)}
-                      maxLength={80}
-                      autoComplete="name"
-                    />
-                  </div>
-
-                  {/* Questions */}
-                  {activeSurvey.questions.map((q, i) => (
-                    <QuestionRenderer
-                      key={q.id}
-                      question={q}
-                      index={i}
-                      answers={answers}
-                      onAnswer={setAnswer}
-                      onToggle={toggleCheckbox}
-                    />
-                  ))}
-
-                  <button
-                    type="submit"
-                    className="sv-btn sv-btn-primary sv-btn-lg"
-                    disabled={submitting}
-                    aria-busy={submitting}
-                  >
-                    {submitting ? "Submitting…" : (<>Submit Response <SendIcon /></>)}
-                  </button>
-                </form>
-              </>
-            )}
-          </div>
-        </section>
-      )}
+        </div>
+      </div></section>
     </div>
   );
 }

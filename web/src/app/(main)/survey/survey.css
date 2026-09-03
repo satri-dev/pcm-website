@@ -188,3 +188,34 @@
 .pcm-survey .reveal { opacity:0; transform:translateY(24px); transition:opacity .7s var(--ease),transform .7s var(--ease); }
 .pcm-survey .reveal.is-inview { opacity:1; transform:translateY(0); }
 @media (prefers-reduced-motion:reduce) { .pcm-survey .reveal { opacity:1; transform:none; transition:none; } }
+
+/* ── note / section / description blocks ── */
+.pcm-survey .sv-question--note {
+  border-style:dashed; background:var(--surface-tint); gap:.35rem;
+}
+.pcm-survey .sv-question--note h3 { font-size:1.05rem; color:var(--navy); }
+
+/* ── nested group ── */
+.pcm-survey .sv-group { display:grid; gap:.7rem; margin:0 0 1rem; }
+.pcm-survey .sv-group__head { padding:.4rem .2rem; }
+.pcm-survey .sv-group__head h3 { font-size:1.1rem; color:var(--brand-600); }
+.pcm-survey .sv-group__head .sv-question__hint { margin-top:.2rem; }
+
+/* ── server pagination ── */
+.pcm-survey .pagination {
+  margin-top:clamp(2rem,4.5vw,3rem); display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:1rem;
+}
+.pcm-survey .pagination__info { font-size:.8rem; color:var(--muted-c); }
+.pcm-survey .pagination__list { display:inline-flex; flex-wrap:wrap; align-items:center; gap:.35rem; }
+.pcm-survey .pagination__num, .pcm-survey .pagination__btn {
+  display:inline-flex; align-items:center; gap:.3rem;
+  min-width:2.2rem; height:2.2rem; padding:.35rem .6rem; justify-content:center;
+  border:1.5px solid var(--line); border-radius:var(--r-sm); background:var(--surface);
+  color:var(--navy); font-size:.85rem; font-weight:600; cursor:pointer; transition:border-color .2s, background .2s;
+}
+.pcm-survey .pagination__btn svg { width:.85rem; height:.85rem; }
+.pcm-survey .pagination__num:hover, .pcm-survey .pagination__btn:hover { border-color:var(--brand-600); background:var(--surface-tint); }
+.pcm-survey .pagination__num.is-current { background:var(--brand-600); border-color:var(--brand-600); color:#fff; }
+.pcm-survey .pagination__btn:disabled { opacity:.4; cursor:not-allowed; }
+.dark .pcm-survey .pagination__num, .dark .pcm-survey .pagination__btn { background:var(--surface-soft); color:var(--navy); }
+.dark .pcm-survey .pagination__num.is-current { background:var(--brand-600); color:#fff; }

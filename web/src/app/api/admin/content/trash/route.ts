@@ -27,6 +27,10 @@ import {
   listTrashedFaqs,
   autoPurgeTrashedFaqs,
 } from "@/repositories/faqs.repository";
+import {
+  listTrashedSurveys,
+  autoPurgeTrashedSurveys,
+} from "@/repositories/surveys.repository";
 
 export async function GET() {
   await Promise.all([
@@ -37,9 +41,10 @@ export async function GET() {
     autoPurgeTrashedPrograms(),
     autoPurgeTrashedScholarships(),
     autoPurgeTrashedFaqs(),
+    autoPurgeTrashedSurveys(),
   ]);
 
-  const [news, notices, results, events, programs, scholarships, faqs] =
+  const [news, notices, results, events, programs, scholarships, faqs, surveys] =
     await Promise.all([
       listTrashedNews({ pageSize: 200 }),
       listTrashedNotices({ pageSize: 200 }),
@@ -48,6 +53,7 @@ export async function GET() {
       listTrashedPrograms({ pageSize: 200 }),
       listTrashedScholarships({ pageSize: 200 }),
       listTrashedFaqs({ pageSize: 200 }),
+      listTrashedSurveys({ pageSize: 200 }),
     ]);
 
   const items = [
@@ -91,6 +97,12 @@ export async function GET() {
       id: i.id,
       name: i.question,
       collection: "faqs",
+      deletedAt: i.deletedAt,
+    })),
+    ...surveys.items.map((i) => ({
+      id: i.id,
+      name: i.title,
+      collection: "surveys",
       deletedAt: i.deletedAt,
     })),
   ].sort(
