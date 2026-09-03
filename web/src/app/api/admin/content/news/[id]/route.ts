@@ -10,6 +10,7 @@ import {
 } from "@/repositories/news.repository";
 import { requireApiSession } from "@/core/lib/api-guard";
 import { CACHE_TAGS } from "@/lib/cache-tags";
+import { NEWS_CATEGORIES } from "@/types/news";
 
 const seoSchema = z.object({
   title: z.string().max(60).optional(),
@@ -24,8 +25,8 @@ const updateSchema = z
       .string()
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Invalid slug"),
     excerpt: z.string().min(1).max(1000),
-    content: z.string(),
-    category: z.enum(["News", "Event", "Student Blog", "Achievement"]),
+    content: z.string().optional().default(""),
+    category: z.string().min(1).max(100),
     image: z.string().optional(),
     author: z.string().min(1),
     publishedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date"),
@@ -134,7 +135,7 @@ export async function PATCH(
   }
 
   try {
-    const updated = await updateNews(id, parsed.data);
+    const updated = await updateNews(id, parsed.data as Partial<import("@/types/news").NewsCreateInput>);
     if (!updated) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }

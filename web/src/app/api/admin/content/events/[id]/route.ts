@@ -21,7 +21,7 @@ const updateSchema = z
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date"),
     location: z.string().min(1).max(200),
     seats: z.number().int().min(0),
-    description: z.string().min(1).max(2000),
+    description: z.string().min(1).max(50000),
     image: z.string().optional(),
     status: z.enum(["published", "draft"]),
     views: z.number().int().min(0).optional(),
