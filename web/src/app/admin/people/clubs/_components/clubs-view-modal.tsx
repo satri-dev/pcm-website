@@ -8,6 +8,13 @@ interface ClubsViewModalProps { open: boolean; onOpenChange: (open: boolean) => 
 
 export default function ClubsViewModal({ open, onOpenChange, club }: ClubsViewModalProps) {
   if (!club) return null;
+  const initials = (name: string) => {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return "?";
+    const first = parts[0][0] ?? "";
+    const last = parts.length > 1 ? (parts[parts.length - 1][0] ?? "") : "";
+    return (first + last).toUpperCase();
+  };
   const row = (label: string, value: React.ReactNode) => (
     <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: "0.5rem", padding: "0.55rem 0", borderBottom: "1px dashed #e2e7f0" }}>
       <b style={{ fontSize: ".8rem", color: "#5c6678" }}>{label}</b><div>{value || "---"}</div>
@@ -32,6 +39,11 @@ export default function ClubsViewModal({ open, onOpenChange, club }: ClubsViewMo
               <div className="flex flex-col gap-2">
                 {club.members.map((m, i) => (
                   <div key={i} className="flex items-center gap-3 p-3 rounded-lg border border-[var(--admin-line)] bg-[var(--admin-surface)]">
+                    {m.photo ? (
+                      <img src={m.photo} alt={m.name} style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", border: "1px solid #e2e7f0" }} />
+                    ) : (
+                      <div style={{ width: 40, height: 40, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: "#eef1f7", color: "#94a3b8", fontSize: ".8rem", fontWeight: 600 }}>{initials(m.name)}</div>
+                    )}
                     <div className="flex-1"><div className="font-semibold text-sm">{m.name}</div><small className="text-[var(--admin-muted)]">{m.position}{m.program ? ` / ${m.program}` : ""}</small></div>
                   </div>
                 ))}
