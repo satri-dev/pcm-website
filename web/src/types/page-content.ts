@@ -310,6 +310,230 @@ export const CONTACT_PAGE_SCHEMA = {
   },
 } as const;
 
+// Admission page specific content schema
+export interface AdmissionPageContent {
+  hero: {
+    title: string;
+    subtitle: string;
+    breadcrumbText: string;
+  };
+  admissionProcess: {
+    eyebrow: string; // "How it works"
+    heading: string; // "The admission process"
+    steps: Array<{
+      number: string;
+      title: string;
+      description: string;
+    }>;
+  };
+  applyOptions: {
+    eyebrow: string; // "Apply for admission"
+    heading: string; // "Two easy ways to apply"
+    description: string;
+    bannerImage: string; // Cloudinary URL
+    onlineOption: {
+      title: string;
+      description: string;
+      buttonText: string;
+    };
+    offlineOption: {
+      title: string;
+      description: string;
+      buttonText: string;
+    };
+  };
+  requiredDocuments: {
+    heading: string; // "Required documents"
+    documents: string[];
+    scheduleBox: {
+      heading: string; // "Entrance schedule"
+      examInfo: string; // "Exam: Ashar 29, 2083 — 8:00 AM"
+      deadlineInfo: string; // "Form deadline: Ashar 26, 2083"
+    };
+  };
+  applicationForm: {
+    eyebrow: string; // "Online Admission"
+    heading: string; // "Start your application"
+    stepLabels: string[]; // ["Personal Info.", "Contact Info.", ...]
+    // Step 1: Personal Info - Dynamic Fields
+    personalInfoFields: Array<{
+      id: string; // unique identifier
+      label: string; // Field label
+      fieldType: "text" | "textarea" | "number" | "email" | "phone" | "date" | "dropdown" | "checkbox" | "radio" | "file" | "image";
+      placeholder?: string;
+      required: boolean;
+      options?: Array<{ value: string; label: string }>; // For dropdown, radio, checkbox
+      helpText?: string;
+      order: number; // Display order
+    }>;
+    // Legacy fields (kept for backward compatibility, but use personalInfoFields instead)
+    programOptions: Array<{
+      value: string;
+      label: string;
+    }>;
+    shiftOptions: Array<{
+      value: string;
+      label: string;
+    }>;
+    nationalityDefault: string;
+    genderOptions: Array<{
+      value: string;
+      label: string;
+    }>;
+    // Step 2: Contact Info - Dynamic Fields
+    contactInfoFields: Array<{
+      id: string;
+      label: string;
+      fieldType: "text" | "textarea" | "number" | "email" | "phone" | "date" | "dropdown" | "checkbox" | "radio" | "file" | "image";
+      placeholder?: string;
+      required: boolean;
+      options?: Array<{ value: string; label: string }>;
+      helpText?: string;
+      order: number;
+    }>;
+    // Step 3: Academic Info - Dynamic Fields
+    academicInfoFields: Array<{
+      id: string;
+      label: string;
+      fieldType: "text" | "textarea" | "number" | "email" | "phone" | "date" | "dropdown" | "checkbox" | "radio" | "file" | "image";
+      placeholder?: string;
+      required: boolean;
+      options?: Array<{ value: string; label: string }>;
+      helpText?: string;
+      order: number;
+    }>;
+    // Step 4: Document Upload
+    documentStep: {
+      heading: string; // "Document Upload"
+      description: string; // "Upload your required documents"
+      documentLabels: string[]; // ["SEE / SLC Mark-sheet", "SEE / SLC Character Certificate", ...]
+    };
+    // Step 5: Declaration & Consent
+    declarationStep: {
+      heading: string; // "Declaration & Consent"
+      description: string; // "Review and confirm your application"
+      declarationHeading: string; // "Declaration"
+      declarationText: string; // The full declaration text
+      checkboxLabel: string; // "I have read and agree to the declaration above"
+    };
+  };
+  bankDetails: {
+    heading: string; // "Bank Voucher Details"
+    bankName: string;
+    accountName: string;
+    accountNumber: string;
+    branch: string;
+    admissionFee: string;
+  };
+  successMessage: {
+    heading: string;
+    message: string;
+    reference: string;
+  };
+  needHelp: {
+    heading: string;
+    description: string;
+    email: string;
+    phone: string;
+  };
+  cta: {
+    eyebrow: string;
+    heading: string;
+    description: string;
+    primaryButtonText: string;
+    primaryButtonLink: string;
+    secondaryButtonText: string;
+    secondaryButtonLink: string;
+  };
+  seo: {
+    title: string;
+    description: string;
+    keywords: string[];
+    ogImage: string;
+  };
+}
+
+export const ADMISSION_PAGE_SCHEMA = {
+  hero: { 
+    title: "editable", 
+    subtitle: "editable", 
+    breadcrumbText: "editable" 
+  },
+  admissionProcess: {
+    eyebrow: "editable",
+    heading: "editable",
+    steps: "editable",
+  },
+  applyOptions: {
+    eyebrow: "editable",
+    heading: "editable",
+    description: "editable",
+    bannerImage: "editable",
+    onlineOption: {
+      title: "editable",
+      description: "editable",
+      buttonText: "editable",
+    },
+    offlineOption: {
+      title: "editable",
+      description: "editable",
+      buttonText: "editable",
+    },
+  },
+  requiredDocuments: {
+    heading: "editable",
+    documents: "editable",
+    scheduleBox: {
+      heading: "editable",
+      examInfo: "editable",
+      deadlineInfo: "editable",
+    },
+  },
+  applicationForm: {
+    eyebrow: "editable",
+    heading: "editable",
+    stepLabels: "editable",
+    personalInfoFields: "editable",
+    programOptions: "editable",
+    shiftOptions: "editable",
+    nationalityDefault: "editable",
+    genderOptions: "editable",
+    contactInfoFields: "editable",
+    academicInfoFields: "editable",
+    documentStep: {
+      heading: "editable",
+      description: "editable",
+      documentLabels: "editable",
+    },
+    declarationStep: {
+      heading: "editable",
+      description: "editable",
+      declarationHeading: "editable",
+      declarationText: "editable",
+      checkboxLabel: "editable",
+    },
+  },
+  bankDetails: {
+    heading: "editable",
+    bankName: "editable",
+    accountName: "editable",
+    accountNumber: "editable",
+    branch: "editable",
+    admissionFee: "editable",
+  },
+  successMessage: {
+    heading: "editable",
+    message: "editable",
+    reference: "editable",
+  },
+  seo: {
+    title: "editable",
+    description: "editable",
+    keywords: "editable",
+    ogImage: "editable",
+  },
+} as const;
+
 // Helper to validate that only editable fields are being updated
 export function filterEditableFields(
   input: Record<string, unknown>,
