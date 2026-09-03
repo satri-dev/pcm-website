@@ -9,11 +9,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Faq,
-  FaqCategory,
-  FAQ_CATEGORIES,
-} from "@/types/faqs";
+import { Faq } from "@/types/faqs";
 import { Save, X } from "lucide-react";
 import RichTextEditor from "../../../_components/editor/rich-text-editor";
 
@@ -23,7 +19,7 @@ const faqSchema = z.object({
     .min(3, "Question must be at least 3 characters")
     .max(200),
   slug: z.string().min(1, "Slug is required"),
-  category: z.enum(["Admission", "Scholarship", "Programs", "Campus", "General"]),
+  category: z.string().min(1, "Category is required").max(100),
   answer: z.string().min(1, "Answer is required").max(5000),
 });
 
@@ -102,7 +98,7 @@ export default function FaqsFormModal({
       id: faq?.id || `faq-${Date.now()}`,
       question: data.question,
       slug: data.slug,
-      category: data.category as FaqCategory,
+      category: data.category,
       answer: data.answer,
       createdAt: faq?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -156,13 +152,12 @@ export default function FaqsFormModal({
                 <label htmlFor="faq-category">
                   Category <span className="req">*</span>
                 </label>
-                <select id="faq-category" {...register("category")}>
-                  {FAQ_CATEGORIES.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
+                <input 
+                  id="faq-category"
+                  type="text"
+                  {...register("category")}
+                  placeholder="e.g. Admission, Scholarship, Programs..."
+                />
                 {errors.category && (
                   <div className="field__err">{errors.category.message}</div>
                 )}

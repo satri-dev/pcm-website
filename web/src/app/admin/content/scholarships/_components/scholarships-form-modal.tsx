@@ -12,7 +12,6 @@ import {
 import {
   Scholarship,
   ScholarshipType,
-  SCHOLARSHIP_TYPES,
 } from "@/types/scholarships";
 import { Save, X } from "lucide-react";
 import RichTextEditor from "../../../_components/editor/rich-text-editor";
@@ -23,7 +22,7 @@ const scholarshipSchema = z.object({
     .min(3, "Scheme name must be at least 3 characters")
     .max(200),
   slug: z.string().min(1, "Slug is required"),
-  type: z.enum(["Merit", "Need-based", "University", "Category"]),
+  type: z.string().min(1, "Type is required").max(100),
   desc: z.string().max(5000),
   active: z.boolean(),
 });
@@ -161,13 +160,12 @@ export default function ScholarshipsFormModal({
                 <label htmlFor="scholarship-type">
                   Type <span className="req">*</span>
                 </label>
-                <select id="scholarship-type" {...register("type")}>
-                  {SCHOLARSHIP_TYPES.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
+                <input
+                  id="scholarship-type"
+                  type="text"
+                  {...register("type")}
+                  placeholder="e.g., Merit, Need-based, University..."
+                />
                 {errors.type && (
                   <div className="field__err">{errors.type.message}</div>
                 )}

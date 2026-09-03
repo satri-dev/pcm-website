@@ -29,14 +29,7 @@ const noticeSchema = z.object({
     .string()
     .min(1, "Description is required")
     .max(2000, "Description too long"),
-  category: z.enum([
-    "General",
-    "Academic",
-    "Examination",
-    "Administrative",
-    "Event",
-    "Circular",
-  ]),
+  category: z.string().min(1, "This field is required").max(100),
   date: z.string().min(1, "Date is required"),
   status: z.enum(["published", "draft"]),
   fileUrl: z.string().optional(),
@@ -202,15 +195,12 @@ export default function NoticeFormModal({
                 <label htmlFor="notice-category">
                   Category <span className="req">*</span>
                 </label>
-                <select id="notice-category" {...register("category")}>
-                  <option value="">— Select —</option>
-                  <option value="General">General</option>
-                  <option value="Academic">Academic</option>
-                  <option value="Examination">Examination</option>
-                  <option value="Administrative">Administrative</option>
-                  <option value="Event">Event</option>
-                  <option value="Circular">Circular</option>
-                </select>
+                <input 
+                  id="notice-category" 
+                  type="text"
+                  placeholder="e.g., General, Academic, Event..."
+                  {...register("category")}
+                />
                 {errors.category && (
                   <div className="field__err">{errors.category.message}</div>
                 )}

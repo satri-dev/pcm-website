@@ -15,7 +15,7 @@ const createSchema = z.object({
   slug: z
     .string()
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Invalid slug"),
-  category: z.enum(["Admission", "Scholarship", "Programs", "Campus", "General"]),
+  category: z.string().min(1, "Category is required").max(100),
   answer: z.string().min(1).max(5000),
 });
 

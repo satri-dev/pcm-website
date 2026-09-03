@@ -10,6 +10,7 @@ import {
 } from "@/repositories/scholarships.repository";
 import { requireApiSession } from "@/core/lib/api-guard";
 import { CACHE_TAGS } from "@/lib/cache-tags";
+import { SCHOLARSHIP_TYPES } from "@/types/scholarships";
 
 const updateSchema = z
   .object({
@@ -17,7 +18,7 @@ const updateSchema = z
     slug: z
       .string()
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Invalid slug"),
-    type: z.enum(["Merit", "Need-based", "University", "Category"]),
+    type: z.enum(SCHOLARSHIP_TYPES),
     desc: z.string().max(5000),
     active: z.boolean(),
   })

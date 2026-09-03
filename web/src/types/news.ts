@@ -2,7 +2,7 @@
 // Canonical schema mirrors the "news" collection validator in
 // scripts/create-news-collection.js
 
-export type NewsCategory = "News" | "Event" | "Student Blog" | "Achievement";
+export type NewsCategory = string;
 export type NewsStatus = "published" | "draft";
 
 export interface SeoMeta {
@@ -11,7 +11,7 @@ export interface SeoMeta {
   keywords?: string[];
 }
 
-export const NEWS_CATEGORIES: readonly NewsCategory[] = [
+export const NEWS_CATEGORIES: readonly string[] = [
   "News",
   "Event",
   "Student Blog",

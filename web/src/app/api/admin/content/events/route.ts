@@ -19,7 +19,7 @@ const createSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date"),
   location: z.string().min(1).max(200),
   seats: z.number().int().min(0),
-  description: z.string().min(1).max(2000),
+  description: z.string().min(1).max(50000),
   image: z.string().optional(),
   status: z.enum(["published", "draft"]),
   views: z.number().int().min(0).optional(),
@@ -78,6 +78,7 @@ export async function POST(request: NextRequest) {
     revalidatePath("/events");
     return NextResponse.json(created, { status: 201 });
   } catch (err) {
+    console.error("Error creating event:", err);
     if (
       typeof err === "object" &&
       err !== null &&
@@ -90,7 +91,7 @@ export async function POST(request: NextRequest) {
       );
     }
     return NextResponse.json(
-      { error: "Failed to create event" },
+      { error: "Failed to create event", details: err instanceof Error ? err.message : String(err) },
       { status: 500 }
     );
   }

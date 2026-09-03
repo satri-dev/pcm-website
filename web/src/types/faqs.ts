@@ -1,14 +1,9 @@
 // src/types/faqs.ts
 // Canonical schema for the "faqs" collection
 
-export type FaqCategory =
-  | "Admission"
-  | "Scholarship"
-  | "Programs"
-  | "Campus"
-  | "General";
+export type FaqCategory = string;
 
-export const FAQ_CATEGORIES: readonly FaqCategory[] = [
+export const FAQ_CATEGORIES: readonly string[] = [
   "Admission",
   "Scholarship",
   "Programs",
@@ -22,7 +17,7 @@ export interface Faq {
   id: string;
   question: string;
   slug: string;
-  category: FaqCategory;
+  category: string;
   answer: string;
   createdAt: string;
   updatedAt: string;
@@ -34,7 +29,7 @@ export interface FaqDocument {
   _id?: import("mongodb").ObjectId;
   question: string;
   slug: string;
-  category: FaqCategory;
+  category: string;
   answer: string;
   createdAt: Date;
   updatedAt: Date;
@@ -45,7 +40,7 @@ export interface FaqDocument {
 export interface FaqCreateInput {
   question: string;
   slug: string;
-  category: FaqCategory;
+  category: string;
   answer: string;
 }
 
