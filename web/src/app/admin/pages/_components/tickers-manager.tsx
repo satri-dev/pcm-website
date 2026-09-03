@@ -37,7 +37,7 @@ function DeleteDialog({ isOpen, tickerMessage, onConfirm, onCancel }: DeleteDial
         
         <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3 mb-6">
           <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-            "{tickerMessage}"
+            &quot;{tickerMessage}&quot;
           </p>
         </div>
 

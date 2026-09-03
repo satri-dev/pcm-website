@@ -52,6 +52,9 @@ export const CACHE_TAGS = {
 
   // Life at PCM
   lifeSettings: "life-settings",
+
+  // Feedback
+  feedbackSettings: "feedback-settings",
   
   // Gallery
   galleryList: "gallery-list",

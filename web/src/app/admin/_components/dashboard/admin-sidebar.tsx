@@ -49,6 +49,7 @@ import {
   Megaphone,
   BadgeCheck,
   AlignJustify,
+  MessageSquare,
   type LucideIcon,
   DownloadIcon,
   UserCheck2,
@@ -173,6 +174,7 @@ const pagesNav: PagesSectionNavItem[] = [
     ],
   },
   { label: "Clubs", href: "/admin/pages/clubs", icon: Sparkles, ready: true },
+  { label: "Feedback", href: "/admin/pages/feedback", icon: MessageSquare, ready: true },
   {
     label: "Alumni",
     href: "/admin/pages/alumni",

@@ -76,7 +76,7 @@ export default function ClubsPageSettings({
             Clubs Page Content
           </h2>
           <p className="mt-1 mb-0 text-[0.9rem] text-[var(--admin-muted)]">
-            Edit the sections of the public /clubs page — hero, "why join"
+            Edit the sections of the public /clubs page — hero, &quot;why join&quot;
             split, clubs-list head and CTA band. The club cards come from the
             Student Clubs content manager.
           </p>

@@ -65,6 +65,8 @@ import ClubsPageSettings from "../_components/clubs-page-settings";
 import { getClubsPageSettings } from "@/repositories/clubs-page-settings.repository";
 import LifePageSettings from "../_components/life-page-settings";
 import { getLifePageSettings } from "@/repositories/life-page-settings.repository";
+import FeedbackPageSettings from "../_components/feedback-page-settings";
+import { getFeedbackPageSettings } from "@/repositories/feedback-page-settings.repository";
 
 interface RouteCtx {
   params: Promise<{ slug: string | string[] }>;
@@ -392,6 +394,19 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
           subtitle="Pages · Content & SEO"
         />
         <ClubsPageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "feedback") {
+    const settings = await getFeedbackPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content, SEO & dynamic form fields"
+        />
+        <FeedbackPageSettings initial={settings} />
       </>
     );
   }

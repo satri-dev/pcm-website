@@ -4,10 +4,12 @@ import PageHeader from "../../_components/dashboard/page-header";
 import ProgramsPageEditor from "./_components/programs-page-editor";
 import { getPageContentBySlug } from "@/repositories/page-content.repository";
 import { listPrograms } from "@/repositories/programs.repository";
+import type { ProgramsPageContent } from "@/types/page-content";
 
 export const metadata: Metadata = {
   title: "Edit Programs Page | Admin",
-  description: "Edit the Programs page content including hero, intro, comparison table, and CTA sections.",
+  description:
+    "Edit the Programs page content including hero, intro, comparison table, and CTA sections.",
   robots: { index: false, follow: false },
 };
 
@@ -17,7 +19,7 @@ export const instant = false;
 export default async function EditProgramsPage() {
   // Force dynamic rendering for admin pages
   await connection();
-  
+
   // Fetch page content and programs list
   const [pageContent, programsData] = await Promise.all([
     getPageContentBySlug("programs"),
@@ -25,7 +27,9 @@ export default async function EditProgramsPage() {
   ]);
 
   // Extract coordinator data from each program's page content
-  const programPages = (pageContent?.content as any)?.programPages || {};
+  const programPages =
+    (pageContent?.content as ProgramsPageContent | undefined)?.programPages ||
+    {};
   const coordinatorsFromPrograms = programsData.items.map((program) => {
     const programPageContent = programPages[program.slug];
     return {
@@ -38,11 +42,11 @@ export default async function EditProgramsPage() {
 
   return (
     <>
-      <PageHeader 
-        title="Edit Programs Page" 
-        subtitle="Content · Pages · Programs" 
+      <PageHeader
+        title="Edit Programs Page"
+        subtitle="Content · Pages · Programs"
       />
-      <ProgramsPageEditor 
+      <ProgramsPageEditor
         initialContent={pageContent}
         availablePrograms={programsData.items}
         coordinatorsFromPrograms={coordinatorsFromPrograms}

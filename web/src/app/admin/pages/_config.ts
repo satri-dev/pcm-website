@@ -25,6 +25,7 @@ export const mainPages: PagesSectionEntry[] = [
   { slug: "downloads", label: "Downloads", publicHref: "/downloads", live: true },
   { slug: "events", label: "Events", publicHref: "/events", live: true },
   { slug: "faq", label: "FAQ", publicHref: "/faq", live: true },
+  { slug: "feedback", label: "Feedback", publicHref: "/feedback", live: true },
   { slug: "gallery", label: "Gallery", publicHref: "/gallery" },
   { slug: "gpa-converter", label: "GPA Converter", publicHref: "/gpa-converter" },
   { slug: "life", label: "Life at PCM", publicHref: "/life", live: true },
