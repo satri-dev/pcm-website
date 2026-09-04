@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
-import BlogsClient from "./BlogsClient";
-import { getPageCopy } from "@/lib/data/page-content";
+import BlogsServer from "./BlogsServer";
+import { getBlogSettings } from "@/lib/data/blog-page-settings";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700", "800"],
@@ -10,18 +10,20 @@ const poppins = Poppins({
   variable: "--font-poppins",
 });
 
-export const metadata: Metadata = {
-  title: "Blog & Articles | Pokhara College of Management",
-  description:
-    "Career guidance, industry trends and practical advice for students and parents — the official blog of Pokhara College of Management.",
-  alternates: { canonical: "/blogs" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getBlogSettings();
+  return {
+    title: settings.seoTitle,
+    description: settings.seoDescription,
+    keywords: settings.seoKeywords,
+    alternates: { canonical: "/blogs" },
+  };
+}
 
 export default async function BlogsPage() {
-  const content = await getPageCopy("blogs");
   return (
     <div className={poppins.variable}>
-      <BlogsClient content={content} />
+      <BlogsServer />
     </div>
   );
 }

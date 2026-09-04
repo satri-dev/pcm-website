@@ -12,6 +12,7 @@ import {
 function fromDocument(doc: BlogDocument): Blog {
   return {
     id: doc._id!.toString(),
+    slug: doc.slug ?? doc.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
     title: doc.title,
     author: doc.author,
     category: doc.category,
@@ -20,11 +21,21 @@ function fromDocument(doc: BlogDocument): Blog {
     excerpt: doc.excerpt,
     fileUrl: doc.fileUrl,
     fileName: doc.fileName,
+    thumbnail: doc.thumbnail,
     createdAt: (doc.createdAt ?? new Date()).toISOString(),
     updatedAt: (doc.updatedAt ?? new Date()).toISOString(),
     deletedAt: doc.deletedAt?.toISOString(),
     deletedBy: doc.deletedBy,
   };
+}
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 120);
 }
 
 function toDocument(input: BlogCreateInput): Omit<BlogDocument, "_id"> {
@@ -34,6 +45,7 @@ function toDocument(input: BlogCreateInput): Omit<BlogDocument, "_id"> {
     throw new Error("Invalid date");
   }
   return clean({
+    slug: slugify(input.slug || input.title),
     title: input.title.trim(),
     author: input.author.trim(),
     category: input.category,
@@ -42,6 +54,7 @@ function toDocument(input: BlogCreateInput): Omit<BlogDocument, "_id"> {
     excerpt: input.excerpt,
     fileUrl: input.fileUrl || undefined,
     fileName: input.fileName || undefined,
+    thumbnail: input.thumbnail || undefined,
     createdAt: now,
     updatedAt: now,
   });
@@ -109,6 +122,22 @@ export async function getBlogById(id: string) {
   return doc ? fromDocument(doc) : null;
 }
 
+export async function getBlogBySlug(slug: string) {
+  const db = await getDb();
+  const doc = await db
+    .collection<BlogDocument>(BLOG_COLLECTION)
+    .findOne({ slug });
+  return doc ? fromDocument(doc) : null;
+}
+
+export async function getPublishedBlogBySlug(slug: string) {
+  const db = await getDb();
+  const doc = await db
+    .collection<BlogDocument>(BLOG_COLLECTION)
+    .findOne({ slug, status: "published", deletedAt: { $exists: false } });
+  return doc ? fromDocument(doc) : null;
+}
+
 export async function createBlog(input: BlogCreateInput) {
   const db = await getDb();
   const doc = toDocument(input);
@@ -124,6 +153,7 @@ export async function updateBlog(id: string, patch: BlogUpdateInput) {
 
   const set: Record<string, unknown> = { updatedAt: new Date() };
   const allowed: (keyof BlogCreateInput)[] = [
+    "slug",
     "title",
     "author",
     "category",
@@ -132,9 +162,14 @@ export async function updateBlog(id: string, patch: BlogUpdateInput) {
     "excerpt",
     "fileUrl",
     "fileName",
+    "thumbnail",
   ];
   for (const key of allowed) {
-    if (key in patch && patch[key] !== undefined) set[key] = patch[key];
+    if (key in patch && patch[key] !== undefined) {
+      set[key] = key === "slug" && typeof patch.slug === "string"
+        ? slugify(patch.slug)
+        : patch[key];
+    }
   }
   if (patch.date !== undefined) {
     const d = new Date(patch.date);
@@ -234,8 +269,9 @@ export function ensureBlogIndexes() {
         const db = await getDb();
         const col = db.collection<BlogDocument>(BLOG_COLLECTION);
         const wanted: IndexDescription[] = [
+          { key: { slug: 1 }, name: "uniq_slug", unique: true },
           { key: { category: 1 }, name: "category" },
-          { key: { status: 1 }, name: "status" },
+          { key: { status: 1, date: -1 }, name: "status_date_desc" },
           { key: { date: -1 }, name: "date_desc" },
           { key: { createdAt: -1 }, name: "created_at_desc" },
           { key: { title: "text", author: "text", excerpt: "text" }, name: "text_search" },

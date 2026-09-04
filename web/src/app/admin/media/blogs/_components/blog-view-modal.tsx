@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Blog } from "../types/blog";
-import { CalendarDays, Eye, User, FileText, X } from "lucide-react";
+import { CalendarDays, Eye, User, FileText, X, ImageIcon } from "lucide-react";
 
 interface BlogViewModalProps {
   open: boolean;
@@ -62,9 +62,23 @@ export default function BlogViewModal({
             </span>
           </div>
 
-          <h3 className="m-0 mb-3 text-xl font-bold text-[var(--admin-ink)]">
+          {blog.thumbnail && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={blog.thumbnail}
+              alt={blog.title}
+              className="w-full h-40 rounded-xl object-cover border border-(--admin-line) mb-3"
+            />
+          )}
+
+          <h3 className="m-0 mb-1 text-xl font-bold text-[var(--admin-ink)]">
             {blog.title}
           </h3>
+
+          <span className="inline-flex items-center gap-1 text-[0.78rem] text-[var(--admin-muted)] mb-3">
+            <ImageIcon size={13} />
+            /blogs/{blog.slug || blog.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}
+          </span>
 
           <div className="flex items-center gap-4 flex-wrap text-sm text-[var(--admin-muted)] mb-4">
             <span className="inline-flex items-center gap-1.5">

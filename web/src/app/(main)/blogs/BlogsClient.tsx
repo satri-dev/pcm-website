@@ -3,39 +3,69 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useMemo, useRef, useState } from "react";
-import { blogsData } from "@/data/news";
-import type { PageContentSection } from "@/types/page-content";
+import type { Blog } from "@/app/admin/media/blogs/types/blog";
+import type { BlogPageSettings } from "@/types/blog-page-settings";
 
 const PER_PAGE = 3;
 
-const FALLBACK_HERO = {
-  title: "PCM Blog & Articles",
-  subtitle:
-    "Ideas, insights and stories from the Pokhara College of Management community.",
-};
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
 
-const FALLBACK_INTRO: PageContentSection = {
-  key: "intro",
-  eyebrow: "Articles",
-  title: "Latest articles",
-  subtitle:
-    "Career guidance, industry trends and practical advice for students and parents.",
-};
+function TruncatedExcerpt({ html }: { html: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const plain = useMemo(() => stripHtml(html), [html]);
+  const needsTruncation = plain.length > 180;
+  const preview = needsTruncation ? plain.slice(0, 180) + "…" : plain;
 
-type BlogContent = {
-  hero?: { title?: string; subtitle?: string };
-  sections?: PageContentSection[] | null;
-};
+  return (
+    <div className="text-gray-500 text-[0.93rem]">
+      {expanded ? (
+        <div
+          className="prose prose-sm max-w-none text-gray-500 [&_p]:my-1.5 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0"
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      ) : (
+        <p className="m-0">{preview}</p>
+      )}
+      {needsTruncation && (
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          className="mt-1 text-[0.82rem] font-semibold text-pcm-blue hover:text-pcm-blue-700 bg-transparent border-none p-0 cursor-pointer"
+        >
+         
+        </button>
+      )}
+    </div>
+  );
+}
 
-const categories = [
+const CATEGORY_LABELS: { value: string; label: string }[] = [
   { value: "all", label: "All categories" },
-  { value: "career", label: "Career" },
-  { value: "finance", label: "Finance" },
-  { value: "tech", label: "Tech" },
-  { value: "campus", label: "Campus" },
-  { value: "admission", label: "Admission" },
-  { value: "student-life", label: "Student Life" },
+  { value: "Career", label: "Career" },
+  { value: "Finance", label: "Finance" },
+  { value: "Technology", label: "Technology" },
+  { value: "Student Life", label: "Student Life" },
+  { value: "Admissions", label: "Admissions" },
+  { value: "Events", label: "Events" },
+  { value: "Achievement", label: "Achievement" },
+  { value: "Other", label: "Other" },
 ];
+
+const MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+function formatDate(dateISO: string) {
+  const d = new Date(dateISO.length === 10 ? `${dateISO}T00:00:00` : dateISO);
+  if (isNaN(d.getTime())) return { day: "01", monthYear: "" };
+  return {
+    day: String(d.getDate()).padStart(2, "0"),
+    monthYear: `${MONTHS[d.getMonth()]} ${d.getFullYear()}`,
+  };
+}
 
 function ArrowRight({ className }: { className?: string }) {
   return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>;
@@ -53,10 +83,11 @@ function SearchIcon({ className }: { className?: string }) {
   return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>;
 }
 
-function BlogCardSvg({ color }: { color: string }) {
+function BlogCardSvg({ color }: { color?: string }) {
+  const c = color || "#4167C9";
   return (
     <svg className="w-full h-full" viewBox="0 0 800 480" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
-      <rect width="800" height="480" fill={color} />
+      <rect width="800" height="480" fill={c} />
       <circle cx="680" cy="90" r="60" fill="#fff" opacity=".15" />
       <path d="M0 480 L0 360 L220 260 L420 380 L640 280 L800 360 L800 480Z" fill="#fff" opacity=".14" />
       <path d="M0 480 L0 410 L260 330 L480 430 L700 350 L800 400 L800 480Z" fill="#14265A" opacity=".5" />
@@ -65,7 +96,7 @@ function BlogCardSvg({ color }: { color: string }) {
   );
 }
 
-function BlogsInner({ content }: { content: BlogContent | null }) {
+function BlogsInner({ settings, blogs }: { settings: BlogPageSettings; blogs: Blog[] }) {
   const searchParams = useSearchParams();
   const gridRef = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState("");
@@ -76,19 +107,26 @@ function BlogsInner({ content }: { content: BlogContent | null }) {
   });
 
   const hero = {
-    title: content?.hero?.title?.trim() || FALLBACK_HERO.title,
-    subtitle: content?.hero?.subtitle?.trim() || FALLBACK_HERO.subtitle,
+    title: settings.heroTitle,
+    subtitle: settings.heroSubtitle,
   };
-  const intro = content?.sections?.[0] ?? FALLBACK_INTRO;
+  const intro = {
+    eyebrow: settings.articlesEyebrow,
+    title: settings.articlesTitle,
+    subtitle: settings.articlesSubtitle,
+  };
 
   const filteredItems = useMemo(() => {
-    return blogsData.filter((post) => {
-      const matchCat = category === "all" || post.cat === category;
+    return blogs.filter((post) => {
+      const matchCat = category === "all" || post.category === category;
       const q = search.trim().toLowerCase();
-      const matchSearch = !q || post.title.toLowerCase().includes(q) || post.excerpt.toLowerCase().includes(q);
+      const matchSearch =
+        !q ||
+        post.title.toLowerCase().includes(q) ||
+        post.excerpt.toLowerCase().includes(q);
       return matchCat && matchSearch;
     });
-  }, [search, category]);
+  }, [search, category, blogs]);
 
   const { visibleItems, pagedSet, totalPages, current, shownCount } = useMemo(() => {
     const total = Math.max(1, Math.ceil(filteredItems.length / PER_PAGE));
@@ -126,18 +164,18 @@ function BlogsInner({ content }: { content: BlogContent | null }) {
   );
 
   return (
-    <div className="font-[var(--font-poppins)] leading-relaxed">
+    <div className="font-(--font-poppins) leading-relaxed">
       {/* Hero */}
-      <section className="relative bg-[#16285b] text-white/80 overflow-hidden">
+      <section className="relative bg-pcm-blue-900 text-white/80 overflow-hidden">
         <svg className="absolute inset-x-0 top-0 w-full h-full pointer-events-none" viewBox="0 0 1440 400" preserveAspectRatio="xMidYMax slice">
           <path d="M0 400 L0 250 L300 120 L560 260 L820 90 L1120 240 L1440 120 L1440 400Z" fill="#4167C9" opacity=".2" />
           <path d="M0 400 L0 300 L360 200 L680 320 L980 210 L1280 300 L1440 240 L1440 400Z" fill="#14265A" opacity=".45" />
         </svg>
-        <div className="relative z-10 w-full max-w-[1360px] mx-auto px-[clamp(1.25rem,4vw,2.5rem)] py-[clamp(3rem,6vw,4.5rem)] grid gap-4">
+        <div className="relative z-10 w-full max-w-340 mx-auto px-[clamp(1.25rem,4vw,2.5rem)] py-[clamp(3rem,6vw,4.5rem)] grid gap-4">
           <nav className="flex flex-wrap items-center gap-1.5 text-[0.74rem] tracking-widest uppercase" style={{ color: 'rgba(255,255,255,0.55)' }}>
             <Link href="/" className="text-[#51B747] hover:underline">Home</Link>
             <ChevRight className="w-3 h-3 opacity-50" />
-            <span>Articles</span>
+            <span>{settings.breadcrumbLabel}</span>
           </nav>
           <h1 className="text-[clamp(2rem,4vw,3rem)] font-semibold" style={{ color: '#ffffff' }}>{hero.title}</h1>
           <p className="max-w-[56ch]" style={{ color: 'rgba(255,255,255,0.7)' }}>{hero.subtitle}</p>
@@ -178,12 +216,12 @@ function BlogsInner({ content }: { content: BlogContent | null }) {
               aria-label="Filter by category"
               className="py-2.5 px-5 border border-gray-200 rounded-[14px] bg-white text-[#16285b] text-[0.9rem] font-semibold outline-none focus:border-[#21409a] transition-colors"
             >
-              {categories.map((c) => (
+              {CATEGORY_LABELS.map((c) => (
                 <option key={c.value} value={c.value}>{c.label}</option>
               ))}
             </select>
             <span className="ml-auto font-[var(--font-poppins)] text-[0.78rem] tracking-wider text-gray-400 whitespace-nowrap">
-              {shownCount} of {blogsData.length} shown
+              {shownCount} of {blogs.length} shown
             </span>
           </div>
 
@@ -192,26 +230,30 @@ function BlogsInner({ content }: { content: BlogContent | null }) {
             {visibleItems.map((post, i) => {
               const isPaged = pagedSet.has(post.slug);
               if (isPaged) return null;
-              const day = post.date.split(" ")[0] || "01";
-              const monthYear = post.date.split(" ").slice(1).join(" ");
+              const { day, monthYear } = formatDate(post.date);
               return (
                 <article
                   key={post.slug}
                   className="flex flex-col bg-white border border-gray-200 rounded-[22px] overflow-hidden shadow-[0_1px_3px_rgba(22,40,91,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_60px_rgba(22,40,91,0.12)]"
                   style={{ transitionDelay: `${(i % PER_PAGE) * 50}ms` }}
                 >
-                  <Link className="relative aspect-[16/10] overflow-hidden bg-gray-50 block" href={`/blogs/${post.slug}`} aria-label={post.title}>
-                    <BlogCardSvg color={post.color} />
+                  <Link className="relative aspect-16/10 overflow-hidden bg-gray-50 block" href={`/blogs/${post.slug}`} aria-label={post.title}>
+                    {post.thumbnail ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={post.thumbnail} alt={post.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <BlogCardSvg />
+                    )}
                     <span className="absolute top-4 left-4 px-3 py-1.5 bg-[rgba(10,27,51,0.85)] text-white rounded-lg text-[0.72rem] backdrop-blur-sm">
                       <b className="font-bold mr-1">{day}</b>{monthYear}
                     </span>
                   </Link>
                   <div className="grid gap-2.5 px-6 py-4 flex-1 content-start">
-                    <span className="justify-self-start inline-flex items-center px-3 py-1 bg-gray-50 border border-gray-200 text-[#21409a] rounded-full text-[0.66rem] tracking-widest uppercase font-semibold">{post.tag}</span>
+                    <span className="justify-self-start inline-flex items-center px-3 py-1 bg-gray-50 border border-gray-200 text-pcm-blue rounded-full text-[0.66rem] tracking-widest uppercase font-semibold">{post.category}</span>
                     <h3 className="text-[1.18rem] leading-snug text-[#16285b]">
                       <Link href={`/blogs/${post.slug}`} className="hover:text-[#21409a] transition-colors">{post.title}</Link>
                     </h3>
-                    <p className="text-gray-500 text-[0.93rem]">{post.excerpt}</p>
+                    <TruncatedExcerpt html={post.excerpt} />
                   </div>
                   <div className="px-6 pb-6 mt-auto">
                     <Link className="inline-flex items-center gap-1.5 font-bold text-[0.92rem] text-[#21409a] hover:gap-2.5 hover:text-[#1b3376] transition-all" href={`/blogs/${post.slug}`}>
@@ -256,15 +298,15 @@ function BlogsInner({ content }: { content: BlogContent | null }) {
             <div className="relative z-10 grid grid-cols-[1.3fr_auto] gap-[clamp(1.25rem,3vw,2.5rem)] items-center p-[clamp(2rem,5vw,3.5rem)_clamp(1.5rem,4vw,3rem)] max-md:grid-cols-1 max-md:text-center" style={{ color: '#ffffff' }}>
               <div>
                 <span className="inline-flex items-center gap-2 text-[0.74rem] tracking-[0.2em] uppercase text-[#51B747]">Enter to Learn — Go Forth to Serve</span>
-                <h2 className="text-[clamp(1.6rem,3vw,2.2rem)] mt-2 mb-2 font-semibold">A step towards your future</h2>
-                <p className="max-w-[56ch] max-md:mx-auto" style={{ color: 'rgba(255,255,255,0.72)' }}>Applications for the 2083 intake are open across all three programs. Take the first step today.</p>
+                <h2 className="text-[clamp(1.6rem,3vw,2.2rem)] mt-2 mb-2 font-semibold">{settings.ctaTitle}</h2>
+                <p className="max-w-[56ch] max-md:mx-auto" style={{ color: 'rgba(255,255,255,0.72)' }}>{settings.ctaText}</p>
               </div>
               <div className="flex flex-wrap gap-3.5 max-md:justify-center">
-                <Link className="inline-flex items-center gap-1.5 px-7 py-3.5 rounded-[14px] font-bold text-[0.98rem] bg-[#51B747] text-[#16285b] hover:bg-[#3f9e35] hover:-translate-y-0.5 hover:shadow-[0_14px_34px_rgba(81,183,71,0.28)] transition-all" href="/admission">
-                  Apply Now <ArrowRight className="w-4 h-4" />
+                <Link className="inline-flex items-center gap-1.5 px-7 py-3.5 rounded-[14px] font-bold text-[0.98rem] bg-[#51B747] text-[#16285b] hover:bg-[#3f9e35] hover:-translate-y-0.5 hover:shadow-[0_14px_34px_rgba(81,183,71,0.28)] transition-all" href={settings.ctaPrimaryHref}>
+                  {settings.ctaPrimaryLabel} <ArrowRight className="w-4 h-4" />
                 </Link>
-                <Link className="inline-flex items-center gap-1.5 px-7 py-3.5 rounded-[14px] font-bold text-[0.98rem] bg-transparent text-white border border-white/35 hover:border-white hover:text-white transition-all" href="/programs">
-                  Explore Programs
+                <Link className="inline-flex items-center gap-1.5 px-7 py-3.5 rounded-[14px] font-bold text-[0.98rem] bg-transparent text-white border border-white/35 hover:border-white hover:text-white transition-all" href={settings.ctaSecondaryHref}>
+                  {settings.ctaSecondaryLabel}
                 </Link>
               </div>
             </div>
@@ -275,10 +317,10 @@ function BlogsInner({ content }: { content: BlogContent | null }) {
   );
 }
 
-export default function BlogsClient({ content }: { content: BlogContent | null }) {
+export default function BlogsClient({ settings, blogs }: { settings: BlogPageSettings; blogs: Blog[] }) {
   return (
     <Suspense>
-      <BlogsInner content={content} />
+      <BlogsInner settings={settings} blogs={blogs} />
     </Suspense>
   );
 }

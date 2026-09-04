@@ -10,12 +10,19 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Blog, BLOG_CATEGORIES, BLOG_STATUSES } from "../types/blog";
-import { Save, X, Plus, FileText } from "lucide-react";
+import { Save, X, Plus, FileText, ImageIcon } from "lucide-react";
 import DocumentUpload from "@/components/cloudinary/DocumentUpload";
+import ImageUpload from "@/components/cloudinary/ImageUpload";
 import RichTextEditor from "@/app/admin/_components/editor/rich-text-editor";
+
+const slugRe = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 const blogSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters").max(200),
+  slug: z
+    .string()
+    .max(120)
+    .regex(slugRe, "Slug must be lowercase letters, numbers and hyphens"),
   author: z.string().min(2, "Author is required"),
   category: z.enum(["Career", "Finance", "Technology", "Student Life", "Admissions", "Events", "Achievement", "Other"]),
   date: z.string().min(1, "Date is required"),
@@ -23,6 +30,7 @@ const blogSchema = z.object({
   excerpt: z.string().min(10, "Excerpt must be at least 10 characters"),
   fileUrl: z.string().optional(),
   fileName: z.string().optional(),
+  thumbnail: z.string().optional(),
 });
 
 type BlogSchema = z.infer<typeof blogSchema>;
@@ -59,6 +67,7 @@ export default function BlogFormModal({
     resolver: zodResolver(blogSchema),
     defaultValues: {
       title: "",
+      slug: "",
       author: "",
       category: "Career",
       date: todayISO(),
@@ -66,17 +75,37 @@ export default function BlogFormModal({
       excerpt: "",
       fileUrl: "",
       fileName: "",
+      thumbnail: "",
     },
   });
 
   const excerpt = watch("excerpt");
   const fileUrl = watch("fileUrl");
+  const thumbnail = watch("thumbnail");
+  const title = watch("title");
+
+  const slugify = (value: string) =>
+    value
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+
+  // Auto-generate the slug from the title (creates a slug for new posts, and
+  // lets admins tweak it afterwards for existing ones).
+  const handleTitleChange = (value: string) => {
+    setValue("title", value);
+    if (!blog) {
+      setValue("slug", slugify(value));
+    }
+  };
 
   useEffect(() => {
     setFileError("");
     if (blog) {
       reset({
         title: blog.title,
+        slug: blog.slug || slugify(blog.title),
         author: blog.author,
         category: blog.category,
         date: blog.date,
@@ -84,10 +113,12 @@ export default function BlogFormModal({
         excerpt: blog.excerpt,
         fileUrl: blog.fileUrl || "",
         fileName: blog.fileName || "",
+        thumbnail: blog.thumbnail || "",
       });
     } else {
       reset({
         title: "",
+        slug: "",
         author: "",
         category: "Career",
         date: todayISO(),
@@ -95,6 +126,7 @@ export default function BlogFormModal({
         excerpt: "",
         fileUrl: "",
         fileName: "",
+        thumbnail: "",
       });
     }
   }, [blog, reset, open]);
@@ -117,6 +149,7 @@ export default function BlogFormModal({
   const onSubmit = async (data: BlogSchema) => {
     const blogData: Blog = {
       id: blog?.id || `blog-${Date.now()}`,
+      slug: slugify(data.slug || data.title),
       title: data.title,
       author: data.author,
       category: data.category,
@@ -125,6 +158,7 @@ export default function BlogFormModal({
       excerpt: data.excerpt,
       fileUrl: data.fileUrl,
       fileName: data.fileName,
+      thumbnail: data.thumbnail,
       createdAt: blog?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -166,10 +200,69 @@ export default function BlogFormModal({
                 <label htmlFor="blog-title">
                   Title <span className="req">*</span>
                 </label>
-                <input id="blog-title" type="text" {...register("title")} />
+                <input
+                  id="blog-title"
+                  type="text"
+                  value={title}
+                  onChange={(e) => handleTitleChange(e.target.value)}
+                />
                 {errors.title && (
                   <div className="field__err">{errors.title.message}</div>
                 )}
+              </div>
+
+              <div className={fieldValue("slug")}>
+                <label htmlFor="blog-slug">
+                  Slug <span className="req">*</span>
+                </label>
+                <input
+                  id="blog-slug"
+                  type="text"
+                  placeholder="lowercase-with-hyphens"
+                  {...register("slug")}
+                />
+                <span className="hint">
+                  Auto-generated from the title. Used in the public URL.
+                </span>
+                {errors.slug && (
+                  <div className="field__err">{errors.slug.message}</div>
+                )}
+              </div>
+
+              <div className="field field--full">
+                <label className="mb-1 block">
+                  Thumbnail <span className="req">*</span>
+                </label>
+                {thumbnail ? (
+                  <div className="flex items-center gap-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={thumbnail}
+                      alt="Thumbnail preview"
+                      className="h-24 w-40 rounded-xl border border-gray-200 object-cover"
+                    />
+                    <div className="flex flex-col gap-2">
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn--sm"
+                        onClick={() => setValue("thumbnail", "")}
+                      >
+                        Change
+                      </button>
+                      <span className="inline-flex items-center gap-1 text-xs text-[var(--admin-muted)]">
+                        <ImageIcon size={13} />
+                        {thumbnail.split("?" )[0].split("/").pop()}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <ImageUpload
+                    onUpload={(r) => setValue("thumbnail", r.secure_url)}
+                  />
+                )}
+                <span className="hint">
+                  Card image shown on the /blogs listing.
+                </span>
               </div>
 
               <div className={fieldValue("author")}>

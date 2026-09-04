@@ -73,6 +73,12 @@ export const CACHE_TAGS = {
   newsSettings: "news-settings",
   newsArticleSettings: "news-article-settings",
   
+  // Blogs
+  blogsList: "blogs-list",
+  blog: (slug: string) => `blog-${slug}`,
+  blogSettings: "blog-settings",
+  blogArticleSettings: "blog-article-settings",
+  
   // Notices
   noticesList: "notices-list",
   notice: (slug: string) => `notice-${slug}`,

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   deleteBlog,
   getBlogById,
@@ -8,9 +9,11 @@ import {
   hardDeleteBlog,
 } from "@/repositories/blog.repository";
 import { requireApiSession } from "@/core/lib/api-guard";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 const updateSchema = z
   .object({
+    slug: z.string().min(1).max(120),
     title: z.string().min(3).max(200),
     author: z.string().min(2).max(100),
     category: z.enum([
@@ -25,9 +28,10 @@ const updateSchema = z
     ]),
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date"),
     status: z.enum(["published", "draft"]),
-    excerpt: z.string().min(10).max(5000),
+    excerpt: z.string().min(10),
     fileUrl: z.string().optional(),
     fileName: z.string().optional(),
+    thumbnail: z.string().optional(),
   })
   .partial();
 
@@ -77,6 +81,8 @@ export async function PATCH(
         if (!restored) {
           return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
+        revalidateTag(CACHE_TAGS.blogsList, "max");
+        revalidatePath("/blogs");
         return NextResponse.json({ ok: true });
       } catch {
         return NextResponse.json(
@@ -92,6 +98,8 @@ export async function PATCH(
         if (!deleted) {
           return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
+        revalidateTag(CACHE_TAGS.blogsList, "max");
+        revalidatePath("/blogs");
         return NextResponse.json({ ok: true });
       } catch {
         return NextResponse.json(
@@ -125,11 +133,16 @@ export async function PATCH(
     if (!updated) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+    revalidateTag(CACHE_TAGS.blogsList, "max");
+    if (updated.status === "published") {
+      revalidateTag(CACHE_TAGS.blog(updated.slug), "max");
+    }
+    revalidatePath("/blogs");
     return NextResponse.json(updated);
   } catch (err) {
     if (isMongoError(err) && err.code === 11000) {
       return NextResponse.json(
-        { error: "Duplicate blog entry" },
+        { error: "Slug already exists" },
         { status: 409 }
       );
     }
@@ -153,6 +166,8 @@ export async function DELETE(
     if (!deleted) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+    revalidateTag(CACHE_TAGS.blogsList, "max");
+    revalidatePath("/blogs");
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json(

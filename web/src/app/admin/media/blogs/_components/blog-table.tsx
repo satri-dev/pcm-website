@@ -139,11 +139,25 @@ export default function BlogTable({
                 return (
                   <TableRow key={item.id} className="hover:bg-[#fafbfe] transition-colors">
                     <TableCell className="py-3">
-                      <div className="cell-main">
-                        <div className="font-semibold text-sm">{item.title}</div>
-                        <small className="text-[var(--admin-muted)] text-[0.76rem]">
-                          {item.excerpt.slice(0, 60)}...
-                        </small>
+                      <div className="flex items-center gap-3">
+                        {item.thumbnail ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={item.thumbnail}
+                            alt=""
+                            className="h-12 w-20 shrink-0 rounded-lg object-cover border border-(--admin-line)"
+                          />
+                        ) : (
+                          <span className="avatar-sm shrink-0">
+                            {item.title.substring(0, 2).toUpperCase()}
+                          </span>
+                        )}
+                        <div className="cell-main">
+                          <div className="font-semibold text-sm">{item.title}</div>
+                          <small className="text-[var(--admin-muted)] text-[0.76rem]">
+                            /blogs/{item.slug || item.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}
+                          </small>
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell className="text-sm py-3">{item.author}</TableCell>
