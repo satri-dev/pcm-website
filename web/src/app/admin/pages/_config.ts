@@ -35,7 +35,7 @@ export const mainPages: PagesSectionEntry[] = [
   { slug: "placements", label: "Placements", publicHref: "/placements", live: true },
   { slug: "programs", label: "Programs", publicHref: "/programs" },
   { slug: "results", label: "Results", publicHref: "/results", live: true },
-  { slug: "testimonials", label: "Testimonials", publicHref: "/testimonials" },
+  { slug: "testimonials", label: "Testimonials", publicHref: "/testimonials", live: true },
   { slug: "faq", label: "FAQ", publicHref: "/faq", live:true },
   { slug: "downloads", label: "Download", publicHref: "/downloads", live:true },
   { slug: "scholarship", label: "Scholarship", publicHref: "/scholarship", live: true },

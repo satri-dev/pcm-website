@@ -69,6 +69,8 @@ import FeedbackPageSettings from "../_components/feedback-page-settings";
 import { getFeedbackPageSettings } from "@/repositories/feedback-page-settings.repository";
 import SurveyPageSettings from "../_components/survey-page-settings";
 import { getSurveyPageSettings } from "@/repositories/survey-page-settings.repository";
+import TestimonialPageSettings from "../_components/testimonial-page-settings";
+import { getTestimonialPageSettings } from "@/repositories/testimonial-page-settings.repository";
 
 interface RouteCtx {
   params: Promise<{ slug: string | string[] }>;
@@ -435,6 +437,19 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
           subtitle="Pages · Content, SEO & responder copy"
         />
         <SurveyPageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "testimonials") {
+    const settings = await getTestimonialPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content, SEO & submission copy"
+        />
+        <TestimonialPageSettings initial={settings} />
       </>
     );
   }

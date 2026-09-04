@@ -114,6 +114,10 @@ export const CACHE_TAGS = {
   alumniList: "alumni-list",
   alumniSettings: "alumni-settings",
 
+  // Testimonials
+  testimonialsList: "testimonials-list",
+  testimonialsSettings: "testimonials-settings",
+
   // Chatbot
   chatbot: "chatbot",
   

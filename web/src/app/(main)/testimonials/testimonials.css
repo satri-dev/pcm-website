@@ -161,6 +161,25 @@
   color: var(--muted);
 }
 
+.pcm-testimonials .testi-card .testi-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  object-fit: cover;
+  margin-bottom: 0.5rem;
+  border: 2px solid rgba(65, 103, 201, 0.4);
+}
+
+/* Add Testimonial — sits on the same row as the "Voices of PCM" heading */
+.pcm-testimonials .section-head-row .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: auto;
+  padding-inline: 1.5rem;
+  white-space: nowrap;
+}
+
 /* ── Utility ── */
 .pcm-testimonials .mt-7 {
   margin-top: 2.5rem;

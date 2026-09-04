@@ -13,6 +13,7 @@ import { listDownloads } from "@/repositories/download.repository";
 import { listApplications } from "@/repositories/application.repository";
 import { countFeedback } from "@/repositories/feedback.repository";
 import { countSurveyResponses } from "@/repositories/survey-responses.repository";
+import { countPendingTestimonials } from "@/repositories/testimonial.repository";
 
 
 export async function GET() {
@@ -20,7 +21,7 @@ export async function GET() {
   if (!guard.ok) return guard.response;
 
   try {
-    const [news, notices, results, events, programs, scholarships, faqs, blogs, gallery, downloads, applications, feedback, surveyResponses] =
+    const [news, notices, results, events, programs, scholarships, faqs, blogs, gallery, downloads, applications, feedback, surveyResponses, testimonials] =
       await Promise.all([
         listNews({ pageSize: 1 }).then((r) => r.total),
         listNotices({ pageSize: 1 }).then((r) => r.total),
@@ -34,7 +35,8 @@ export async function GET() {
         listDownloads({pageSize: 1}).then((r)=>r.total),
         listApplications({ pageSize: 1 }).then((r) => r.total),
         countFeedback(),
-        countSurveyResponses()
+        countSurveyResponses(),
+        countPendingTestimonials()
       ]);
 
     return NextResponse.json({
@@ -50,7 +52,8 @@ export async function GET() {
       downloads,
       applications,
       feedback,
-      surveyResponses
+      surveyResponses,
+      testimonials
     });
   } catch {
     return NextResponse.json(

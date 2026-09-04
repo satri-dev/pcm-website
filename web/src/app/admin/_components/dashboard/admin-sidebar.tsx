@@ -339,6 +339,12 @@ const navigation: NavSection[] = [
         badgeKey: "feedback",
       },
       {
+        label: "Testimonials",
+        href: "/admin/content/testimonials",
+        icon: Quote,
+        badgeKey: "testimonials",
+      },
+      {
         label: "Surveys",
         href: "/admin/content/surveys",
         icon: FileQuestionMarkIcon,
