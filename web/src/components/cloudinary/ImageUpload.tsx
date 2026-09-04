@@ -11,6 +11,7 @@ interface ImageUploadProps {
     width: number;
     height: number;
     format: string;
+    original_filename: string;
   }) => void;
   className?: string;
 }
@@ -41,6 +42,9 @@ export default function ImageUpload({ onUpload, className }: ImageUploadProps) {
             width: Number(result.info.width),
             height: Number(result.info.height),
             format: String(result.info.format),
+            original_filename: String(
+              (result.info as Record<string, unknown>).original_filename || result.info.public_id
+            ),
           });
         }
       }}

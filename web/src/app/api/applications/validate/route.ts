@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPageContentBySlug } from "@/repositories/page-content.repository";
 import type { AdmissionPageContent } from "@/types/page-content";
+import type { FileEntry } from "@/types/application";
 import {
   type FieldDef,
   normalizeValue,
@@ -21,8 +22,8 @@ export async function POST(request: NextRequest) {
 
   const step = Number(body.step);
   const form = body.form as Record<string, unknown> | undefined;
-  const documents = body.documents as string[] | undefined;
-  const paymentSlips = body.paymentSlips as string[] | undefined;
+  const documents = body.documents as FileEntry[] | undefined;
+  const paymentSlips = body.paymentSlips as FileEntry[] | undefined;
 
   if (isNaN(step) || step < 0 || step > 5) {
     return NextResponse.json(
@@ -88,10 +89,16 @@ export async function POST(request: NextRequest) {
       break;
     }
     case 3: {
-      // Document upload step
+      // Document upload step — check against CMS-configured document count
       const docs = Array.isArray(documents) ? documents : [];
-      const count = docs.filter((d) => normalizeValue(d)).length;
-      if (count === 0) {
+      const filledCount = docs.filter((d) => {
+        const url = typeof d === "string" ? d : d.url;
+        return normalizeValue(url);
+      }).length;
+      const expectedCount = (pageContent as any)?.applicationForm?.documentStep?.documentLabels?.length ?? 0;
+      if (expectedCount > 0 && filledCount < expectedCount) {
+        errors.push(`Please upload all ${expectedCount} required documents (${filledCount}/${expectedCount} uploaded)`);
+      } else if (filledCount === 0) {
         errors.push("Please upload at least one required document");
       }
       break;
@@ -105,7 +112,10 @@ export async function POST(request: NextRequest) {
     case 5: {
       // Payment step
       const slips = Array.isArray(paymentSlips) ? paymentSlips : [];
-      const count = slips.filter((s) => normalizeValue(s)).length;
+      const count = slips.filter((s) => {
+        const url = typeof s === "string" ? s : s.url;
+        return normalizeValue(url);
+      }).length;
       if (count === 0) {
         errors.push("Please upload the transaction / payment slip");
       }

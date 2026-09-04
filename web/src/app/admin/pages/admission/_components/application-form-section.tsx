@@ -98,13 +98,6 @@ export default function ApplicationFormSection({
     setExpandedSteps(allExpanded ? new Set() : new Set(ALL_STEP_IDS));
   };
 
-  const generateFieldId = (label: string): string =>
-    label
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, "")
-      .trim()
-      .replace(/\s+/g, "_");
-
   const updateForm = (patch: Partial<AdmissionPageContent["applicationForm"]>) =>
     setContent((prev) => ({ ...prev, applicationForm: { ...prev.applicationForm, ...patch } }));
 
@@ -137,7 +130,6 @@ export default function ApplicationFormSection({
   ) => {
     const list = [...cf[key]];
     const next = { ...list[index], [field]: value } as DynamicField;
-    if (field === "label") next.id = generateFieldId(String(value));
     list[index] = next;
     updateForm({ [key]: list } as Partial<AdmissionPageContent["applicationForm"]>);
   };

@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import type { AdmissionPageContent } from "@/types/page-content";
+import type { FileEntry } from "@/types/application";
 import { DynamicFormFields } from "./DynamicFormFields";
 import ImageUpload from "@/components/cloudinary/ImageUpload";
 import DocumentUpload from "@/components/cloudinary/DocumentUpload";
@@ -82,105 +83,32 @@ function extractFromFields(fields: DynamicField[], form: Record<string, any>, ta
   return typeof v === "string" ? v.trim() : v == null ? "" : String(v);
 }
 
-interface FormData {
-  program_name: string;
-  shift: string;
-  name: string;
-  gender: string;
-  dob: string;
-  date_option: string;
-  nationality: string;
-  phone: string;
-  personal_contact: string;
-  email: string;
-  guardian_type: string;
-  father_name: string;
-  father_phone: string;
-  mother_name: string;
-  mother_phone: string;
-  guardian_name: string;
-  guardian_phone: string;
-  relationship: string;
-  permanent_province: string;
-  permanent_district: string;
-  permanent_city: string;
-  permanent_ward: string;
-  same_address: boolean;
-  temporary_province: string;
-  temporary_district: string;
-  temporary_city: string;
-  temporary_ward: string;
-  see_bod: string;
-  see_school: string;
-  see_address: string;
-  see_gpa: string;
-  see_year: string;
-  see_full_mark: string;
-  see_mark_obtained: string;
-  see_percentage_obtained: string;
-  intermediate_bod: string;
-  intermediate_school: string;
-  intermediate_address: string;
-  intermediate_gpa: string;
-  intermediate_year: string;
-  intermediate_full_mark: string;
-  intermediate_mark_obtained: string;
-  intermediate_percentage_obtained: string;
-  agree_terms: boolean;
+type FormData = Record<string, any>;
+
+function buildInitialForm(content: AdmissionPageContent): FormData {
+  const form: FormData = { agree_terms: true, date_option: "bs", nationality: "Nepali" };
+  const cfg = content.applicationForm;
+  if (!cfg) return form;
+  const allFields = [
+    ...(cfg.personalInfoFields || []),
+    ...(cfg.contactInfoFields || []),
+    ...(cfg.academicInfoFields || []),
+  ];
+  for (const f of allFields) {
+    if (form[f.id] === undefined) {
+      form[f.id] = f.fieldType === "checkbox" ? false : "";
+    }
+  }
+  return form;
 }
 
-const INITIAL_FORM: FormData = {
-  program_name: "bba",
-  shift: "morning",
-  name: "",
-  gender: "",
-  dob: "",
-  date_option: "bs",
-  nationality: "Nepali",
-  phone: "",
-  personal_contact: "",
-  email: "",
-  guardian_type: "",
-  father_name: "",
-  father_phone: "",
-  mother_name: "",
-  mother_phone: "",
-  guardian_name: "",
-  guardian_phone: "",
-  relationship: "",
-  permanent_province: "",
-  permanent_district: "",
-  permanent_city: "",
-  permanent_ward: "",
-  same_address: false,
-  temporary_province: "",
-  temporary_district: "",
-  temporary_city: "",
-  temporary_ward: "",
-  see_bod: "neb",
-  see_school: "",
-  see_address: "",
-  see_gpa: "",
-  see_year: "",
-  see_full_mark: "",
-  see_mark_obtained: "",
-  see_percentage_obtained: "",
-  intermediate_bod: "neb",
-  intermediate_school: "",
-  intermediate_address: "",
-  intermediate_gpa: "",
-  intermediate_year: "",
-  intermediate_full_mark: "",
-  intermediate_mark_obtained: "",
-  intermediate_percentage_obtained: "",
-  agree_terms: true,
-};
+const INITIAL_FORM: FormData = {};
 
 export default function AdmissionClient({ content }: AdmissionClientProps) {
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState<FormData>(INITIAL_FORM);
-  const [docFiles, setDocFiles] = useState<string[]>([]);
-  const [payFiles, setPayFiles] = useState<string[]>([]);
+  const [form, setForm] = useState<FormData>(() => buildInitialForm(content));
+  const [docFiles, setDocFiles] = useState<(FileEntry | null)[]>([]);
+  const [payFiles, setPayFiles] = useState<FileEntry[]>([]);
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -192,21 +120,25 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
     setStepErrors([]);
     setForm((prev) => {
       const next = { ...prev, [field]: value };
-      if (field === "same_address" && value === true) {
-        next.temporary_province = prev.permanent_province;
-        next.temporary_district = prev.permanent_district;
-        next.temporary_city = prev.permanent_city;
-        next.temporary_ward = prev.permanent_ward;
-      }
-      if (field === "same_address" && value === false) {
-        next.temporary_province = "";
-        next.temporary_district = "";
-        next.temporary_city = "";
-        next.temporary_ward = "";
+      if (field === "same_address") {
+        // Find all contact info fields and match permanent ↔ temporary by role
+        const contactFields = content.applicationForm?.contactInfoFields || [];
+        const locationRoles = ["province", "district", "city", "ward"];
+        for (const role of locationRoles) {
+          const permField = contactFields.find(
+            (f: any) => f.label.toLowerCase().includes(role) && f.label.toLowerCase().includes("permanent")
+          );
+          const tempField = contactFields.find(
+            (f: any) => f.label.toLowerCase().includes(role) && f.label.toLowerCase().includes("temporary")
+          );
+          if (permField && tempField) {
+            next[tempField.id] = value ? prev[permField.id] || "" : "";
+          }
+        }
       }
       return next;
     });
-  }, []);
+  }, [content]);
 
   const handleProfilePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -218,25 +150,52 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
     }
   };
 
-  const handleDocsUpload = (url: string) => {
-    setDocFiles((prev) => [...prev, url]);
+  const documentLabels = content.applicationForm?.documentStep?.documentLabels ?? [];
+
+  const handleDocUpload = (index: number) => (r: { secure_url: string; original_filename: string }) => {
+    setDocFiles((prev) => {
+      const next = [...prev];
+      next[index] = { url: r.secure_url, name: r.original_filename };
+      return next;
+    });
   };
 
-  const handlePayUpload = (url: string) => {
-    setPayFiles((prev) => [...prev, url]);
+  const handlePayUpload = (r: { secure_url: string; original_filename: string }) => {
+    setPayFiles((prev) => [...prev, { url: r.secure_url, name: r.original_filename }]);
   };
 
-  const removeDoc = (idx: number) => setDocFiles((prev) => prev.filter((_, i) => i !== idx));
+  const removeDoc = (idx: number) => setDocFiles((prev) => {
+    const next = [...prev];
+    next[idx] = null;
+    return next;
+  });
   const removePay = (idx: number) => setPayFiles((prev) => prev.filter((_, i) => i !== idx));
 
   const handleNext = async () => {
     setStepErrors([]);
+
+    // Local validation for document step — all slots must be filled
+    if (step === 3) {
+      const expected = documentLabels.length;
+      const filled = docFiles.filter((d) => d !== null).length;
+      if (expected > 0 && filled < expected) {
+        setStepErrors([`Please upload all ${expected} required documents (${filled}/${expected} uploaded)`]);
+        return;
+      }
+      if (expected === 0 && filled === 0) {
+        setStepErrors(["Please upload at least one document"]);
+        return;
+      }
+      setStep(step + 1);
+      return;
+    }
+
     setValidating(true);
     try {
       const res = await fetch("/api/applications/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ step, form, documents: docFiles, paymentSlips: payFiles }),
+        body: JSON.stringify({ step, form, documents: docFiles.filter((d): d is FileEntry => d !== null), paymentSlips: payFiles }),
       });
       const data = await res.json();
       if (data.valid) {
@@ -260,22 +219,19 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
     try {
       const dynamicFields = collectDynamicFields(content);
       const record = form as unknown as Record<string, any>;
-      const applicantName = extractFromFields(dynamicFields, record, "name") || form.name;
       const payload = {
-        name: applicantName || "Unknown",
-        email: extractFromFields(dynamicFields, record, "email") || form.email,
-        phone: extractFromFields(dynamicFields, record, "phone") || form.phone,
-        program: extractFromFields(dynamicFields, record, "program") || form.program_name,
-        shift: extractFromFields(dynamicFields, record, "shift") || form.shift,
-        gender: form.gender,
-        dob: form.dob,
-        dateOption: form.date_option,
-        nationality: form.nationality,
-        documents: docFiles,
+        name: extractFromFields(dynamicFields, record, "name") || "Unknown",
+        email: extractFromFields(dynamicFields, record, "email"),
+        phone: extractFromFields(dynamicFields, record, "phone"),
+        program: extractFromFields(dynamicFields, record, "program"),
+        shift: extractFromFields(dynamicFields, record, "shift"),
+        gender: extractFromFields(dynamicFields, record, "gender"),
+        dob: extractFromFields(dynamicFields, record, "dob"),
+        dateOption: extractFromFields(dynamicFields, record, "date_option"),
+        nationality: extractFromFields(dynamicFields, record, "nationality"),
+        documents: docFiles.filter((d): d is FileEntry => d !== null),
         paymentSlips: payFiles,
         agreedToTerms: form.agree_terms,
-        // Send the ENTIRE dynamic form state so that regardless of which
-        // fields admins configure, every value is preserved in the DB.
         form,
       };
 
@@ -498,37 +454,43 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
                 {step === 3 && (
                   <div className="space-y-6">
                     <div className="border-b border-gray-100 pb-4 mb-2">
-                      <h3 className="text-lg font-bold text-gray-900">Document Upload</h3>
-                      <p className="text-sm text-gray-500">Upload your required documents</p>
+                      <h3 className="text-lg font-bold text-gray-900">
+                        {content.applicationForm.documentStep?.heading || "Document Upload"}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        {content.applicationForm.documentStep?.description || "Upload your required documents"}
+                      </p>
                     </div>
 
-                    <ul className="space-y-2">
-                      {["SEE / SLC Mark-sheet", "SEE / SLC Character Certificate", "+2 / Intermediate Mark-sheet", "+2 / Intermediate Character Certificate"].map((doc) => (
-                        <li key={doc} className="flex items-center gap-2.5 px-3.5 py-2.5 bg-gray-50 border border-gray-100 rounded-lg text-sm text-gray-700">
-                          <Check className="w-4 h-4 text-[#51B747] shrink-0" strokeWidth={2.5} /> {doc}
-                        </li>
-                      ))}
-                    </ul>
-
-                    <div className="flex flex-col items-start gap-3">
-                      <DocumentUpload onUpload={(r) => handleDocsUpload(r.secure_url)} />
-                      <p className="text-xs text-gray-400">Accepted: PDF, DOC, DOCX · Max 5 MB each</p>
-                    </div>
-
-                    {docFiles.length > 0 && (
-                      <div className="space-y-2">
-                        {docFiles.map((url, i) => (
-                          <div key={i} className="flex items-center gap-3 bg-white border border-gray-100 rounded-lg px-3.5 py-2.5">
-                            <FileText className="w-4 h-4 text-gray-400 shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <a href={url} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#16285B] truncate block hover:underline">{url.split("/").pop() || url}</a>
-                              <p className="text-xs text-gray-400 truncate">{url}</p>
-                            </div>
-                            <button type="button" onClick={() => removeDoc(i)} className="text-red-500 hover:text-red-700 text-lg">&times;</button>
+                    {documentLabels.map((label: string, i: number) => (
+                      <div key={i} className="space-y-2">
+                        <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                          <Check className="w-4 h-4 text-[#51B747] shrink-0" strokeWidth={2.5} />
+                          {label}
+                        </label>
+                        {docFiles[i] ? (
+                          (() => {
+                            const entry = docFiles[i]!;
+                            const url = typeof entry === "string" ? entry : entry.url;
+                            const name = typeof entry === "string" ? url.split("/").pop() || url : entry.name;
+                            return (
+                              <div className="flex items-center gap-3 bg-white border border-gray-100 rounded-lg px-3.5 py-2.5">
+                                <FileText className="w-4 h-4 text-gray-400 shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                  <a href={url} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#16285B] truncate block hover:underline">{name}</a>
+                                </div>
+                                <button type="button" onClick={() => removeDoc(i)} className="text-red-500 hover:text-red-700 text-lg">&times;</button>
+                              </div>
+                            );
+                          })()
+                        ) : (
+                          <div className="flex flex-col items-start gap-2">
+                            <DocumentUpload onUpload={handleDocUpload(i)} />
+                            <p className="text-xs text-gray-400">PDF, DOC, DOCX · Max 5 MB</p>
                           </div>
-                        ))}
+                        )}
                       </div>
-                    )}
+                    ))}
                   </div>
                 )}
 
@@ -581,21 +543,24 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Upload Payment Slip</label>
                       <div className="flex flex-col items-start gap-3">
-                        <ImageUpload onUpload={(r) => handlePayUpload(r.secure_url)} />
+                        <ImageUpload onUpload={handlePayUpload} />
                         <p className="text-xs text-gray-400">Accepted: JPEG, JPG, PNG, WEBP · Max 5 MB</p>
                       </div>
                       {payFiles.length > 0 && (
                         <div className="space-y-2 mt-3">
-                          {payFiles.map((url, i) => (
-                            <div key={i} className="flex items-center gap-3 bg-white border border-gray-100 rounded-lg px-3.5 py-2.5">
-                              <FileText className="w-4 h-4 text-gray-400 shrink-0" />
-                              <div className="flex-1 min-w-0">
-                                <a href={url} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#16285B] truncate block hover:underline">{url.split("/").pop() || url}</a>
-                                <p className="text-xs text-gray-400 truncate">{url}</p>
+                          {payFiles.map((entry, i) => {
+                            const url = typeof entry === "string" ? entry : entry.url;
+                            const name = typeof entry === "string" ? url.split("/").pop() || url : entry.name;
+                            return (
+                              <div key={i} className="flex items-center gap-3 bg-white border border-gray-100 rounded-lg px-3.5 py-2.5">
+                                <FileText className="w-4 h-4 text-gray-400 shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                  <a href={url} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#16285B] truncate block hover:underline">{name}</a>
+                                </div>
+                                <button type="button" onClick={() => removePay(i)} className="text-red-500 hover:text-red-700 text-lg">&times;</button>
                               </div>
-                              <button type="button" onClick={() => removePay(i)} className="text-red-500 hover:text-red-700 text-lg">&times;</button>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
                     </div>
@@ -608,17 +573,25 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
                       </div>
                       <div className="space-y-0">
                         <div className="text-xs font-bold text-[#16285B] uppercase tracking-wide pt-2 pb-1 border-b border-gray-200">Personal Information</div>
-                        {[
-                          { l: "Programme", v: form.program_name.toUpperCase().replace("BBA-FINANCE", "BBA-Finance") },
-                          { l: "Shift", v: form.shift.charAt(0).toUpperCase() + form.shift.slice(1) },
-                          { l: "Full Name", v: form.name || "—" },
-                          { l: "Gender", v: form.gender ? form.gender.charAt(0).toUpperCase() + form.gender.slice(1) : "—" },
-                          { l: "Date of Birth", v: form.dob || "—" },
-                          { l: "Nationality", v: form.nationality || "—" },
-                          { l: "Phone", v: form.phone || "—" },
-                          { l: "Email", v: form.email || "—" },
-                          ...(form.guardian_type ? [{ l: "Guardian Type", v: form.guardian_type.charAt(0).toUpperCase() + form.guardian_type.slice(1) }] : []),
-                        ].map((row) => (
+                        {(() => {
+                          const dynamicFields = collectDynamicFields(content);
+                          const record = form as unknown as Record<string, any>;
+                          const get = (target: string) => {
+                            const v = extractFromFields(dynamicFields, record, target);
+                            return v || "—";
+                          };
+                          const capitalize = (s: string) => s && s !== "—" ? s.charAt(0).toUpperCase() + s.slice(1) : "—";
+                          return [
+                            { l: "Programme", v: capitalize(get("program")) },
+                            { l: "Shift", v: capitalize(get("shift")) },
+                            { l: "Full Name", v: get("name") },
+                            { l: "Gender", v: capitalize(get("gender")) },
+                            { l: "Date of Birth", v: get("dob") },
+                            { l: "Nationality", v: get("nationality") },
+                            { l: "Phone", v: get("phone") },
+                            { l: "Email", v: get("email") },
+                          ];
+                        })().map((row) => (
                           <div key={row.l} className="flex gap-3 py-1.5 border-b border-gray-100 last:border-b-0 text-sm">
                             <span className="font-semibold text-gray-400 min-w-[120px] flex-shrink-0 text-xs">{row.l}</span>
                             <span className="font-semibold text-gray-900">{row.v}</span>
@@ -626,10 +599,20 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
                         ))}
 
                         <div className="text-xs font-bold text-[#16285B] uppercase tracking-wide pt-3 pb-1 border-b border-gray-200">Address</div>
-                        {[
-                          { l: "Permanent", v: [form.permanent_province, form.permanent_district, form.permanent_city, form.permanent_ward ? `Ward ${form.permanent_ward}` : ""].filter(Boolean).join(", ") || "—" },
-                          { l: "Temporary", v: [form.temporary_province, form.temporary_district, form.temporary_city, form.temporary_ward ? `Ward ${form.temporary_ward}` : ""].filter(Boolean).join(", ") || "—" },
-                        ].map((row) => (
+                        {(() => {
+                          const contactFields = content.applicationForm?.contactInfoFields || [];
+                          const getAddress = (type: "permanent" | "temporary") => {
+                            const roles = ["province", "district", "city", "ward"];
+                            return roles.map(role => {
+                              const f = contactFields.find((cf: any) => cf.label.toLowerCase().includes(role) && cf.label.toLowerCase().includes(type));
+                              return f ? form[f.id] : "";
+                            }).filter(Boolean).join(", ") || "—";
+                          };
+                          return [
+                            { l: "Permanent", v: getAddress("permanent") },
+                            { l: "Temporary", v: getAddress("temporary") },
+                          ];
+                        })().map((row) => (
                           <div key={row.l} className="flex gap-3 py-1.5 border-b border-gray-100 last:border-b-0 text-sm">
                             <span className="font-semibold text-gray-400 min-w-[120px] flex-shrink-0 text-xs">{row.l}</span>
                             <span className="font-semibold text-gray-900">{row.v}</span>
@@ -637,10 +620,18 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
                         ))}
 
                         <div className="text-xs font-bold text-[#16285B] uppercase tracking-wide pt-3 pb-1 border-b border-gray-200">Academic Information</div>
-                        {[
-                          { l: "SEE GPA / Year", v: [form.see_gpa, form.see_year].filter(Boolean).join(" \u00b7 ") || "—" },
-                          { l: "+2 GPA / Year", v: [form.intermediate_gpa, form.intermediate_year].filter(Boolean).join(" \u00b7 ") || "—" },
-                        ].map((row) => (
+                        {(() => {
+                          const academicFields = content.applicationForm?.academicInfoFields || [];
+                          const record = form as unknown as Record<string, any>;
+                          const getVal = (keywords: string[]) => {
+                            const f = academicFields.find((cf: any) => keywords.some(k => cf.label.toLowerCase().includes(k) || cf.id.toLowerCase().includes(k)));
+                            return f ? (record[f.id] || "—") : "—";
+                          };
+                          return [
+                            { l: "SEE GPA / Year", v: [getVal(["gpa"]), getVal(["see", "year"])].filter(v => v && v !== "—").join(" \u00b7 ") || "—" },
+                            { l: "+2 GPA / Year", v: [getVal(["intermediate gpa"]), getVal(["intermediate year"])].filter(v => v && v !== "—").join(" \u00b7 ") || "—" },
+                          ];
+                        })().map((row) => (
                           <div key={row.l} className="flex gap-3 py-1.5 border-b border-gray-100 last:border-b-0 text-sm">
                             <span className="font-semibold text-gray-400 min-w-[120px] flex-shrink-0 text-xs">{row.l}</span>
                             <span className="font-semibold text-gray-900">{row.v}</span>

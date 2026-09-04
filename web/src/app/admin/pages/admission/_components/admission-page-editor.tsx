@@ -52,10 +52,39 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
     setSaving(true);
 
     try {
+      const slugify = (label: string) =>
+        label
+          .toLowerCase()
+          .replace(/[^a-z0-9\s]/g, "")
+          .trim()
+          .replace(/\s+/g, "_");
+
+      const contentToSave = {
+        ...content,
+        applicationForm: {
+          ...content.applicationForm,
+          personalInfoFields: content.applicationForm.personalInfoFields.map((f, i) => ({
+            ...f,
+            id: slugify(f.label) || f.id,
+            order: i + 1,
+          })),
+          contactInfoFields: content.applicationForm.contactInfoFields.map((f, i) => ({
+            ...f,
+            id: slugify(f.label) || f.id,
+            order: i + 1,
+          })),
+          academicInfoFields: content.applicationForm.academicInfoFields.map((f, i) => ({
+            ...f,
+            id: slugify(f.label) || f.id,
+            order: i + 1,
+          })),
+        },
+      };
+
       const response = await fetch("/api/admin/pages/admission", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({ content: contentToSave }),
       });
 
       if (!response.ok) {
@@ -63,6 +92,7 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
         throw new Error(error.error || "Failed to save");
       }
 
+      setContent(contentToSave);
       toast.success("Admission page updated successfully!");
     } catch (error) {
       console.error("Save error:", error);
