@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   deleteGallery,
   getGalleryById,
@@ -9,6 +9,7 @@ import {
   hardDeleteGallery,
 } from "@/repositories/gallery.repository";
 import { requireApiSession } from "@/core/lib/api-guard";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 const updateSchema = z
   .object({
@@ -46,7 +47,9 @@ function isMongoError(err: unknown): err is { code?: number } {
 }
 
 function revalidateGalleryPaths() {
+  revalidateTag(CACHE_TAGS.galleryList, "max");
   revalidatePath("/gallery");
+  revalidatePath("/life");
   revalidatePath("/");
 }
 

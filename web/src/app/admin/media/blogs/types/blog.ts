@@ -18,6 +18,7 @@ export const BLOG_COLLECTION = "blogs";
 
 export interface Blog {
   id: string;
+  slug: string;
   title: string;
   author: string;
   category: BlogCategory;
@@ -26,6 +27,7 @@ export interface Blog {
   excerpt: string;
   fileUrl?: string;
   fileName?: string;
+  thumbnail?: string;
   createdAt: string;
   updatedAt: string;
   deletedAt?: string;
@@ -34,6 +36,7 @@ export interface Blog {
 
 export interface BlogDocument {
   _id?: import("mongodb").ObjectId;
+  slug: string;
   title: string;
   author: string;
   category: BlogCategory;
@@ -42,6 +45,7 @@ export interface BlogDocument {
   excerpt: string;
   fileUrl?: string;
   fileName?: string;
+  thumbnail?: string;
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date;
@@ -49,6 +53,7 @@ export interface BlogDocument {
 }
 
 export interface BlogCreateInput {
+  slug: string;
   title: string;
   author: string;
   category: BlogCategory;
@@ -57,6 +62,7 @@ export interface BlogCreateInput {
   excerpt: string;
   fileUrl?: string;
   fileName?: string;
+  thumbnail?: string;
 }
 
 export type BlogUpdateInput = Partial<BlogCreateInput>;

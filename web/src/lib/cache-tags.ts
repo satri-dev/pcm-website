@@ -49,16 +49,35 @@ export const CACHE_TAGS = {
   // Clubs
   clubsList: "clubs-list",
   clubsSettings: "clubs-settings",
+
+  // Life at PCM
+  lifeSettings: "life-settings",
+
+  // Feedback
+  feedbackSettings: "feedback-settings",
+  feedbackList: "feedback-list",
   
   // Gallery
   galleryList: "gallery-list",
   gallery: (id: string) => `gallery-${id}`,
   
+  // Surveys
+  surveysList: "surveys-list",
+  survey: (slug: string) => `survey-${slug}`,
+  surveysSettings: "surveys-settings",
+  surveyResponses: "survey-responses",
+
   // News
   newsList: "news-list",
   news: (slug: string) => `news-${slug}`,
   newsSettings: "news-settings",
   newsArticleSettings: "news-article-settings",
+  
+  // Blogs
+  blogsList: "blogs-list",
+  blog: (slug: string) => `blog-${slug}`,
+  blogSettings: "blog-settings",
+  blogArticleSettings: "blog-article-settings",
   
   // Notices
   noticesList: "notices-list",
@@ -100,6 +119,10 @@ export const CACHE_TAGS = {
   // Alumni
   alumniList: "alumni-list",
   alumniSettings: "alumni-settings",
+
+  // Testimonials
+  testimonialsList: "testimonials-list",
+  testimonialsSettings: "testimonials-settings",
 
   // Chatbot
   chatbot: "chatbot",

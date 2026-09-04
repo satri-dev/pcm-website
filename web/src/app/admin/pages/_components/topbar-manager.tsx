@@ -1,7 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, Eye, EyeOff, Check, X, AlertTriangle, Phone, Mail } from "lucide-react";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  EyeOff,
+  Check,
+  X,
+  AlertTriangle,
+  Phone,
+  Mail,
+} from "lucide-react";
 import { FaFacebook, FaInstagram } from "react-icons/fa";
 import type { TopBarLink, TopBarContact } from "@/types/topbar";
 
@@ -17,7 +28,12 @@ interface DeleteDialogProps {
   onCancel: () => void;
 }
 
-function DeleteDialog({ isOpen, linkLabel, onConfirm, onCancel }: DeleteDialogProps) {
+function DeleteDialog({
+  isOpen,
+  linkLabel,
+  onConfirm,
+  onCancel,
+}: DeleteDialogProps) {
   if (!isOpen) return null;
 
   return (
@@ -32,14 +48,15 @@ function DeleteDialog({ isOpen, linkLabel, onConfirm, onCancel }: DeleteDialogPr
               Delete Link
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Are you sure you want to delete this link? This action cannot be undone.
+              Are you sure you want to delete this link? This action cannot be
+              undone.
             </p>
           </div>
         </div>
-        
+
         <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3 mb-6">
           <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-            "{linkLabel}"
+            &quot;{linkLabel}&quot;
           </p>
         </div>
 
@@ -63,29 +80,29 @@ function DeleteDialog({ isOpen, linkLabel, onConfirm, onCancel }: DeleteDialogPr
   );
 }
 
-export default function TopBarManager({ links: initialLinks, contact: initialContact }: Props) {
+export default function TopBarManager({
+  links: initialLinks,
+  contact: initialContact,
+}: Props) {
   const [links, setLinks] = useState(initialLinks);
   const [contact, setContact] = useState(initialContact);
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingContact, setEditingContact] = useState(false);
-  const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; linkId: string | null; linkLabel: string }>({
+  const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean;
+    linkId: string | null;
+    linkLabel: string;
+  }>({
     isOpen: false,
     linkId: null,
     linkLabel: "",
   });
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  
-  // Sync links state with prop changes
-  useEffect(() => {
-    setLinks(initialLinks);
-  }, [initialLinks]);
-  
-  // Sync contact state with prop changes
-  useEffect(() => {
-    setContact(initialContact);
-  }, [initialContact]);
-  
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
   // Auto-dismiss messages after 5 seconds
   useEffect(() => {
     if (message) {
@@ -134,15 +151,21 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
       });
       if (res.ok) {
         resetForm();
-        setMessage({ type: 'success', text: 'Link created successfully!' });
+        setMessage({ type: "success", text: "Link created successfully!" });
         window.location.reload();
       } else {
         const error = await res.json();
-        setMessage({ type: 'error', text: error.error || 'Failed to create link.' });
+        setMessage({
+          type: "error",
+          text: error.error || "Failed to create link.",
+        });
       }
     } catch (error) {
       console.error("Failed to create link:", error);
-      setMessage({ type: 'error', text: 'Failed to create link. Please try again.' });
+      setMessage({
+        type: "error",
+        text: "Failed to create link. Please try again.",
+      });
     }
   };
 
@@ -155,15 +178,21 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
       });
       if (res.ok) {
         resetForm();
-        setMessage({ type: 'success', text: 'Link updated successfully!' });
+        setMessage({ type: "success", text: "Link updated successfully!" });
         window.location.reload();
       } else {
         const error = await res.json();
-        setMessage({ type: 'error', text: error.error || 'Failed to update link.' });
+        setMessage({
+          type: "error",
+          text: error.error || "Failed to update link.",
+        });
       }
     } catch (error) {
       console.error("Failed to update link:", error);
-      setMessage({ type: 'error', text: 'Failed to update link. Please try again.' });
+      setMessage({
+        type: "error",
+        text: "Failed to update link. Please try again.",
+      });
     }
   };
 
@@ -185,22 +214,28 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
 
   const confirmDelete = async () => {
     if (!deleteDialog.linkId) return;
-    
+
     try {
       const res = await fetch(`/api/admin/topbar/${deleteDialog.linkId}`, {
         method: "DELETE",
       });
       if (res.ok) {
         closeDeleteDialog();
-        setMessage({ type: 'success', text: 'Link deleted successfully!' });
+        setMessage({ type: "success", text: "Link deleted successfully!" });
         window.location.reload();
       } else {
         const error = await res.json();
-        setMessage({ type: 'error', text: error.error || 'Failed to delete link.' });
+        setMessage({
+          type: "error",
+          text: error.error || "Failed to delete link.",
+        });
       }
     } catch (error) {
       console.error("Failed to delete link:", error);
-      setMessage({ type: 'error', text: 'Failed to delete link. Please try again.' });
+      setMessage({
+        type: "error",
+        text: "Failed to delete link. Please try again.",
+      });
     }
   };
 
@@ -244,7 +279,11 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
     });
   };
 
-  const updateDropdownItem = (index: number, field: "label" | "href", value: string) => {
+  const updateDropdownItem = (
+    index: number,
+    field: "label" | "href",
+    value: string,
+  ) => {
     const updated = [...formData.dropdownItems];
     updated[index][field] = value;
     setFormData({ ...formData, dropdownItems: updated });
@@ -259,15 +298,24 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
       });
       if (res.ok) {
         setEditingContact(false);
-        setMessage({ type: 'success', text: 'Contact information updated successfully!' });
+        setMessage({
+          type: "success",
+          text: "Contact information updated successfully!",
+        });
         window.location.reload();
       } else {
         const error = await res.json();
-        setMessage({ type: 'error', text: error.error || 'Failed to update contact information.' });
+        setMessage({
+          type: "error",
+          text: error.error || "Failed to update contact information.",
+        });
       }
     } catch (error) {
       console.error("Failed to update contact:", error);
-      setMessage({ type: 'error', text: 'Failed to update contact information. Please try again.' });
+      setMessage({
+        type: "error",
+        text: "Failed to update contact information. Please try again.",
+      });
     }
   };
 
@@ -276,36 +324,50 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
       {/* Toast Notification */}
       {message && (
         <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-5 duration-300">
-          <div className={`
+          <div
+            className={`
             flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg max-w-md
-            ${message.type === 'success' 
-              ? 'bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700' 
-              : 'bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700'}
-          `}>
-            <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center
-              ${message.type === 'success' 
-                ? 'bg-green-100 dark:bg-green-800' 
-                : 'bg-red-100 dark:bg-red-800'}
-            `}>
-              {message.type === 'success' ? (
+            ${
+              message.type === "success"
+                ? "bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700"
+                : "bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700"
+            }
+          `}
+          >
+            <div
+              className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center
+              ${
+                message.type === "success"
+                  ? "bg-green-100 dark:bg-green-800"
+                  : "bg-red-100 dark:bg-red-800"
+              }
+            `}
+            >
+              {message.type === "success" ? (
                 <Check className="w-3 h-3 text-green-600 dark:text-green-400" />
               ) : (
                 <AlertTriangle className="w-3 h-3 text-red-600 dark:text-red-400" />
               )}
             </div>
-            <p className={`text-sm font-medium
-              ${message.type === 'success' 
-                ? 'text-green-800 dark:text-green-200' 
-                : 'text-red-800 dark:text-red-200'}
-            `}>
+            <p
+              className={`text-sm font-medium
+              ${
+                message.type === "success"
+                  ? "text-green-800 dark:text-green-200"
+                  : "text-red-800 dark:text-red-200"
+              }
+            `}
+            >
               {message.text}
             </p>
             <button
               onClick={() => setMessage(null)}
               className={`ml-auto flex-shrink-0 p-1 rounded hover:bg-black/5 dark:hover:bg-white/5 transition-colors
-                ${message.type === 'success' 
-                  ? 'text-green-600 dark:text-green-400' 
-                  : 'text-red-600 dark:text-red-400'}
+                ${
+                  message.type === "success"
+                    ? "text-green-600 dark:text-green-400"
+                    : "text-red-600 dark:text-red-400"
+                }
               `}
             >
               <X className="w-4 h-4" />
@@ -355,7 +417,12 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
                     <input
                       type="text"
                       value={contactForm.phone}
-                      onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
+                      onChange={(e) =>
+                        setContactForm({
+                          ...contactForm,
+                          phone: e.target.value,
+                        })
+                      }
                       className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="061544761"
                     />
@@ -367,7 +434,12 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
                     <input
                       type="text"
                       value={contactForm.phoneDisplay}
-                      onChange={(e) => setContactForm({ ...contactForm, phoneDisplay: e.target.value })}
+                      onChange={(e) =>
+                        setContactForm({
+                          ...contactForm,
+                          phoneDisplay: e.target.value,
+                        })
+                      }
                       className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="(061) 544761, 570124"
                     />
@@ -380,7 +452,9 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
                   <input
                     type="email"
                     value={contactForm.email}
-                    onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                    onChange={(e) =>
+                      setContactForm({ ...contactForm, email: e.target.value })
+                    }
                     className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="info@pcm.edu.np"
                   />
@@ -393,7 +467,12 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
                     <input
                       type="url"
                       value={contactForm.facebookUrl}
-                      onChange={(e) => setContactForm({ ...contactForm, facebookUrl: e.target.value })}
+                      onChange={(e) =>
+                        setContactForm({
+                          ...contactForm,
+                          facebookUrl: e.target.value,
+                        })
+                      }
                       className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="https://www.facebook.com/..."
                     />
@@ -405,7 +484,12 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
                     <input
                       type="url"
                       value={contactForm.instagramUrl}
-                      onChange={(e) => setContactForm({ ...contactForm, instagramUrl: e.target.value })}
+                      onChange={(e) =>
+                        setContactForm({
+                          ...contactForm,
+                          instagramUrl: e.target.value,
+                        })
+                      }
                       className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="https://www.instagram.com/..."
                     />
@@ -416,7 +500,12 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
                     <input
                       type="checkbox"
                       checked={contactForm.showLanguageSwitcher}
-                      onChange={(e) => setContactForm({ ...contactForm, showLanguageSwitcher: e.target.checked })}
+                      onChange={(e) =>
+                        setContactForm({
+                          ...contactForm,
+                          showLanguageSwitcher: e.target.checked,
+                        })
+                      }
                       className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -448,19 +537,27 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-sm">
                   <Phone className="w-4 h-4 text-gray-400" />
-                  <span className="text-gray-900 dark:text-gray-100">{contact?.phoneDisplay || "Not set"}</span>
+                  <span className="text-gray-900 dark:text-gray-100">
+                    {contact?.phoneDisplay || "Not set"}
+                  </span>
                 </div>
                 <div className="flex items-center gap-3 text-sm">
                   <Mail className="w-4 h-4 text-gray-400" />
-                  <span className="text-gray-900 dark:text-gray-100">{contact?.email || "Not set"}</span>
+                  <span className="text-gray-900 dark:text-gray-100">
+                    {contact?.email || "Not set"}
+                  </span>
                 </div>
                 <div className="flex items-center gap-3 text-sm">
                   <FaFacebook className="w-4 h-4 text-gray-400" />
-                  <span className="text-gray-900 dark:text-gray-100 truncate">{contact?.facebookUrl || "Not set"}</span>
+                  <span className="text-gray-900 dark:text-gray-100 truncate">
+                    {contact?.facebookUrl || "Not set"}
+                  </span>
                 </div>
                 <div className="flex items-center gap-3 text-sm">
                   <FaInstagram className="w-4 h-4 text-gray-400" />
-                  <span className="text-gray-900 dark:text-gray-100 truncate">{contact?.instagramUrl || "Not set"}</span>
+                  <span className="text-gray-900 dark:text-gray-100 truncate">
+                    {contact?.instagramUrl || "Not set"}
+                  </span>
                 </div>
               </div>
             )}
@@ -486,7 +583,7 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
               Add Link
             </button>
           </div>
-          
+
           <div className="max-h-[600px] overflow-y-auto">
             <div className="p-4 space-y-3">
               {/* Create/Edit Form */}
@@ -501,7 +598,9 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
                         <input
                           type="text"
                           value={formData.label}
-                          onChange={(e) => setFormData({ ...formData, label: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({ ...formData, label: e.target.value })
+                          }
                           className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="Scholarships"
                         />
@@ -512,7 +611,12 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
                         </label>
                         <select
                           value={formData.type}
-                          onChange={(e) => setFormData({ ...formData, type: e.target.value as "simple" | "dropdown" })}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              type: e.target.value as "simple" | "dropdown",
+                            })
+                          }
                           className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
                           <option value="simple">Simple Link</option>
@@ -528,7 +632,9 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
                         <input
                           type="text"
                           value={formData.href}
-                          onChange={(e) => setFormData({ ...formData, href: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({ ...formData, href: e.target.value })
+                          }
                           className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="/scholarship"
                         />
@@ -553,14 +659,18 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
                             <input
                               type="text"
                               value={item.label}
-                              onChange={(e) => updateDropdownItem(idx, "label", e.target.value)}
+                              onChange={(e) =>
+                                updateDropdownItem(idx, "label", e.target.value)
+                              }
                               className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                               placeholder="Label"
                             />
                             <input
                               type="text"
                               value={item.href}
-                              onChange={(e) => updateDropdownItem(idx, "href", e.target.value)}
+                              onChange={(e) =>
+                                updateDropdownItem(idx, "href", e.target.value)
+                              }
                               className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                               placeholder="/url"
                             />
@@ -582,7 +692,12 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
                         </label>
                         <select
                           value={formData.status}
-                          onChange={(e) => setFormData({ ...formData, status: e.target.value as "active" | "inactive" })}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              status: e.target.value as "active" | "inactive",
+                            })
+                          }
                           className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
                           <option value="active">Active</option>
@@ -596,7 +711,12 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
                         <input
                           type="number"
                           value={formData.order}
-                          onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              order: parseInt(e.target.value),
+                            })
+                          }
                           className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                       </div>
@@ -610,7 +730,10 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
                             handleUpdate(editingId);
                           }
                         }}
-                        disabled={!formData.label || (formData.type === "simple" && !formData.href)}
+                        disabled={
+                          !formData.label ||
+                          (formData.type === "simple" && !formData.href)
+                        }
                         className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm font-medium"
                       >
                         <Check className="w-3 h-3" />
@@ -655,7 +778,9 @@ export default function TopBarManager({ links: initialLinks, contact: initialCon
                             {link.type === "simple" ? (
                               <span>{link.href}</span>
                             ) : (
-                              <span>{link.dropdownItems?.length || 0} dropdown items</span>
+                              <span>
+                                {link.dropdownItems?.length || 0} dropdown items
+                              </span>
                             )}
                             <span>Order: {link.order}</span>
                           </div>

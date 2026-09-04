@@ -79,7 +79,7 @@ export default function FacilitiesPageSettings({
           </h2>
           <p className="mt-1 mb-0 text-[0.9rem] text-[var(--admin-muted)]">
             Edit the sections of the public /about/facility page — hero, campus
-            section, the "designed for learning" split and CTA band. The
+            section, the &quot;designed for learning&quot; split and CTA band. The
             facility cards come from the Campus Facilities content manager.
           </p>
         </div>

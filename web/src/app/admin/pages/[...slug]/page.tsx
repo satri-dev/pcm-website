@@ -63,6 +63,18 @@ import MessagePageSettings from "../_components/message-page-settings";
 import { getMessagePageSettings } from "@/repositories/message-page-settings.repository";
 import ClubsPageSettings from "../_components/clubs-page-settings";
 import { getClubsPageSettings } from "@/repositories/clubs-page-settings.repository";
+import LifePageSettings from "../_components/life-page-settings";
+import { getLifePageSettings } from "@/repositories/life-page-settings.repository";
+import FeedbackPageSettings from "../_components/feedback-page-settings";
+import { getFeedbackPageSettings } from "@/repositories/feedback-page-settings.repository";
+import SurveyPageSettings from "../_components/survey-page-settings";
+import { getSurveyPageSettings } from "@/repositories/survey-page-settings.repository";
+import TestimonialPageSettings from "../_components/testimonial-page-settings";
+import { getTestimonialPageSettings } from "@/repositories/testimonial-page-settings.repository";
+import BlogPageSettings from "../_components/blog-page-settings";
+import { getBlogPageSettings } from "@/repositories/blog-page-settings.repository";
+import BlogArticleSettings from "../_components/blog-article-settings";
+import { getBlogArticleSettings } from "@/repositories/blog-article-settings.repository";
 
 interface RouteCtx {
   params: Promise<{ slug: string | string[] }>;
@@ -221,6 +233,32 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
           subtitle="Pages · Article detail layout"
         />
         <NewsArticleSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "blogs") {
+    const settings = await getBlogPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content & SEO"
+        />
+        <BlogPageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "blog-article") {
+    const settings = await getBlogArticleSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Article detail layout"
+        />
+        <BlogArticleSettings initial={settings} />
       </>
     );
   }
@@ -390,6 +428,58 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
           subtitle="Pages · Content & SEO"
         />
         <ClubsPageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "feedback") {
+    const settings = await getFeedbackPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content, SEO & dynamic form fields"
+        />
+        <FeedbackPageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "life") {
+    const settings = await getLifePageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content & SEO"
+        />
+        <LifePageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "survey") {
+    const settings = await getSurveyPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content, SEO & responder copy"
+        />
+        <SurveyPageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "testimonials") {
+    const settings = await getTestimonialPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content, SEO & submission copy"
+        />
+        <TestimonialPageSettings initial={settings} />
       </>
     );
   }

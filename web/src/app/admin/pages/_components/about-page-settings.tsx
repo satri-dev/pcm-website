@@ -10,6 +10,7 @@ import {
   type DiffItem,
   type AboutStat,
 } from "@/types/about-page-settings";
+import Link from "next/link";
 
 const API_BASE = "/api/admin/pages/about-settings";
 
@@ -846,9 +847,9 @@ export default function AboutPageSettings({
               The testimonial cards displayed in this section come from the
               homepage content manager — add, edit or remove them there.
             </p>
-            <a className="admin-btn mt-3" href="/admin/pages/home">
+            <Link className="admin-btn mt-3" href="/admin/pages/home">
               Manage Homepage Testimonials →
-            </a>
+            </Link>
           </div>
         </div>
       </div>

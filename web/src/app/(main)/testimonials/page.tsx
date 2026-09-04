@@ -1,29 +1,46 @@
 import type { Metadata } from "next";
 import TestimonialsClient from "./TestimonialsClient";
+import {
+  getApprovedTestimonials,
+  getTestimonialSettings,
+} from "@/lib/data/testimonials";
 
-export const metadata: Metadata = {
-  title: "Student Testimonials | Pokhara College of Management",
-  description:
-    "What students, graduates and parents say about Pokhara College of Management — real stories from the PCM community.",
-  alternates: { canonical: "/testimonials" },
-  openGraph: {
-    type: "website",
-    siteName: "Pokhara College of Management",
-    title: "Student Testimonials | Pokhara College of Management",
-    description:
-      "What students, graduates and parents say about Pokhara College of Management — real stories from the PCM community.",
-    locale: "en_US",
-    images: [{ url: "/images/hero-4.jpg" }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Student Testimonials | Pokhara College of Management",
-    description:
-      "What students, graduates and parents say about Pokhara College of Management — real stories from the PCM community.",
-    images: ["/images/hero-4.jpg"],
-  },
-};
+const SITE_NAME = "Pokhara College of Management";
 
-export default function TestimonialsPage() {
-  return <TestimonialsClient />;
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getTestimonialSettings();
+  const title = settings.seoTitle;
+  const description = settings.seoDescription;
+  return {
+    title,
+    description,
+    keywords: settings.seoKeywords,
+    alternates: { canonical: settings.canonical },
+    robots: {
+      index: settings.robotsIndex,
+      follow: settings.robotsFollow,
+    },
+    openGraph: {
+      type: "website",
+      siteName: SITE_NAME,
+      title,
+      description,
+      locale: "en_US",
+      images: settings.ogImage ? [{ url: settings.ogImage }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: settings.ogImage ? [settings.ogImage] : undefined,
+    },
+  };
+}
+
+export default async function TestimonialsPage() {
+  const [testimonials, settings] = await Promise.all([
+    getApprovedTestimonials(),
+    getTestimonialSettings(),
+  ]);
+  return <TestimonialsClient testimonials={testimonials} settings={settings} />;
 }

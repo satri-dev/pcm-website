@@ -1,17 +1,11 @@
 // src/types/notices.ts
 // Canonical schema for the "notices" collection
 
-export type NoticeCategory =
-  | "General"
-  | "Academic"
-  | "Examination"
-  | "Administrative"
-  | "Event"
-  | "Circular";
+export type NoticeCategory = string;
 
 export type NoticeStatus = "published" | "draft";
 
-export const NOTICE_CATEGORIES: readonly NoticeCategory[] = [
+export const NOTICE_CATEGORIES: readonly string[] = [
   "General",
   "Academic",
   "Examination",

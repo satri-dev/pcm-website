@@ -57,12 +57,22 @@ export default function ImageUpload({ onUpload, className }: ImageUploadProps) {
             className ||
             "inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#16285B] text-white font-semibold text-sm hover:bg-[#1e3a7a] transition-colors cursor-pointer"
           }
-        >
-          <Upload size={14} />
-          Upload Image
-        </button>
-      )}
-    </CldUploadWidget>
+        }}
+      >
+        {({ open }) => (
+          <button
+            type="button"
+            onClick={() => open()}
+            className={
+              className ||
+              "inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#16285B] text-white font-semibold text-sm hover:bg-[#1e3a7a] transition-colors cursor-pointer"
+            }
+          >
+            <Upload size={14} />
+            Upload Image
+          </button>
+        )}
+      </CldUploadWidget>
     </Suspense>
   );
 }

@@ -49,11 +49,14 @@ import {
   Megaphone,
   BadgeCheck,
   AlignJustify,
+  MessageSquare,
   type LucideIcon,
   DownloadIcon,
   UserCheck2,
   DollarSign,
   FileQuestionMark,
+  FileQuestionMarkIcon,
+  ClipboardList,
 } from "lucide-react";
 
 interface NavItem {
@@ -173,6 +176,7 @@ const pagesNav: PagesSectionNavItem[] = [
     ],
   },
   { label: "Clubs", href: "/admin/pages/clubs", icon: Sparkles, ready: true },
+  { label: "Feedback", href: "/admin/pages/feedback", icon: MessageSquare, ready: true },
   {
     label: "Alumni",
     href: "/admin/pages/alumni",
@@ -327,6 +331,30 @@ const navigation: NavSection[] = [
         href: "/admin/content/applications",
         icon: FileQuestionMark,
         badgeKey: "applications",
+      },
+      {
+        label: "Feedback",
+        href: "/admin/content/feedback",
+        icon: MessageSquare,
+        badgeKey: "feedback",
+      },
+      {
+        label: "Testimonials",
+        href: "/admin/content/testimonials",
+        icon: Quote,
+        badgeKey: "testimonials",
+      },
+      {
+        label: "Surveys",
+        href: "/admin/content/surveys",
+        icon: FileQuestionMarkIcon,
+        badgeKey: "surveys",
+      },
+      {
+        label: "Survey Responses",
+        href: "/admin/content/survey-responses",
+        icon: ClipboardList,
+        badgeKey: "surveyResponses",
       },
       {
         label: "Content Trash",

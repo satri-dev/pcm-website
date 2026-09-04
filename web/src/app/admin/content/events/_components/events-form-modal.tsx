@@ -9,7 +9,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { EventItem } from "@/types/events";
+import { EventItem, EventType } from "@/types/events";
 import { Save, X } from "lucide-react";
 import RichTextEditor from "../../../_components/editor/rich-text-editor";
 import ImageUpload from "@/components/cloudinary/ImageUpload";
@@ -26,7 +26,7 @@ const eventSchema = z.object({
       /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
       "Slug must contain only lowercase letters, numbers, and hyphens"
     ),
-  type: z.enum(["Workshop", "Seminar", "Festival", "Tour", "Sports"]),
+  type: z.string().min(1, "This field is required").max(100),
   date: z.string().min(1, "Date is required"),
   location: z.string().min(1, "Location is required"),
   seats: z.number().int().min(1, "At least 1 seat required"),
@@ -135,7 +135,7 @@ export default function EventsFormModal({
       id: event?.id || `event-${Date.now()}`,
       title: data.title,
       slug: data.slug,
-      type: data.type,
+      type: data.type as EventType,
       date: data.date,
       location: data.location,
       seats: data.seats,
@@ -194,14 +194,12 @@ export default function EventsFormModal({
                 <label htmlFor="event-type">
                   Type <span className="req">*</span>
                 </label>
-                <select id="event-type" {...register("type")}>
-                  <option value="">— Select —</option>
-                  <option value="Workshop">Workshop</option>
-                  <option value="Seminar">Seminar</option>
-                  <option value="Festival">Festival</option>
-                  <option value="Tour">Tour</option>
-                  <option value="Sports">Sports</option>
-                </select>
+                <input 
+                  id="event-type" 
+                  type="text"
+                  placeholder="e.g., Workshop, Seminar, Festival..."
+                  {...register("type")}
+                />
                 {errors.type && (
                   <div className="field__err">{errors.type.message}</div>
                 )}

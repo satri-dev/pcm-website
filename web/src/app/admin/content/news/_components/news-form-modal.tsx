@@ -9,7 +9,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { News } from "@/types/news";
+import { News, NewsCategory, NEWS_CATEGORIES } from "@/types/news";
 import { Save, X } from "lucide-react";
 import RichTextEditor from "../../../_components/editor/rich-text-editor";
 import ImageUpload from "@/components/cloudinary/ImageUpload";
@@ -22,7 +22,7 @@ const newsSchema = z.object({
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must contain only lowercase letters, numbers, and hyphens"),
   excerpt: z.string().min(1, "This field is required").max(1000, "Excerpt too long"),
   content: z.string().optional(),
-  category: z.enum(["News", "Event", "Student Blog", "Achievement"]),
+  category: z.string().min(1, "This field is required").max(100),
   image: z.string().optional(),
   author: z.string().min(1, "This field is required"),
   publishedAt: z.string().min(1, "This field is required"),
@@ -212,13 +212,12 @@ export default function NewsFormModal({
                 <label htmlFor="news-category">
                   Category <span className="req">*</span>
                 </label>
-                <select id="news-category" {...register("category")}>
-                  <option value="">— Select —</option>
-                  <option value="News">News</option>
-                  <option value="Event">Event</option>
-                  <option value="Student Blog">Student Blog</option>
-                  <option value="Achievement">Achievement</option>
-                </select>
+                <input 
+                  id="news-category" 
+                  type="text"
+                  placeholder="e.g., News, Event, Achievement..."
+                  {...register("category")}
+                />
                 {errors.category && (
                   <div className="field__err">{errors.category.message}</div>
                 )}

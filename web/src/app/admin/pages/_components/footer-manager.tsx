@@ -1,7 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Check, X, Plus, Edit, Trash2, AlertTriangle, Link as LinkIcon } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import {
+  Check,
+  X,
+  Plus,
+  Edit,
+  Trash2,
+  AlertTriangle,
+  Link as LinkIcon,
+} from "lucide-react";
 import Image from "next/image";
 import ImageUpload from "@/components/cloudinary/ImageUpload";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -18,7 +26,12 @@ interface DeleteDialogProps {
   onCancel: () => void;
 }
 
-function DeleteDialog({ isOpen, linkTitle, onConfirm, onCancel }: DeleteDialogProps) {
+function DeleteDialog({
+  isOpen,
+  linkTitle,
+  onConfirm,
+  onCancel,
+}: DeleteDialogProps) {
   if (!isOpen) return null;
 
   return (
@@ -33,14 +46,15 @@ function DeleteDialog({ isOpen, linkTitle, onConfirm, onCancel }: DeleteDialogPr
               Delete Footer Section
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Are you sure you want to delete this footer section? This action cannot be undone.
+              Are you sure you want to delete this footer section? This action
+              cannot be undone.
             </p>
           </div>
         </div>
-        
+
         <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3 mb-6">
           <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-            "{linkTitle}"
+            &quot;{linkTitle}&quot;
           </p>
         </div>
 
@@ -93,7 +107,11 @@ export default function FooterManager({ settings: initialSettings }: Props) {
   const [footerLinks, setFooterLinks] = useState<FooterLink[]>([]);
   const [isCreatingLink, setIsCreatingLink] = useState(false);
   const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
-  const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; linkId: string | null; linkTitle: string }>({
+  const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean;
+    linkId: string | null;
+    linkTitle: string;
+  }>({
     isOpen: false,
     linkId: null,
     linkTitle: "",
@@ -105,12 +123,25 @@ export default function FooterManager({ settings: initialSettings }: Props) {
     status: "active" as "active" | "inactive",
   });
 
-  // Fetch footer links
+  // Fetch footer links on mount
   useEffect(() => {
-    fetchFooterLinks();
+    const loadFooterLinks = async () => {
+      try {
+        const res = await fetch("/api/admin/footer/links");
+        if (res.ok) {
+          const data = await res.json();
+          setFooterLinks(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch footer links:", error);
+      }
+    };
+
+    loadFooterLinks();
   }, []);
 
-  const fetchFooterLinks = async () => {
+  // Reusable fetch function for other operations
+  const fetchFooterLinks = useCallback(async () => {
     try {
       const res = await fetch("/api/admin/footer/links");
       if (res.ok) {
@@ -120,7 +151,7 @@ export default function FooterManager({ settings: initialSettings }: Props) {
     } catch (error) {
       console.error("Failed to fetch footer links:", error);
     }
-  };
+  }, []);
 
   // Settings Handlers
   const handleLogoUpload = (result: { secure_url: string }) => {
@@ -171,7 +202,7 @@ export default function FooterManager({ settings: initialSettings }: Props) {
     setEditingLinkId(link.id);
     setLinkFormData({
       title: link.title,
-      links: link.links.map(l => ({ ...l, external: l.external ?? false })),
+      links: link.links.map((l) => ({ ...l, external: l.external ?? false })),
       order: link.order,
       status: link.status,
     });
@@ -191,7 +222,11 @@ export default function FooterManager({ settings: initialSettings }: Props) {
     });
   };
 
-  const updateLinkItem = (index: number, field: string, value: string | boolean) => {
+  const updateLinkItem = (
+    index: number,
+    field: string,
+    value: string | boolean,
+  ) => {
     const newLinks = [...linkFormData.links];
     newLinks[index] = { ...newLinks[index], [field]: value };
     setLinkFormData({ ...linkFormData, links: newLinks });
@@ -249,11 +284,14 @@ export default function FooterManager({ settings: initialSettings }: Props) {
 
   const confirmDelete = async () => {
     if (!deleteDialog.linkId) return;
-    
+
     try {
-      const res = await fetch(`/api/admin/footer/links/${deleteDialog.linkId}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(
+        `/api/admin/footer/links/${deleteDialog.linkId}`,
+        {
+          method: "DELETE",
+        },
+      );
       if (res.ok) {
         closeDeleteDialog();
         fetchFooterLinks();
@@ -290,7 +328,7 @@ export default function FooterManager({ settings: initialSettings }: Props) {
           <div className="p-6">
             <ScrollArea className="h-[500px]">
               <div className="space-y-4 pr-4">
-                  {/* Simplified form - only key fields */}
+                {/* Simplified form - only key fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -313,12 +351,17 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                           <input
                             type="url"
                             value={settingsData.logoUrl}
-                            onChange={(e) => setSettingsData({ ...settingsData, logoUrl: e.target.value })}
+                            onChange={(e) =>
+                              setSettingsData({
+                                ...settingsData,
+                                logoUrl: e.target.value,
+                              })
+                            }
                             className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             placeholder="https://res.cloudinary.com/..."
                           />
                           <div className="flex-shrink-0">
-                            <ImageUpload 
+                            <ImageUpload
                               onUpload={handleLogoUpload}
                               className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                             />
@@ -338,7 +381,12 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                     <input
                       type="text"
                       value={settingsData.tagline}
-                      onChange={(e) => setSettingsData({ ...settingsData, tagline: e.target.value })}
+                      onChange={(e) =>
+                        setSettingsData({
+                          ...settingsData,
+                          tagline: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
@@ -350,7 +398,12 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                     <input
                       type="text"
                       value={settingsData.phone}
-                      onChange={(e) => setSettingsData({ ...settingsData, phone: e.target.value })}
+                      onChange={(e) =>
+                        setSettingsData({
+                          ...settingsData,
+                          phone: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
@@ -362,7 +415,12 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                     <input
                       type="email"
                       value={settingsData.email}
-                      onChange={(e) => setSettingsData({ ...settingsData, email: e.target.value })}
+                      onChange={(e) =>
+                        setSettingsData({
+                          ...settingsData,
+                          email: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
@@ -374,7 +432,12 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                     <input
                       type="text"
                       value={settingsData.address}
-                      onChange={(e) => setSettingsData({ ...settingsData, address: e.target.value })}
+                      onChange={(e) =>
+                        setSettingsData({
+                          ...settingsData,
+                          address: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
@@ -386,7 +449,12 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                     <input
                       type="url"
                       value={settingsData.mapUrl}
-                      onChange={(e) => setSettingsData({ ...settingsData, mapUrl: e.target.value })}
+                      onChange={(e) =>
+                        setSettingsData({
+                          ...settingsData,
+                          mapUrl: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="https://maps.google.com/..."
                     />
@@ -394,7 +462,9 @@ export default function FooterManager({ settings: initialSettings }: Props) {
 
                   {/* Social Media Section */}
                   <div className="md:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Social Media Links</h4>
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                      Social Media Links
+                    </h4>
                   </div>
 
                   <div>
@@ -404,7 +474,12 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                     <input
                       type="url"
                       value={settingsData.facebookUrl}
-                      onChange={(e) => setSettingsData({ ...settingsData, facebookUrl: e.target.value })}
+                      onChange={(e) =>
+                        setSettingsData({
+                          ...settingsData,
+                          facebookUrl: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="https://facebook.com/..."
                     />
@@ -417,7 +492,12 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                     <input
                       type="url"
                       value={settingsData.instagramUrl}
-                      onChange={(e) => setSettingsData({ ...settingsData, instagramUrl: e.target.value })}
+                      onChange={(e) =>
+                        setSettingsData({
+                          ...settingsData,
+                          instagramUrl: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="https://instagram.com/..."
                     />
@@ -430,7 +510,12 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                     <input
                       type="url"
                       value={settingsData.linkedinUrl}
-                      onChange={(e) => setSettingsData({ ...settingsData, linkedinUrl: e.target.value })}
+                      onChange={(e) =>
+                        setSettingsData({
+                          ...settingsData,
+                          linkedinUrl: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="https://linkedin.com/..."
                     />
@@ -443,7 +528,12 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                     <input
                       type="text"
                       value={settingsData.copyrightText}
-                      onChange={(e) => setSettingsData({ ...settingsData, copyrightText: e.target.value })}
+                      onChange={(e) =>
+                        setSettingsData({
+                          ...settingsData,
+                          copyrightText: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
@@ -455,7 +545,12 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                     <input
                       type="text"
                       value={settingsData.whatsappNumber}
-                      onChange={(e) => setSettingsData({ ...settingsData, whatsappNumber: e.target.value })}
+                      onChange={(e) =>
+                        setSettingsData({
+                          ...settingsData,
+                          whatsappNumber: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="97761544761"
                     />
@@ -463,7 +558,9 @@ export default function FooterManager({ settings: initialSettings }: Props) {
 
                   {/* Opening Hours Section */}
                   <div className="md:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Opening Hours</h4>
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                      Opening Hours
+                    </h4>
                   </div>
 
                   <div>
@@ -473,7 +570,12 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                     <input
                       type="text"
                       value={settingsData.weekdaysHours}
-                      onChange={(e) => setSettingsData({ ...settingsData, weekdaysHours: e.target.value })}
+                      onChange={(e) =>
+                        setSettingsData({
+                          ...settingsData,
+                          weekdaysHours: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Sun-Fri: 6:00 AM - 5:00 PM"
                     />
@@ -486,7 +588,12 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                     <input
                       type="text"
                       value={settingsData.saturdayHours}
-                      onChange={(e) => setSettingsData({ ...settingsData, saturdayHours: e.target.value })}
+                      onChange={(e) =>
+                        setSettingsData({
+                          ...settingsData,
+                          saturdayHours: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Sat: 6:00 AM - 1:00 PM"
                     />
@@ -494,7 +601,9 @@ export default function FooterManager({ settings: initialSettings }: Props) {
 
                   {/* Newsletter Section */}
                   <div className="md:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Newsletter Subscription</h4>
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                      Newsletter Subscription
+                    </h4>
                   </div>
 
                   <div className="md:col-span-2">
@@ -504,7 +613,12 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                     <input
                       type="text"
                       value={settingsData.newsletterTitle}
-                      onChange={(e) => setSettingsData({ ...settingsData, newsletterTitle: e.target.value })}
+                      onChange={(e) =>
+                        setSettingsData({
+                          ...settingsData,
+                          newsletterTitle: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="STAY IN THE LOOP"
                     />
@@ -516,7 +630,12 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                     </label>
                     <textarea
                       value={settingsData.newsletterDescription}
-                      onChange={(e) => setSettingsData({ ...settingsData, newsletterDescription: e.target.value })}
+                      onChange={(e) =>
+                        setSettingsData({
+                          ...settingsData,
+                          newsletterDescription: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       rows={2}
                       placeholder="Monthly highlights & events, scholarships and results. No spam, unsubscribe anytime."
@@ -530,7 +649,12 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                     <input
                       type="text"
                       value={settingsData.newsletterButtonText}
-                      onChange={(e) => setSettingsData({ ...settingsData, newsletterButtonText: e.target.value })}
+                      onChange={(e) =>
+                        setSettingsData({
+                          ...settingsData,
+                          newsletterButtonText: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Subscribe"
                     />
@@ -538,7 +662,9 @@ export default function FooterManager({ settings: initialSettings }: Props) {
 
                   {/* Affiliation Section */}
                   <div className="md:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Affiliation</h4>
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                      Affiliation
+                    </h4>
                   </div>
 
                   <div className="md:col-span-2">
@@ -548,7 +674,12 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                     <input
                       type="text"
                       value={settingsData.affiliationText}
-                      onChange={(e) => setSettingsData({ ...settingsData, affiliationText: e.target.value })}
+                      onChange={(e) =>
+                        setSettingsData({
+                          ...settingsData,
+                          affiliationText: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Affiliated to Tribhuvan University"
                     />
@@ -561,7 +692,12 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                     <input
                       type="url"
                       value={settingsData.affiliationBadge}
-                      onChange={(e) => setSettingsData({ ...settingsData, affiliationBadge: e.target.value })}
+                      onChange={(e) =>
+                        setSettingsData({
+                          ...settingsData,
+                          affiliationBadge: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="https://res.cloudinary.com/..."
                     />
@@ -569,7 +705,9 @@ export default function FooterManager({ settings: initialSettings }: Props) {
 
                   {/* Developer Info Section */}
                   <div className="md:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Developer Info</h4>
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                      Developer Info
+                    </h4>
                   </div>
 
                   <div>
@@ -579,7 +717,12 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                     <input
                       type="text"
                       value={settingsData.developerName}
-                      onChange={(e) => setSettingsData({ ...settingsData, developerName: e.target.value })}
+                      onChange={(e) =>
+                        setSettingsData({
+                          ...settingsData,
+                          developerName: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Your Company Name"
                     />
@@ -592,7 +735,12 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                     <input
                       type="url"
                       value={settingsData.developerUrl}
-                      onChange={(e) => setSettingsData({ ...settingsData, developerUrl: e.target.value })}
+                      onChange={(e) =>
+                        setSettingsData({
+                          ...settingsData,
+                          developerUrl: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="https://yourwebsite.com"
                     />
@@ -621,7 +769,8 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                 Footer Link Sections ({footerLinks.length})
               </h2>
               <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Add link sections like "Quick Links", "Programs", "Resources", etc.
+                Add link sections like &quot;Quick Links&quot;,
+                &quot;Programs&quot;, &quot;Resources&quot;, etc.
               </p>
             </div>
             <button
@@ -632,7 +781,7 @@ export default function FooterManager({ settings: initialSettings }: Props) {
               Add Section
             </button>
           </div>
-          
+
           <ScrollArea className="h-[600px]">
             <div className="p-4 space-y-3 pr-4">
               {/* Create Form */}
@@ -658,7 +807,12 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                         <input
                           type="text"
                           value={linkFormData.title}
-                          onChange={(e) => setLinkFormData({ ...linkFormData, title: e.target.value })}
+                          onChange={(e) =>
+                            setLinkFormData({
+                              ...linkFormData,
+                              title: e.target.value,
+                            })
+                          }
                           className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="Quick Links"
                         />
@@ -670,7 +824,12 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                         <input
                           type="number"
                           value={linkFormData.order}
-                          onChange={(e) => setLinkFormData({ ...linkFormData, order: parseInt(e.target.value) })}
+                          onChange={(e) =>
+                            setLinkFormData({
+                              ...linkFormData,
+                              order: parseInt(e.target.value),
+                            })
+                          }
                           className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                       </div>
@@ -680,7 +839,12 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                         </label>
                         <select
                           value={linkFormData.status}
-                          onChange={(e) => setLinkFormData({ ...linkFormData, status: e.target.value as "active" | "inactive" })}
+                          onChange={(e) =>
+                            setLinkFormData({
+                              ...linkFormData,
+                              status: e.target.value as "active" | "inactive",
+                            })
+                          }
                           className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
                           <option value="active">Active</option>
@@ -708,14 +872,18 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                             <input
                               type="text"
                               value={link.label}
-                              onChange={(e) => updateLinkItem(index, "label", e.target.value)}
+                              onChange={(e) =>
+                                updateLinkItem(index, "label", e.target.value)
+                              }
                               className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                               placeholder="Link Label"
                             />
                             <input
                               type="text"
                               value={link.href}
-                              onChange={(e) => updateLinkItem(index, "href", e.target.value)}
+                              onChange={(e) =>
+                                updateLinkItem(index, "href", e.target.value)
+                              }
                               className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                               placeholder="/about"
                             />
@@ -723,7 +891,13 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                               <input
                                 type="checkbox"
                                 checked={link.external}
-                                onChange={(e) => updateLinkItem(index, "external", e.target.checked)}
+                                onChange={(e) =>
+                                  updateLinkItem(
+                                    index,
+                                    "external",
+                                    e.target.checked,
+                                  )
+                                }
                                 className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                               />
                               External
@@ -772,12 +946,18 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                           <div className="col-span-2">
                             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                              Section Title <span className="text-red-500">*</span>
+                              Section Title{" "}
+                              <span className="text-red-500">*</span>
                             </label>
                             <input
                               type="text"
                               value={linkFormData.title}
-                              onChange={(e) => setLinkFormData({ ...linkFormData, title: e.target.value })}
+                              onChange={(e) =>
+                                setLinkFormData({
+                                  ...linkFormData,
+                                  title: e.target.value,
+                                })
+                              }
                               className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                           </div>
@@ -788,7 +968,12 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                             <input
                               type="number"
                               value={linkFormData.order}
-                              onChange={(e) => setLinkFormData({ ...linkFormData, order: parseInt(e.target.value) })}
+                              onChange={(e) =>
+                                setLinkFormData({
+                                  ...linkFormData,
+                                  order: parseInt(e.target.value),
+                                })
+                              }
                               className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                           </div>
@@ -798,7 +983,14 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                             </label>
                             <select
                               value={linkFormData.status}
-                              onChange={(e) => setLinkFormData({ ...linkFormData, status: e.target.value as "active" | "inactive" })}
+                              onChange={(e) =>
+                                setLinkFormData({
+                                  ...linkFormData,
+                                  status: e.target.value as
+                                    | "active"
+                                    | "inactive",
+                                })
+                              }
                               className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             >
                               <option value="active">Active</option>
@@ -822,18 +1014,33 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                           </div>
                           <div className="space-y-2">
                             {linkFormData.links.map((linkItem, index) => (
-                              <div key={index} className="flex gap-2 items-center">
+                              <div
+                                key={index}
+                                className="flex gap-2 items-center"
+                              >
                                 <input
                                   type="text"
                                   value={linkItem.label}
-                                  onChange={(e) => updateLinkItem(index, "label", e.target.value)}
+                                  onChange={(e) =>
+                                    updateLinkItem(
+                                      index,
+                                      "label",
+                                      e.target.value,
+                                    )
+                                  }
                                   className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                   placeholder="Link Label"
                                 />
                                 <input
                                   type="text"
                                   value={linkItem.href}
-                                  onChange={(e) => updateLinkItem(index, "href", e.target.value)}
+                                  onChange={(e) =>
+                                    updateLinkItem(
+                                      index,
+                                      "href",
+                                      e.target.value,
+                                    )
+                                  }
                                   className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                   placeholder="/about"
                                 />
@@ -841,7 +1048,13 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                                   <input
                                     type="checkbox"
                                     checked={linkItem.external}
-                                    onChange={(e) => updateLinkItem(index, "external", e.target.checked)}
+                                    onChange={(e) =>
+                                      updateLinkItem(
+                                        index,
+                                        "external",
+                                        e.target.checked,
+                                      )
+                                    }
                                     className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                   />
                                   External
@@ -890,17 +1103,22 @@ export default function FooterManager({ settings: initialSettings }: Props) {
                             <span className="text-xs text-gray-500 dark:text-gray-400">
                               (Order: {link.order})
                             </span>
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                              link.status === "active" 
-                                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                                : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
-                            }`}>
+                            <span
+                              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                link.status === "active"
+                                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                  : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                              }`}
+                            >
                               {link.status}
                             </span>
                           </div>
                           <div className="space-y-1">
                             {link.links.map((item, idx) => (
-                              <div key={idx} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                              <div
+                                key={idx}
+                                className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"
+                              >
                                 <LinkIcon className="w-3 h-3 flex-shrink-0" />
                                 <span className="truncate">
                                   {item.label} → {item.href}
