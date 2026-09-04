@@ -57,6 +57,7 @@ function clean<T extends Record<string, unknown>>(obj: T): T {
 
 export interface ListGalleryOptions {
   category?: Gallery["category"];
+  type?: Gallery["type"];
   search?: string;
   page?: number;
   pageSize?: number;
@@ -66,13 +67,16 @@ export interface ListGalleryOptions {
 
 export async function listGallery(options: ListGalleryOptions = {}) {
   const db = await getDb();
-  const { category, search, page = 1, pageSize = 8, sort, includeDeleted } = options;
+  const { category, type, search, page = 1, pageSize = 8, sort, includeDeleted } = options;
 
   const filter: Filter<GalleryDocument> = {};
   if (!includeDeleted) {
     filter.deletedAt = { $exists: false };
   }
   if (category) filter.category = category;
+  if (type) {
+    filter.$or = [{ type }, { type: { $exists: false } }];
+  }
   if (search) {
     const rx = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
     filter.$or = [
