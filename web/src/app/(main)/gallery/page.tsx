@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import GalleryClient from "./GalleryClient";
 import { listGallery } from "@/repositories/gallery.repository";
 import { getGalleryPageSettings } from "@/repositories/gallery-settings.repository";
-import { adaptGalleryItems } from "@/feature/gallery/lib/adapt";
+import { adaptPaginatedAlbums, adaptPaginatedVideos } from "@/feature/gallery/lib/adapt";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 export const metadata: Metadata = {
   title: "Campus Gallery | Pokhara College of Management",
@@ -43,18 +44,51 @@ export const metadata: Metadata = {
   },
 };
 
-async function GalleryContent() {
+interface GalleryPageProps {
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+const ALBUM_PAGE_SIZE = 9;
+const VIDEO_PAGE_SIZE = 9;
+
+async function GalleryContent({ searchParams }: GalleryPageProps) {
   "use cache";
   cacheLife("content");
+  cacheTag(CACHE_TAGS.galleryList);
 
-  const [{ items }, settings] = await Promise.all([
-    listGallery({ pageSize: 100 }),
+  const params = await searchParams;
+  const albumPage = Math.max(1, Number(params?.albumPage) || 1);
+  const videoPage = Math.max(1, Number(params?.videoPage) || 1);
+
+  // Two separate DB-level paginated queries — MongoDB skip/limit
+  const [albumResult, videoResult, settings] = await Promise.all([
+    listGallery({
+      type: "photo",
+      page: albumPage,
+      pageSize: ALBUM_PAGE_SIZE,
+    }),
+    listGallery({
+      type: "video",
+      page: videoPage,
+      pageSize: VIDEO_PAGE_SIZE,
+    }),
     getGalleryPageSettings(),
   ]);
 
-  const { albums, photos, videos } = adaptGalleryItems(items);
+  const { albums, photos: allPhotos } = adaptPaginatedAlbums(
+    albumResult.items,
+    albumResult
+  );
+  const videos = adaptPaginatedVideos(videoResult.items, videoResult);
 
-  return <GalleryClient albums={albums} photos={photos} videos={videos} settings={settings} />;
+  return (
+    <GalleryClient
+      albums={albums}
+      allPhotos={allPhotos}
+      videos={videos}
+      settings={settings}
+    />
+  );
 }
 
 function GalleryLoading() {
@@ -63,7 +97,7 @@ function GalleryLoading() {
       <div className="animate-pulse">
         <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => (
+          {[...Array(9)].map((_, i) => (
             <div key={i} className="h-64 bg-gray-200 rounded"></div>
           ))}
         </div>
@@ -72,10 +106,10 @@ function GalleryLoading() {
   );
 }
 
-export default function GalleryPage() {
+export default function GalleryPage({ searchParams }: GalleryPageProps) {
   return (
     <Suspense fallback={<GalleryLoading />}>
-      <GalleryContent />
+      <GalleryContent searchParams={searchParams} />
     </Suspense>
   );
 }

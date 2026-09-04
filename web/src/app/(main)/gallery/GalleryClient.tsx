@@ -1,22 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useGallery } from "@/feature/gallery/hooks/useGallery";
 import FilterBar from "@/feature/gallery/components/FilterBar";
 import AlbumGrid from "@/feature/gallery/components/AlbumGrid";
 import PhotoGrid from "@/feature/gallery/components/PhotoGrid";
 import Lightbox from "@/feature/gallery/components/Lightbox";
 import VideoGrid from "@/feature/gallery/components/VideoGrid";
+import Pagination from "@/feature/gallery/components/Pagination";
 import { getVideoCategories } from "@/feature/gallery/data/gallery";
 import type { GalleryPhoto, GalleryAlbum, GalleryVideo } from "@/feature/gallery/types";
+import type { PaginatedResult } from "@/feature/gallery/lib/adapt";
 import type { GalleryPageSettings } from "@/types/gallery-settings";
 import "./gallery.css";
 
 interface GalleryClientProps {
-  albums: GalleryAlbum[];
-  photos: GalleryPhoto[];
-  videos: GalleryVideo[];
+  albums: PaginatedResult<GalleryAlbum>;
+  allPhotos: GalleryPhoto[];
+  videos: PaginatedResult<GalleryVideo>;
   settings: GalleryPageSettings;
 }
 
@@ -35,7 +37,7 @@ const ArrowRight = () => (
 
 export default function GalleryClient({
   albums,
-  photos,
+  allPhotos,
   videos,
   settings,
 }: GalleryClientProps) {
@@ -49,17 +51,17 @@ export default function GalleryClient({
     filteredAlbums,
     openAlbumId, openAlbum, closeAlbum, albumPhotos,
     lightbox, openLightbox, closeLightbox, lightboxNext, lightboxPrev,
-  } = useGallery({ albums, photos });
+  } = useGallery({ albums: albums.items, photos: allPhotos });
 
-  /* Video category options derived from videos */
-  const videoCategories = useMemo(() => getVideoCategories(videos), [videos]);
+  /* Video category options derived from current page videos */
+  const videoCategories = useMemo(() => getVideoCategories(videos.items), [videos.items]);
 
   /* Filtered videos for the current category */
   const filteredVideos = useMemo(() => {
     return videoCategory === "all"
-      ? videos
-      : videos.filter((v) => v.category === videoCategory);
-  }, [videos, videoCategory]);
+      ? videos.items
+      : videos.items.filter((v) => v.category === videoCategory);
+  }, [videos.items, videoCategory]);
 
   /* Reveal-on-scroll */
   useEffect(() => {
@@ -76,10 +78,10 @@ export default function GalleryClient({
     );
     items.forEach((el) => io.observe(el));
     return () => io.disconnect();
-  }, [openAlbumId, tab, category, filteredAlbums, videos, activeVideo, videoCategory, filteredVideos]); // re-run when view OR filter changes so new cards get observed
+  }, [openAlbumId, tab, category, filteredAlbums, videos, activeVideo, videoCategory, filteredVideos]);
 
   /* Find album title for the open album */
-  const openAlbum_ = albums.find((a) => a.id === openAlbumId);
+  const openAlbum_ = albums.items.find((a) => a.id === openAlbumId);
 
   return (
     <div ref={rootRef} className="pcm-gallery">
@@ -150,7 +152,16 @@ export default function GalleryClient({
                   onPhotoClick={(photo) => openLightbox(photo, albumPhotos)}
                 />
               ) : (
-                <AlbumGrid albums={filteredAlbums} onOpen={openAlbum} />
+                <>
+                  <AlbumGrid albums={filteredAlbums} onOpen={openAlbum} />
+                  <Suspense>
+                    <Pagination
+                      currentPage={albums.page}
+                      totalPages={albums.pages}
+                      paramKey="albumPage"
+                    />
+                  </Suspense>
+                </>
               )}
             </>
           )}
@@ -158,7 +169,7 @@ export default function GalleryClient({
           {/* Videos tab */}
           {tab === "videos" && (
             <>
-              {videos.length === 0 ? (
+              {videos.total === 0 ? (
                 <div className="gal-empty reveal">
                   <VideoEmptyIcon />
                   <p>No video albums listed at this time — check back soon.</p>
@@ -178,6 +189,14 @@ export default function GalleryClient({
                     onPlay={setActiveVideo}
                     activeVideo={activeVideo}
                   />
+
+                  <Suspense>
+                    <Pagination
+                      currentPage={videos.page}
+                      totalPages={videos.pages}
+                      paramKey="videoPage"
+                    />
+                  </Suspense>
                 </>
               )}
             </>

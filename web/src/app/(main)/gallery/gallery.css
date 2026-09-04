@@ -573,3 +573,34 @@
 }
 .pcm-gallery .gal-video-item__title { color:#fff; font-size:.95rem; font-weight:600; }
 
+/* ── Pagination ── */
+.gal-pagination {
+  display:flex; align-items:center; justify-content:center; gap:.4rem;
+  margin-top:2.5rem; padding-bottom:.5rem;
+}
+.gal-pagination__btn {
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:2.25rem; height:2.25rem; padding:0 .5rem;
+  border:1px solid var(--line-2); border-radius:var(--r-sm);
+  background:var(--surface); color:var(--body-c);
+  font-size:.82rem; font-weight:600; cursor:pointer;
+  transition: background .2s, color .2s, border-color .2s;
+}
+.gal-pagination__btn:hover:not(:disabled):not(.active) {
+  background:var(--surface-tint); border-color:var(--brand-600);
+}
+.gal-pagination__btn.active {
+  background:var(--brand-600); color:#fff; border-color:var(--brand-600);
+}
+.gal-pagination__btn:disabled {
+  opacity:.35; cursor:not-allowed;
+}
+.gal-pagination__btn svg {
+  width:1rem; height:1rem;
+}
+.gal-pagination__ellipsis {
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:2rem; height:2.25rem;
+  color:var(--muted-c); font-size:.85rem; user-select:none;
+}
+

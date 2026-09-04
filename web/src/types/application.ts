@@ -16,6 +16,10 @@ export const APPLICATIONS_COLLECTION = "applications";
 // The admission form is fully dynamic — admins can add/edit/remove fields at
 // every step — so we capture the whole form plus structured sections plus
 // uploaded file URLs. Extra unknown keys are preserved as-is.
+
+/** A single uploaded file entry — either a plain URL string (legacy) or an object with url + original name. */
+export type FileEntry = string | { url: string; name: string };
+
 export interface ApplicationSubmission {
   // Convenience columns surfaced in the admin table
   program?: string;
@@ -32,9 +36,9 @@ export interface ApplicationSubmission {
   permanent?: Record<string, string>;
   temporary?: Record<string, string>;
   academic?: Record<string, string>;
-  // Uploaded file URLs
-  documents?: string[];
-  paymentSlips?: string[];
+  // Uploaded file entries — plain URLs (legacy) or {url, name} objects
+  documents?: FileEntry[];
+  paymentSlips?: FileEntry[];
   agreedToTerms?: boolean;
   // Complete raw form state (all fixed + dynamic field values keyed by field id)
   form?: Record<string, unknown>;

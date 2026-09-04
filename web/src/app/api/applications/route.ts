@@ -5,6 +5,7 @@ import {
 } from "@/repositories/application.repository";
 import { getPageContentBySlug } from "@/repositories/page-content.repository";
 import type { AdmissionPageContent } from "@/types/page-content";
+import type { FileEntry } from "@/types/application";
 import {
   type FieldDef,
   validateFieldValue,
@@ -102,11 +103,11 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const documents = Array.isArray(body.documents)
-    ? (body.documents as string[])
+  const documents: FileEntry[] = Array.isArray(body.documents)
+    ? (body.documents as FileEntry[])
     : [];
-  const paymentSlips = Array.isArray(body.paymentSlips)
-    ? (body.paymentSlips as string[])
+  const paymentSlips: FileEntry[] = Array.isArray(body.paymentSlips)
+    ? (body.paymentSlips as FileEntry[])
     : [];
 
   if (documents.length === 0) {

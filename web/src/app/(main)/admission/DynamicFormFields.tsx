@@ -13,6 +13,8 @@ interface DynamicFormFieldsProps {
   onUpdate: (fieldId: string, value: any) => void;
 }
 
+type FieldItem = AdmissionPageContent["applicationForm"]["personalInfoFields"][number];
+
 const inputClass =
   "w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm bg-white placeholder:text-gray-400 transition-all focus:outline-none focus:border-[#16285B] focus:ring-2 focus:ring-[#16285B]/10";
 
@@ -30,7 +32,7 @@ function HelpText({ text }: { text?: string }) {
 }
 
 export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFieldsProps) {
-  const [uploaded, setUploaded] = useState<Record<string, string>>({});
+  const [uploaded, setUploaded] = useState<Record<string, { url: string; name: string }>>({});
 
   if (!fields || fields.length === 0) {
     return (
@@ -40,6 +42,38 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
     );
   }
 
+  // Build a lookup of location fields by grouping them via a shared label suffix
+  // e.g. "Province (Permanent)", "District (Permanent)" share suffix "(Permanent)"
+  function getLocationGroup(field: FieldItem): { role: "province" | "district" | "city" | "ward"; groupId: string; fields: Record<string, FieldItem> } | null {
+    const ll = field.label.toLowerCase();
+    const isProvince = ll.includes("province");
+    const isDistrict = ll.includes("district");
+    const isCity = ll.includes("city") || ll.includes("municipality");
+    const isWard = ll.includes("ward");
+    if (!isProvince && !isDistrict && !isCity && !isWard) return null;
+
+    const role: "province" | "district" | "city" | "ward" = isProvince ? "province" : isDistrict ? "district" : isCity ? "city" : "ward";
+
+    // Extract shared suffix like "(Permanent)" or "(Temporary)" to group related fields
+    const suffixMatch = field.label.match(/\(([^)]+)\)\s*$/);
+    const suffix = suffixMatch ? suffixMatch[1].toLowerCase() : "";
+
+    // Find all fields that share the same suffix and are location fields
+    const groupFields: Record<string, FieldItem> = {};
+    for (const f of fields) {
+      const fl = f.label.toLowerCase();
+      const fSuffixMatch = f.label.match(/\(([^)]+)\)\s*$/);
+      const fSuffix = fSuffixMatch ? fSuffixMatch[1].toLowerCase() : "";
+      if (fSuffix !== suffix) continue;
+      if (fl.includes("province")) groupFields.province = f;
+      else if (fl.includes("district")) groupFields.district = f;
+      else if (fl.includes("city") || fl.includes("municipality")) groupFields.city = f;
+      else if (fl.includes("ward")) groupFields.ward = f;
+    }
+
+    return { role, groupId: suffix, fields: groupFields };
+  }
+
   return (
     <div className="grid sm:grid-cols-2 gap-x-5 gap-y-5">
       {fields
@@ -47,9 +81,10 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
         .sort((a, b) => a.order - b.order)
         .map((field) => {
           const value = formData[field.id];
+          const group = getLocationGroup(field);
 
           // --- Nepal Province cascading select ---
-          if (field.id.endsWith("_province")) {
+          if (group?.role === "province") {
             return (
               <div key={field.id}>
                 <Label field={field} />
@@ -58,7 +93,8 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
                   onChange={(e) => {
                     const province = e.target.value;
                     onUpdate(field.id, province);
-                    if (province) onUpdate(`${field.id.replace("_province", "_district")}`, "");
+                    const districtField = group.fields.district;
+                    if (districtField) onUpdate(districtField.id, "");
                   }}
                   required={field.required}
                   className={inputClass}
@@ -75,10 +111,10 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
             );
           }
 
-          // --- Nepal District cascading select (depends on matching province) ---
-          if (field.id.endsWith("_district")) {
-            const provinceId = `${field.id.replace("_district", "_province")}`;
-            const selectedProvince = formData[provinceId] as string | undefined;
+          // --- Nepal District cascading select ---
+          if (group?.role === "district") {
+            const provinceField = group.fields.province;
+            const selectedProvince = provinceField ? (formData[provinceField.id] as string | undefined) : undefined;
             const districts = districtsForProvince(selectedProvince);
             return (
               <div key={field.id}>
@@ -87,8 +123,9 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
                   value={value || ""}
                   onChange={(e) => {
                     onUpdate(field.id, e.target.value);
-                    if (field.id.endsWith("_district") && e.target.value) {
-                      onUpdate(`${field.id.replace("_district", "_city")}`, "");
+                    if (e.target.value) {
+                      const cityField = group.fields.city;
+                      if (cityField) onUpdate(cityField.id, "");
                     }
                   }}
                   required={field.required}
@@ -109,12 +146,12 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
             );
           }
 
-          // --- Nepal Municipality cascading select (depends on matching district) ---
-          if (field.id.endsWith("_city")) {
-            const districtId = `${field.id.replace("_city", "_district")}`;
-            const provinceId = `${field.id.replace("_city", "_province")}`;
-            const selectedProvince = formData[provinceId] as string | undefined;
-            const selectedDistrict = formData[districtId] as string | undefined;
+          // --- Nepal Municipality cascading select ---
+          if (group?.role === "city") {
+            const provinceField = group.fields.province;
+            const districtField = group.fields.district;
+            const selectedProvince = provinceField ? (formData[provinceField.id] as string | undefined) : undefined;
+            const selectedDistrict = districtField ? (formData[districtField.id] as string | undefined) : undefined;
             const municipalities = municipalitiesForDistrict(selectedProvince, selectedDistrict);
             return (
               <div key={field.id}>
@@ -124,7 +161,8 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
                   onChange={(e) => {
                     onUpdate(field.id, e.target.value);
                     if (e.target.value) {
-                      onUpdate(`${field.id.replace("_city", "_ward")}`, "");
+                      const wardField = group.fields.ward;
+                      if (wardField) onUpdate(wardField.id, "");
                     }
                   }}
                   required={field.required}
@@ -145,14 +183,14 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
             );
           }
 
-          // --- Nepal Ward cascading select (depends on matching municipality) ---
-          if (field.id.endsWith("_ward")) {
-            const provinceId = `${field.id.replace("_ward", "_province")}`;
-            const districtId = `${field.id.replace("_ward", "_district")}`;
-            const cityId = `${field.id.replace("_ward", "_city")}`;
-            const selectedProvince = formData[provinceId] as string | undefined;
-            const selectedDistrict = formData[districtId] as string | undefined;
-            const selectedMunicipality = formData[cityId] as string | undefined;
+          // --- Nepal Ward cascading select ---
+          if (group?.role === "ward") {
+            const provinceField = group.fields.province;
+            const districtField = group.fields.district;
+            const cityField = group.fields.city;
+            const selectedProvince = provinceField ? (formData[provinceField.id] as string | undefined) : undefined;
+            const selectedDistrict = districtField ? (formData[districtField.id] as string | undefined) : undefined;
+            const selectedMunicipality = cityField ? (formData[cityField.id] as string | undefined) : undefined;
             const wards = wardsForMunicipality(selectedProvince, selectedDistrict, selectedMunicipality);
             return (
               <div key={field.id}>
@@ -370,10 +408,12 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
 
           // --- File / Image upload ---
           if (field.fieldType === "file" || field.fieldType === "image") {
-            const currentUrl = uploaded[field.id] || (typeof value === "string" ? value : "");
+            const current = uploaded[field.id];
+            const currentUrl = current?.url || (typeof value === "string" ? value : "");
+            const currentName = current?.name || (currentUrl ? currentUrl.split("/").pop() || "Uploaded file" : "");
 
-            const handleCloudinaryUpload = (url: string) => {
-              setUploaded((prev) => ({ ...prev, [field.id]: url }));
+            const handleCloudinaryUpload = (url: string, name: string) => {
+              setUploaded((prev) => ({ ...prev, [field.id]: { url, name } }));
               onUpdate(field.id, url);
             };
 
@@ -382,9 +422,9 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
                 <Label field={field} />
                 <div className="space-y-3">
                   {field.fieldType === "image" ? (
-                    <ImageUpload onUpload={(r) => handleCloudinaryUpload(r.secure_url)} />
+                    <ImageUpload onUpload={(r) => handleCloudinaryUpload(r.secure_url, r.original_filename)} />
                   ) : (
-                    <DocumentUpload onUpload={(r) => handleCloudinaryUpload(r.secure_url)} />
+                    <DocumentUpload onUpload={(r) => handleCloudinaryUpload(r.secure_url, r.original_filename)} />
                   )}
                   {currentUrl ? (
                     <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5">
@@ -399,11 +439,18 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
                         rel="noreferrer"
                         className="text-sm text-[#16285B] truncate flex-1 min-w-0 hover:underline"
                       >
-                        {currentUrl}
+                        {currentName}
                       </a>
                       <button
                         type="button"
-                        onClick={() => handleCloudinaryUpload("")}
+                        onClick={() => {
+                          setUploaded((prev) => {
+                            const next = { ...prev };
+                            delete next[field.id];
+                            return next;
+                          });
+                          onUpdate(field.id, "");
+                        }}
                         className="text-red-500 hover:text-red-700 text-lg leading-none px-1"
                         aria-label={`Remove ${field.label}`}
                       >
