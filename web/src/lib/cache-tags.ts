@@ -65,6 +65,7 @@ export const CACHE_TAGS = {
   surveysList: "surveys-list",
   survey: (slug: string) => `survey-${slug}`,
   surveysSettings: "surveys-settings",
+  surveyResponses: "survey-responses",
 
   // News
   newsList: "news-list",

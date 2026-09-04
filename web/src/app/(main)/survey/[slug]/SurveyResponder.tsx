@@ -133,7 +133,7 @@ export default function SurveyResponder({
       const res = await fetch("/api/survey", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ surveyId: survey.slug, respondent, answers }),
+        body: JSON.stringify({ surveySlug: survey.slug, surveyId: survey.id, respondent, answers }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
@@ -164,7 +164,10 @@ export default function SurveyResponder({
           <div className="sv-form-header">
             <span className="eyebrow">{settings.detailEyebrow}</span>
             <h2>{survey.title}</h2>
-            <p>{survey.excerpt || survey.content}</p>
+            <div
+              className="prose prose-sm max-w-none sv-form-description"
+              dangerouslySetInnerHTML={{ __html: survey.excerpt || survey.content }}
+            />
           </div>
 
           {serverError && (
@@ -189,17 +192,24 @@ export default function SurveyResponder({
               />
             </div>
 
-            {survey.questions.map((q, i) => (
-              <Renderer
-                key={q.id}
-                q={q}
-                index={i}
-                answers={answers}
-                onAnswer={setAnswer}
-                onToggle={toggleCheckbox}
-                visibilityMap={visibilityMap}
-              />
-            ))}
+            {(() => {
+              let visibleIndex = 0;
+              return survey.questions.map((q) => {
+                const isNumbered = isNumberedType(q.type);
+                if (isNumbered) visibleIndex += 1;
+                return (
+                  <Renderer
+                    key={q.id}
+                    q={q}
+                    index={isNumbered ? visibleIndex : -1}
+                    answers={answers}
+                    onAnswer={setAnswer}
+                    onToggle={toggleCheckbox}
+                    visibilityMap={visibilityMap}
+                  />
+                );
+              });
+            })()}
 
             <button
               type="submit"
@@ -219,6 +229,15 @@ export default function SurveyResponder({
 // ── Recursive field renderer ──
 function fieldValue(q: SurveyQuestion, answers: Answers) {
   return answers[q.id];
+}
+
+const NUMBERED_TYPES = new Set<SurveyQuestion["type"]>([
+  "text", "textarea", "number", "email", "phone", "url",
+  "radio", "checkbox", "select", "rating", "date", "time",
+]);
+
+function isNumberedType(t: SurveyQuestion["type"]): boolean {
+  return NUMBERED_TYPES.has(t);
 }
 
 function Renderer({
@@ -263,18 +282,25 @@ function Renderer({
             {q.hint && <p className="sv-question__hint">{q.hint}</p>}
           </div>
         )}
-        {(q.children || []).map((child, ci) => (
-          <Renderer
-            key={child.id}
-            q={child}
-            index={ci}
-            answers={answers}
-            onAnswer={onAnswer}
-            onToggle={onToggle}
-            visibilityMap={visibilityMap}
-            depth={depth + 1}
-          />
-        ))}
+        {(q.children || []).length > 0 && (() => {
+          let childIndex = 0;
+          return (q.children || []).map((child) => {
+            const isNumbered = isNumberedType(child.type);
+            if (isNumbered) childIndex += 1;
+            return (
+              <Renderer
+                key={child.id}
+                q={child}
+                index={isNumbered ? childIndex : -1}
+                answers={answers}
+                onAnswer={onAnswer}
+                onToggle={onToggle}
+                visibilityMap={visibilityMap}
+                depth={depth + 1}
+              />
+            );
+          });
+        })()}
       </div>
     );
   }

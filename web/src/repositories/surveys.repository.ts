@@ -140,6 +140,17 @@ export async function getPublishedSurveyBySlug(slug: string) {
   return doc ? fromDocument(doc) : null;
 }
 
+// Admin helper: fetch any non-deleted survey by slug regardless of status
+// (used by the responses dashboard to render answer schemas even when a
+// survey was later unpublished).
+export async function getSurveyBySlug(slug: string) {
+  const db = await getDb();
+  const doc = await db
+    .collection<SurveyDocument>(SURVEY_COLLECTION)
+    .findOne({ slug, deletedAt: { $exists: false } });
+  return doc ? fromDocument(doc) : null;
+}
+
 export async function createSurvey(input: SurveyCreateInput) {
   const db = await getDb();
   const doc = toDocument(input);

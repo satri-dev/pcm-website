@@ -1,20 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSurveyResponse } from "@/repositories/survey-responses.repository";
+import {
+  createSurveyResponse,
+  ensureSurveyResponseIndexes,
+} from "@/repositories/survey-responses.repository";
 
+// Public endpoint — intentionally unauthenticated so any visitor can submit.
+// The POST is intentionally fast: indexes are ensured once, then we do a single
+// indexed survey lookup + a single insert (no auth round-trips, no heavy work).
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { surveyId, answers, respondent } = body;
+    // The responder posts `surveySlug` (falls back to the legacy `surveyId`
+    // field which historically carried the slug).
+    const surveySlug = (body.surveySlug ?? body.surveyId ?? "").trim();
+    const answers = body.answers;
 
-    if (!surveyId?.trim())
+    if (!surveySlug)
       return NextResponse.json({ success: false, error: "Survey is required." }, { status: 400 });
     if (!answers || typeof answers !== "object")
       return NextResponse.json({ success: false, error: "Answers are required." }, { status: 400 });
 
+    await ensureSurveyResponseIndexes();
+
     const created = await createSurveyResponse({
-      surveyId: String(surveyId),
-      respondent: typeof respondent === "string" ? respondent : undefined,
-      answers: answers as Record<string, string | string[] | number | number[]>,
+      surveySlug,
+      respondent: typeof body.respondent === "string" ? body.respondent : undefined,
+      answers,
     });
 
     if (!created) {
@@ -25,7 +36,8 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ success: true, message: "Response recorded. Thank you!" });
-  } catch {
+  } catch (err) {
+    console.error("[survey] POST failed:", err);
     return NextResponse.json({ success: false, error: "Something went wrong." }, { status: 500 });
   }
 }

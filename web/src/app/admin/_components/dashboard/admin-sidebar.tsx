@@ -56,6 +56,7 @@ import {
   DollarSign,
   FileQuestionMark,
   FileQuestionMarkIcon,
+  ClipboardList,
 } from "lucide-react";
 
 interface NavItem {
@@ -342,6 +343,12 @@ const navigation: NavSection[] = [
         href: "/admin/content/surveys",
         icon: FileQuestionMarkIcon,
         badgeKey: "surveys",
+      },
+      {
+        label: "Survey Responses",
+        href: "/admin/content/survey-responses",
+        icon: ClipboardList,
+        badgeKey: "surveyResponses",
       },
       {
         label: "Content Trash",

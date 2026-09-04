@@ -33,10 +33,18 @@ function fmtDeadline(d?: string) {
   return dt.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+const NUMBERED_TYPES = new Set<Survey["questions"][number]["type"]>([
+  "text", "textarea", "number", "email", "phone", "url",
+  "radio", "checkbox", "select", "rating", "date", "time",
+]);
+
 function countQuestions(questions: Survey["questions"]): number {
   if (!questions) return 0;
   return questions.reduce(
-    (acc, q) => acc + (q.label ? 1 : 0) + countQuestions(q.children ?? []),
+    (acc, q) =>
+      acc +
+      (NUMBERED_TYPES.has(q.type) ? 1 : 0) +
+      countQuestions(q.children ?? []),
     0
   );
 }
@@ -51,7 +59,10 @@ function SurveyCard({ survey }: { survey: Survey }) {
         <span className="sv-card__cat">{survey.category}</span>
       </div>
       <h3 className="sv-card__title">{survey.title}</h3>
-      <p className="sv-card__desc">{survey.excerpt || survey.content}</p>
+      <div
+        className="prose prose-sm max-w-none sv-card__desc"
+        dangerouslySetInnerHTML={{ __html: survey.excerpt || survey.content }}
+      />
       <div className="sv-card__meta">
         <span className="sv-card__meta-item"><ClockIcon /> ~{survey.timeToRead || 1} min</span>
         <span className="sv-card__meta-item">{n} questions</span>
