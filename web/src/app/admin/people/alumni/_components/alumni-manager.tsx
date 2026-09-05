@@ -8,9 +8,9 @@ import AlumniViewModal from "./alumni-view-modal";
 import { useState } from "react";
 import { Plus, RefreshCw } from "lucide-react";
 
-interface AlumniManagerProps { initialData?: Alumni[]; }
+interface AlumniManagerProps { initialData?: Alumni[]; programCodes?: string[]; }
 
-export default function AlumniManager({ initialData }: AlumniManagerProps) {
+export default function AlumniManager({ initialData, programCodes }: AlumniManagerProps) {
   const { alumni, loading, error, refresh, createAlumni, updateAlumni, deleteAlumni } = useAlumni({ initialData });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Alumni | null>(null);
@@ -50,7 +50,7 @@ export default function AlumniManager({ initialData }: AlumniManagerProps) {
           {error ? <div className="p-6 text-[var(--admin-red)]">{error}</div> : <AlumniTable alumni={alumni} onAdd={handleAdd} onView={handleView} onEdit={handleEdit} onDelete={handleDelete} />}
         </div>
       </div>
-      <AlumniFormModal open={isModalOpen} onOpenChange={setIsModalOpen} alumni={editingItem} onSave={handleSave} saving={saving} />
+      <AlumniFormModal open={isModalOpen} onOpenChange={setIsModalOpen} alumni={editingItem} onSave={handleSave} saving={saving} programCodes={programCodes} />
       <AlumniViewModal open={isViewOpen} onOpenChange={setIsViewOpen} alumni={viewingItem} />
     </main>
   );

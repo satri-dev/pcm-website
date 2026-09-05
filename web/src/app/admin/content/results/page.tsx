@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import PageHeader from "../../_components/dashboard/page-header";
 import ResultsManager from "./_components/results-manager";
 import { listResults } from "@/repositories/results.repository";
+import { getProgramsList } from "@/lib/data/programs";
 import { connection } from "next/server";
 
 export const metadata: Metadata = {
@@ -14,12 +15,16 @@ export const metadata: Metadata = {
 
 export default async function ResultsPage() {
   await connection();
-  const { items } = await listResults({ pageSize: 50 });
+  const [{ items }, programs] = await Promise.all([
+    listResults({ pageSize: 50 }),
+    getProgramsList({ pageSize: 50 }),
+  ]);
+  const programCodes = programs.items.map((p) => p.code);
 
   return (
     <>
       <PageHeader title="Results" subtitle="Content · Results" />
-      <ResultsManager initialData={items} />
+      <ResultsManager initialData={items} programCodes={programCodes} />
     </>
   );
 }

@@ -73,7 +73,7 @@ export default function FacultyFormModal({ open, onOpenChange, faculty, onSave, 
           <div className="modal__body">
             <div className="form-grid">
               <div className={fv("name")}><label>Full name <span className="req">*</span></label><input type="text" {...register("name")} />{errors.name && <div className="field__err">{errors.name.message}</div>}</div>
-              <div className={fv("role")}><label>Role <span className="req">*</span></label><select {...register("role")}><option value="">— Select —</option>{[...new Set([...(faculty?.role ? [faculty.role] : []), ...FACULTY_ROLES])].map((r) => <option key={r} value={r}>{r}</option>)}</select>{errors.role && <div className="field__err">{errors.role.message}</div>}</div>
+              <div className={fv("role")}><label>Role <span className="req">*</span></label><input type="text" list="faculty-role-list" placeholder="e.g. Principal, BCSIT Coordinator, …" {...register("role")} /><datalist id="faculty-role-list">{[...new Set([...(faculty?.role ? [faculty.role] : []), ...FACULTY_ROLES])].map((r) => <option key={r} value={r} />)}</datalist>{errors.role && <div className="field__err">{errors.role.message}</div>}</div>
               <div className={fv("group")}><label>Group <span className="req">*</span></label><select {...register("group")}><option value="">— Select —</option>{FACULTY_GROUPS.map((g) => <option key={g} value={g}>{g}</option>)}</select>{errors.group && <div className="field__err">{errors.group.message}</div>}</div>
 
               <div className={`field field--full`}>

@@ -6,7 +6,7 @@ import {
   ensureBlogIndexes,
   listBlogs,
 } from "@/repositories/blog.repository";
-import { BLOG_CATEGORIES, BLOG_STATUSES } from "@/app/admin/media/blogs/types/blog";
+import { BLOG_STATUSES } from "@/app/admin/media/blogs/types/blog";
 import { requireApiSession } from "@/core/lib/api-guard";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 
@@ -14,16 +14,7 @@ const createSchema = z.object({
   slug: z.string().max(120).optional(),
   title: z.string().min(3).max(200),
   author: z.string().min(2).max(100),
-  category: z.enum([
-    "Career",
-    "Finance",
-    "Technology",
-    "Student Life",
-    "Admissions",
-    "Events",
-    "Achievement",
-    "Other",
-  ]),
+  category: z.string().min(1).max(100),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date"),
   status: z.enum(["published", "draft"]),
   excerpt: z.string().min(10),
@@ -49,7 +40,7 @@ export async function GET(request: NextRequest) {
     page,
     pageSize,
     search: search || undefined,
-    category: BLOG_CATEGORIES.find((c) => c === category) || undefined,
+    category: category || undefined,
     status: BLOG_STATUSES.find((s) => s === status) || undefined,
   });
 

@@ -1,5 +1,5 @@
-export type AlumniProgram = "BBA" | "BCSIT" | "BBA-Finance";
-export type AlumniSector = "Banking & Finance" | "Technology" | "Education" | "Entrepreneurship";
+export type AlumniProgram = string;
+export type AlumniSector = string;
 
 export const ALUMNI_PROGRAMS: readonly AlumniProgram[] = ["BBA", "BCSIT", "BBA-Finance"];
 export const ALUMNI_SECTORS: readonly AlumniSector[] = ["Banking & Finance", "Technology", "Education", "Entrepreneurship"];

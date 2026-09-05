@@ -1,12 +1,7 @@
 // src/types/facilities.ts
 // Canonical schema for the "facilities" collection
 
-export type FacilityCategory =
-  | "Learning"
-  | "Library"
-  | "IT"
-  | "Sports"
-  | "Student Life";
+export type FacilityCategory = string;
 
 export type FacilityStatus = "published" | "draft";
 

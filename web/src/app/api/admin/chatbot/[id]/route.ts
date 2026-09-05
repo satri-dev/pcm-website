@@ -12,13 +12,12 @@ import {
 } from "@/repositories/chatbot.repository";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 import {
-  CHATBOT_CHANNELS,
   ChatbotChannel,
   ChatbotUpdateInput,
 } from "@/app/admin/system/chat-bot/types/chatbot";
 
 const updateSchema = z.object({
-  channel: z.enum(CHATBOT_CHANNELS as unknown as [string, ...string[]]).optional(),
+  channel: z.string().min(1).max(100).optional(),
   question: z.string().min(3).max(300).optional(),
   keywords: z.array(z.string()).min(1).optional(),
   answer: z.string().min(1).max(10000).optional(),

@@ -6,15 +6,15 @@ import {
   ensureAlumniIndexes,
   listAlumni,
 } from "@/repositories/alumni.repository";
-import { ALUMNI_SECTORS, ALUMNI_PROGRAMS, type AlumniCreateInput } from "@/types/alumni";
+import { type AlumniCreateInput } from "@/types/alumni";
 import { requireApiSession } from "@/core/lib/api-guard";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 
 const createSchema = z.object({
   name: z.string().min(2).max(200),
   batch: z.string().min(1).max(50),
-  program: z.enum(ALUMNI_PROGRAMS as unknown as [string, ...string[]]),
-  sector: z.enum(ALUMNI_SECTORS as unknown as [string, ...string[]]),
+  program: z.string().min(1).max(100),
+  sector: z.string().min(1).max(100),
   role: z.string().min(1).max(200),
   location: z.string().optional(),
   photo: z.string().optional(),
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     page,
     pageSize,
     search: search || undefined,
-    sector: ALUMNI_SECTORS.find((s) => s === sector) || undefined,
+    sector: sector || undefined,
   });
 
   return NextResponse.json(result);

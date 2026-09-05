@@ -6,7 +6,7 @@ import {
   getAlumniById,
   updateAlumni,
 } from "@/repositories/alumni.repository";
-import { ALUMNI_SECTORS, ALUMNI_PROGRAMS, type AlumniUpdateInput } from "@/types/alumni";
+import { type AlumniUpdateInput } from "@/types/alumni";
 import { requireApiSession } from "@/core/lib/api-guard";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 
@@ -14,8 +14,8 @@ const updateSchema = z
   .object({
     name: z.string().min(2).max(200),
     batch: z.string().min(1).max(50),
-    program: z.enum(ALUMNI_PROGRAMS as unknown as [string, ...string[]]),
-    sector: z.enum(ALUMNI_SECTORS as unknown as [string, ...string[]]),
+    program: z.string().min(1).max(100),
+    sector: z.string().min(1).max(100),
     role: z.string().min(1).max(200),
     location: z.string(),
     photo: z.string(),

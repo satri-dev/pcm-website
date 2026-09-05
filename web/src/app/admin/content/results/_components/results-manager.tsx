@@ -11,9 +11,13 @@ import { SoftDeleteDialog } from "@/components/shared/SoftDeleteDialog";
 
 interface ResultsManagerProps {
   initialData?: Result[];
+  programCodes?: string[];
 }
 
-export default function ResultsManager({ initialData }: ResultsManagerProps) {
+export default function ResultsManager({
+  initialData,
+  programCodes,
+}: ResultsManagerProps) {
   const {
     results,
     loading,
@@ -142,6 +146,7 @@ export default function ResultsManager({ initialData }: ResultsManagerProps) {
         result={editingResult}
         onSave={handleSaveResult}
         saving={saving}
+        programCodes={programCodes}
       />
 
       <SoftDeleteDialog

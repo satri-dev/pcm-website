@@ -24,7 +24,7 @@ const blogSchema = z.object({
     .max(120)
     .regex(slugRe, "Slug must be lowercase letters, numbers and hyphens"),
   author: z.string().min(2, "Author is required"),
-  category: z.enum(["Career", "Finance", "Technology", "Student Life", "Admissions", "Events", "Achievement", "Other"]),
+  category: z.string().min(1, "Category is required").max(100),
   date: z.string().min(1, "Date is required"),
   status: z.enum(["published", "draft"]),
   excerpt: z.string().min(10, "Excerpt must be at least 10 characters"),
@@ -279,12 +279,18 @@ export default function BlogFormModal({
                 <label htmlFor="blog-category">
                   Category <span className="req">*</span>
                 </label>
-                <select id="blog-category" {...register("category")}>
-                  <option value="">— Select —</option>
+                <input
+                  id="blog-category"
+                  type="text"
+                  list="blog-category-list"
+                  placeholder="e.g. Career, Finance, …"
+                  {...register("category")}
+                />
+                <datalist id="blog-category-list">
                   {BLOG_CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
+                    <option key={cat} value={cat} />
                   ))}
-                </select>
+                </datalist>
                 {errors.category && (
                   <div className="field__err">{errors.category.message}</div>
                 )}

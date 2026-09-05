@@ -6,7 +6,7 @@ import {
   ensureResultIndexes,
   listResults,
 } from "@/repositories/results.repository";
-import { RESULT_PROGRAMS, RESULT_STATUSES } from "@/types/results";
+import { RESULT_STATUSES } from "@/types/results";
 import { requireApiSession } from "@/core/lib/api-guard";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 
@@ -15,7 +15,7 @@ const createSchema = z.object({
   slug: z
     .string()
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Invalid slug"),
-  program: z.enum(["BBA", "BCSIT", "BBA-Finance"]),
+  program: z.string().min(1).max(100),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date"),
   status: z.enum(["published", "draft"]),
   fileUrl: z.string().optional(),
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     pageSize,
     search: search || undefined,
     status: RESULT_STATUSES.find((s) => s === status) || undefined,
-    program: RESULT_PROGRAMS.find((p) => p === program) || undefined,
+    program: program || undefined,
   });
 
   return NextResponse.json(result);

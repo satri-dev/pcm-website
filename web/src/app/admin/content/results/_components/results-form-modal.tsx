@@ -9,7 +9,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Result } from "@/types/results";
+import { Result, RESULT_PROGRAMS } from "@/types/results";
 import { Save, X, FileText } from "lucide-react";
 import DocumentUpload from "@/components/cloudinary/DocumentUpload";
 
@@ -25,7 +25,7 @@ const resultSchema = z.object({
       /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
       "Slug must contain only lowercase letters, numbers, and hyphens"
     ),
-  program: z.enum(["BBA", "BCSIT", "BBA-Finance"]),
+  program: z.string().min(1, "Program is required").max(100),
   date: z.string().min(1, "Date is required"),
   status: z.enum(["published", "draft"]),
   fileUrl: z.string().optional(),
@@ -40,6 +40,7 @@ interface ResultsFormModalProps {
   result: Result | null;
   onSave: (result: Result) => void;
   saving?: boolean;
+  programCodes?: string[];
 }
 
 function todayISO() {
@@ -52,6 +53,7 @@ export default function ResultsFormModal({
   result,
   onSave,
   saving = false,
+  programCodes = [],
 }: ResultsFormModalProps) {
   const [fileError, setFileError] = useState("");
 
@@ -183,12 +185,20 @@ export default function ResultsFormModal({
                 <label htmlFor="result-program">
                   Program <span className="req">*</span>
                 </label>
-                <select id="result-program" {...register("program")}>
-                  <option value="">— Select —</option>
-                  <option value="BBA">BBA</option>
-                  <option value="BCSIT">BCSIT</option>
-                  <option value="BBA-Finance">BBA-Finance</option>
-                </select>
+                <input
+                  id="result-program"
+                  type="text"
+                  list="result-program-list"
+                  placeholder="e.g. BBA, BCSIT, …"
+                  {...register("program")}
+                />
+                <datalist id="result-program-list">
+                  {[...new Set([...programCodes, ...RESULT_PROGRAMS])].map(
+                    (code) => (
+                      <option key={code} value={code} />
+                    )
+                  )}
+                </datalist>
                 {errors.program && (
                   <div className="field__err">{errors.program.message}</div>
                 )}

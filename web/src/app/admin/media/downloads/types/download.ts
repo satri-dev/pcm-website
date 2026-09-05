@@ -1,12 +1,4 @@
-export type DownloadCategory =
-  | "Forms"
-  | "Syllabus"
-  | "Reports"
-  | "Certificates"
-  | "Brochures"
-  | "Applications"
-  | "Fee Structures"
-  | "Others";
+export type DownloadCategory = string;
 
 export const DOWNLOAD_CATEGORIES: readonly DownloadCategory[] = [
   "Forms",

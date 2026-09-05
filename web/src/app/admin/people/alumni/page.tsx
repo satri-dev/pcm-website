@@ -1,5 +1,6 @@
 import PageHeader from "../../_components/dashboard/page-header";
 import AlumniManager from "./_components/alumni-manager";
+import { getProgramsList } from "@/lib/data/programs";
 
 export const metadata = {
   title: "Alumni Management",
@@ -9,10 +10,13 @@ export const metadata = {
 };
 
 export default async function AlumniPage() {
+  const programs = await getProgramsList({ pageSize: 100 });
+  const programCodes = programs.items.map((p) => p.code);
+
   return (
     <>
       <PageHeader title="Alumni" subtitle="People · Graduates" />
-      <AlumniManager />
+      <AlumniManager programCodes={programCodes} />
     </>
   );
 }

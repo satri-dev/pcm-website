@@ -1,10 +1,4 @@
-export type CampusMapCategory =
-  | "Academic"
-  | "Administration"
-  | "Student Life"
-  | "Sports"
-  | "Library"
-  | "IT";
+export type CampusMapCategory = string;
 
 export type CampusMapStatus = "published" | "draft";
 

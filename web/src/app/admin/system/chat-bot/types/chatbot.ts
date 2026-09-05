@@ -1,11 +1,6 @@
 import { ObjectId } from "mongodb";
 
-export type ChatbotChannel =
-  | "Admission"
-  | "Program"
-  | "Support"
-  | "Fee"
-  | "General";
+export type ChatbotChannel = string;
 
 export const CHATBOT_CHANNELS: readonly ChatbotChannel[] = [
   "Admission",

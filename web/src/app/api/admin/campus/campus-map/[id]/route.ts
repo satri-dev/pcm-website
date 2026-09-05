@@ -19,7 +19,7 @@ function revalidateCampusMap() {
 const updateSchema = z
   .object({
     name: z.string().min(2).max(200),
-    category: z.enum(["Academic", "Administration", "Student Life", "Sports", "Library", "IT"]),
+    category: z.string().min(1).max(100),
     icon: z.string().min(1).max(20),
     positionX: z.number().min(0).max(100),
     positionY: z.number().min(0).max(100),

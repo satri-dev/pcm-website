@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Alumni, ALUMNI_SECTORS } from "@/types/alumni";
+import { Alumni } from "@/types/alumni";
 import { Eye, Pencil, Trash2, Search, GraduationCap } from "lucide-react";
 
 interface AlumniTableProps {
@@ -41,7 +41,7 @@ export default function AlumniTable({ alumni, onAdd, onView, onEdit, onDelete }:
           <SelectTrigger className="w-48"><SelectValue placeholder="All sectors" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All sectors</SelectItem>
-            {ALUMNI_SECTORS.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
+            {[...new Set(alumni.map((a) => a.sector))].map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
           </SelectContent>
         </Select>
         <div className="text-sm text-[var(--admin-muted)] ml-auto"><b>{filtered.length}</b> total</div>

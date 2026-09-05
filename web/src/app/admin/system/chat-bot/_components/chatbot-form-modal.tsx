@@ -14,7 +14,7 @@ import { Save, X, Plus } from "lucide-react";
 import RichTextEditor from "../../../_components/editor/rich-text-editor";
 
 const chatbotSchema = z.object({
-  channel: z.enum(CHATBOT_CHANNELS as unknown as [string, ...string[]]),
+  channel: z.string().min(1, "Channel is required").max(100),
   question: z.string().min(3, "Question must be at least 3 characters").max(300),
   keywords: z
     .array(z.string())
@@ -160,13 +160,18 @@ export default function ChatbotFormModal({
                 <label htmlFor="chatbot-channel">
                   Channel <span className="req">*</span>
                 </label>
-                <select id="chatbot-channel" {...register("channel")}>
+                <input
+                  id="chatbot-channel"
+                  type="text"
+                  list="chatbot-channel-list"
+                  placeholder="e.g. Admission, Program, …"
+                  {...register("channel")}
+                />
+                <datalist id="chatbot-channel-list">
                   {CHATBOT_CHANNELS.map((ch) => (
-                    <option key={ch} value={ch}>
-                      {ch}
-                    </option>
+                    <option key={ch} value={ch} />
                   ))}
-                </select>
+                </datalist>
                 {errors.channel && (
                   <div className="field__err">{errors.channel.message}</div>
                 )}

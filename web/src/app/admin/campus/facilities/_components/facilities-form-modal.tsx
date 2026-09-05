@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { FacilityItem } from "../types/facilities";
+import { FacilityItem, FACILITY_CATEGORIES } from "../types/facilities";
 import { Save, X } from "lucide-react";
 import RichTextEditor from "../../../_components/editor/rich-text-editor";
 import ImageUpload from "@/components/cloudinary/ImageUpload";
@@ -15,7 +15,7 @@ const facilitySchema = z.object({
     .string()
     .min(2, "Name must be at least 2 characters")
     .max(200, "Name is too long"),
-  category: z.enum(["Learning", "Library", "IT", "Sports", "Student Life"]),
+  category: z.string().min(1, "Category is required").max(100),
   icon: z.string().min(1, "Icon is required").max(20, "Icon is too long"),
   image: z.string().optional(),
   description: z.string().min(1, "Description is required"),
@@ -160,13 +160,18 @@ export default function FacilitiesFormModal({
                 <label htmlFor="facility-category">
                   Category <span className="req">*</span>
                 </label>
-                <select id="facility-category" {...register("category")}>
-                  <option value="Learning">Learning</option>
-                  <option value="Library">Library</option>
-                  <option value="IT">IT</option>
-                  <option value="Sports">Sports</option>
-                  <option value="Student Life">Student Life</option>
-                </select>
+                <input
+                  id="facility-category"
+                  type="text"
+                  list="facility-category-list"
+                  placeholder="e.g. Learning, Library, …"
+                  {...register("category")}
+                />
+                <datalist id="facility-category-list">
+                  {FACILITY_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat} />
+                  ))}
+                </datalist>
                 {errors.category && (
                   <div className="field__err">{errors.category.message}</div>
                 )}
