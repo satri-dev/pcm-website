@@ -291,6 +291,12 @@ const navigation: NavSection[] = [
         badgeKey: "news",
       },
       {
+        label: "Student Blog",
+        href: "/admin/content/blog-student",
+        icon: Pencil,
+        badgeKey: "blogStudent",
+      },
+      {
         label: "Notices",
         href: "/admin/content/notices",
         icon: AlertCircle,
