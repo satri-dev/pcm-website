@@ -51,10 +51,14 @@ function extractFromFields(fields: DynamicField[], form: Record<string, any>, ta
     phone: ["phone", "mobile", "contact", "phone_number"],
     program: ["programme", "program"],
     shift: ["shift"],
+    gender: ["gender"],
+    dob: ["dob", "date_of_birth", "birth_date"],
+    nationality: ["nationality", "national"],
+    date_option: ["date_option"],
   };
   const targets = patterns[target] || [];
   let matchedId: string | null = null;
-  let score = -1;
+  let score = 0;
   for (const f of fields) {
     const id = (f.id || "").toLowerCase();
     const label = (f.label || "").toLowerCase();
