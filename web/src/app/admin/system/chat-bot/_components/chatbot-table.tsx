@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ChatbotEntry, CHATBOT_CHANNELS } from "../types/chatbot";
+import { ChatbotEntry } from "../types/chatbot";
 import { Eye, Pencil, Trash2, Search, RefreshCw } from "lucide-react";
 
 interface ChatbotTableProps {
@@ -109,7 +109,7 @@ export default function ChatbotTable({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All channels</SelectItem>
-            {CHATBOT_CHANNELS.map((ch) => (
+            {[...new Set(entries.map((e) => e.channel))].map((ch) => (
               <SelectItem key={ch} value={ch}>
                 {ch}
               </SelectItem>

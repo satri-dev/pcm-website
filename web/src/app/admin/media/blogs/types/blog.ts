@@ -1,4 +1,4 @@
-export type BlogCategory = "Career" | "Finance" | "Technology" | "Student Life" | "Admissions" | "Events" | "Achievement" | "Other";
+export type BlogCategory = string;
 
 export const BLOG_CATEGORIES: readonly BlogCategory[] = [
   "Career",

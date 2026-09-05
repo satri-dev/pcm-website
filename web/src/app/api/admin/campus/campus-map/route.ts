@@ -7,7 +7,6 @@ import {
   listCampusMap,
 } from "@/repositories/campus-map.repository";
 import {
-  CAMPUS_MAP_CATEGORIES,
   CAMPUS_MAP_STATUSES,
 } from "@/app/admin/campus/campus-map/types/campus";
 import { requireApiSession } from "@/core/lib/api-guard";
@@ -15,7 +14,7 @@ import { CACHE_TAGS } from "@/lib/cache-tags";
 
 const createSchema = z.object({
   name: z.string().min(2).max(200),
-  category: z.enum(["Academic", "Administration", "Student Life", "Sports", "Library", "IT"]),
+  category: z.string().min(1).max(100),
   icon: z.string().min(1).max(20),
   positionX: z.number().min(0).max(100),
   positionY: z.number().min(0).max(100),
@@ -41,7 +40,7 @@ export async function GET(request: NextRequest) {
     pageSize,
     search: search || undefined,
     status: CAMPUS_MAP_STATUSES.find((s) => s === status) || undefined,
-    category: CAMPUS_MAP_CATEGORIES.find((c) => c === category) || undefined,
+    category: category || undefined,
   });
 
   return NextResponse.json(result);

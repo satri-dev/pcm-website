@@ -1,7 +1,7 @@
 // src/types/results.ts
 // Canonical schema for the "results" collection
 
-export type ResultProgram = "BBA" | "BCSIT" | "BBA-Finance";
+export type ResultProgram = string;
 export type ResultStatus = "published" | "draft";
 
 export const RESULT_PROGRAMS: readonly ResultProgram[] = [

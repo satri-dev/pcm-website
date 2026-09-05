@@ -95,9 +95,9 @@ export default function ResultsTable({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All programs</SelectItem>
-            <SelectItem value="BBA">BBA</SelectItem>
-            <SelectItem value="BCSIT">BCSIT</SelectItem>
-            <SelectItem value="BBA-Finance">BBA-Finance</SelectItem>
+            {[...new Set(results.map((r) => r.program))].map((p) => (
+              <SelectItem key={p} value={p}>{p}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
 

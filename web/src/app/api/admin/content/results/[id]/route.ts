@@ -17,7 +17,7 @@ const updateSchema = z
     slug: z
       .string()
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Invalid slug"),
-    program: z.enum(["BBA", "BCSIT", "BBA-Finance"]),
+    program: z.string().min(1).max(100),
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date"),
     status: z.enum(["published", "draft"]),
     fileUrl: z.string().optional(),

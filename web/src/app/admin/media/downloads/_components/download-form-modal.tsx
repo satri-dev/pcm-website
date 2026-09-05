@@ -27,16 +27,7 @@ const downloadSchema = z.object({
     .string()
     .min(5, "Description must be at least 5 characters")
     .max(500),
-  category: z.enum([
-    "Forms",
-    "Syllabus",
-    "Reports",
-    "Certificates",
-    "Brochures",
-    "Applications",
-    "Fee Structures",
-    "Others",
-  ]),
+  category: z.string().min(1, "Category is required").max(100),
   fileUrl: z.string().min(1, "File is required"),
   fileName: z.string().min(1, "File name is required"),
   fileSize: z.string().optional(),
@@ -221,14 +212,18 @@ export default function DownloadFormModal({
                 <label htmlFor="download-category">
                   Category <span className="req">*</span>
                 </label>
-                <select id="download-category" {...register("category")}>
-                  <option value="">— Select —</option>
+                <input
+                  id="download-category"
+                  type="text"
+                  list="download-category-list"
+                  placeholder="e.g. Forms, Syllabus, …"
+                  {...register("category")}
+                />
+                <datalist id="download-category-list">
                   {DOWNLOAD_CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
+                    <option key={cat} value={cat} />
                   ))}
-                </select>
+                </datalist>
                 {errors.category && (
                   <div className="field__err">{errors.category.message}</div>
                 )}

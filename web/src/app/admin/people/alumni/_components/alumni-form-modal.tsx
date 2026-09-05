@@ -12,8 +12,8 @@ import ImageUpload from "@/components/cloudinary/ImageUpload";
 const alumniSchema = z.object({
   name: z.string().min(2, "Full name is required").max(200),
   batch: z.string().min(1, "Batch is required"),
-  program: z.enum(["BBA", "BCSIT", "BBA-Finance"]),
-  sector: z.enum(["Banking & Finance", "Technology", "Education", "Entrepreneurship"]),
+  program: z.string().min(1, "Program is required").max(100),
+  sector: z.string().min(1, "Sector is required").max(100),
   role: z.string().min(1, "Role / company is required"),
   location: z.string().optional(),
   photo: z.string().optional(),
@@ -27,9 +27,10 @@ interface AlumniFormModalProps {
   alumni: Alumni | null;
   onSave: (alumni: Alumni) => void;
   saving?: boolean;
+  programCodes?: string[];
 }
 
-export default function AlumniFormModal({ open, onOpenChange, alumni, onSave, saving = false }: AlumniFormModalProps) {
+export default function AlumniFormModal({ open, onOpenChange, alumni, onSave, saving = false, programCodes = [] }: AlumniFormModalProps) {
   const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm<AlumniSchema>({
     resolver: zodResolver(alumniSchema),
     defaultValues: { name: "", batch: "", program: "BBA", sector: "Banking & Finance", role: "", location: "", photo: "" },
@@ -66,9 +67,9 @@ export default function AlumniFormModal({ open, onOpenChange, alumni, onSave, sa
             <div className="form-grid">
               <div className={fv("name")}><label>Full name <span className="req">*</span></label><input type="text" {...register("name")} />{errors.name && <div className="field__err">{errors.name.message}</div>}</div>
               <div className={fv("batch")}><label>Batch <span className="req">*</span></label><input type="text" {...register("batch")} placeholder="e.g. 2075" />{errors.batch && <div className="field__err">{errors.batch.message}</div>}</div>
-              <div className={fv("program")}><label>Program <span className="req">*</span></label><select {...register("program")}><option value="">— Select —</option>{ALUMNI_PROGRAMS.map((p) => <option key={p} value={p}>{p}</option>)}</select>{errors.program && <div className="field__err">{errors.program.message}</div>}</div>
-              <div className={fv("sector")}><label>Sector <span className="req">*</span></label><select {...register("sector")}><option value="">— Select —</option>{ALUMNI_SECTORS.map((s) => <option key={s} value={s}>{s}</option>)}</select>{errors.sector && <div className="field__err">{errors.sector.message}</div>}</div>
-              <div className={fv("role")}><label>Role / company <span className="req">*</span></label><select {...register("role")}><option value="">— Select —</option>{[...new Set([...(alumni?.role ? [alumni.role] : []), ...ALUMNI_ROLES])].map((r) => <option key={r} value={r}>{r}</option>)}</select>{errors.role && <div className="field__err">{errors.role.message}</div>}</div>
+              <div className={fv("program")}><label>Program <span className="req">*</span></label><input type="text" list="alumni-program-list" placeholder="e.g. BBA, BCSIT, …" {...register("program")} /><datalist id="alumni-program-list">{[...new Set([...programCodes, ...ALUMNI_PROGRAMS])].map((p) => <option key={p} value={p} />)}</datalist>{errors.program && <div className="field__err">{errors.program.message}</div>}</div>
+              <div className={fv("sector")}><label>Sector <span className="req">*</span></label><input type="text" list="alumni-sector-list" placeholder="e.g. Banking & Finance, Technology, …" {...register("sector")} /><datalist id="alumni-sector-list">{[...new Set([...(alumni?.sector ? [alumni.sector] : []), ...ALUMNI_SECTORS])].map((s) => <option key={s} value={s} />)}</datalist>{errors.sector && <div className="field__err">{errors.sector.message}</div>}</div>
+              <div className={fv("role")}><label>Role / company <span className="req">*</span></label><input type="text" list="alumni-role-list" placeholder="e.g. Branch Manager, Software Engineer, …" {...register("role")} /><datalist id="alumni-role-list">{[...new Set([...(alumni?.role ? [alumni.role] : []), ...ALUMNI_ROLES])].map((r) => <option key={r} value={r} />)}</datalist>{errors.role && <div className="field__err">{errors.role.message}</div>}</div>
               <div className={fv("location")}><label>Location</label><input type="text" {...register("location")} placeholder="e.g. Pokhara" /></div>
               <div className={`field field--full`}>
                 <label>Photo</label>

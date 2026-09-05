@@ -9,12 +9,11 @@ import {
 } from "@/repositories/chatbot.repository";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 import {
-  CHATBOT_CHANNELS,
   ChatbotChannel,
 } from "@/app/admin/system/chat-bot/types/chatbot";
 
 const createSchema = z.object({
-  channel: z.enum(CHATBOT_CHANNELS as unknown as [string, ...string[]]),
+  channel: z.string().min(1).max(100),
   question: z.string().min(3).max(300),
   keywords: z.array(z.string()).min(1),
   answer: z.string().min(1).max(10000),

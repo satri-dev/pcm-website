@@ -19,13 +19,7 @@ function revalidateFacilities() {
 const updateSchema = z
   .object({
     name: z.string().min(2).max(200),
-    category: z.enum([
-      "Learning",
-      "Library",
-      "IT",
-      "Sports",
-      "Student Life",
-    ]),
+    category: z.string().min(1).max(100),
     icon: z.string().min(1).max(20),
     image: z.string().optional(),
     description: z.string().min(1).max(5000),

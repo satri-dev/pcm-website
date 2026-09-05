@@ -6,19 +6,13 @@ import {
   ensureFacilityIndexes,
   listFacilities,
 } from "@/repositories/facilities.repository";
-import { FACILITY_CATEGORIES, FACILITY_STATUSES} from "@/app/admin/campus/facilities/types/facilities";
+import { FACILITY_STATUSES} from "@/app/admin/campus/facilities/types/facilities";
 import { requireApiSession } from "@/core/lib/api-guard";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 
 const createSchema = z.object({
   name: z.string().min(2).max(200),
-  category: z.enum([
-    "Learning",
-    "Library",
-    "IT",
-    "Sports",
-    "Student Life",
-  ]),
+  category: z.string().min(1).max(100),
   icon: z.string().min(1).max(20),
   image: z.string().optional(),
   description: z.string().min(1).max(5000),
@@ -44,8 +38,7 @@ export async function GET(request: NextRequest) {
     pageSize,
     search: search || undefined,
     status: FACILITY_STATUSES.find((s) => s === status) || undefined,
-    category:
-      FACILITY_CATEGORIES.find((c) => c === category) || undefined,
+    category: category || undefined,
   });
 
   return NextResponse.json(result);
