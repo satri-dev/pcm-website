@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useMemo, useRef, useState } from "react";
-import { studentBlogsData } from "@/data/news";
 import type { PageContentSection } from "@/types/page-content";
+import type { BlogStudent } from "@/types/blog-student";
+import StudentBlogFormModal from "@/components/blog-student/student-blog-form-modal";
 
 const PER_PAGE = 3;
 
@@ -26,14 +27,7 @@ type BlogContent = {
   sections?: PageContentSection[] | null;
 };
 
-const categories = [
-  { value: "all", label: "All categories" },
-  { value: "internships", label: "Internships" },
-  { value: "campus-life", label: "Campus Life" },
-  { value: "finance", label: "Finance" },
-  { value: "skills", label: "Skills" },
-  { value: "clubs", label: "Clubs" },
-];
+const CARD_COLORS = ["#1B3968", "#274B8F", "#16285B", "#2E5FA8", "#1E3A7A"];
 
 function ArrowRight({ className }: { className?: string }) {
   return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>;
@@ -62,7 +56,26 @@ function BlogCardSvg({ color }: { color: string }) {
   );
 }
 
-function BlogsStudentInner({ content }: { content: BlogContent | null }) {
+function formatCardDate(dateISO: string) {
+  const parts = dateISO.split("-");
+  const year = parts[0] || "";
+  const month = parts[1] || "";
+  const day = parts[2] || "";
+  const months = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  ];
+  const name = months[parseInt(month, 10) - 1] || month;
+  return { day, monthYear: `${name} ${year}`.trim() };
+}
+
+function BlogsStudentInner({
+  content,
+  posts,
+}: {
+  content: BlogContent | null;
+  posts: BlogStudent[];
+}) {
   const searchParams = useSearchParams();
   const gridRef = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState("");
@@ -71,6 +84,12 @@ function BlogsStudentInner({ content }: { content: BlogContent | null }) {
     const p = parseInt(searchParams.get("p") || "1", 10);
     return isNaN(p) || p < 1 ? 1 : p;
   });
+  const [formOpen, setFormOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [notice, setNotice] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   const hero = {
     title: content?.hero?.title?.trim() || FALLBACK_HERO.title,
@@ -78,14 +97,27 @@ function BlogsStudentInner({ content }: { content: BlogContent | null }) {
   };
   const intro = content?.sections?.[0] ?? FALLBACK_INTRO;
 
+  const categoryOptions = useMemo(() => {
+    const set = new Set<string>();
+    posts.forEach((p) => {
+      if (p.category && p.category.trim()) set.add(p.category.trim());
+    });
+    return Array.from(set).sort();
+  }, [posts]);
+
   const filteredItems = useMemo(() => {
-    return studentBlogsData.filter((post) => {
-      const matchCat = category === "all" || post.cat === category;
+    return posts.filter((post) => {
+      const matchCat = category === "all" || post.category === category;
       const q = search.trim().toLowerCase();
-      const matchSearch = !q || post.title.toLowerCase().includes(q) || post.excerpt.toLowerCase().includes(q);
+      const matchSearch =
+        !q ||
+        post.title.toLowerCase().includes(q) ||
+        post.excerpt.toLowerCase().includes(q) ||
+        post.author.toLowerCase().includes(q) ||
+        post.tag.toLowerCase().includes(q);
       return matchCat && matchSearch;
     });
-  }, [search, category]);
+  }, [posts, search, category]);
 
   const { pagedSet, totalPages, current, shownCount } = useMemo(() => {
     const total = Math.max(1, Math.ceil(filteredItems.length / PER_PAGE));
@@ -116,17 +148,54 @@ function BlogsStudentInner({ content }: { content: BlogContent | null }) {
     [totalPages]
   );
 
+  const handleSubmitArticle = async (values: {
+    title: string;
+    slug: string;
+    excerpt: string;
+    body: string;
+    image?: string;
+    date: string;
+    tag: string;
+    author: string;
+    category: string;
+  }) => {
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/blog-student", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.error || `Submission failed (HTTP ${res.status})`);
+      }
+      setNotice({
+        type: "success",
+        text: data?.message || "Thank you! Your article is pending review.",
+      });
+      setFormOpen(false);
+    } catch (err) {
+      setNotice({
+        type: "error",
+        text: err instanceof Error ? err.message : "Something went wrong.",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
-    <div className="font-[var(--font-poppins)] leading-relaxed">
+    <div className="font-(--font-poppins) leading-relaxed">
       {/* Hero */}
-      <section className="relative bg-[#16285b] text-white/80 overflow-hidden">
+      <section className="relative bg-pcm-blue-900 text-white/80 overflow-hidden">
         <svg className="absolute inset-x-0 top-0 w-full h-full pointer-events-none" viewBox="0 0 1440 400" preserveAspectRatio="xMidYMax slice">
           <path d="M0 400 L0 250 L300 120 L560 260 L820 90 L1120 240 L1440 120 L1440 400Z" fill="#4167C9" opacity=".2" />
           <path d="M0 400 L0 300 L360 200 L680 320 L980 210 L1280 300 L1440 240 L1440 400Z" fill="#14265A" opacity=".45" />
         </svg>
-        <div className="relative z-10 w-full max-w-[1360px] mx-auto px-[clamp(1.25rem,4vw,2.5rem)] py-[clamp(3rem,6vw,4.5rem)] grid gap-4">
+        <div className="relative z-10 w-full max-w-340 mx-auto px-[clamp(1.25rem,4vw,2.5rem)] py-[clamp(3rem,6vw,4.5rem)] grid gap-4">
           <nav className="flex flex-wrap items-center gap-1.5 text-[0.74rem] tracking-widest uppercase" style={{ color: 'rgba(255,255,255,0.55)' }}>
-            <Link href="/" className="text-[#51B747] hover:underline">Home</Link>
+            <Link href="/" className="text-pcm-green hover:underline">Home</Link>
             <ChevRight className="w-3 h-3 opacity-50" />
             <span>Student Blogs</span>
           </nav>
@@ -137,22 +206,45 @@ function BlogsStudentInner({ content }: { content: BlogContent | null }) {
 
       {/* Student stories section */}
       <section className="py-[clamp(3.5rem,8vw,6.5rem)] text-gray-600">
-        <div className="w-full max-w-[1360px] mx-auto px-[clamp(1.25rem,4vw,2.5rem)]">
+        <div className="w-full max-w-340 mx-auto px-[clamp(1.25rem,4vw,2.5rem)]">
+          {notice && (
+            <div
+              className={`mb-6 px-5 py-3.5 rounded-[14px] border text-[0.95rem] ${
+                notice.type === "success"
+                  ? "border-pcm-green/40 bg-pcm-green/10 text-pcm-green-600"
+                  : "border-red-300 bg-red-50 text-red-700"
+              }`}
+              role="status"
+            >
+              {notice.text}
+            </div>
+          )}
+
           {/* Header row */}
           <div className="flex justify-between items-end gap-4 flex-wrap mb-[clamp(2rem,4vw,2.75rem)]">
-            <div className="max-w-[640px] grid gap-3.5">
-              <span className="inline-flex items-center gap-2 text-[0.74rem] tracking-[0.2em] uppercase text-[#21409a]">{intro.eyebrow}</span>
-              <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] leading-tight text-[#16285b] font-semibold">{intro.title}</h2>
+            <div className="max-w-160 grid gap-3.5">
+              <span className="inline-flex items-center gap-2 text-[0.74rem] tracking-[0.2em] uppercase text-pcm-blue">{intro.eyebrow}</span>
+              <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] leading-tight text-pcm-blue-900 font-semibold">{intro.title}</h2>
               <p className="text-gray-500">{intro.subtitle}</p>
             </div>
-            <Link className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg font-bold text-sm border border-gray-200 text-[#16285b] hover:border-[#21409a] hover:text-[#21409a] transition-colors" href="/blogs">
-              All Articles <ArrowRight className="w-4 h-4" />
-            </Link>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setFormOpen(true)}
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg font-bold text-sm border border-gray-200 text-pcm-blue-900 hover:border-pcm-blue hover:text-pcm-blue transition-colors"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><path d="M12 5v14M5 12h14" /></svg>
+                Add Article
+              </button>
+              <Link className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg font-bold text-sm border border-gray-200 text-pcm-blue-900 hover:border-pcm-blue hover:text-pcm-blue transition-colors" href="/blogs">
+                All Articles <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
 
           {/* Search + filter */}
           <div className="flex flex-wrap items-center gap-3 mb-5">
-            <label className="relative flex-1 min-w-[220px]">
+            <label className="relative flex-1 min-w-55">
               <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[1.05rem] h-[1.05rem] text-gray-400 pointer-events-none" />
               <input
                 type="search"
@@ -160,21 +252,22 @@ function BlogsStudentInner({ content }: { content: BlogContent | null }) {
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                 aria-label="Search student stories..."
-                className="w-full py-2.5 pl-10 pr-4 border border-gray-200 rounded-[14px] bg-white text-[#16285b] text-[0.92rem] outline-none focus:border-[#21409a] focus:shadow-[0_0_0_3px_rgba(33,64,154,0.14)] transition-all placeholder:text-gray-400"
+                className="w-full py-2.5 pl-10 pr-4 border border-gray-200 rounded-[14px] bg-white text-pcm-blue-900 text-[0.92rem] outline-none focus:border-pcm-blue focus:shadow-[0_0_0_3px_rgba(33,64,154,0.14)] transition-all placeholder:text-gray-400"
               />
             </label>
             <select
               value={category}
               onChange={(e) => { setCategory(e.target.value); setPage(1); }}
               aria-label="Filter by category"
-              className="py-2.5 px-5 border border-gray-200 rounded-[14px] bg-white text-[#16285b] text-[0.9rem] font-semibold outline-none focus:border-[#21409a] transition-colors"
+              className="py-2.5 px-5 border border-gray-200 rounded-[14px] bg-white text-pcm-blue-900 text-[0.9rem] font-semibold outline-none focus:border-pcm-blue transition-colors"
             >
-              {categories.map((c) => (
-                <option key={c.value} value={c.value}>{c.label}</option>
+              <option value="all">All categories</option>
+              {categoryOptions.map((c) => (
+                <option key={c} value={c}>{c}</option>
               ))}
             </select>
-            <span className="ml-auto font-[var(--font-poppins)] text-[0.78rem] tracking-wider text-gray-400 whitespace-nowrap">
-              {shownCount} of {studentBlogsData.length} shown
+            <span className="ml-auto font-(--font-poppins) text-[0.78rem] tracking-wider text-gray-400 whitespace-nowrap">
+              {shownCount} of {posts.length} shown
             </span>
           </div>
 
@@ -183,30 +276,39 @@ function BlogsStudentInner({ content }: { content: BlogContent | null }) {
             {filteredItems.map((post, i) => {
               const isPaged = pagedSet.has(post.slug);
               if (isPaged) return null;
-              const day = post.date.split(" ")[0] || "01";
-              const monthYear = post.date.split(" ").slice(1).join(" ");
+              const { day, monthYear } = formatCardDate(post.date);
+              const color = CARD_COLORS[i % CARD_COLORS.length];
               return (
                 <article
                   key={post.slug}
                   className="flex flex-col bg-white border border-gray-200 rounded-[22px] overflow-hidden shadow-[0_1px_3px_rgba(22,40,91,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_60px_rgba(22,40,91,0.12)]"
                   style={{ transitionDelay: `${(i % PER_PAGE) * 50}ms` }}
                 >
-                  <Link className="relative aspect-[16/10] overflow-hidden bg-gray-50 block" href={`/blogs/${post.slug}`} aria-label={post.title}>
-                    <BlogCardSvg color={post.color} />
+                  <Link className="relative aspect-16/10 overflow-hidden bg-gray-50 block" href={`/blogs-student/${post.slug}`} aria-label={post.title}>
+                    {post.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={post.image}
+                        alt={post.title}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    ) : (
+                      <BlogCardSvg color={color} />
+                    )}
                     <span className="absolute top-4 left-4 px-3 py-1.5 bg-[rgba(10,27,51,0.85)] text-white rounded-lg text-[0.72rem] backdrop-blur-sm">
                       <b className="font-bold mr-1">{day}</b>{monthYear}
                     </span>
                   </Link>
                   <div className="grid gap-2.5 px-6 py-4 flex-1 content-start">
-                    <span className="justify-self-start inline-flex items-center px-3 py-1 bg-gray-50 border border-gray-200 text-[#21409a] rounded-full text-[0.66rem] tracking-widest uppercase font-semibold">{post.tag}</span>
-                    <h3 className="text-[1.18rem] leading-snug text-[#16285b]">
-                      <Link href={`/blogs/${post.slug}`} className="hover:text-[#21409a] transition-colors">{post.title}</Link>
+                    <span className="justify-self-start inline-flex items-center px-3 py-1 bg-gray-50 border border-gray-200 text-pcm-blue rounded-full text-[0.66rem] tracking-widest uppercase font-semibold">{post.tag || post.category}</span>
+                    <h3 className="text-[1.18rem] leading-snug text-pcm-blue-900">
+                      <Link href={`/blogs-student/${post.slug}`} className="hover:text-pcm-blue transition-colors">{post.title}</Link>
                     </h3>
-                    <p className="text-gray-500 text-[0.93rem]">{post.excerpt}</p>
+                    <p className="text-gray-500 text-[0.93rem] line-clamp-3">{post.excerpt.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()}</p>
                   </div>
                   <div className="px-6 pb-6 mt-auto flex items-center justify-between">
                     <span className="text-[0.85rem] text-gray-400 font-medium">{post.author}</span>
-                    <Link className="inline-flex items-center gap-1.5 font-bold text-[0.92rem] text-[#21409a] hover:gap-2.5 hover:text-[#1b3376] transition-all" href={`/blogs/${post.slug}`}>
+                    <Link className="inline-flex items-center gap-1.5 font-bold text-[0.92rem] text-[#21409a] hover:gap-2.5 hover:text-[#1b3376] transition-all" href={`/blogs-student/${post.slug}`}>
                       Read <ArrowRight className="w-[1.05rem] h-[1.05rem]" />
                     </Link>
                   </div>
@@ -263,14 +365,27 @@ function BlogsStudentInner({ content }: { content: BlogContent | null }) {
           </div>
         </div>
       </section>
+
+      <StudentBlogFormModal
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        onSubmit={handleSubmitArticle}
+        submitting={submitting}
+      />
     </div>
   );
 }
 
-export default function BlogsStudentClient({ content }: { content: BlogContent | null }) {
+export default function BlogsStudentClient({
+  content,
+  posts,
+}: {
+  content: BlogContent | null;
+  posts: BlogStudent[];
+}) {
   return (
     <Suspense>
-      <BlogsStudentInner content={content} />
+      <BlogsStudentInner content={content} posts={posts} />
     </Suspense>
   );
 }

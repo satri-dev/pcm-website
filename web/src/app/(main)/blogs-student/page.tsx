@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import BlogsStudentClient from "./BlogsStudentClient";
 import { getPageCopy } from "@/lib/data/page-content";
+import { getApprovedBlogStudents } from "@/lib/data/blog-student";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700", "800"],
@@ -18,10 +19,13 @@ export const metadata: Metadata = {
 };
 
 export default async function BlogsStudentPage() {
-  const content = await getPageCopy("blog-student");
+  const [content, posts] = await Promise.all([
+    getPageCopy("blog-student"),
+    getApprovedBlogStudents(),
+  ]);
   return (
     <div className={poppins.variable}>
-      <BlogsStudentClient content={content} />
+      <BlogsStudentClient content={content} posts={posts} />
     </div>
   );
 }
