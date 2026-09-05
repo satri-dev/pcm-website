@@ -30,7 +30,6 @@ export async function POST(request: NextRequest) {
   const name = typeof body.name === "string" ? body.name.trim() : "";
   const email = typeof body.email === "string" ? body.email.trim() : "";
   const phone = typeof body.phone === "string" ? body.phone.trim() : "";
-  const gender = typeof body.gender === "string" ? body.gender.trim() : "";
   const dob = typeof body.dob === "string" ? body.dob.trim() : "";
 
   if (!name) {
@@ -48,18 +47,6 @@ export async function POST(request: NextRequest) {
   if (!phone) {
     return NextResponse.json(
       { success: false, error: "Phone number is required." },
-      { status: 400 }
-    );
-  }
-  if (!gender) {
-    return NextResponse.json(
-      { success: false, error: "Gender is required." },
-      { status: 400 }
-    );
-  }
-  if (!dob) {
-    return NextResponse.json(
-      { success: false, error: "Date of birth is required." },
       { status: 400 }
     );
   }

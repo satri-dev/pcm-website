@@ -1,8 +1,9 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { CldUploadWidget } from "next-cloudinary";
 import { Upload } from "lucide-react";
+import { restorePageScroll } from "@/lib/restore-page-scroll";
 
 interface ImageUploadProps {
   onUpload: (result: {
@@ -17,6 +18,8 @@ interface ImageUploadProps {
 }
 
 export default function ImageUpload({ onUpload, className }: ImageUploadProps) {
+  useEffect(() => () => restorePageScroll(), []);
+
   return (
     <Suspense fallback={null}>
       <CldUploadWidget
@@ -30,7 +33,9 @@ export default function ImageUpload({ onUpload, className }: ImageUploadProps) {
           clientAllowedFormats: ["jpg", "jpeg", "png", "webp", "avif"],
           maxFileSize: 5_000_000,
         }}
+        onClose={restorePageScroll}
         onSuccess={(result) => {
+          restorePageScroll();
           if (
             typeof result.info === "object" &&
             "secure_url" in result.info &&

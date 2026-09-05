@@ -323,8 +323,8 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
                           name={field.id}
                           value={opt.value}
                           checked={active}
-                          onChange={() => onUpdate(field.id, opt.value)}
-                          className="hidden"
+                          onChange={(e) => onUpdate(field.id, e.target.value)}
+                          className="sr-only"
                         />
                         <span
                           className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center ${

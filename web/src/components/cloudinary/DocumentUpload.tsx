@@ -1,8 +1,9 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { CldUploadWidget } from "next-cloudinary";
 import { Upload } from "lucide-react";
+import { restorePageScroll } from "@/lib/restore-page-scroll";
 
 interface DocumentUploadProps {
   onUpload: (result: {
@@ -17,6 +18,8 @@ interface DocumentUploadProps {
 export default function DocumentUpload({
   onUpload,
 }: DocumentUploadProps) {
+  useEffect(() => () => restorePageScroll(), []);
+
   return (
     <Suspense fallback={null}>
       <CldUploadWidget
@@ -32,7 +35,9 @@ export default function DocumentUpload({
         clientAllowedFormats: ["pdf", "doc", "docx"],
         maxFileSize: 5_000_000,
       }}
+      onClose={restorePageScroll}
       onSuccess={(result) => {
+        restorePageScroll();
         if (
           typeof result.info === "object" &&
           "secure_url" in result.info &&
