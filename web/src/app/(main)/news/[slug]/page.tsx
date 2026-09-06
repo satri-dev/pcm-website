@@ -1,28 +1,45 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getPublishedNewsBySlugCached, getPublishedNews } from "@/lib/data/news";
+import {
+  getPublishedNewsBySlugCached,
+  getPublishedNews,
+} from "@/lib/data/news";
 import { getNewsArticleSettingsCached } from "@/lib/data/news-article-settings";
 
 export async function generateStaticParams() {
-  const items = await getPublishedNews();
-  return items.map((n) => ({ slug: n.slug }));
+  try {
+    const items = await getPublishedNews();
+    return items.map((n) => ({ slug: n.slug }));
+  } catch (error) {
+    console.warn("Failed to generate static params for news:", error);
+    return [];
+  }
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const { slug } = await params;
   const post = await getPublishedNewsBySlugCached(slug);
   const settings = await getNewsArticleSettingsCached();
   if (!post) return {};
   return {
-    title: post.seo?.title ||
+    title:
+      post.seo?.title ||
       `${post.title} ${settings.seoTitleSuffix.trim()}`.trim(),
     description: post.seo?.description || post.excerpt,
     keywords: post.seo?.keywords,
   };
 }
 
-export default async function NewsDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function NewsDetailPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const { slug } = await params;
   const [post, settings, allNews] = await Promise.all([
     getPublishedNewsBySlugCached(slug),
@@ -39,7 +56,10 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
     <section className="py-[clamp(3rem,6vw,5rem)]">
       <div className="container max-w-[820px]">
         <nav className="font-mono text-[0.74rem] uppercase tracking-wide text-muted-foreground mb-4">
-          <Link href={settings.backToAllHref} className="text-pcm-blue hover:underline">
+          <Link
+            href={settings.backToAllHref}
+            className="text-pcm-blue hover:underline"
+          >
             {settings.backToAllLabel}
           </Link>
           <span className="mx-2">/</span>
@@ -53,7 +73,8 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
           {post.title}
         </h1>
         <p className="mt-2 font-mono text-sm text-muted-foreground">
-          {settings.publishedLabel} {settings.publishedLabelPrefix} {post.publishedAt}
+          {settings.publishedLabel} {settings.publishedLabelPrefix}{" "}
+          {post.publishedAt}
           {post.author ? ` · ${settings.bylinePrefix} ${post.author}` : ""}
         </p>
 

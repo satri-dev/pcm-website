@@ -2,11 +2,17 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getPublishedBlogBySlugCached, getPublishedBlogs } from "@/lib/data/blogs";
+import {
+  getPublishedBlogBySlugCached,
+  getPublishedBlogs,
+} from "@/lib/data/blogs";
 import { getBlogArticleSettingsCached } from "@/lib/data/blog-article-settings";
 
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  return html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function formatDate(dateISO: string) {
@@ -20,8 +26,13 @@ function formatDate(dateISO: string) {
 }
 
 export async function generateStaticParams() {
-  const items = await getPublishedBlogs();
-  return items.map((n) => ({ slug: n.slug }));
+  try {
+    const items = await getPublishedBlogs();
+    return items.map((n) => ({ slug: n.slug }));
+  } catch (error) {
+    console.warn("Failed to generate static params for blogs:", error);
+    return [];
+  }
 }
 
 export async function generateMetadata({
@@ -71,7 +82,10 @@ export default async function BlogDetailPage({
     <section className="py-[clamp(3rem,6vw,5rem)]">
       <div className="container max-w-[820px]">
         <nav className="font-mono text-[0.74rem] uppercase tracking-wide text-muted-foreground mb-4">
-          <Link href={settings.backToAllHref} className="text-pcm-blue hover:underline">
+          <Link
+            href={settings.backToAllHref}
+            className="text-pcm-blue hover:underline"
+          >
             {settings.backToAllLabel}
           </Link>
           <span className="mx-2">/</span>
@@ -85,7 +99,8 @@ export default async function BlogDetailPage({
           {post.title}
         </h1>
         <p className="mt-2 font-mono text-sm text-muted-foreground">
-          {settings.publishedLabel} {settings.publishedLabelPrefix} {formatDate(post.date)}
+          {settings.publishedLabel} {settings.publishedLabelPrefix}{" "}
+          {formatDate(post.date)}
           {post.author ? ` · ${settings.bylinePrefix} ${post.author}` : ""}
         </p>
 

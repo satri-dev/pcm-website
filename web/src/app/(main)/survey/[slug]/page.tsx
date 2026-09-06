@@ -1,12 +1,20 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getPublishedSurveyBySlugCached, getPublishedSurveys } from "@/lib/data/surveys";
+import {
+  getPublishedSurveyBySlugCached,
+  getPublishedSurveys,
+} from "@/lib/data/surveys";
 import { getSurveySettings } from "@/lib/data/survey-page-settings";
 import SurveyResponder from "./SurveyResponder";
 
 export async function generateStaticParams() {
-  const items = await getPublishedSurveys();
-  return items.map((s) => ({ slug: s.slug }));
+  try {
+    const items = await getPublishedSurveys();
+    return items.map((s) => ({ slug: s.slug }));
+  } catch (error) {
+    console.warn("Failed to generate static params for surveys:", error);
+    return [];
+  }
 }
 
 export async function generateMetadata({

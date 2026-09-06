@@ -8,7 +8,10 @@ import {
 } from "@/lib/data/blog-student";
 
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  return html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function formatDate(dateISO: string) {
@@ -22,8 +25,15 @@ function formatDate(dateISO: string) {
 }
 
 export async function generateStaticParams() {
-  const items = await getApprovedBlogStudents();
-  return items.map((item) => ({ slug: item.slug }));
+  try {
+    const items = await getApprovedBlogStudents();
+    return items.map((item) => ({ slug: item.slug }));
+  } catch (error) {
+    // During build, if the database is empty or unavailable, return an empty array
+    // With PPR, pages will be generated on-demand at runtime
+    console.warn("Failed to generate static params for blogs-student:", error);
+    return [];
+  }
 }
 
 export async function generateMetadata({
