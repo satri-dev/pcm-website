@@ -67,7 +67,7 @@ export default function AboutPageSettings({
   const removeVmv = (idx: number) =>
     set("vmvCards", form.vmvCards.filter((_, i) => i !== idx));
 
-  /* ── Diff helpers ── */
+  /* ── Diff helpers ── *ok/
   const updateDiff = (idx: number, patch: Partial<DiffItem>) => {
     set("diffItems", form.diffItems.map((p, i) => (i === idx ? { ...p, ...patch } : p)));
   };
