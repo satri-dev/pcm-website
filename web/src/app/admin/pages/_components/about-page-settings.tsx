@@ -613,7 +613,7 @@ export default function AboutPageSettings({
           </div>
 
           <div className="mt-4 flex items-center gap-3">
-            <h4 className="m-0 text-[0.95rem] font-bold text-[var(--admin-ink)]">
+            <h4 className="m-0 text-[0.95rem] font-bold text-(--admin-ink)">
               Difference items ({form.diffItems.length})
             </h4>
             <button
