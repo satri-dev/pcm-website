@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Save, Link2, Plus, Trash2, GripVertical } from "lucide-react";
+import { Save, Link2, Plus, Trash2 } from "lucide-react";
 import ImageUpload from "@/components/cloudinary/ImageUpload";
 import {
   ABOUT_PAGE_SETTINGS_DEFAULTS,
@@ -19,7 +19,7 @@ const INPUT =
 
 function fieldLabel(c: ReactNode) {
   return (
-    <span className="mb-1 block text-[0.85rem] font-medium text-[var(--admin-ink)]">
+    <span className="mb-1 block text-[0.85rem] font-medium text-(--admin-ink)">
       {c}
     </span>
   );
@@ -148,10 +148,10 @@ export default function AboutPageSettings({
     <main className="p-6 space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h2 className="m-0 text-2xl font-bold text-[var(--admin-ink)]">
+          <h2 className="m-0 text-2xl font-bold text-(--admin-ink)">
             About Page Content
           </h2>
-          <p className="mt-1 mb-0 text-[0.9rem] text-[var(--admin-muted)]">
+          <p className="mt-1 mb-0 text-[0.9rem] text-(--admin-muted)">
             Edit the sections of the public /about page — hero, who we are, why
             study at PCM, vision/mission/values, the PCM difference, by the
             numbers, voices headings and CTA band. Testimonial cards come from
@@ -469,7 +469,7 @@ export default function AboutPageSettings({
           </div>
 
           <div className="mt-4 flex items-center gap-3">
-            <h4 className="m-0 text-[0.95rem] font-bold text-[var(--admin-ink)]">
+            <h4 className="m-0 text-[0.95rem] font-bold text-(--admin-ink)">
               Cards ({form.vmvCards.length})
             </h4>
             <button
@@ -485,10 +485,10 @@ export default function AboutPageSettings({
             {form.vmvCards.map((card, i) => (
               <div
                 key={card.id}
-                className="rounded-xl border border-[var(--admin-line)] p-4 space-y-3"
+                className="rounded-xl border border-(--admin-line) p-4 space-y-3"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-mono text-[0.72rem] font-bold uppercase tracking-wider text-[var(--admin-brand)]">
+                  <span className="font-mono text-[0.72rem] font-bold uppercase tracking-wider text-(--admin-brand)">
                     {card.id}
                   </span>
                   <div className="flex items-center gap-1">
