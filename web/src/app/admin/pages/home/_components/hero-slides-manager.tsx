@@ -5,6 +5,7 @@ import type { HeroSlide } from "@/types/homepage";
 import { Plus, Trash2, GripVertical, Save } from "lucide-react";
 import ImageUpload from "@/components/cloudinary/ImageUpload";
 import Image from "next/image";
+import { HardDeleteDialog } from "@/components/shared/delete-dialogs";
 
 interface Props {
   slides: HeroSlide[];
@@ -28,13 +29,15 @@ function emptySlide(): HeroSlide {
 export default function HeroSlidesManager({ slides, onSave }: Props) {
   const [items, setItems] = useState<HeroSlide[]>(slides);
   const [saving, setSaving] = useState(false);
+  const [deleteSlideIdx, setDeleteSlideIdx] = useState<number | null>(null);
+  const [deleteStatInfo, setDeleteStatInfo] = useState<{ slideIdx: number; statIdx: number } | null>(null);
 
   const update = (index: number, patch: Partial<HeroSlide>) => {
     setItems((prev) => prev.map((s, i) => (i === index ? { ...s, ...patch } : s)));
   };
 
   const remove = (index: number) => {
-    setItems((prev) => prev.filter((_, i) => i !== index));
+    setDeleteSlideIdx(index);
   };
 
   const move = (index: number, dir: -1 | 1) => {
@@ -71,13 +74,7 @@ export default function HeroSlidesManager({ slides, onSave }: Props) {
   };
 
   const removeStat = (slideIdx: number, statIdx: number) => {
-    setItems((prev) =>
-      prev.map((s, i) =>
-        i === slideIdx
-          ? { ...s, stats: s.stats.filter((_, si) => si !== statIdx) }
-          : s
-      )
-    );
+    setDeleteStatInfo({ slideIdx, statIdx });
   };
 
   const handleSave = async () => {
@@ -131,7 +128,8 @@ export default function HeroSlidesManager({ slides, onSave }: Props) {
               <button
                 type="button"
                 onClick={() => remove(idx)}
-                className="admin-icon-btn text-red-500 hover:text-red-700"
+                className="admin-icon-btn"
+                style={{ background: "#ef4444", color: "#fff", borderColor: "#ef4444" }}
                 title="Remove slide"
               >
                 <Trash2 size={14} />
@@ -283,7 +281,8 @@ export default function HeroSlidesManager({ slides, onSave }: Props) {
                     <button
                       type="button"
                       onClick={() => removeStat(idx, si)}
-                      className="admin-icon-btn text-red-500 hover:text-red-700"
+                      className="admin-icon-btn"
+                      style={{ background: "#ef4444", color: "#fff", borderColor: "#ef4444" }}
                     >
                       <Trash2 size={12} />
                     </button>
@@ -306,6 +305,40 @@ export default function HeroSlidesManager({ slides, onSave }: Props) {
           <Save size={14} /> {saving ? "Saving…" : "Save"}
         </button>
       </div>
+
+      <HardDeleteDialog
+        open={deleteSlideIdx !== null}
+        onOpenChange={(open) => { if (!open) setDeleteSlideIdx(null); }}
+        onConfirm={() => {
+          if (deleteSlideIdx !== null) {
+            setItems((prev) => prev.filter((_, i) => i !== deleteSlideIdx));
+            setDeleteSlideIdx(null);
+          }
+        }}
+        title="Delete Slide?"
+        description="Are you sure you want to delete this slide? This action cannot be undone."
+        confirmText="Delete Slide"
+      />
+
+      <HardDeleteDialog
+        open={deleteStatInfo !== null}
+        onOpenChange={(open) => { if (!open) setDeleteStatInfo(null); }}
+        onConfirm={() => {
+          if (deleteStatInfo) {
+            setItems((prev) =>
+              prev.map((s, i) =>
+                i === deleteStatInfo.slideIdx
+                  ? { ...s, stats: s.stats.filter((_, si) => si !== deleteStatInfo.statIdx) }
+                  : s
+              )
+            );
+            setDeleteStatInfo(null);
+          }
+        }}
+        title="Delete Stat?"
+        description="Are you sure you want to delete this stat? This action cannot be undone."
+        confirmText="Delete Stat"
+      />
     </div>
   );
 }

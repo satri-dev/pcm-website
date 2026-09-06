@@ -5,6 +5,7 @@ import { HomepageTestimonial } from "@/types/homepage";
 import { Plus, Trash2, Save } from "lucide-react";
 import ImageUpload from "@/components/cloudinary/ImageUpload";
 import Image from "next/image";
+import { HardDeleteDialog } from "@/components/shared/delete-dialogs";
 
 interface Props {
   testimonials: HomepageTestimonial[];
@@ -14,6 +15,7 @@ interface Props {
 export default function TestimonialsManager({ testimonials, onSave }: Props) {
   const [items, setItems] = useState<HomepageTestimonial[]>(testimonials);
   const [saving, setSaving] = useState(false);
+  const [deleteIdx, setDeleteIdx] = useState<number | null>(null);
 
   const update = (index: number, patch: Partial<HomepageTestimonial>) => {
     setItems((prev) =>
@@ -22,7 +24,7 @@ export default function TestimonialsManager({ testimonials, onSave }: Props) {
   };
 
   const remove = (index: number) => {
-    setItems((prev) => prev.filter((_, i) => i !== index));
+    setDeleteIdx(index);
   };
 
   const handleSave = async () => {
@@ -76,7 +78,8 @@ export default function TestimonialsManager({ testimonials, onSave }: Props) {
               <button
                 type="button"
                 onClick={() => remove(idx)}
-                className="admin-icon-btn text-red-500 hover:text-red-700"
+                className="admin-icon-btn"
+                style={{ background: "#ef4444", color: "#fff", borderColor: "#ef4444" }}
               >
                 <Trash2 size={14} />
               </button>
@@ -156,6 +159,20 @@ export default function TestimonialsManager({ testimonials, onSave }: Props) {
           <Save size={14} /> {saving ? "Saving…" : "Save"}
         </button>
       </div>
+
+      <HardDeleteDialog
+        open={deleteIdx !== null}
+        onOpenChange={(open) => { if (!open) setDeleteIdx(null); }}
+        onConfirm={() => {
+          if (deleteIdx !== null) {
+            setItems((prev) => prev.filter((_, i) => i !== deleteIdx));
+            setDeleteIdx(null);
+          }
+        }}
+        title="Delete Testimonial?"
+        description="Are you sure you want to delete this testimonial? This action cannot be undone."
+        confirmText="Delete Testimonial"
+      />
     </div>
   );
 }

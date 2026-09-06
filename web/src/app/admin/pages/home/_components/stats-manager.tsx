@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { WelcomeStat } from "@/types/homepage";
 import { Plus, Trash2, Save } from "lucide-react";
+import { HardDeleteDialog } from "@/components/shared/delete-dialogs";
 
 interface Props {
   stats: WelcomeStat[];
@@ -12,13 +13,14 @@ interface Props {
 export default function StatsManager({ stats, onSave }: Props) {
   const [items, setItems] = useState<WelcomeStat[]>(stats);
   const [saving, setSaving] = useState(false);
+  const [deleteIdx, setDeleteIdx] = useState<number | null>(null);
 
   const update = (index: number, patch: Partial<WelcomeStat>) => {
     setItems((prev) => prev.map((s, i) => (i === index ? { ...s, ...patch } : s)));
   };
 
   const remove = (index: number) => {
-    setItems((prev) => prev.filter((_, i) => i !== index));
+    setDeleteIdx(index);
   };
 
   const handleSave = async () => {
@@ -85,7 +87,8 @@ export default function StatsManager({ stats, onSave }: Props) {
             <button
               type="button"
               onClick={() => remove(idx)}
-              className="admin-icon-btn text-red-500 hover:text-red-700 mb-1"
+              className="admin-icon-btn mb-1"
+              style={{ background: "#ef4444", color: "#fff", borderColor: "#ef4444" }}
             >
               <Trash2 size={14} />
             </button>
@@ -104,6 +107,20 @@ export default function StatsManager({ stats, onSave }: Props) {
           <Save size={14} /> {saving ? "Saving…" : "Save"}
         </button>
       </div>
+
+      <HardDeleteDialog
+        open={deleteIdx !== null}
+        onOpenChange={(open) => { if (!open) setDeleteIdx(null); }}
+        onConfirm={() => {
+          if (deleteIdx !== null) {
+            setItems((prev) => prev.filter((_, i) => i !== deleteIdx));
+            setDeleteIdx(null);
+          }
+        }}
+        title="Delete Stat?"
+        description="Are you sure you want to delete this stat? This action cannot be undone."
+        confirmText="Delete Stat"
+      />
     </div>
   );
 }
