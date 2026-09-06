@@ -43,7 +43,7 @@ export default function AboutPageSettings({
 
   const set = <K extends keyof AboutPageSettings>(
     key: K,
-    value: AboutPageSettings[K]
+    value: AboutPageSettings[K],
   ) => setForm((prev) => ({ ...prev, [key]: value }));
 
   const moveArr = <T,>(arr: T[], idx: number, dir: -1 | 1): T[] => {
@@ -56,39 +56,71 @@ export default function AboutPageSettings({
 
   /* ── Vmv helpers ── */
   const updateVmv = (idx: number, patch: Partial<VmvCard>) => {
-    set("vmvCards", form.vmvCards.map((p, i) => (i === idx ? { ...p, ...patch } : p)));
+    set(
+      "vmvCards",
+      form.vmvCards.map((p, i) => (i === idx ? { ...p, ...patch } : p)),
+    );
   };
   const addVmv = () => {
     set("vmvCards", [
       ...form.vmvCards,
-      { id: uid(), iconType: "vision", iconBg: "#eef3ff", iconColor: "#21409A", title: "", description: "" },
+      {
+        id: uid(),
+        iconType: "vision",
+        iconBg: "#eef3ff",
+        iconColor: "#21409A",
+        title: "",
+        description: "",
+      },
     ]);
   };
   const removeVmv = (idx: number) =>
-    set("vmvCards", form.vmvCards.filter((_, i) => i !== idx));
+    set(
+      "vmvCards",
+      form.vmvCards.filter((_, i) => i !== idx),
+    );
 
-  /* ── Diff helpers ── *ok/
+  /* ── Diff helpers ── */
   const updateDiff = (idx: number, patch: Partial<DiffItem>) => {
-    set("diffItems", form.diffItems.map((p, i) => (i === idx ? { ...p, ...patch } : p)));
+    set(
+      "diffItems",
+      form.diffItems.map((p, i) => (i === idx ? { ...p, ...patch } : p)),
+    );
   };
   const addDiff = () => {
     set("diffItems", [
       ...form.diffItems,
-      { id: uid(), iconType: "faculty", iconBg: "#eef3ff", iconColor: "#21409A", title: "", description: "" },
+      {
+        id: uid(),
+        iconType: "faculty",
+        iconBg: "#eef3ff",
+        iconColor: "#21409A",
+        title: "",
+        description: "",
+      },
     ]);
   };
   const removeDiff = (idx: number) =>
-    set("diffItems", form.diffItems.filter((_, i) => i !== idx));
+    set(
+      "diffItems",
+      form.diffItems.filter((_, i) => i !== idx),
+    );
 
   /* ── Stats helpers ── */
   const updateStat = (idx: number, patch: Partial<AboutStat>) => {
-    set("stats", form.stats.map((p, i) => (i === idx ? { ...p, ...patch } : p)));
+    set(
+      "stats",
+      form.stats.map((p, i) => (i === idx ? { ...p, ...patch } : p)),
+    );
   };
   const addStat = () => {
     set("stats", [...form.stats, { id: uid(), value: "", label: "" }]);
   };
   const removeStat = (idx: number) =>
-    set("stats", form.stats.filter((_, i) => i !== idx));
+    set(
+      "stats",
+      form.stats.filter((_, i) => i !== idx),
+    );
 
   /* ── Save ── */
   const handleSave = async () => {
@@ -173,7 +205,7 @@ export default function AboutPageSettings({
                   e.target.value
                     .split("\n")
                     .map((l) => l.trim())
-                    .filter(Boolean)
+                    .filter(Boolean),
                 )
               }
             />
@@ -252,7 +284,7 @@ export default function AboutPageSettings({
                   e.target.value
                     .split("\n")
                     .map((l) => l.trim())
-                    .filter(Boolean)
+                    .filter(Boolean),
                 )
               }
             />
@@ -269,7 +301,7 @@ export default function AboutPageSettings({
                   e.target.value
                     .split("\n")
                     .map((l) => l.trim())
-                    .filter(Boolean)
+                    .filter(Boolean),
                 )
               }
             />
@@ -358,7 +390,7 @@ export default function AboutPageSettings({
                   e.target.value
                     .split("\n")
                     .map((l) => l.trim())
-                    .filter(Boolean)
+                    .filter(Boolean),
                 )
               }
             />
@@ -464,7 +496,9 @@ export default function AboutPageSettings({
                       type="button"
                       className="admin-icon-btn"
                       aria-label="Move up"
-                      onClick={() => set("vmvCards", moveArr(form.vmvCards, i, -1))}
+                      onClick={() =>
+                        set("vmvCards", moveArr(form.vmvCards, i, -1))
+                      }
                     >
                       ↑
                     </button>
@@ -472,7 +506,9 @@ export default function AboutPageSettings({
                       type="button"
                       className="admin-icon-btn"
                       aria-label="Move down"
-                      onClick={() => set("vmvCards", moveArr(form.vmvCards, i, 1))}
+                      onClick={() =>
+                        set("vmvCards", moveArr(form.vmvCards, i, 1))
+                      }
                     >
                       ↓
                     </button>
@@ -528,7 +564,9 @@ export default function AboutPageSettings({
                       type="color"
                       className={INPUT + " h-10"}
                       value={card.iconColor}
-                      onChange={(e) => updateVmv(i, { iconColor: e.target.value })}
+                      onChange={(e) =>
+                        updateVmv(i, { iconColor: e.target.value })
+                      }
                     />
                   </label>
                   <label className="block">
@@ -634,9 +672,7 @@ export default function AboutPageSettings({
                     <input
                       className={INPUT}
                       value={item.title}
-                      onChange={(e) =>
-                        updateDiff(i, { title: e.target.value })
-                      }
+                      onChange={(e) => updateDiff(i, { title: e.target.value })}
                     />
                   </label>
                   <label className="block">
