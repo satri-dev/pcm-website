@@ -5,6 +5,7 @@ import { AdmissionConfig, AdmissionStep, AdmissionDetail } from "@/types/homepag
 import { Plus, Trash2, Save } from "lucide-react";
 import ImageUpload from "@/components/cloudinary/ImageUpload";
 import Image from "next/image";
+import { HardDeleteDialog } from "@/components/shared/delete-dialogs";
 
 interface Props {
   admission: AdmissionConfig;
@@ -14,6 +15,8 @@ interface Props {
 export default function AdmissionManager({ admission, onSave }: Props) {
   const [data, setData] = useState<AdmissionConfig>(admission);
   const [saving, setSaving] = useState(false);
+  const [deleteStepIdx, setDeleteStepIdx] = useState<number | null>(null);
+  const [deleteDetailIdx, setDeleteDetailIdx] = useState<number | null>(null);
 
   const handleSave = async () => {
     setSaving(true);
@@ -154,13 +157,9 @@ export default function AdmissionManager({ admission, onSave }: Props) {
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  setData((d) => ({
-                    ...d,
-                    steps: d.steps.filter((_, i) => i !== idx),
-                  }));
-                }}
-                className="admin-icon-btn text-red-500 hover:text-red-700 mt-1"
+                onClick={() => setDeleteStepIdx(idx)}
+                className="admin-icon-btn mt-1"
+                style={{ background: "#ef4444", color: "#fff", borderColor: "#ef4444" }}
               >
                 <Trash2 size={14} />
               </button>
@@ -214,13 +213,9 @@ export default function AdmissionManager({ admission, onSave }: Props) {
               />
               <button
                 type="button"
-                onClick={() => {
-                  setData((d) => ({
-                    ...d,
-                    details: d.details.filter((_, i) => i !== idx),
-                  }));
-                }}
-                className="admin-icon-btn text-red-500 hover:text-red-700"
+                onClick={() => setDeleteDetailIdx(idx)}
+                className="admin-icon-btn"
+                style={{ background: "#ef4444", color: "#fff", borderColor: "#ef4444" }}
               >
                 <Trash2 size={14} />
               </button>
@@ -240,6 +235,40 @@ export default function AdmissionManager({ admission, onSave }: Props) {
           <Save size={14} /> {saving ? "Saving…" : "Save"}
         </button>
       </div>
+
+      <HardDeleteDialog
+        open={deleteStepIdx !== null}
+        onOpenChange={(open) => { if (!open) setDeleteStepIdx(null); }}
+        onConfirm={() => {
+          if (deleteStepIdx !== null) {
+            setData((d) => ({
+              ...d,
+              steps: d.steps.filter((_, i) => i !== deleteStepIdx),
+            }));
+            setDeleteStepIdx(null);
+          }
+        }}
+        title="Delete Step?"
+        description="Are you sure you want to delete this admission step? This action cannot be undone."
+        confirmText="Delete Step"
+      />
+
+      <HardDeleteDialog
+        open={deleteDetailIdx !== null}
+        onOpenChange={(open) => { if (!open) setDeleteDetailIdx(null); }}
+        onConfirm={() => {
+          if (deleteDetailIdx !== null) {
+            setData((d) => ({
+              ...d,
+              details: d.details.filter((_, i) => i !== deleteDetailIdx),
+            }));
+            setDeleteDetailIdx(null);
+          }
+        }}
+        title="Delete Detail?"
+        description="Are you sure you want to delete this detail? This action cannot be undone."
+        confirmText="Delete Detail"
+      />
     </div>
   );
 }
