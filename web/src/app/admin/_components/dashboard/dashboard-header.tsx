@@ -27,7 +27,7 @@ export default function DashboardHeader() {
           Back to Website
         </Link>
 
-        <Link href="/admin/posts/new" className="admin-btn admin-btn--primary">
+        <Link href="admin/content/news" className="admin-btn admin-btn--primary">
           <Pencil size={16} />
           New Post
         </Link>

@@ -20,6 +20,7 @@ import {
   CheckCircle2,
   ExternalLink,
   Image,
+  Settings2,
 } from "lucide-react";
 
 interface ApplicationViewModalProps {
@@ -69,16 +70,25 @@ function getFileEntryInfo(entry: FileEntry): { url: string; name: string } {
 
 /* ── Label map: field IDs → human-readable labels ── */
 const FIELD_LABELS: Record<string, string> = {
+  // Personal Info (Step 1)
+  programme: "Programme",
   program_name: "Programme",
   shift: "Shift",
   name: "Full Name",
+  full_name: "Full Name",
+  students_full_name: "Student's Full Name",
   gender: "Gender",
   dob: "Date of Birth",
+  date_of_birth: "Date of Birth",
   date_option: "Date Format",
   nationality: "Nationality",
   phone: "Phone",
+  phone_number: "Phone Number",
   personal_contact: "Personal Contact",
   email: "Email",
+  email_address: "Email Address",
+  
+  // Guardian Info (Step 1)
   guardian_type: "Guardian Type",
   father_name: "Father's Name",
   father_phone: "Father's Phone",
@@ -86,6 +96,7 @@ const FIELD_LABELS: Record<string, string> = {
   mother_phone: "Mother's Phone",
   guardian_name: "Guardian Name",
   guardian_phone: "Guardian Phone",
+  guardian_relationship: "Relationship with Guardian",
   relationship: "Relationship",
   permanent_province: "Province",
   province_permanent: "Province",
@@ -122,12 +133,13 @@ const FIELD_LABELS: Record<string, string> = {
   intermediate_mark_obtained: "Marks Obtained",
   intermediate_percentage_obtained: "Percentage",
   agree_terms: "Agreed to Terms",
+  imagee: "Profile Image",
 };
 
 /* ── Fields to skip (already shown in header or not meaningful) ── */
 const SKIP_FIELDS = new Set(["agree_terms"]);
 
-/* ── Section grouping ── */
+/* ── Section grouping by form steps ── */
 function getSection(key: string): string {
   if (key.startsWith("see_")) return "SEE / SLC";
   if (key.startsWith("intermediate_")) return "+2 / Intermediate";
@@ -160,7 +172,7 @@ function FieldRow({ label, value, highlight }: { label: string; value: React.Rea
   );
 }
 
-function FileEntryList({ title, entries }: { title: string; entries?: FileEntry[] }) {
+function FileEntryList({ title, entries, fieldLabels }: { title: string; entries?: FileEntry[]; fieldLabels?: string[] }) {
   if (!entries || entries.length === 0) return null;
   return (
     <div className="mb-5">
@@ -168,32 +180,41 @@ function FileEntryList({ title, entries }: { title: string; entries?: FileEntry[
         <FileText size={14} />
         {title}
       </h4>
-      <div className="space-y-1.5">
+      <div className="space-y-2.5">
         {entries.map((entry, i) => {
           const { url, name } = getFileEntryInfo(entry);
           const isImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url) || url.includes("cloudinary.com/image");
+          const fieldLabel = fieldLabels && fieldLabels[i] ? fieldLabels[i] : null;
+          
           return (
-            <div key={i} className="flex items-center gap-3 text-sm">
-              {isImage ? (
-                <a href={url} target="_blank" rel="noreferrer" className="flex items-center gap-3 group">
-                  <img src={url} alt={name} className="h-12 w-12 object-cover rounded border border-gray-200" />
-                  <div className="min-w-0">
-                    <span className="block text-[var(--admin-brand)] font-medium truncate group-hover:underline">{name}</span>
-                    <span className="text-xs text-[var(--admin-muted)]">Click to view full size</span>
-                  </div>
-                </a>
-              ) : (
-                <a
-                  href={url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-2 text-[var(--admin-brand)] hover:underline min-w-0"
-                >
-                  <FileText size={14} className="shrink-0 text-gray-400" />
-                  <span className="truncate">{name}</span>
-                  <ExternalLink size={12} className="shrink-0 text-gray-300" />
-                </a>
+            <div key={i} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+              {fieldLabel && (
+                <div className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">
+                  {fieldLabel}
+                </div>
               )}
+              <div className="flex items-center gap-3 text-sm">
+                {isImage ? (
+                  <a href={url} target="_blank" rel="noreferrer" className="flex items-center gap-3 group">
+                    <img src={url} alt={name} className="h-12 w-12 object-cover rounded border border-gray-200" />
+                    <div className="min-w-0">
+                      <span className="block text-[var(--admin-brand)] font-medium truncate group-hover:underline">{name}</span>
+                      <span className="text-xs text-[var(--admin-muted)]">Click to view full size</span>
+                    </div>
+                  </a>
+                ) : (
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-2 text-[var(--admin-brand)] hover:underline min-w-0"
+                  >
+                    <FileText size={14} className="shrink-0 text-gray-400" />
+                    <span className="truncate">{name}</span>
+                    <ExternalLink size={12} className="shrink-0 text-gray-300" />
+                  </a>
+                )}
+              </div>
             </div>
           );
         })}
@@ -211,12 +232,32 @@ export default function ApplicationViewModal({
 
   const data = application.data ?? {};
   const form = (data.form ?? {}) as Record<string, unknown>;
+  
+  // Get guardian type to filter fields
+  const guardianType = form.guardian_type as string | undefined;
 
   // Group form fields by section
   const sections: Record<string, Array<{ key: string; label: string; value: React.ReactNode }>> = {};
 
   for (const [key, value] of Object.entries(form)) {
     if (SKIP_FIELDS.has(key)) continue;
+
+    // Filter guardian fields based on selected type
+    if (guardianType) {
+      if (guardianType === "father") {
+        if (["mother_name", "mother_phone", "guardian_name", "guardian_phone", "relationship"].includes(key)) {
+          continue; // Skip mother and other guardian fields
+        }
+      } else if (guardianType === "mother") {
+        if (["father_name", "father_phone", "guardian_name", "guardian_phone", "relationship"].includes(key)) {
+          continue; // Skip father and other guardian fields
+        }
+      } else if (guardianType === "other") {
+        if (["father_name", "father_phone", "mother_name", "mother_phone"].includes(key)) {
+          continue; // Skip father and mother fields
+        }
+      }
+    }
 
     const label = FIELD_LABELS[key] || key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
     const section = getSection(key);
@@ -254,23 +295,24 @@ export default function ApplicationViewModal({
 
   // Section icon mapping
   const sectionIcons: Record<string, React.ReactNode> = {
-    "Personal Details": <User size={14} />,
-    "Guardian Details": <User size={14} />,
-    "Permanent Address": <MapPin size={14} />,
-    "Temporary Address": <MapPin size={14} />,
-    "SEE / SLC": <GraduationCap size={14} />,
-    "+2 / Intermediate": <GraduationCap size={14} />,
+    "Step 1: Personal Information": <User size={14} />,
+    "Step 2: Contact Information": <MapPin size={14} />,
+    "Step 3: Academic Information": <GraduationCap size={14} />,
+    "Step 4: Documents": <FileText size={14} />,
+    "Step 5: Declaration": <CheckCircle2 size={14} />,
+    "Step 6: Payment": <CreditCard size={14} />,
+    "Other Information": <Settings2 size={14} />,
   };
 
-  // Section display order
+  // Section display order (matches form steps)
   const sectionOrder = [
-    "Personal Details",
-    "Guardian Details",
-    "Permanent Address",
-    "Temporary Address",
-    "SEE / SLC",
-    "+2 / Intermediate",
-    "Other",
+    "Step 1: Personal Information",
+    "Step 2: Contact Information",
+    "Step 3: Academic Information",
+    "Step 4: Documents",
+    "Step 5: Declaration",
+    "Step 6: Payment",
+    "Other Information",
   ];
 
   return (
@@ -333,8 +375,54 @@ export default function ApplicationViewModal({
           </div>
 
           {/* Documents */}
-          <FileEntryList title="Documents" entries={data.documents} />
-          <FileEntryList title="Payment Slips" entries={data.paymentSlips} />
+          <FileEntryList 
+            title="Documents" 
+            entries={data.documents}
+            fieldLabels={data.documents?.map((_, i) => {
+              // Try to find which field this document belongs to by matching URLs in form data
+              const docEntry = data.documents![i];
+              const docUrl = typeof docEntry === 'string' ? docEntry : docEntry?.url;
+              
+              // Search through all form fields to find the one containing this URL
+              for (const [fieldKey, fieldValue] of Object.entries(form)) {
+                if (typeof fieldValue === 'string' && fieldValue === docUrl) {
+                  // Found the field! Return its label
+                  const label = FIELD_LABELS[fieldKey];
+                  if (label) return label;
+                  
+                  // Generate label from field key
+                  return fieldKey
+                    .replace(/_/g, " ")
+                    .replace(/\b\w/g, (c) => c.toUpperCase());
+                }
+              }
+              
+              // Fallback: Generic document label
+              return `Document ${i + 1}`;
+            })}
+          />
+          <FileEntryList 
+            title="Payment Slips" 
+            entries={data.paymentSlips}
+            fieldLabels={data.paymentSlips?.map((_, i) => {
+              // Try to find payment slip field name
+              const slipEntry = data.paymentSlips![i];
+              const slipUrl = typeof slipEntry === 'string' ? slipEntry : slipEntry?.url;
+              
+              for (const [fieldKey, fieldValue] of Object.entries(form)) {
+                if (typeof fieldValue === 'string' && fieldValue === slipUrl) {
+                  const label = FIELD_LABELS[fieldKey];
+                  if (label) return label;
+                  
+                  return fieldKey
+                    .replace(/_/g, " ")
+                    .replace(/\b\w/g, (c) => c.toUpperCase());
+                }
+              }
+              
+              return `Payment Slip ${i + 1}`;
+            })}
+          />
 
           {/* Terms */}
           {data.agreedToTerms === true && (

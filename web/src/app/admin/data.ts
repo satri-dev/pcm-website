@@ -195,10 +195,10 @@ export const recentActivity = [
 ];
 
 export const quickActions = [
-  { label: "New Post", href: "/admin/blogs/new", icon: "edit", color: "brand" },
-  { label: "Add Gallery", href: "/admin/gallery/new", icon: "gallery", color: "gold" },
-  { label: "New Page", href: "/admin/pages/new", icon: "pages", color: "green" },
-  { label: "Add Team", href: "/admin/team/new", icon: "team", color: "blue" },
-  { label: "View Enquiries", href: "/admin/enquiries", icon: "enquiries", color: "red" },
-  { label: "SEO Audit", href: "/admin/seo", icon: "seo", color: "violet" },
+  { label: "Add News", href: "/admin/content/news", icon: "edit", color: "brand" },
+  { label: "Add Gallery", href: "/admin/content/gallery", icon: "gallery", color: "gold" },
+  { label: "Edit Pages", href: "/admin/pages/home", icon: "pages", color: "green" },
+  { label: "Manage Faculty", href: "/admin/people/faculty", icon: "team", color: "blue" },
+  { label: "Applications", href: "/admin/content/applications", icon: "enquiries", color: "red" },
+  { label: "View Feedback", href: "/admin/content/feedback", icon: "seo", color: "violet" },
 ];
