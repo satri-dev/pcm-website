@@ -491,7 +491,8 @@ export default function ProgramPageEditor({
   const filledSections = SECTIONS.map((s) => isSectionFilled(s.id, formData));
 
   return (
-    <form onSubmit={handleSubmit} className="pp-editor">
+    <form onSubmit={handleSubmit}>
+      <div className="pp-editor" style={{ paddingBottom: "80px" }}>
       {error && (
         <div className="pp-banner pp-banner--error" role="alert">
           <AlertCircle size={16} />
@@ -1476,19 +1477,22 @@ export default function ProgramPageEditor({
           />
         </aside>
       </div>
+      </div>
 
-      <div className="pp-savebar">
-        <span className="pp-savebar__status">
-          <span className={`pp-savebar__dot ${dirty ? "pp-savebar__dot--dirty" : "pp-savebar__dot--clean"}`} />
-          {dirty ? "Unsaved changes" : saving ? "Saving…" : "All changes saved"}
-        </span>
-        <Link href="/admin" className="admin-btn">
-          Cancel
-        </Link>
-        <button type="submit" className="admin-btn admin-btn--primary" disabled={saving}>
-          <Save size={16} />
-          {saving ? "Saving…" : "Save All Content"}
-        </button>
+      <div className="pp-savebar-fixed px-6 py-4">
+        <div className="flex items-center justify-end gap-3">
+          <span className="pp-savebar__status">
+            <span className={`pp-savebar__dot ${dirty ? "pp-savebar__dot--dirty" : "pp-savebar__dot--clean"}`} />
+            {dirty ? "Unsaved changes" : saving ? "Saving…" : "All changes saved"}
+          </span>
+          <Link href="/admin" className="admin-btn">
+            Cancel
+          </Link>
+          <button type="submit" className="admin-btn admin-btn--primary" disabled={saving}>
+            <Save size={16} />
+            {saving ? "Saving…" : "Save All Content"}
+          </button>
+        </div>
       </div>
     </form>
   );

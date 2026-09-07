@@ -254,7 +254,7 @@ export default function ProgramsPageEditor({
 
   return (
     <main className="p-6">
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} style={{ paddingBottom: "80px" }}>
         {/* Info Banner */}
         <div className="admin-panel" style={{ marginBottom: "1.5rem" }}>
           <div className="admin-panel__body">
@@ -1020,18 +1020,20 @@ export default function ProgramsPageEditor({
         </section>
 
         {/* Save Button */}
-        <div className="flex items-center justify-end gap-3 mt-6">
-          <Link href="/admin" className="admin-btn">
-            Cancel
-          </Link>
-          <button
-            type="submit"
-            className="admin-btn admin-btn--primary"
-            disabled={saving}
-          >
-            <Save size={16} />
-            {saving ? "Saving..." : "Save All Content"}
-          </button>
+        <div className="pp-savebar-fixed px-6 py-4">
+          <div className="flex items-center justify-end gap-3">
+            <Link href="/admin" className="admin-btn">
+              Cancel
+            </Link>
+            <button
+              type="submit"
+              className="admin-btn admin-btn--primary"
+              disabled={saving}
+            >
+              <Save size={16} />
+              {saving ? "Saving..." : "Save All Content"}
+            </button>
+          </div>
         </div>
       </form>
     </main>
