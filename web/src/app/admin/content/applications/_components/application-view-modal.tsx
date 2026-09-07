@@ -98,58 +98,40 @@ const FIELD_LABELS: Record<string, string> = {
   guardian_phone: "Guardian Phone",
   guardian_relationship: "Relationship with Guardian",
   relationship: "Relationship",
-  
-  // Contact Info (Step 2)
-  permanent_province: "Permanent Province",
-  permanent_district: "Permanent District",
-  permanent_city: "Permanent Municipality/City",
-  permanent_ward: "Permanent Ward",
-  same_address: "Same as Permanent Address",
-  temporary_province: "Temporary Province",
-  temporary_district: "Temporary District",
-  temporary_city: "Temporary Municipality/City",
-  temporary_ward: "Temporary Ward",
-  
-  // Academic Info (Step 3)
-  see_bod: "SEE Board",
-  see_school: "SEE School",
-  see_address: "SEE School Address",
-  see_gpa: "SEE GPA",
-  see_year: "SEE Year",
-  see_full_mark: "SEE Full Marks",
-  see_mark_obtained: "SEE Marks Obtained",
-  see_percentage_obtained: "SEE Percentage",
-  see_marksheet: "SEE/SLC Marksheet",
-  see_character: "SEE/SLC Character Certificate",
-  
-  intermediate_bod: "+2 Board",
-  intermediate_school: "+2 School/College",
-  intermediate_address: "+2 School Address",
-  intermediate_gpa: "+2 GPA",
-  intermediate_year: "+2 Year",
-  intermediate_full_mark: "+2 Full Marks",
-  intermediate_mark_obtained: "+2 Marks Obtained",
-  intermediate_percentage_obtained: "+2 Percentage",
-  intermediate_marksheet: "+2/Intermediate Marksheet",
-  intermediate_character: "+2/Intermediate Character Certificate",
-  
-  // Document Step (Step 4)
-  photo: "Passport Photo",
-  passport_photo: "Passport Photo",
-  citizenship: "Citizenship/ID Card",
-  citizenship_front: "Citizenship Front",
-  citizenship_back: "Citizenship Back",
-  migration: "Migration Certificate",
-  migration_certificate: "Migration Certificate",
-  transcript: "Academic Transcript",
-  transfer_certificate: "Transfer Certificate",
-  character_certificate: "Character Certificate",
-  
-  // Payment (Step 6)
-  payment_slip: "Payment Slip",
-  payment_receipt: "Payment Receipt",
-  
-  // Other
+  permanent_province: "Province",
+  province_permanent: "Province",
+  permanent_district: "District",
+  district_permanent: "District",
+  permanent_city: "Municipality / City",
+  city_municipality_permanent: "Municipality / City",
+  permanent_ward: "Ward",
+  ward_no_permanent: "Ward",
+  same_address: "Same as Permanent",
+  temporary_address_same_as_permanent: "Same as Permanent",
+  temporary_province: "Province",
+  province_temporary: "Province",
+  temporary_district: "District",
+  district_temporary: "District",
+  temporary_city: "Municipality / City",
+  city_municipality_temporary: "Municipality / City",
+  temporary_ward: "Ward",
+  ward_no_temporary: "Ward",
+  see_bod: "Board",
+  see_school: "School",
+  see_address: "Address",
+  see_gpa: "GPA",
+  see_year: "Year",
+  see_full_mark: "Full Marks",
+  see_mark_obtained: "Marks Obtained",
+  see_percentage_obtained: "Percentage",
+  intermediate_bod: "Board",
+  intermediate_school: "School",
+  intermediate_address: "Address",
+  intermediate_gpa: "GPA",
+  intermediate_year: "Year",
+  intermediate_full_mark: "Full Marks",
+  intermediate_mark_obtained: "Marks Obtained",
+  intermediate_percentage_obtained: "Percentage",
   agree_terms: "Agreed to Terms",
   imagee: "Profile Image",
 };
@@ -159,56 +141,13 @@ const SKIP_FIELDS = new Set(["agree_terms"]);
 
 /* ── Section grouping by form steps ── */
 function getSection(key: string): string {
-  const lowerKey = key.toLowerCase();
-  
-  // Step 1: Personal Information
-  if (["programme", "program_name", "shift", "name", "full_name", "students_full_name", "gender", "dob", "date_of_birth", "date_option", "nationality", "phone", "phone_number", "personal_contact", "email", "email_address", "imagee"].includes(key)) {
-    return "Step 1: Personal Information";
-  }
-  
-  // Step 1: Guardian Details (part of personal info)
-  if (["guardian_type", "father_name", "father_phone", "mother_name", "mother_phone", "guardian_name", "guardian_phone", "guardian_relationship", "relationship"].includes(key)) {
-    return "Step 1: Personal Information";
-  }
-  
-  // Step 2: Contact Information - includes all address fields
-  if (lowerKey.includes("province") || lowerKey.includes("district") || 
-      lowerKey.includes("city") || lowerKey.includes("ward") || 
-      lowerKey.includes("address") || lowerKey.includes("permanent") || 
-      lowerKey.includes("temporary") || key === "same_address") {
-    return "Step 2: Contact Information";
-  }
-  
-  // Step 3: Academic Information - includes all SEE and Intermediate fields
-  if (lowerKey.includes("see_") || lowerKey.includes("see") || 
-      lowerKey.includes("slc") || lowerKey.includes("intermediate") || 
-      lowerKey.includes("bod") || lowerKey.includes("board") ||
-      (lowerKey.includes("school") && !lowerKey.includes("pre")) ||
-      lowerKey.includes("gpa") || lowerKey.includes("percentage") ||
-      (lowerKey.includes("mark") && !lowerKey.includes("marksheet")) ||
-      (lowerKey.includes("year") && (lowerKey.includes("see") || lowerKey.includes("intermediate")))) {
-    return "Step 3: Academic Information";
-  }
-  
-  // Step 4: Documents
-  if (lowerKey.includes("photo") || lowerKey.includes("citizenship") || 
-      lowerKey.includes("migration") || lowerKey.includes("transcript") || 
-      lowerKey.includes("certificate") || lowerKey.includes("marksheet") ||
-      lowerKey.includes("character")) {
-    return "Step 4: Documents";
-  }
-  
-  // Step 5: Declaration
-  if (key === "agree_terms" || lowerKey.includes("declaration") || lowerKey.includes("terms")) {
-    return "Step 5: Declaration";
-  }
-  
-  // Step 6: Payment
-  if (lowerKey.includes("payment") || lowerKey.includes("receipt")) {
-    return "Step 6: Payment";
-  }
-  
-  return "Other Information";
+  if (key.startsWith("see_")) return "SEE / SLC";
+  if (key.startsWith("intermediate_")) return "+2 / Intermediate";
+  if (key.startsWith("permanent_") || key.endsWith("_permanent")) return "Permanent Address";
+  if (key.startsWith("temporary_") || key.endsWith("_temporary")) return "Temporary Address";
+  if (["father_name", "father_phone", "mother_name", "mother_phone", "guardian_name", "guardian_phone", "guardian_type", "relationship"].includes(key)) return "Guardian Details";
+  if (["program_name", "shift", "name", "gender", "dob", "date_option", "nationality", "phone", "personal_contact", "email"].includes(key)) return "Personal Details";
+  return "Other";
 }
 
 function SectionGroup({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
