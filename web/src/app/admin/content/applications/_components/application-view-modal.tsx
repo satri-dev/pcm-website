@@ -88,14 +88,23 @@ const FIELD_LABELS: Record<string, string> = {
   guardian_phone: "Guardian Phone",
   relationship: "Relationship",
   permanent_province: "Province",
+  province_permanent: "Province",
   permanent_district: "District",
+  district_permanent: "District",
   permanent_city: "Municipality / City",
+  city_municipality_permanent: "Municipality / City",
   permanent_ward: "Ward",
+  ward_no_permanent: "Ward",
   same_address: "Same as Permanent",
+  temporary_address_same_as_permanent: "Same as Permanent",
   temporary_province: "Province",
+  province_temporary: "Province",
   temporary_district: "District",
+  district_temporary: "District",
   temporary_city: "Municipality / City",
+  city_municipality_temporary: "Municipality / City",
   temporary_ward: "Ward",
+  ward_no_temporary: "Ward",
   see_bod: "Board",
   see_school: "School",
   see_address: "Address",
@@ -122,8 +131,8 @@ const SKIP_FIELDS = new Set(["agree_terms"]);
 function getSection(key: string): string {
   if (key.startsWith("see_")) return "SEE / SLC";
   if (key.startsWith("intermediate_")) return "+2 / Intermediate";
-  if (key.startsWith("permanent_")) return "Permanent Address";
-  if (key.startsWith("temporary_")) return "Temporary Address";
+  if (key.startsWith("permanent_") || key.endsWith("_permanent")) return "Permanent Address";
+  if (key.startsWith("temporary_") || key.endsWith("_temporary")) return "Temporary Address";
   if (["father_name", "father_phone", "mother_name", "mother_phone", "guardian_name", "guardian_phone", "guardian_type", "relationship"].includes(key)) return "Guardian Details";
   if (["program_name", "shift", "name", "gender", "dob", "date_option", "nationality", "phone", "personal_contact", "email"].includes(key)) return "Personal Details";
   return "Other";
