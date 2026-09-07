@@ -428,10 +428,10 @@ const DEFAULT_ADMISSION_CONTENT: AdmissionPageContent = {
       heading: "Document Upload",
       description: "Upload your required documents",
       documentLabels: [
-        "SEE / SLC Mark-sheet",
-        "SEE / SLC Character Certificate",
-        "+2 / Intermediate Mark-sheet",
-        "+2 / Intermediate Character Certificate",
+        { label: "SEE / SLC Mark-sheet", type: "document" },
+        { label: "SEE / SLC Character Certificate", type: "document" },
+        { label: "+2 / Intermediate Mark-sheet", type: "document" },
+        { label: "+2 / Intermediate Character Certificate", type: "document" },
       ],
     },
     declarationStep: {
