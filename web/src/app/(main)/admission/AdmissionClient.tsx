@@ -466,11 +466,11 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
                       </p>
                     </div>
 
-                    {documentLabels.map((label: string, i: number) => (
+                    {documentLabels.map((docEntry: { label: string; type: "document" | "image" }, i: number) => (
                       <div key={i} className="space-y-2">
                         <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                           <Check className="w-4 h-4 text-[#51B747] shrink-0" strokeWidth={2.5} />
-                          {label}
+                          {docEntry.label}
                         </label>
                         {docFiles[i] ? (
                           (() => {
@@ -489,8 +489,17 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
                           })()
                         ) : (
                           <div className="flex flex-col items-start gap-2">
-                            <DocumentUpload onUpload={handleDocUpload(i)} />
-                            <p className="text-xs text-gray-400">PDF, DOC, DOCX · Max 5 MB</p>
+                            {docEntry.type === "image" ? (
+                              <>
+                                <ImageUpload onUpload={handleDocUpload(i)} />
+                                <p className="text-xs text-gray-400">JPEG, JPG, PNG, WEBP · Max 5 MB</p>
+                              </>
+                            ) : (
+                              <>
+                                <DocumentUpload onUpload={handleDocUpload(i)} />
+                                <p className="text-xs text-gray-400">PDF, DOC, DOCX · Max 5 MB</p>
+                              </>
+                            )}
                           </div>
                         )}
                       </div>
