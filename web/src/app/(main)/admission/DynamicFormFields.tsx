@@ -42,6 +42,50 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
     );
   }
 
+  // Helper to find guardian type field
+  function getGuardianType(): string | undefined {
+    const guardianField = fields.find((f) => {
+      const ll = f.label.toLowerCase();
+      return ll.includes("guardian") && ll.includes("type");
+    });
+    if (!guardianField) return undefined;
+    return formData[guardianField.id] as string | undefined;
+  }
+
+  // Helper to check if field is conditional guardian field
+  function isConditionalGuardianField(field: FieldItem): boolean {
+    const ll = field.label.toLowerCase();
+    return (
+      ll.includes("father") ||
+      ll.includes("mother") ||
+      ll.includes("relationship") ||
+      (ll.includes("guardian") && !ll.includes("type"))
+    );
+  }
+
+  // Helper to check if guardian field should be shown
+  function shouldShowGuardianField(field: FieldItem): boolean {
+    const guardianType = getGuardianType();
+    if (!guardianType) return false; // Hide all guardian fields until type is selected
+    
+    const ll = field.label.toLowerCase();
+    
+    // Relationship field only shows for "other"
+    if (ll.includes("relationship")) {
+      return guardianType === "other";
+    }
+    
+    if (guardianType === "father") {
+      return ll.includes("father");
+    } else if (guardianType === "mother") {
+      return ll.includes("mother");
+    } else if (guardianType === "other") {
+      return ll.includes("guardian") && !ll.includes("type");
+    }
+    
+    return false;
+  }
+
   // Build a lookup of location fields by grouping them via a shared label suffix
   // e.g. "Province (Permanent)", "District (Permanent)" share suffix "(Permanent)"
   function getLocationGroup(field: FieldItem): { role: "province" | "district" | "city" | "ward"; groupId: string; fields: Record<string, FieldItem> } | null {
@@ -79,9 +123,50 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
       {fields
         .slice()
         .sort((a, b) => a.order - b.order)
+        .filter((field) => {
+          // Filter out conditional guardian fields that shouldn't be shown
+          if (isConditionalGuardianField(field)) {
+            return shouldShowGuardianField(field);
+          }
+          return true;
+        })
         .map((field) => {
           const value = formData[field.id];
           const group = getLocationGroup(field);
+
+          // Check if this is a Guardian Type dropdown - add onChange to clear dependent fields
+          const isGuardianTypeField = field.label.toLowerCase().includes("guardian") && field.label.toLowerCase().includes("type");
+          
+          if (isGuardianTypeField && field.fieldType === "dropdown") {
+            return (
+              <div key={field.id}>
+                <Label field={field} />
+                <select
+                  value={value || ""}
+                  onChange={(e) => {
+                    const newType = e.target.value;
+                    onUpdate(field.id, newType);
+                    // Clear all guardian-related fields when type changes
+                    fields.forEach((f) => {
+                      if (isConditionalGuardianField(f)) {
+                        onUpdate(f.id, "");
+                      }
+                    });
+                  }}
+                  required={field.required}
+                  className={inputClass}
+                >
+                  <option value="">Select {field.label}</option>
+                  {field.options?.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label || opt.value}
+                    </option>
+                  ))}
+                </select>
+                <HelpText text={field.helpText} />
+              </div>
+            );
+          }
 
           // --- Nepal Province cascading select ---
           if (group?.role === "province") {
