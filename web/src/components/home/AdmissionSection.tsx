@@ -102,12 +102,12 @@ export default function AdmissionSection({ admission }: { admission: AdmissionCo
                   {admission.details.map((detail, index) => (
                     <div 
                       key={detail.label} 
-                      className="pb-4 border-b border-gray-100 last:border-0 last:pb-0"
+                      className="flex items-center justify-between pb-4 border-b border-gray-100 last:border-0 last:pb-0 gap-4"
                     >
-                      <span className="text-xs uppercase tracking-wide text-gray-500 font-semibold block mb-1">
+                      <span className="text-xs uppercase tracking-wide text-gray-500 font-semibold whitespace-nowrap">
                         {detail.label}
                       </span>
-                      <span className="text-base font-semibold text-pcm-navy block">
+                      <span className="text-sm font-semibold text-pcm-navy text-right">
                         {detail.value}
                       </span>
                     </div>

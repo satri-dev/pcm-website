@@ -65,9 +65,10 @@ export default function FacilitiesSection({ facilities }: { facilities: Facility
                   <h3 className="text-xl font-display font-semibold text-pcm-navy mb-2">
                     {facility.name}
                   </h3>
-                  <p className="text-muted-foreground">
-                    {facility.description}
-                  </p>
+                  <div
+                    className="text-muted-foreground"
+                    dangerouslySetInnerHTML={{ __html: facility.description }}
+                  />
                 </div>
               </div>
             );
