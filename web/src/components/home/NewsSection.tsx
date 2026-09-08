@@ -104,7 +104,7 @@ export default function NewsSection({ news, notices, results, events }: Props) {
   };
 
   return (
-    <section className="py-[clamp(4rem,8vw,6rem)] bg-secondary/30">
+    <section className="py-[clamp(4rem,8vw,6rem)] mt-[clamp(4rem,8vw,6rem)] bg-secondary/30">
       <div className="container">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-8 lg:gap-12">
           <div>
