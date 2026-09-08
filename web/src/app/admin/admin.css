@@ -978,6 +978,21 @@
 .pp-savebar__dot--clean { background: var(--admin-green); }
 .pp-savebar__dot--dirty { background: var(--admin-gold); }
 
+/* Fixed full-width save bar (spans content area beside the sidebar) */
+.pp-savebar-fixed {
+  position: fixed;
+  bottom: 0;
+  left: 252px;
+  right: 0;
+  z-index: 30;
+  background: var(--admin-surface);
+  border-top: 1px solid var(--admin-line);
+  box-shadow: 0 -4px 14px rgba(15, 23, 42, 0.08);
+}
+@media (max-width: 900px) {
+  .pp-savebar-fixed { left: 0; }
+}
+
 /* Collapsible sections */
 .pp-section {
   background: var(--admin-surface);

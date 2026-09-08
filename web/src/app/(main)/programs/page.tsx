@@ -3,6 +3,7 @@ import { getProgramsList } from "@/lib/data/programs";
 import { getPageContent } from "@/lib/data/page-content";
 import ProgramsClient from "./ProgramsClient";
 import type { ProgramsPageContent } from "@/types/page-content";
+import type { Program } from "@/types/programs";
 
 // Type for program coordinator data
 interface ProgramCoordinator {
@@ -35,6 +36,16 @@ export default async function ProgramsPage() {
   const content = (pageContentData?.content || {}) as Partial<ProgramsPageContent>;
   const programs = programsData.items;
 
+  // Featured programs come from the admin page editor (ordered list of slugs),
+  // falling back to the three core PCM programs when unset.
+  const featuredProgramRefs =
+    content.featuredProgramRefs && content.featuredProgramRefs.length > 0
+      ? content.featuredProgramRefs
+      : ["bcsit", "bba", "bba-finance"];
+  const featuredPrograms = featuredProgramRefs
+    .map((slug) => programs.find((p) => p.slug === slug))
+    .filter((p): p is Program => Boolean(p));
+
   // Extract coordinator data from programPages nested in the programs page content
   const coordinatorsData = programs.map((program) => {
     const programPageContent = (content as any)?.programPages?.[program.slug];
@@ -53,7 +64,9 @@ export default async function ProgramsPage() {
       comparisonTable={content.comparisonTable}
       cta={content.cta}
       coordinatorsContent={content.coordinators}
-      // Show all active programs in the system on the cards + comparison table
+      // Featured programs drive the cards section; the comparison table and
+      // coordinators still show all active programs in the system.
+      featuredPrograms={featuredPrograms}
       programs={programs}
       coordinatorsData={coordinatorsData}
     />

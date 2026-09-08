@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import Link from "next/link";
 import type { AdmissionPageContent } from "@/types/page-content";
 import type { FileEntry } from "@/types/application";
@@ -108,6 +108,49 @@ function buildInitialForm(content: AdmissionPageContent): FormData {
 
 const INITIAL_FORM: FormData = {};
 
+// Resolve the "temporary address same as permanent" checkbox and the
+// permanent ↔ temporary address field pairs. Field ids/labels vary between
+// the code defaults (e.g. "permanent_province") and stored CMS content
+// (e.g. "province_permanent"), so we match by both.
+function getSameAddressConfig(content: AdmissionPageContent) {
+  const contactFields = content.applicationForm?.contactInfoFields || [];
+
+  const sameAddressId = contactFields.find(
+    (f: any) =>
+      f.fieldType === "checkbox" &&
+      ((f.id || "").toLowerCase().includes("same") ||
+        (f.label || "").toLowerCase().includes("same as permanent"))
+  )?.id;
+
+  const locationRoles = ["province", "district", "city", "ward"];
+  const hasRole = (f: any, role: string) =>
+    (f.label || "").toLowerCase().includes(role) ||
+    (f.id || "").toLowerCase().includes(role);
+
+  const pairs = locationRoles
+    .map((role) => {
+      const permField = contactFields.find(
+        (f: any) =>
+          hasRole(f, role) &&
+          ((f.label || "").toLowerCase().includes("permanent") ||
+            (f.id || "").toLowerCase().includes("permanent"))
+      );
+      const tempField = contactFields.find(
+        (f: any) =>
+          hasRole(f, role) &&
+          ((f.label || "").toLowerCase().includes("temporary") ||
+            (f.id || "").toLowerCase().includes("temporary"))
+      );
+      return { permField, tempField };
+    })
+    .filter((p) => p.permField && p.tempField) as Array<{
+    permField: { id: string };
+    tempField: { id: string };
+  }>;
+
+  return { sameAddressId, pairs };
+}
+
 export default function AdmissionClient({ content }: AdmissionClientProps) {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormData>(() => buildInitialForm(content));
@@ -124,19 +167,26 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
     setStepErrors([]);
     setForm((prev) => {
       const next = { ...prev, [field]: value };
-      if (field === "same_address") {
-        // Find all contact info fields and match permanent ↔ temporary by role
-        const contactFields = content.applicationForm?.contactInfoFields || [];
-        const locationRoles = ["province", "district", "city", "ward"];
-        for (const role of locationRoles) {
-          const permField = contactFields.find(
-            (f: any) => f.label.toLowerCase().includes(role) && f.label.toLowerCase().includes("permanent")
-          );
-          const tempField = contactFields.find(
-            (f: any) => f.label.toLowerCase().includes(role) && f.label.toLowerCase().includes("temporary")
-          );
-          if (permField && tempField) {
-            next[tempField.id] = value ? prev[permField.id] || "" : "";
+      const { sameAddressId, pairs } = getSameAddressConfig(content);
+      const checked = sameAddressId ? !!prev[sameAddressId] : false;
+
+      if (field && sameAddressId && field === sameAddressId) {
+        // Toggling the checkbox: copy permanent → temporary (check) or clear (uncheck)
+        for (const { permField, tempField } of pairs) {
+          next[tempField.id] = value ? prev[permField.id] || "" : "";
+        }
+      } else if (checked && pairs.length > 0) {
+        // While "same as permanent" is on:
+        // - changing a permanent field syncs its temporary counterpart
+        // - edits to a temporary field are reverted (it is locked)
+        const paired = pairs.find(
+          (p) => p.permField.id === field || p.tempField.id === field
+        );
+        if (paired) {
+          if (field === paired.permField.id) {
+            next[paired.tempField.id] = value;
+          } else {
+            next[field] = prev[paired.permField.id] || "";
           }
         }
       }
@@ -155,6 +205,20 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
   };
 
   const documentLabels = content.applicationForm?.documentStep?.documentLabels ?? [];
+
+  const sameAddressChecked = (() => {
+    const { sameAddressId } = getSameAddressConfig(content);
+    return sameAddressId ? !!form[sameAddressId] : false;
+  })();
+
+  const disabledFieldIds = useMemo(() => {
+    const set = new Set<string>();
+    if (sameAddressChecked) {
+      const { pairs } = getSameAddressConfig(content);
+      for (const { tempField } of pairs) set.add(tempField.id);
+    }
+    return set;
+  }, [sameAddressChecked, content]);
 
   const handleDocUpload = (index: number) => (r: { secure_url: string; original_filename: string }) => {
     setDocFiles((prev) => {
@@ -431,6 +495,7 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
                       fields={content.applicationForm.contactInfoFields}
                       formData={form}
                       onUpdate={update}
+                      disabledFieldIds={disabledFieldIds}
                     />
                   </div>
                 )}
@@ -466,11 +531,11 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
                       </p>
                     </div>
 
-                    {documentLabels.map((label: string, i: number) => (
+                    {documentLabels.map((docEntry: { label: string; type: "document" | "image" }, i: number) => (
                       <div key={i} className="space-y-2">
                         <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                           <Check className="w-4 h-4 text-[#51B747] shrink-0" strokeWidth={2.5} />
-                          {label}
+                          {docEntry.label}
                         </label>
                         {docFiles[i] ? (
                           (() => {
@@ -489,8 +554,17 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
                           })()
                         ) : (
                           <div className="flex flex-col items-start gap-2">
-                            <DocumentUpload onUpload={handleDocUpload(i)} />
-                            <p className="text-xs text-gray-400">PDF, DOC, DOCX · Max 5 MB</p>
+                            {docEntry.type === "image" ? (
+                              <>
+                                <ImageUpload onUpload={handleDocUpload(i)} />
+                                <p className="text-xs text-gray-400">JPEG, JPG, PNG, WEBP · Max 5 MB</p>
+                              </>
+                            ) : (
+                              <>
+                                <DocumentUpload onUpload={handleDocUpload(i)} />
+                                <p className="text-xs text-gray-400">PDF, DOC, DOCX · Max 5 MB</p>
+                              </>
+                            )}
                           </div>
                         )}
                       </div>

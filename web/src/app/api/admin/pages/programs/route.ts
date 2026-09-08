@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
+import { requireApiSession } from "@/core/lib/api-guard";
 import { upsertPageContent } from "@/repositories/page-content.repository";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 import { PROGRAMS_PAGE_SCHEMA, filterEditableFields } from "@/types/page-content";
@@ -10,6 +11,9 @@ import { PROGRAMS_PAGE_SCHEMA, filterEditableFields } from "@/types/page-content
  * Only accepts fields marked as "editable" in PROGRAMS_PAGE_SCHEMA
  */
 export async function PUT(req: NextRequest) {
+  const guard = await requireApiSession(["admin", "editor"]);
+  if (!guard.ok) return guard.response;
+
   try {
     const body = await req.json();
 

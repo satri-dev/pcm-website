@@ -192,7 +192,15 @@ export default function ApplicationFormSection({
 
   const updateDocumentLabel = (index: number, value: string) => {
     const documentLabels = [...cf.documentStep.documentLabels];
-    documentLabels[index] = value;
+    documentLabels[index] = { ...documentLabels[index], label: value };
+    updateForm({ documentStep: { ...cf.documentStep, documentLabels } } as Partial<
+      AdmissionPageContent["applicationForm"]
+    >);
+  };
+
+  const updateDocumentType = (index: number, type: "document" | "image") => {
+    const documentLabels = [...cf.documentStep.documentLabels];
+    documentLabels[index] = { ...documentLabels[index], type };
     updateForm({ documentStep: { ...cf.documentStep, documentLabels } } as Partial<
       AdmissionPageContent["applicationForm"]
     >);
@@ -464,7 +472,7 @@ export default function ApplicationFormSection({
                       ...prev.applicationForm.documentStep,
                       documentLabels: [
                         ...prev.applicationForm.documentStep.documentLabels,
-                        "New Document",
+                        { label: "New Document", type: "document" },
                       ],
                     },
                   },
@@ -476,16 +484,24 @@ export default function ApplicationFormSection({
             </button>
           </div>
           <div className="space-y-2">
-            {cf.documentStep.documentLabels.map((label, idx) => (
+            {cf.documentStep.documentLabels.map((docEntry, idx) => (
               <div key={idx} className="flex items-center gap-2">
                 <span className="w-6 text-xs text-slate-400 text-right">{idx + 1}.</span>
                 <input
                   type="text"
-                  value={label}
+                  value={docEntry.label}
                   onChange={(e) => updateDocumentLabel(idx, e.target.value)}
                   className={inputClass}
                   placeholder="Document label"
                 />
+                <select
+                  value={docEntry.type}
+                  onChange={(e) => updateDocumentType(idx, e.target.value as "document" | "image")}
+                  className="px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 bg-white transition w-36"
+                >
+                  <option value="document">Document</option>
+                  <option value="image">Image</option>
+                </select>
                 <button
                   type="button"
                   onClick={() =>
