@@ -504,7 +504,7 @@ export default function ProgramsPageEditor({
                         </div>
                       </div>
                       <Link
-                        href={`/admin/content/programs/${program.slug}`}
+                        href={`/admin/content/programs`}
                         className="text-xs text-blue-600 hover:text-blue-800 inline-flex items-center gap-1 mt-2"
                         onClick={(e) => e.stopPropagation()}
                       >
