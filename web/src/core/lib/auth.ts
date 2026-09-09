@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { betterAuth } from "better-auth"
 import { mongodbAdapter } from "better-auth/adapters/mongodb"
 import { admin, username, twoFactor, haveIBeenPwned } from "better-auth/plugins"
@@ -17,7 +18,7 @@ const viewerRole = ac.newRole({ user: [], session: [] })
 
 let _auth: any = null
 
-async function getAuthInstance() {
+export async function getAuthInstance() {
   if (_auth) return _auth
   const db = await getDb()
   _auth = betterAuth({
