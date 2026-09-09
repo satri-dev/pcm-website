@@ -133,6 +133,7 @@ export default function NewsClient({ settings, newsItems, notices }: Props) {
                 <span className="news-card__tag">{settings.featuredEyebrow} · {featured.category || "News"}</span>
                 <h2>{featured.title}</h2>
                 <p className="prose prose-sm max-w-none">{truncateExcerpt(featured.excerpt)}</p>
+                <span className="link-arrow">Read the full story {ArrowRight}</span>
               </div>
             </Link>
           </div>
@@ -154,6 +155,7 @@ export default function NewsClient({ settings, newsItems, notices }: Props) {
                       <span className="news-card__tag">{s.category || "News"}</span>
                       <h3><Link href={`/news/${s.slug}`}>{s.title}</Link></h3>
                       <p className="prose prose-sm max-w-none">{truncateExcerpt(s.excerpt)}</p>
+                      <div className="news-card__foot"><Link className="link-arrow" href={`/news/${s.slug}`}>Read story {ArrowRight}</Link></div>
                     </div>
                   </article>
                 ))}
