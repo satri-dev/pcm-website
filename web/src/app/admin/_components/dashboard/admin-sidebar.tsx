@@ -425,7 +425,6 @@ const navigation: NavSection[] = [
       { label: "Chatbot KB", href: "/admin/system/chat-bot", icon: Bot },
       { label: "System Trash", href: "/admin/system/trash", icon: Trash2 },
       { label: "Backups", href: "/admin/system/backups", icon: HardDrive },
-      { label: "SEO & Meta", href: "/admin/system/seo", icon: Search },
       {
         label: "Users & Roles",
         href: "/admin/system/users",
