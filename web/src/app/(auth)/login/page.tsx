@@ -43,14 +43,7 @@ export default function LoginPage() {
         <LoginForm />
 
         {/* Demo credentials */}
-        <p className="mt-6 rounded-lg border border-dashed border-slate-300 bg-slate-100/80 px-4 py-3 text-center text-xs leading-5 text-slate-600">
-          Demo —{" "}
-          <span className="font-semibold text-blue-800">admin/admin123</span>
-          {" · "}
-          <span className="font-semibold text-blue-800">editor/editor123</span>
-          {" · "}
-          <span className="font-semibold text-blue-800">viewer/viewer123</span>
-        </p>
+       
 
         {/* Back to website */}
         <Link

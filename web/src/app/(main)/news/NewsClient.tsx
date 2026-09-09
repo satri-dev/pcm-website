@@ -121,6 +121,7 @@ export default function NewsClient({ settings, newsItems, notices }: Props) {
           </div>
         </section>
 
+        {featured && (
         <section className="section">
           <div className="wrap-wide">
             <Link className="card news-featured reveal" href={`/news/${featured.slug}`}>
@@ -138,6 +139,7 @@ export default function NewsClient({ settings, newsItems, notices }: Props) {
             </Link>
           </div>
         </section>
+        )}
 
         <section className="section tone-sky">
           <div className="wrap-wide with-aside">

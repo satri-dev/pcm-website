@@ -6,6 +6,7 @@ import {
   getApprovedBlogStudentCached,
   getApprovedBlogStudents,
 } from "@/lib/data/blog-student";
+import { BUILD_PLACEHOLDER_SLUG } from "@/lib/constants";
 
 function stripHtml(html: string): string {
   return html
@@ -27,12 +28,11 @@ function formatDate(dateISO: string) {
 export async function generateStaticParams() {
   try {
     const items = await getApprovedBlogStudents();
+    if (items.length === 0) return [{ slug: BUILD_PLACEHOLDER_SLUG }];
     return items.map((item) => ({ slug: item.slug }));
   } catch (error) {
-    // During build, if the database is empty or unavailable, return an empty array
-    // With PPR, pages will be generated on-demand at runtime
     console.warn("Failed to generate static params for blogs-student:", error);
-    return [];
+    return [{ slug: BUILD_PLACEHOLDER_SLUG }];
   }
 }
 

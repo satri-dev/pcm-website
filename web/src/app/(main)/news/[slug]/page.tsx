@@ -6,14 +6,16 @@ import {
   getPublishedNews,
 } from "@/lib/data/news";
 import { getNewsArticleSettingsCached } from "@/lib/data/news-article-settings";
+import { BUILD_PLACEHOLDER_SLUG } from "@/lib/constants";
 
 export async function generateStaticParams() {
   try {
     const items = await getPublishedNews();
+    if (items.length === 0) return [{ slug: BUILD_PLACEHOLDER_SLUG }];
     return items.map((n) => ({ slug: n.slug }));
   } catch (error) {
     console.warn("Failed to generate static params for news:", error);
-    return [];
+    return [{ slug: BUILD_PLACEHOLDER_SLUG }];
   }
 }
 

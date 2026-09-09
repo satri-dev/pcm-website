@@ -5,15 +5,17 @@ import {
   getPublishedSurveys,
 } from "@/lib/data/surveys";
 import { getSurveySettings } from "@/lib/data/survey-page-settings";
+import { BUILD_PLACEHOLDER_SLUG } from "@/lib/constants";
 import SurveyResponder from "./SurveyResponder";
 
 export async function generateStaticParams() {
   try {
     const items = await getPublishedSurveys();
+    if (items.length === 0) return [{ slug: BUILD_PLACEHOLDER_SLUG }];
     return items.map((s) => ({ slug: s.slug }));
   } catch (error) {
     console.warn("Failed to generate static params for surveys:", error);
-    return [];
+    return [{ slug: BUILD_PLACEHOLDER_SLUG }];
   }
 }
 
