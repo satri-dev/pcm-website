@@ -27,8 +27,7 @@ import { listResults } from "@/repositories/results.repository";
 import { listGallery } from "@/repositories/gallery.repository";
 import { listFacilities } from "@/repositories/facilities.repository";
 import { listBlogs } from "@/repositories/blog.repository";
-import AdmissionModal from "@/components/shared/AdmissionModal";
-import { getAdmissionModal } from "@/lib/data/admission-modal";
+import AdmissionModalServer from "@/components/shared/AdmissionModalServer";
 
 function GallerySectionLoading() {
   return (
@@ -137,7 +136,6 @@ export default async function HomePage() {
     galleryData,
     facilitiesData,
     blogsData,
-    admissionModalData,
   ] = await Promise.all([
     getHomepage(),
     listPrograms({ pageSize: 3, status: "open" }),
@@ -148,7 +146,6 @@ export default async function HomePage() {
     listGallery({ pageSize: 5 }),
     listFacilities({ status: "published", pageSize: 3 }),
     listBlogs({ status: "published", pageSize: 3 }),
-    getAdmissionModal(),
   ]);
 
   return (
@@ -175,7 +172,7 @@ export default async function HomePage() {
       <BlogsSection blogs={blogsData.items} />
       <TestimonialsSection testimonials={homepage.testimonials} />
       <CTASection cta={homepage.cta} />
-      <AdmissionModal settings={admissionModalData.settings} />
+      <AdmissionModalServer />
     </>
   );
 }
