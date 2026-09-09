@@ -20,7 +20,7 @@ const newsSchema = z.object({
     .string()
     .min(1, "This field is required")
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must contain only lowercase letters, numbers, and hyphens"),
-  excerpt: z.string().min(1, "This field is required").max(1000, "Excerpt too long"),
+  excerpt: z.string().min(10, "This field is required"),
   content: z.string().optional(),
   category: z.string().min(1, "This field is required").max(100),
   image: z.string().optional(),
