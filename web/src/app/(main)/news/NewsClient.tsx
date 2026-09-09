@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import Link from "next/link";
@@ -44,6 +45,21 @@ function relativeTime(ts: number) {
 const ArrowRight = (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
 );
+
+function truncateExcerpt(html: string, max = 100) {
+  const text = html
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/<[^>]+>/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (text.length <= max) return text;
+  return `${text.slice(0, max).trimEnd()}.......`;
+}
 
 export default function NewsClient({ settings, newsItems, notices }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -116,11 +132,7 @@ export default function NewsClient({ settings, newsItems, notices }: Props) {
               <div className="news-featured__body">
                 <span className="news-card__tag">{settings.featuredEyebrow} · {featured.category || "News"}</span>
                 <h2>{featured.title}</h2>
-                <div
-                  className="prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: featured.excerpt }}
-                />
-                <span className="link-arrow">Read the full story {ArrowRight}</span>
+                <p className="prose prose-sm max-w-none">{truncateExcerpt(featured.excerpt)}</p>
               </div>
             </Link>
           </div>
@@ -141,11 +153,7 @@ export default function NewsClient({ settings, newsItems, notices }: Props) {
                     <div className="news-card__body">
                       <span className="news-card__tag">{s.category || "News"}</span>
                       <h3><Link href={`/news/${s.slug}`}>{s.title}</Link></h3>
-                      <div
-                        className="prose prose-sm max-w-none"
-                        dangerouslySetInnerHTML={{ __html: s.excerpt }}
-                      />
-                      <div className="news-card__foot"><Link className="link-arrow" href={`/news/${s.slug}`}>Read story {ArrowRight}</Link></div>
+                      <p className="prose prose-sm max-w-none">{truncateExcerpt(s.excerpt)}</p>
                     </div>
                   </article>
                 ))}

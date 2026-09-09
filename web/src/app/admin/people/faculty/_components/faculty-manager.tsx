@@ -56,7 +56,7 @@ export default function FacultyManager({ initialData }: FacultyManagerProps) {
             <RefreshCw size={16} className={loading ? "animate-spin" : ""} /> Refresh
           </button>
           <button type="button" className="admin-btn admin-btn--primary" onClick={handleAdd}>
-            <Plus size={16} /> Add Faculty
+            <Plus size={16} /> Add Staff
           </button>
         </div>
       </div>
