@@ -236,7 +236,10 @@ export default function EventsClient({ settings, eventItems }: Props) {
                     </div>
                     <div className="event-card__body">
                       <h3>{e.title}</h3>
-                      <p className="event-card__desc">{e.description}</p>
+                      <div
+                        className="prose prose-sm max-w-none event-card__desc"
+                        dangerouslySetInnerHTML={{ __html: e.description }}
+                      />
                       <div className="event-card__meta">
                         <span>
                           {PinIcon}
