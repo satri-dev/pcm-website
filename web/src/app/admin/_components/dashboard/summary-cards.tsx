@@ -1,4 +1,4 @@
-import { summaryStats } from "../../data";
+import { summaryStats, type SummaryStatId } from "../../data";
 import {
   FileText,
   Pencil,
@@ -19,19 +19,24 @@ const iconMap: Record<string, React.FC<{ size?: number }>> = {
   media: SlidersHorizontal,
 };
 
-export default function SummaryCards() {
+interface SummaryCardsProps {
+  values: Record<SummaryStatId, number>;
+  subs?: Partial<Record<SummaryStatId, string>>;
+}
+
+export default function SummaryCards({ values, subs = {} }: SummaryCardsProps) {
   return (
     <div className="admin-stats">
       {summaryStats.map((stat) => {
         const Icon = iconMap[stat.icon];
         return (
-          <div key={stat.label} className={`admin-stat admin-stat--${stat.color}`}>
+          <div key={stat.id} className={`admin-stat admin-stat--${stat.color}`}>
             <div className="admin-stat__label">
               {Icon && <Icon size={15} />}
               {stat.label}
             </div>
-            <div className="admin-stat__value">{stat.value}</div>
-            <div className="admin-stat__sub">{stat.sub}</div>
+            <div className="admin-stat__value">{values[stat.id]}</div>
+            <div className="admin-stat__sub">{subs[stat.id] ?? stat.sub}</div>
           </div>
         );
       })}

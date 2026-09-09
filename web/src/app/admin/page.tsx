@@ -8,11 +8,17 @@ import SeoMetaPanel from "./_components/dashboard/seo-meta-panel";
 import RecentActivity from "./_components/dashboard/recent-activity";
 import QuickActions from "./_components/dashboard/quick-actions";
 import { getSiteVisits } from "@/core/lib/analytics/stats";
+import { countPublicPages } from "@/core/lib/page-count";
+import { getDashboardCounts } from "@/core/lib/dashboard-stats";
 import { connection } from "next/server";
 
 export default async function AdminDashboard() {
   await connection();
-  const siteVisits = await getSiteVisits(60);
+  const [siteVisits, counts] = await Promise.all([
+    getSiteVisits(60),
+    getDashboardCounts(),
+  ]);
+  const totalPages = countPublicPages();
   return (
     <>
       <PageHeader title="Dashboard" subtitle="Analytics & overview" />
@@ -20,7 +26,22 @@ export default async function AdminDashboard() {
       <main style={{ padding: "1.5rem", display: "grid", gap: "1.25rem" }}>
         <DashboardHeader />
 
-        <SummaryCards />
+        <SummaryCards
+          values={{
+            pages: totalPages,
+            newsNotices: counts.news + counts.notices,
+            gallery: counts.gallery,
+            team: counts.faculty,
+            programs: counts.programs,
+            enquiries: counts.enquiries,
+            media: counts.downloads,
+          }}
+          subs={{
+            newsNotices: `${counts.news} news, ${counts.notices} notices`,
+            enquiries: "Feedback & survey responses",
+            media: "Download files",
+          }}
+        />
 
         <div className="admin-charts">
           <ContentByCollection />
