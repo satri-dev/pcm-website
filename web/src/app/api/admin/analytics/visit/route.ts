@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import crypto from "crypto"
 
-import clientPromise from "@/core/lib/mongodb"
+import getClientPromise from "@/core/lib/mongodb"
 import { detectDevice } from "@/core/lib/analytics/device"
 
 const VISITOR_COOKIE = "analytics_visitor_id"
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 
     const date = now.toISOString().slice(0, 10)
 
-    const client = await clientPromise
+    const client = await getClientPromise()
 
     const db = client.db(
       process.env.MONGODB_DB

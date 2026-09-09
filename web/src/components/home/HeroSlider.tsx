@@ -7,16 +7,26 @@ import SliderControls from "./SliderControls";
 
 export default function HeroSlider({ slides }: { slides: HeroSlideType[] }) {
   const visibleSlides = slides; // No limit applied
-  const [index, setIndex] = useState(0);
   const count = visibleSlides.length;
+  const [index, setIndex] = useState(0);
 
-  const next = useCallback(() => setIndex((i) => (i + 1) % count), [count]);
-  const prev = useCallback(() => setIndex((i) => (i - 1 + count) % count), [count]);
+  const next = useCallback(
+    () => setIndex((i) => (count === 0 ? 0 : (i + 1) % count)),
+    [count]
+  );
+  const prev = useCallback(
+    () =>
+      setIndex((i) => (count === 0 ? 0 : (i - 1 + count) % count)),
+    [count]
+  );
 
   useEffect(() => {
+    if (count === 0) return;
     const t = setInterval(next, 6000);
     return () => clearInterval(t);
-  }, [next]);
+  }, [next, count]);
+
+  if (count === 0) return null;
 
   return (
     <section

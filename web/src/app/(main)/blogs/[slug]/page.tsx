@@ -7,6 +7,7 @@ import {
   getPublishedBlogs,
 } from "@/lib/data/blogs";
 import { getBlogArticleSettingsCached } from "@/lib/data/blog-article-settings";
+import { BUILD_PLACEHOLDER_SLUG } from "@/lib/constants";
 
 function stripHtml(html: string): string {
   return html
@@ -28,10 +29,11 @@ function formatDate(dateISO: string) {
 export async function generateStaticParams() {
   try {
     const items = await getPublishedBlogs();
+    if (items.length === 0) return [{ slug: BUILD_PLACEHOLDER_SLUG }];
     return items.map((n) => ({ slug: n.slug }));
   } catch (error) {
     console.warn("Failed to generate static params for blogs:", error);
-    return [];
+    return [{ slug: BUILD_PLACEHOLDER_SLUG }];
   }
 }
 

@@ -2,30 +2,43 @@ import { MongoClient } from "mongodb";
 
 const uri = process.env.MONGODB_URI;
 
-if (!uri) {
-  throw new Error("Please add MONGODB_URI");
-}
-
-const client = new MongoClient(uri, {
-  maxPoolSize: 50,      // Allow up to 50 concurrent connections
-  minPoolSize: 5,       // Keep 5 connections ready
-  maxIdleTimeMS: 30000, // Close idle connections after 30s
-});
-
-let clientPromise: Promise<MongoClient>;
+let client: MongoClient | null = null;
+let clientPromise: Promise<MongoClient> | null = null;
 
 declare global {
   var _mongoClientPromise: Promise<MongoClient> | undefined;
 }
 
-if (process.env.NODE_ENV === "development") {
-  if (!global._mongoClientPromise) {
-    global._mongoClientPromise = client.connect();
+export default function getClientPromise(): Promise<MongoClient> {
+  if (!uri) {
+    throw new Error("Please add MONGODB_URI");
   }
 
-  clientPromise = global._mongoClientPromise;
-} else {
-  clientPromise = client.connect();
-}
+  if (process.env.NODE_ENV === "development") {
+    if (!global._mongoClientPromise) {
+      if (!client) {
+        client = new MongoClient(uri, {
+          maxPoolSize: 50,
+          minPoolSize: 5,
+          maxIdleTimeMS: 30000,
+        });
+      }
+      global._mongoClientPromise = client.connect();
+    }
+    return global._mongoClientPromise;
+  }
 
-export default clientPromise;
+  if (!client) {
+    client = new MongoClient(uri, {
+      maxPoolSize: 50,
+      minPoolSize: 5,
+      maxIdleTimeMS: 30000,
+    });
+  }
+
+  if (!clientPromise) {
+    clientPromise = client.connect();
+  }
+
+  return clientPromise;
+}
