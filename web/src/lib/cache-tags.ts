@@ -127,6 +127,9 @@ export const CACHE_TAGS = {
   testimonialsList: "testimonials-list",
   testimonialsSettings: "testimonials-settings",
 
+  // Ticker (auto-generated from latest news, notices, events)
+  tickerItems: "ticker-items",
+
   // Chatbot
   chatbot: "chatbot",
   

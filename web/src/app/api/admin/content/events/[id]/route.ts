@@ -78,7 +78,9 @@ export async function PATCH(
           return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
         revalidateTag(CACHE_TAGS.eventsList, "max");
+        revalidateTag(CACHE_TAGS.tickerItems, "max");
         revalidatePath("/events");
+        revalidatePath("/");
         return NextResponse.json({ ok: true });
       } catch {
         return NextResponse.json(
@@ -95,7 +97,9 @@ export async function PATCH(
           return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
         revalidateTag(CACHE_TAGS.eventsList, "max");
+        revalidateTag(CACHE_TAGS.tickerItems, "max");
         revalidatePath("/events");
+        revalidatePath("/");
         return NextResponse.json({ ok: true });
       } catch {
         return NextResponse.json(
@@ -131,7 +135,9 @@ export async function PATCH(
     }
     revalidateTag(CACHE_TAGS.eventsList, "max");
     revalidateTag(CACHE_TAGS.event(updated.slug), "max");
+    revalidateTag(CACHE_TAGS.tickerItems, "max");
     revalidatePath("/events");
+    revalidatePath("/");
     return NextResponse.json(updated);
   } catch (err) {
     if (isMongoError(err) && err.code === 11000) {
@@ -161,7 +167,9 @@ export async function DELETE(
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
     revalidateTag(CACHE_TAGS.eventsList, "max");
+    revalidateTag(CACHE_TAGS.tickerItems, "max");
     revalidatePath("/events");
+    revalidatePath("/");
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json(

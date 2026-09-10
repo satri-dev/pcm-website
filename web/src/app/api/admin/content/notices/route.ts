@@ -74,7 +74,9 @@ export async function POST(request: NextRequest) {
     const created = await createNotice(parsed.data);
     revalidateTag(CACHE_TAGS.noticesList, "max");
     revalidateTag(CACHE_TAGS.notice(created.slug), "max");
+    revalidateTag(CACHE_TAGS.tickerItems, "max");
     revalidatePath("/notices");
+    revalidatePath("/");
     return NextResponse.json(created, { status: 201 });
   } catch (err) {
     if (
