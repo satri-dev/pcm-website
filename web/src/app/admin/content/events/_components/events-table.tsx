@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -26,6 +26,8 @@ interface EventsTableProps {
   onView: (event: EventItem) => void;
   onEdit: (event: EventItem) => void;
   onDelete: (event: EventItem) => void;
+  selectedIds: Set<string>;
+  onSelectionChange: (ids: Set<string>) => void;
 }
 
 export default function EventsTable({
@@ -34,6 +36,8 @@ export default function EventsTable({
   onView,
   onEdit,
   onDelete,
+  selectedIds,
+  onSelectionChange,
 }: EventsTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
@@ -57,6 +61,37 @@ export default function EventsTable({
     startIndex,
     startIndex + itemsPerPage
   );
+
+  const pageIds = useMemo(
+    () => paginatedEvents.map((item) => item.id),
+    [paginatedEvents]
+  );
+
+  const allPageSelected =
+    pageIds.length > 0 && pageIds.every((id) => selectedIds.has(id));
+  const somePageSelected = pageIds.some((id) => selectedIds.has(id));
+
+  const handleSelectAll = () => {
+    if (allPageSelected) {
+      const next = new Set(selectedIds);
+      pageIds.forEach((id) => next.delete(id));
+      onSelectionChange(next);
+    } else {
+      const next = new Set(selectedIds);
+      pageIds.forEach((id) => next.add(id));
+      onSelectionChange(next);
+    }
+  };
+
+  const handleToggleRow = (id: string) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    onSelectionChange(next);
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -137,6 +172,17 @@ export default function EventsTable({
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[50px] bg-[var(--admin-surface-2)]">
+                <input
+                  type="checkbox"
+                  checked={allPageSelected}
+                  ref={(el) => {
+                    if (el) el.indeterminate = somePageSelected && !allPageSelected;
+                  }}
+                  onChange={handleSelectAll}
+                  className="h-4 w-4 rounded border-[var(--admin-line)] accent-[var(--admin-brand)] cursor-pointer"
+                />
+              </TableHead>
               <TableHead className="w-[28%] text-[var(--admin-muted)] hover:text-[var(--admin-brand)] font-bold text-[0.72rem] uppercase tracking-wider bg-[var(--admin-surface-2)] transition-colors cursor-pointer">
                 EVENT
               </TableHead>
@@ -160,7 +206,7 @@ export default function EventsTable({
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-12">
+                <TableCell colSpan={7} className="text-center py-12">
                   <div className="flex flex-col items-center">
                     <RefreshCw
                       size={32}
@@ -172,7 +218,7 @@ export default function EventsTable({
               </TableRow>
             ) : paginatedEvents.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-12">
+                <TableCell colSpan={7} className="text-center py-12">
                   <div className="flex flex-col items-center">
                     <Search size={40} className="opacity-30 mb-4" />
                     <p>No events match your search.</p>
@@ -185,6 +231,14 @@ export default function EventsTable({
                   key={item.id}
                   className="hover:bg-[#fafbfe] transition-colors"
                 >
+                  <TableCell className="py-3 w-[50px]">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(item.id)}
+                      onChange={() => handleToggleRow(item.id)}
+                      className="h-4 w-4 rounded border-[var(--admin-line)] accent-[var(--admin-brand)] cursor-pointer"
+                    />
+                  </TableCell>
                   <TableCell className="py-3">
                     <div className="flex items-center gap-3">
                       <span className="avatar-sm">

@@ -4,27 +4,30 @@ import { Moon, Sun } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export default function ThemeToggle() {
-  const [isDark, setIsDark] = useState(false);
+  // Initialize state with a function to avoid unnecessary re-renders
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window === "undefined") return false;
 
-  useEffect(() => {
     // Check if user has a theme preference in localStorage
     const savedTheme = localStorage.getItem("theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    
-    const shouldBeDark = savedTheme === "dark" || (!savedTheme && prefersDark);
-    setIsDark(shouldBeDark);
-    
-    if (shouldBeDark) {
+
+    // Default to light mode unless explicitly set to dark
+    return savedTheme === "dark";
+  });
+
+  useEffect(() => {
+    // Apply the theme to the document on mount and when isDark changes
+    if (isDark) {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
-  }, []);
+  }, [isDark]);
 
   const toggleTheme = () => {
     const newIsDark = !isDark;
     setIsDark(newIsDark);
-    
+
     if (newIsDark) {
       document.documentElement.classList.add("dark");
       localStorage.setItem("theme", "dark");
