@@ -37,6 +37,10 @@ export default function FacultyViewModal({ open, onOpenChange, faculty }: Facult
             <div><span className="badge badge--blue">{faculty.group}</span></div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: "0.5rem", padding: "0.55rem 0", borderBottom: "1px dashed #e2e7f0" }}>
+            <b style={{ fontSize: ".8rem", color: "#5c6678" }}>Order</b>
+            <div>{faculty.order ?? "—"}</div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: "0.5rem", padding: "0.55rem 0", borderBottom: "1px dashed #e2e7f0" }}>
             <b style={{ fontSize: ".8rem", color: "#5c6678" }}>Photo</b>
             <div>{faculty.photo ? <img src={faculty.photo} alt="" style={{ maxWidth: 180, maxHeight: 110, borderRadius: 8, border: "1px solid #e2e7f0" }} /> : "—"}</div>
           </div>

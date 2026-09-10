@@ -13,7 +13,6 @@ const settingsSchema = z.object({
   storiesEyebrow: z.string().min(1).max(200),
   storiesTitle: z.string().min(1).max(300),
   sidebarNoticesTitle: z.string().min(1).max(200),
-  sidebarNotices: z.array(z.object({ day: z.string().max(10), month: z.string().max(20), title: z.string().max(500), ago: z.string().max(100) })).max(20),
   newsletterTitle: z.string().min(1).max(200),
   newsletterText: z.string().min(1).max(1000),
   ctaEyebrow: z.string().min(1).max(300),

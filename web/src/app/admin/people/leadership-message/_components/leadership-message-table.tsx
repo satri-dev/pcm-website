@@ -20,9 +20,10 @@ export default function LeadershipMessageTable({ messages, onAdd, onView, onEdit
   const [itemsPerPage] = useState(8);
 
   const filtered = messages.filter((item) => item.title.toLowerCase().includes(searchQuery.toLowerCase()) || item.author.toLowerCase().includes(searchQuery.toLowerCase()));
-  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const sorted = [...filtered].sort((a, b) => (a.order || 0) - (b.order || 0));
+  const totalPages = Math.ceil(sorted.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginated = filtered.slice(startIndex, startIndex + itemsPerPage);
+  const paginated = sorted.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div>
@@ -41,12 +42,13 @@ export default function LeadershipMessageTable({ messages, onAdd, onView, onEdit
               <TableHead className="w-1/2 text-[var(--admin-muted)] hover:text-[var(--admin-brand)] font-bold text-[0.72rem] uppercase tracking-wider bg-[var(--admin-surface-2)] transition-colors cursor-pointer">TITLE</TableHead>
               <TableHead className="text-[var(--admin-muted)] hover:text-[var(--admin-brand)] font-bold text-[0.72rem] uppercase tracking-wider bg-[var(--admin-surface-2)] transition-colors cursor-pointer">AUTHOR</TableHead>
               <TableHead className="text-[var(--admin-muted)] hover:text-[var(--admin-brand)] font-bold text-[0.72rem] uppercase tracking-wider bg-[var(--admin-surface-2)] transition-colors cursor-pointer">ROLE</TableHead>
+              <TableHead className="text-[var(--admin-muted)] hover:text-[var(--admin-brand)] font-bold text-[0.72rem] uppercase tracking-wider bg-[var(--admin-surface-2)] transition-colors cursor-pointer">ORDER</TableHead>
               <TableHead className="text-right text-[var(--admin-muted)] hover:text-[var(--admin-brand)] font-bold text-[0.72rem] uppercase tracking-wider bg-[var(--admin-surface-2)] transition-colors cursor-pointer">ACTIONS</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginated.length === 0 ? (
-              <TableRow><TableCell colSpan={5} className="text-center py-12"><div className="flex flex-col items-center"><MessageSquare size={40} className="opacity-30 mb-4" /><p>No records match your search.</p></div></TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center py-12"><div className="flex flex-col items-center"><MessageSquare size={40} className="opacity-30 mb-4" /><p>No records match your search.</p></div></TableCell></TableRow>
             ) : (
               paginated.map((item) => (
                 <TableRow key={item.id} className="hover:bg-[#fafbfe] transition-colors">
@@ -64,6 +66,7 @@ export default function LeadershipMessageTable({ messages, onAdd, onView, onEdit
                   </TableCell>
                   <TableCell className="text-sm py-3">{item.author}</TableCell>
                   <TableCell className="text-sm py-3">{item.role || "—"}</TableCell>
+                  <TableCell className="text-sm py-3">{item.order ?? "—"}</TableCell>
                   <TableCell className="py-3">
                     <div className="row-actions justify-end">
                       <button type="button" className="act-btn" onClick={() => onView(item)} title="View"><Eye size={15} /></button>
@@ -77,9 +80,9 @@ export default function LeadershipMessageTable({ messages, onAdd, onView, onEdit
           </TableBody>
         </Table>
       </div>
-      {filtered.length > 0 && (
+      {sorted.length > 0 && (
         <div className="flex items-center justify-between p-5 border-t border-[var(--admin-line)] flex-wrap gap-3">
-          <div className="text-sm text-[var(--admin-muted)]">Showing {startIndex + 1}–{Math.min(startIndex + itemsPerPage, filtered.length)} of <b>{filtered.length}</b></div>
+          <div className="text-sm text-[var(--admin-muted)]">Showing {startIndex + 1}–{Math.min(startIndex + itemsPerPage, sorted.length)} of <b>{sorted.length}</b></div>
           <div className="flex gap-1">
             <button type="button" className="admin-btn admin-btn--sm min-w-[36px]" onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}>&lt;</button>
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => { const p = i + 1; return (<button key={p} type="button" className={"admin-btn admin-btn--sm min-w-[36px] " + (currentPage === p ? "admin-btn--primary" : "")} onClick={() => setCurrentPage(p)}>{p}</button>); })}

@@ -29,6 +29,7 @@ export default function LeadershipMessageViewModal({ open, onOpenChange, message
           {row("Title", message.title)}
           {row("Author", message.author)}
           {row("Role", message.role)}
+          {row("Order", String(message.order ?? "—"))}
           {row("Excerpt", <div style={{ whiteSpace: "pre-wrap" }}>{message.excerpt}</div>)}
         </div>
         <div className="modal__foot"><button type="button" className="admin-btn" onClick={() => onOpenChange(false)}>Close</button></div>

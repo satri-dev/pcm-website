@@ -3,6 +3,7 @@ import { z } from "zod";
 import { revalidatePath, revalidateTag } from "next/cache";
 import {
   deleteMessage,
+  findMessageByOrder,
   getMessageById,
   updateMessage,
 } from "@/repositories/message.repository";
@@ -14,6 +15,7 @@ const updateSchema = z
     title: z.string().min(2).max(200),
     author: z.string().min(2).max(200),
     role: z.string(),
+    order: z.number().int().min(0),
     excerpt: z.string(),
     photo: z.string(),
   })
@@ -71,6 +73,16 @@ export async function PATCH(
 
   const { id } = await ctx.params;
   try {
+    if (parsed.data.order && parsed.data.order > 0) {
+      const existing = await findMessageByOrder(parsed.data.order);
+      if (existing && existing.id !== id) {
+        return NextResponse.json(
+          { error: `Order ${parsed.data.order} is already assigned to ${existing.author}` },
+          { status: 409 }
+        );
+      }
+    }
+
     const updated = await updateMessage(id, parsed.data);
     if (!updated) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
