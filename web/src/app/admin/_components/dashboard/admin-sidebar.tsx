@@ -57,6 +57,7 @@ import {
   FileQuestionMark,
   FileQuestionMarkIcon,
   ClipboardList,
+  FileText,
 } from "lucide-react";
 
 interface NavItem {
@@ -225,6 +226,19 @@ const pagesNav: PagesSectionNavItem[] = [
     label: "FAQ",
     href: "/admin/pages/faq",
     icon: HelpCircle,
+    ready: true,
+  },
+  {
+  {
+    label: "Terms & Services",
+    href: "/admin/pages/terms",
+    icon: FileText,
+    ready: true,
+  },
+  {
+    label: "Privacy Policy",
+    href: "/admin/pages/privacy",
+    icon: Shield,
     ready: true,
   },
   {
