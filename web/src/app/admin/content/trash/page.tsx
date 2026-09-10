@@ -20,6 +20,7 @@ const COLLECTION_LABELS: Record<string, string> = {
   scholarships: "Scholarships",
   faqs: "FAQs",
   surveys: "Surveys",
+  blog_student: "Student Blog",
 };
 
 export default function ContentTrashPage() {
@@ -55,7 +56,7 @@ export default function ContentTrashPage() {
   }, []);
 
   const getCollectionPath = (collection: string) => {
-    return `content/${collection}`;
+    return `content/${collection === "blog_student" ? "blog-student" : collection}`;
   };
 
   const handleRestore = async (item: TrashedItem) => {
@@ -181,7 +182,7 @@ export default function ContentTrashPage() {
         <div>
           <h1 className="text-2xl font-bold">Content Trash</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Trashed items from News, Notices, Results, Events, Programs, Scholarships, FAQs, and Surveys
+            Trashed items from News, Notices, Results, Events, Programs, Scholarships, FAQs, Surveys, and Student Blog
           </p>
         </div>
         <div className="flex items-center gap-2">
