@@ -229,7 +229,6 @@ const pagesNav: PagesSectionNavItem[] = [
     ready: true,
   },
   {
-  {
     label: "Terms & Services",
     href: "/admin/pages/terms",
     icon: FileText,
