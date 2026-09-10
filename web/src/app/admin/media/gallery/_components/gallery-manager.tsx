@@ -146,10 +146,10 @@ export default function GalleryManager({
       {/* Header outside the panel */}
       <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
         <div>
-          <h2 className="m-0 text-2xl font-bold text-[var(--admin-ink)]">
+          <h2 className="m-0 text-2xl font-bold text-(--admin-ink)">
             Photo Gallery
           </h2>
-          <p className="mt-1 mb-0 text-[0.9rem] text-[var(--admin-muted)]">
+          <p className="mt-1 mb-0 text-[0.9rem] text-(--admin-muted)">
             Manage, organize and publish photo albums.
           </p>
         </div>
@@ -196,7 +196,7 @@ export default function GalleryManager({
 
       {/* Bulk delete progress bar */}
       {bulkProgress.deleting && (
-        <div className="mb-4 rounded-lg border border-[var(--admin-line)] bg-[var(--admin-surface)] p-4">
+        <div className="mb-4 rounded-lg border border-(--admin-line) bg-[var(--admin-surface)] p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-[var(--admin-ink)]">
               Moving items to trash...
