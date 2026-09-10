@@ -135,4 +135,8 @@ export const CACHE_TAGS = {
 
   // Admission Modal
   admissionModal: "admission-modal",
+
+  // Legal pages (Terms & Privacy)
+  termsPageSettings: "terms-page-settings",
+  privacyPageSettings: "privacy-page-settings",
 } as const;

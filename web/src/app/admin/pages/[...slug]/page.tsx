@@ -75,6 +75,8 @@ import BlogPageSettings from "../_components/blog-page-settings";
 import { getBlogPageSettings } from "@/repositories/blog-page-settings.repository";
 import BlogArticleSettings from "../_components/blog-article-settings";
 import { getBlogArticleSettings } from "@/repositories/blog-article-settings.repository";
+import LegalPageSettings from "../_components/legal-page-settings";
+import { getTermsPageSettings, getPrivacyPageSettings } from "@/lib/data/legal-pages";
 
 interface RouteCtx {
   params: Promise<{ slug: string | string[] }>;
@@ -480,6 +482,32 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
           subtitle="Pages · Content, SEO & submission copy"
         />
         <TestimonialPageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "terms") {
+    const settings = await getTermsPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content & SEO"
+        />
+        <LegalPageSettings slug="terms" initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "privacy") {
+    const settings = await getPrivacyPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content & SEO"
+        />
+        <LegalPageSettings slug="privacy" initial={settings} />
       </>
     );
   }
