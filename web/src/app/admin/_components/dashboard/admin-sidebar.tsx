@@ -172,11 +172,17 @@ const pagesNav: PagesSectionNavItem[] = [
     ready: true,
     subItems: [
       { label: "Blogs", href: "/admin/pages/blogs" },
+      { label: "Blog Article", href: "/admin/pages/blog-article" },
       { label: "Student Blogs", href: "/admin/pages/blog-student" },
     ],
   },
   { label: "Clubs", href: "/admin/pages/clubs", icon: Sparkles, ready: true },
-  { label: "Feedback", href: "/admin/pages/feedback", icon: MessageSquare, ready: true },
+  {
+    label: "Feedback",
+    href: "/admin/pages/feedback",
+    icon: MessageSquare,
+    ready: true,
+  },
   {
     label: "Alumni",
     href: "/admin/pages/alumni",
@@ -222,12 +228,11 @@ const pagesNav: PagesSectionNavItem[] = [
     ready: true,
   },
   {
-    label: "Alumni",
-    href: "/admin/pages/alumni",
-    icon: UserCheck,
+    label: "Survey",
+    href: "/admin/pages/survey",
+    icon: ClipboardList,
     ready: true,
   },
-
 ];
 
 const sectionsNav: PagesSectionNavItem[] = [

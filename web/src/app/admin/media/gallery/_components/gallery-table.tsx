@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -20,6 +20,7 @@ import {
 import { Gallery, GALLERY_CATEGORIES } from "@/types/gallery";
 import { Eye, Pencil, Trash2, Search, ImageIcon, Video } from "lucide-react";
 import { youtubeId } from "./gallery-video-form-modal";
+import Image from "next/image";
 
 interface GalleryTableProps {
   gallery: Gallery[];
@@ -27,6 +28,8 @@ interface GalleryTableProps {
   onView: (item: Gallery) => void;
   onEdit: (item: Gallery) => void;
   onDelete: (gallery: Gallery) => void;
+  selectedIds: Set<string>;
+  onSelectionChange: (ids: Set<string>) => void;
 }
 
 export default function GalleryTable({
@@ -35,6 +38,8 @@ export default function GalleryTable({
   onView,
   onEdit,
   onDelete,
+  selectedIds,
+  onSelectionChange,
 }: GalleryTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -45,10 +50,10 @@ export default function GalleryTable({
     const matchesSearch =
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (item.photos || []).some((p) =>
-        (p.title || "").toLowerCase().includes(searchQuery.toLowerCase())
+        (p.title || "").toLowerCase().includes(searchQuery.toLowerCase()),
       ) ||
       (item.videos || []).some((v) =>
-        (v.title || "").toLowerCase().includes(searchQuery.toLowerCase())
+        (v.title || "").toLowerCase().includes(searchQuery.toLowerCase()),
       );
     const matchesCategory =
       categoryFilter === "all" || item.category === categoryFilter;
@@ -57,7 +62,41 @@ export default function GalleryTable({
 
   const totalPages = Math.ceil(filteredGallery.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedGallery = filteredGallery.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedGallery = filteredGallery.slice(
+    startIndex,
+    startIndex + itemsPerPage,
+  );
+
+  const pageIds = useMemo(
+    () => paginatedGallery.map((item) => item.id),
+    [paginatedGallery],
+  );
+
+  const allPageSelected =
+    pageIds.length > 0 && pageIds.every((id) => selectedIds.has(id));
+  const somePageSelected = pageIds.some((id) => selectedIds.has(id));
+
+  const handleSelectAll = () => {
+    if (allPageSelected) {
+      const next = new Set(selectedIds);
+      pageIds.forEach((id) => next.delete(id));
+      onSelectionChange(next);
+    } else {
+      const next = new Set(selectedIds);
+      pageIds.forEach((id) => next.add(id));
+      onSelectionChange(next);
+    }
+  };
+
+  const handleToggleRow = (id: string) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    onSelectionChange(next);
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -87,7 +126,10 @@ export default function GalleryTable({
           />
         </div>
 
-        <Select value={categoryFilter} onValueChange={(value) => setCategoryFilter(value || "all")}>
+        <Select
+          value={categoryFilter}
+          onValueChange={(value) => setCategoryFilter(value || "all")}
+        >
           <SelectTrigger className="w-44">
             <SelectValue placeholder="All categories" />
           </SelectTrigger>
@@ -110,6 +152,18 @@ export default function GalleryTable({
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[50px] bg-[var(--admin-surface-2)]">
+                <input
+                  type="checkbox"
+                  checked={allPageSelected}
+                  ref={(el) => {
+                    if (el)
+                      el.indeterminate = somePageSelected && !allPageSelected;
+                  }}
+                  onChange={handleSelectAll}
+                  className="h-4 w-4 rounded border-[var(--admin-line)] accent-[var(--admin-brand)] cursor-pointer"
+                />
+              </TableHead>
               <TableHead className="w-1/2 text-[var(--admin-muted)] hover:text-[var(--admin-brand)] font-bold text-[0.72rem] uppercase tracking-wider bg-[var(--admin-surface-2)] transition-colors cursor-pointer">
                 TITLE
               </TableHead>
@@ -130,7 +184,7 @@ export default function GalleryTable({
           <TableBody>
             {isEmpty ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-12">
+                <TableCell colSpan={6} className="text-center py-12">
                   <div className="flex flex-col items-center">
                     <ImageIcon size={40} className="opacity-30 mb-4" />
                     <p>No gallery items match your search.</p>
@@ -144,7 +198,18 @@ export default function GalleryTable({
                   ? (item.videos || []).length
                   : (item.photos || []).length;
                 return (
-                  <TableRow key={item.id} className="hover:bg-[#fafbfe] transition-colors">
+                  <TableRow
+                    key={item.id}
+                    className="hover:bg-[#fafbfe] transition-colors"
+                  >
+                    <TableCell className="py-3 w-[50px]">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(item.id)}
+                        onChange={() => handleToggleRow(item.id)}
+                        className="h-4 w-4 rounded border-[var(--admin-line)] accent-[var(--admin-brand)] cursor-pointer"
+                      />
+                    </TableCell>
                     <TableCell className="py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-lg overflow-hidden border border-[var(--admin-line)] flex-shrink-0 bg-[var(--admin-surface-2)] flex items-center justify-center">
@@ -152,27 +217,37 @@ export default function GalleryTable({
                             (() => {
                               const id = youtubeId(item.videos?.[0]?.url || "");
                               return id ? (
-                                <img
+                                <Image
                                   src={`https://img.youtube.com/vi/${id}/hqdefault.jpg`}
                                   alt={item.title}
                                   className="w-full h-full object-cover"
                                   loading="lazy"
                                 />
                               ) : (
-                                <Video size={18} className="text-[var(--admin-muted)]" />
+                                <Video
+                                  size={18}
+                                  className="text-[var(--admin-muted)]"
+                                />
                               );
                             })()
-                          ) : (
-                            <img
-                              src={item.image}
+                          ) : item.image || item.photos?.[0]?.url ? (
+                            <Image
+                              src={item.image || item.photos?.[0]?.url || ""}
                               alt={item.title}
                               className="w-full h-full object-cover"
                               loading="lazy"
                             />
+                          ) : (
+                            <ImageIcon
+                              size={18}
+                              className="text-[var(--admin-muted)]"
+                            />
                           )}
                         </div>
                         <div className="cell-main">
-                          <div className="font-semibold text-sm">{item.title}</div>
+                          <div className="font-semibold text-sm">
+                            {item.title}
+                          </div>
                           <small className="text-[var(--admin-muted)] text-[0.76rem]">
                             {isVideo
                               ? `${subCount} video${subCount === 1 ? "" : "s"}`
@@ -187,8 +262,12 @@ export default function GalleryTable({
                         <span className="badge badge--violet ml-1">Video</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-sm py-3">{formatDate(item.date)}</TableCell>
-                    <TableCell className="text-sm py-3">{item.photoCount}</TableCell>
+                    <TableCell className="text-sm py-3">
+                      {formatDate(item.date)}
+                    </TableCell>
+                    <TableCell className="text-sm py-3">
+                      {item.photoCount}
+                    </TableCell>
                     <TableCell className="py-3">
                       <div className="row-actions justify-end">
                         <button
@@ -210,7 +289,7 @@ export default function GalleryTable({
                         <button
                           type="button"
                           className="act-btn danger"
-                           onClick={() => onDelete(item)}
+                          onClick={() => onDelete(item)}
                           title="Delete"
                         >
                           <Trash2 size={15} />
@@ -228,7 +307,8 @@ export default function GalleryTable({
       {filteredGallery.length > 0 && (
         <div className="flex items-center justify-between p-5 border-t border-[var(--admin-line)] flex-wrap gap-3">
           <div className="text-sm text-[var(--admin-muted)]">
-            Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredGallery.length)} of{" "}
+            Showing {startIndex + 1}-
+            {Math.min(startIndex + itemsPerPage, filteredGallery.length)} of{" "}
             <b>{filteredGallery.length}</b>
           </div>
 
@@ -267,7 +347,10 @@ export default function GalleryTable({
                   <button
                     key={pageNum}
                     type="button"
-                    className={"admin-btn admin-btn--sm min-w-[36px] " + (currentPage === pageNum ? "admin-btn--primary" : "")}
+                    className={
+                      "admin-btn admin-btn--sm min-w-[36px] " +
+                      (currentPage === pageNum ? "admin-btn--primary" : "")
+                    }
                     onClick={() => setCurrentPage(pageNum)}
                   >
                     {pageNum}
@@ -278,7 +361,9 @@ export default function GalleryTable({
               <button
                 type="button"
                 className="admin-btn admin-btn--sm min-w-[36px]"
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
                 disabled={currentPage === totalPages}
               >
                 &gt;

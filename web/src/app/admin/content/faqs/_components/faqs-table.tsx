@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Table,
   TableBody,
@@ -23,6 +23,8 @@ import { Eye, Pencil, Trash2, Search, RefreshCw } from "lucide-react";
 interface FaqsTableProps {
   faqs: Faq[];
   loading?: boolean;
+  selectedIds: Set<string>;
+  onSelectionChange: (ids: Set<string>) => void;
   onView: (faq: Faq) => void;
   onEdit: (faq: Faq) => void;
   onDelete: (faq: Faq) => void;
@@ -31,6 +33,8 @@ interface FaqsTableProps {
 export default function FaqsTable({
   faqs,
   loading = false,
+  selectedIds,
+  onSelectionChange,
   onView,
   onEdit,
   onDelete,
@@ -52,6 +56,37 @@ export default function FaqsTable({
   const totalPages = Math.ceil(filteredFaqs.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedFaqs = filteredFaqs.slice(startIndex, startIndex + itemsPerPage);
+
+  const pageIds = useMemo(
+    () => paginatedFaqs.map((item) => item.id),
+    [paginatedFaqs]
+  );
+
+  const allPageSelected =
+    pageIds.length > 0 && pageIds.every((id) => selectedIds.has(id));
+  const somePageSelected = pageIds.some((id) => selectedIds.has(id));
+
+  const handleSelectAll = () => {
+    if (allPageSelected) {
+      const next = new Set(selectedIds);
+      pageIds.forEach((id) => next.delete(id));
+      onSelectionChange(next);
+    } else {
+      const next = new Set(selectedIds);
+      pageIds.forEach((id) => next.add(id));
+      onSelectionChange(next);
+    }
+  };
+
+  const handleToggleRow = (id: string) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    onSelectionChange(next);
+  };
 
   const categoryBadgeColor = (cat: string) => {
     switch (cat) {
@@ -109,6 +144,17 @@ export default function FaqsTable({
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[50px] bg-[var(--admin-surface-2)]">
+                <input
+                  type="checkbox"
+                  checked={allPageSelected}
+                  ref={(el) => {
+                    if (el) el.indeterminate = somePageSelected && !allPageSelected;
+                  }}
+                  onChange={handleSelectAll}
+                  className="h-4 w-4 rounded border-[var(--admin-line)] accent-[var(--admin-brand)] cursor-pointer"
+                />
+              </TableHead>
               <TableHead className="w-[80%] text-[var(--admin-muted)] hover:text-[var(--admin-brand)] font-bold text-[0.72rem] uppercase tracking-wider bg-[var(--admin-surface-2)] transition-colors cursor-pointer">
                 QUESTION
               </TableHead>
@@ -120,7 +166,7 @@ export default function FaqsTable({
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={2} className="text-center py-12">
+                <TableCell colSpan={3} className="text-center py-12">
                   <div className="flex flex-col items-center">
                     <RefreshCw
                       size={32}
@@ -132,7 +178,7 @@ export default function FaqsTable({
               </TableRow>
             ) : paginatedFaqs.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={2} className="text-center py-12">
+                <TableCell colSpan={3} className="text-center py-12">
                   <div className="flex flex-col items-center">
                     <Search size={40} className="opacity-30 mb-4" />
                     <p>No FAQs match your search.</p>
@@ -145,6 +191,14 @@ export default function FaqsTable({
                   key={item.id}
                   className="hover:bg-[#fafbfe] transition-colors"
                 >
+                  <TableCell className="py-3 w-[50px]">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(item.id)}
+                      onChange={() => handleToggleRow(item.id)}
+                      className="h-4 w-4 rounded border-[var(--admin-line)] accent-[var(--admin-brand)] cursor-pointer"
+                    />
+                  </TableCell>
                   <TableCell className="py-3">
                     <div className="flex items-center gap-3">
                       <span className="avatar-sm">
