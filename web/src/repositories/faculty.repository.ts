@@ -15,6 +15,7 @@ function fromDocument(doc: FacultyDocument): Faculty {
     name: doc.name,
     role: doc.role,
     group: doc.group,
+    order: doc.order ?? 0,
     photo: doc.photo || "",
     email: doc.email || "",
     phone: doc.phone || "",
@@ -27,6 +28,7 @@ function toDocument(input: FacultyCreateInput): Omit<FacultyDocument, "_id"> {
     name: input.name.trim(),
     role: input.role.trim(),
     group: input.group,
+    order: input.order ?? 0,
     photo: input.photo || "",
     email: input.email || "",
     phone: input.phone || "",
@@ -67,7 +69,7 @@ export async function listFaculty(options: ListFacultyOptions = {}) {
     collection.countDocuments(filter),
     collection
       .find(filter)
-      .sort(sort ?? { name: 1 })
+      .sort(sort ?? { order: 1, name: 1 })
       .skip((page - 1) * pageSize)
       .limit(pageSize)
       .toArray(),
@@ -91,6 +93,14 @@ export async function getFacultyById(id: string) {
   return doc ? fromDocument(doc) : null;
 }
 
+export async function findFacultyByOrder(order: number) {
+  const db = await getDb();
+  const doc = await db
+    .collection<FacultyDocument>(FACULTY_COLLECTION)
+    .findOne({ order });
+  return doc ? fromDocument(doc) : null;
+}
+
 export async function createFaculty(input: FacultyCreateInput) {
   const db = await getDb();
   const doc = toDocument(input);
@@ -106,7 +116,7 @@ export async function updateFaculty(id: string, patch: FacultyUpdateInput) {
 
   const set: Record<string, unknown> = { updatedAt: new Date() };
   const allowed: (keyof FacultyCreateInput)[] = [
-    "name", "role", "group", "photo", "email", "phone",
+    "name", "role", "group", "order", "photo", "email", "phone",
   ];
   for (const key of allowed) {
     if (key in patch && patch[key] !== undefined) set[key] = patch[key];
@@ -141,6 +151,7 @@ export function ensureFacultyIndexes() {
         const col = db.collection<FacultyDocument>(FACULTY_COLLECTION);
         const wanted: IndexDescription[] = [
           { key: { group: 1 }, name: "group" },
+          { key: { order: 1 }, name: "order" },
           { key: { name: 1 }, name: "name" },
           { key: { name: "text", role: "text" }, name: "text_search" },
         ];

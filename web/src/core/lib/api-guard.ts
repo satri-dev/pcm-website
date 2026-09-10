@@ -34,7 +34,7 @@ export async function requireApiSession(
     const userRoles = (session.user.role ?? "")
       .split(/\s+/)
       .filter(Boolean)
-    if (!userRoles.some((role) => allowedRoles.includes(role))) {
+    if (!userRoles.some((role: string) => allowedRoles.includes(role))) {
       return {
         ok: false,
         response: NextResponse.json(

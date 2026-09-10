@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { X, GraduationCap, ArrowRight } from "lucide-react";
-import { newsData } from "@/data/news";
+import { X, GraduationCap, ArrowRight, FileText } from "lucide-react";
 import type { AdmissionModalSettings } from "@/types/admission-modal";
+import type { News } from "@/types/news";
+import type { Notice } from "@/types/notices";
+import type { Result } from "@/types/results";
+import type { EventItem } from "@/types/events";
 
 const tabs = [
   { id: "news", label: "Latest News" },
@@ -13,35 +16,21 @@ const tabs = [
   { id: "event", label: "Event" },
 ];
 
-const noticeData = [
-  { date: "Ashar 21, 2083", title: "Entrance Examination Schedule - 2083", href: "/assets/pdf/entrance-schedule-2083.pdf" },
-  { date: "Ashar 18, 2083", title: "Admission Form Deadline", href: "/assets/pdf/admission-open-2083.pdf" },
-  { date: "Ashar 10, 2083", title: "Scholarship Applications Open", href: "/assets/pdf/scholarship-open-2083.pdf" },
-  { date: "Ashar 02, 2083", title: "Semester Result Publication", href: "/assets/pdf/semester-result-publication.pdf" },
-  { date: "Jestha 28, 2083", title: "Annual Fest 2083 Dates Announced", href: "/assets/pdf/annual-fest-2083.pdf" },
-];
-
-const resultData = [
-  { date: "15 Jul 2026", title: "BBA 8th Semester Result - 2082", href: "/assets/pdf/bba-8th-semester-2082.pdf" },
-  { date: "28 Jun 2026", title: "BCSIT 3rd Semester Result - 2082", href: "/assets/pdf/bcsit-3rd-semester-2082.pdf" },
-  { date: "12 Jun 2026", title: "BBA-Finance 5th Semester Result - 2082", href: "/assets/pdf/bba-finance-5th-semester-2082.pdf" },
-  { date: "02 Jun 2026", title: "BBA 6th Semester Result - 2082", href: "/assets/pdf/bba-6th-semester-2082.pdf" },
-  { date: "28 May 2026", title: "BCSIT 1st Semester Result - 2082", href: "/assets/pdf/bcsit-1st-semester-2082.pdf" },
-];
-
-const eventData = [
-  { date: "15 Aug 2026", title: "Coding Bootcamp for BCSIT" },
-  { date: "22 Aug 2026", title: "Guest Lecture: Careers in Banking" },
-  { date: "29 Aug 2026", title: "Inter-Batch Sports Tournament" },
-  { date: "05 Sep 2026", title: "Annapurna Educational Tour" },
-  { date: "18 Sep 2026", title: "Annual Fest 2083" },
-];
-
 interface AdmissionModalProps {
   settings: AdmissionModalSettings;
+  newsItems: News[];
+  noticeItems: Notice[];
+  resultItems: Result[];
+  eventItems: EventItem[];
 }
 
-export default function AdmissionModal({ settings }: AdmissionModalProps) {
+export default function AdmissionModal({
+  settings,
+  newsItems,
+  noticeItems,
+  resultItems,
+  eventItems,
+}: AdmissionModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("news");
 
@@ -77,14 +66,14 @@ export default function AdmissionModal({ settings }: AdmissionModalProps) {
       case "news":
         return (
           <div className="space-y-2 sm:space-y-3">
-            {newsData.slice(0, 5).map((item) => (
+            {newsItems.map((item) => (
               <Link
-                key={item.slug}
+                key={item.id}
                 href={`/news/${item.slug}`}
                 className="block p-2.5 sm:p-3 rounded-lg hover:bg-secondary/50 transition-colors"
                 onClick={closeModal}
               >
-                <div className="text-[0.65rem] sm:text-xs text-pcm-blue font-mono mb-0.5 sm:mb-1">{item.date}</div>
+                <div className="text-[0.65rem] sm:text-xs text-pcm-blue font-mono mb-0.5 sm:mb-1">{item.publishedAt}</div>
                 <div className="text-xs sm:text-sm font-medium text-pcm-navy line-clamp-2 leading-snug">{item.title}</div>
               </Link>
             ))}
@@ -100,17 +89,20 @@ export default function AdmissionModal({ settings }: AdmissionModalProps) {
       case "notice":
         return (
           <div className="space-y-2 sm:space-y-3">
-            {noticeData.map((item) => (
+            {noticeItems.map((item) => (
               <a
-                key={item.href}
-                href={item.href}
+                key={item.id}
+                href={item.fileUrl || "#"}
                 target="_blank"
                 rel="noopener"
                 className="block p-2.5 sm:p-3 rounded-lg hover:bg-secondary/50 transition-colors"
                 onClick={closeModal}
               >
                 <div className="text-[0.65rem] sm:text-xs text-pcm-blue font-mono mb-0.5 sm:mb-1">{item.date}</div>
-                <div className="text-xs sm:text-sm font-medium text-pcm-navy leading-snug">{item.title}</div>
+                <div className="text-xs sm:text-sm font-medium text-pcm-navy leading-snug line-clamp-2">
+                  {item.title}
+                  {item.fileUrl && <FileText className="inline-block w-3 h-3 ml-1.5 text-muted-foreground" />}
+                </div>
               </a>
             ))}
             <Link
@@ -125,17 +117,20 @@ export default function AdmissionModal({ settings }: AdmissionModalProps) {
       case "result":
         return (
           <div className="space-y-2 sm:space-y-3">
-            {resultData.map((item) => (
+            {resultItems.map((item) => (
               <a
-                key={item.href}
-                href={item.href}
+                key={item.id}
+                href={item.fileUrl || "#"}
                 target="_blank"
                 rel="noopener"
                 className="block p-2.5 sm:p-3 rounded-lg hover:bg-secondary/50 transition-colors"
                 onClick={closeModal}
               >
                 <div className="text-[0.65rem] sm:text-xs text-pcm-blue font-mono mb-0.5 sm:mb-1">{item.date}</div>
-                <div className="text-xs sm:text-sm font-medium text-pcm-navy leading-snug">{item.title}</div>
+                <div className="text-xs sm:text-sm font-medium text-pcm-navy leading-snug line-clamp-2">
+                  {item.title}
+                  {item.fileUrl && <FileText className="inline-block w-3 h-3 ml-1.5 text-muted-foreground" />}
+                </div>
               </a>
             ))}
             <Link
@@ -150,15 +145,15 @@ export default function AdmissionModal({ settings }: AdmissionModalProps) {
       case "event":
         return (
           <div className="space-y-2 sm:space-y-3">
-            {eventData.map((item) => (
+            {eventItems.map((item) => (
               <Link
-                key={item.title}
+                key={item.id}
                 href="/events"
                 className="block p-2.5 sm:p-3 rounded-lg hover:bg-secondary/50 transition-colors"
                 onClick={closeModal}
               >
                 <div className="text-[0.65rem] sm:text-xs text-pcm-blue font-mono mb-0.5 sm:mb-1">{item.date}</div>
-                <div className="text-xs sm:text-sm font-medium text-pcm-navy leading-snug">{item.title}</div>
+                <div className="text-xs sm:text-sm font-medium text-pcm-navy leading-snug line-clamp-2">{item.title}</div>
               </Link>
             ))}
             <Link

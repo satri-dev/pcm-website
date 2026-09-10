@@ -186,6 +186,55 @@ function AddButton({
   );
 }
 
+// Sonner-based confirmation popup that resolves true only if the user confirms.
+function confirmAction({
+  title,
+  description,
+  confirmLabel = "Delete",
+  cancelLabel = "Cancel",
+}: {
+  title: string;
+  description?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+}): Promise<boolean> {
+  return new Promise((resolve) => {
+    toast.custom(
+      (id) => (
+        <div className="flex w-full flex-col gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-lg">
+          <div>
+            <p className="text-sm font-semibold text-gray-900">{title}</p>
+            {description && <p className="mt-1 text-sm text-gray-600">{description}</p>}
+          </div>
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              className="rounded-md px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
+              onClick={() => {
+                toast.dismiss(id);
+                resolve(false);
+              }}
+            >
+              {cancelLabel}
+            </button>
+            <button
+              type="button"
+              className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
+              onClick={() => {
+                toast.dismiss(id);
+                resolve(true);
+              }}
+            >
+              {confirmLabel}
+            </button>
+          </div>
+        </div>
+      ),
+      { duration: Infinity, position: "top-center" }
+    );
+  });
+}
+
 function RemoveButton({
   onClick,
   label,
@@ -491,7 +540,8 @@ export default function ProgramPageEditor({
   const filledSections = SECTIONS.map((s) => isSectionFilled(s.id, formData));
 
   return (
-    <form onSubmit={handleSubmit} className="pp-editor">
+    <form onSubmit={handleSubmit}>
+      <div className="pp-editor" style={{ paddingBottom: "80px" }}>
       {error && (
         <div className="pp-banner pp-banner--error" role="alert">
           <AlertCircle size={16} />
@@ -1075,12 +1125,19 @@ export default function ProgramPageEditor({
                       className="pp-semester__label"
                     />
                     <RemoveButton
-                      onClick={() =>
+                      onClick={async () => {
+                        const label = sem.label || `Sem ${semIdx + 1}`;
+                        const ok = await confirmAction({
+                          title: `Remove ${label}?`,
+                          description: "All of its courses will also be removed. This cannot be undone.",
+                        });
+                        if (!ok) return;
                         update((f) => ({
                           ...f,
                           curriculum: f.curriculum.filter((_, i) => i !== semIdx),
-                        }))
-                      }
+                        }));
+                        toast.success(`${label} removed`, { position: "bottom-right" });
+                      }}
                       label={`Remove ${sem.label || `Sem ${semIdx + 1}`}`}
                     />
                   </div>
@@ -1158,7 +1215,14 @@ export default function ProgramPageEditor({
                           placeholder="3"
                         />
                         <RemoveButton
-                          onClick={() =>
+                          onClick={async () => {
+                            const courseLabel = course.code || `Course ${courseIdx + 1}`;
+                            const semLabel = sem.label || `Sem ${semIdx + 1}`;
+                            const ok = await confirmAction({
+                              title: `Remove ${courseLabel}?`,
+                              description: `This course will be removed from ${semLabel}. This cannot be undone.`,
+                            });
+                            if (!ok) return;
                             update((f) => ({
                               ...f,
                               curriculum: f.curriculum.map((s, si) =>
@@ -1169,8 +1233,9 @@ export default function ProgramPageEditor({
                                     }
                                   : s
                               ),
-                            }))
-                          }
+                            }));
+                            toast.success(`${courseLabel} removed from ${semLabel}`, { position: "bottom-right" });
+                          }}
                           label={`Remove course ${courseIdx + 1}`}
                         />
                       </div>
@@ -1476,19 +1541,22 @@ export default function ProgramPageEditor({
           />
         </aside>
       </div>
+      </div>
 
-      <div className="pp-savebar">
-        <span className="pp-savebar__status">
-          <span className={`pp-savebar__dot ${dirty ? "pp-savebar__dot--dirty" : "pp-savebar__dot--clean"}`} />
-          {dirty ? "Unsaved changes" : saving ? "Saving…" : "All changes saved"}
-        </span>
-        <Link href="/admin" className="admin-btn">
-          Cancel
-        </Link>
-        <button type="submit" className="admin-btn admin-btn--primary" disabled={saving}>
-          <Save size={16} />
-          {saving ? "Saving…" : "Save All Content"}
-        </button>
+      <div className="pp-savebar-fixed px-6 py-4">
+        <div className="flex items-center justify-end gap-3">
+          <span className="pp-savebar__status">
+            <span className={`pp-savebar__dot ${dirty ? "pp-savebar__dot--dirty" : "pp-savebar__dot--clean"}`} />
+            {dirty ? "Unsaved changes" : saving ? "Saving…" : "All changes saved"}
+          </span>
+          <Link href="/admin" className="admin-btn">
+            Cancel
+          </Link>
+          <button type="submit" className="admin-btn admin-btn--primary" disabled={saving}>
+            <Save size={16} />
+            {saving ? "Saving…" : "Save All Content"}
+          </button>
+        </div>
       </div>
     </form>
   );

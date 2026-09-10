@@ -13,7 +13,6 @@ export interface NewsPageSettings {
   storiesTitle: string;
 
   sidebarNoticesTitle: string;
-  sidebarNotices: { day: string; month: string; title: string; ago: string }[];
 
   newsletterTitle: string;
   newsletterText: string;
@@ -45,12 +44,6 @@ export const NEWS_PAGE_SETTINGS_DEFAULTS: NewsPageSettings = {
   storiesTitle: "More stories",
 
   sidebarNoticesTitle: "Official Notices",
-  sidebarNotices: [
-    { day: "06", month: "Jul", title: "Admissions open for BBA, BBA-Finance & BCSIT - 2083 intake", ago: "1 month ago" },
-    { day: "24", month: "Jun", title: "Entrance examination schedule published for all programs", ago: "2 months ago" },
-    { day: "10", month: "Jun", title: "Scholarship applications now being accepted for new students", ago: "2 months ago" },
-    { day: "28", month: "May", title: "Semester examination routine released by Pokhara University", ago: "3 months ago" },
-  ],
 
   newsletterTitle: "Stay updated",
   newsletterText:

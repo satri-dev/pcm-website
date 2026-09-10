@@ -1,54 +1,63 @@
 export const summaryStats = [
   {
+    id: "pages",
     label: "Total Pages",
-    value: 12,
+    value: 0,
     sub: "Pages & Sections",
     color: "brand" as const,
     icon: "pages",
   },
   {
+    id: "newsNotices",
     label: "News & Notices",
-    value: 9,
-    sub: "4 news, 5 notices",
+    value: 0,
+    sub: "News & notices",
     color: "green" as const,
     icon: "posts",
   },
   {
+    id: "gallery",
     label: "Gallery Items",
-    value: 6,
+    value: 0,
     sub: "Media gallery",
     color: "gold" as const,
     icon: "gallery",
   },
   {
+    id: "team",
     label: "Faculty & Staff",
-    value: 20,
+    value: 0,
     sub: "People directory",
     color: "blue" as const,
     icon: "team",
   },
   {
+    id: "programs",
     label: "Programs",
-    value: 3,
-    sub: "BBA & BCSIT",
+    value: 0,
+    sub: "Academic programs",
     color: "violet" as const,
     icon: "programs",
   },
   {
+    id: "enquiries",
     label: "Enquiries",
-    value: 134,
-    sub: "18 pending",
+    value: 0,
+    sub: "",
     color: "red" as const,
     icon: "enquiries",
   },
   {
+    id: "media",
     label: "Media Files",
-    value: 512,
-    sub: "2.4 GB used",
+    value: 0,
+    sub: "",
     color: "teal" as const,
     icon: "media",
   },
 ];
+
+export type SummaryStatId = (typeof summaryStats)[number]["id"];
 
 export const contentByCollection = [
   { label: "News articles", value: 4, color: "#21409a" },
@@ -195,10 +204,10 @@ export const recentActivity = [
 ];
 
 export const quickActions = [
-  { label: "New Post", href: "/admin/blogs/new", icon: "edit", color: "brand" },
-  { label: "Add Gallery", href: "/admin/gallery/new", icon: "gallery", color: "gold" },
-  { label: "New Page", href: "/admin/pages/new", icon: "pages", color: "green" },
-  { label: "Add Team", href: "/admin/team/new", icon: "team", color: "blue" },
-  { label: "View Enquiries", href: "/admin/enquiries", icon: "enquiries", color: "red" },
-  { label: "SEO Audit", href: "/admin/seo", icon: "seo", color: "violet" },
+  { label: "Add News", href: "/admin/content/news", icon: "edit", color: "brand" },
+  { label: "Add Gallery", href: "/admin/content/gallery", icon: "gallery", color: "gold" },
+  { label: "Edit Pages", href: "/admin/pages/home", icon: "pages", color: "green" },
+  { label: "Manage Faculty", href: "/admin/people/faculty", icon: "team", color: "blue" },
+  { label: "Applications", href: "/admin/content/applications", icon: "enquiries", color: "red" },
+  { label: "View Feedback", href: "/admin/content/feedback", icon: "seo", color: "violet" },
 ];

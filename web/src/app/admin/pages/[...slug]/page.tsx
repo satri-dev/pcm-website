@@ -22,8 +22,8 @@ import type { PageContent } from "@/types/page-content";
 import { connection } from "next/server";
 import { getGalleryPageSettings } from "@/repositories/gallery-settings.repository";
 import { getFaqPageSettings } from "@/repositories/faq-content.repository";
-import TickersManager from "../_components/tickers-manager";
-import { listTickers } from "@/repositories/ticker.repository";
+import TickerPreview from "../_components/ticker-preview";
+import { getTickerItems } from "@/lib/data/ticker";
 import TopBarManager from "../_components/topbar-manager";
 import {
   listAllTopBarLinks,
@@ -159,14 +159,14 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
   }
 
   if (found.entry.slug === "tickers") {
-    const settings = await listTickers();
+    const items = await getTickerItems();
     return (
       <>
         <PageHeader
           title={found.entry.label}
-          subtitle="Pages · Content & CTA"
+          subtitle="Sections · Auto-generated from latest content"
         />
-        <TickersManager tickers={settings} />
+        <TickerPreview items={items} />
       </>
     );
   }

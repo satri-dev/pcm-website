@@ -14,6 +14,7 @@ function fromDocument(doc: LeadershipMessageDocument): LeadershipMessage {
     title: doc.title,
     author: doc.author,
     role: doc.role || "",
+    order: doc.order ?? 0,
     excerpt: doc.excerpt || "",
     photo: doc.photo || "",
   };
@@ -25,6 +26,7 @@ function toDocument(input: LeadershipMessageCreateInput): Omit<LeadershipMessage
     title: input.title.trim(),
     author: input.author.trim(),
     role: input.role || "",
+    order: input.order ?? 0,
     excerpt: input.excerpt || "",
     photo: input.photo || "",
     createdAt: now,
@@ -62,7 +64,7 @@ export async function listMessages(options: ListMessagesOptions = {}) {
     collection.countDocuments(filter),
     collection
       .find(filter)
-      .sort(sort ?? { createdAt: -1 })
+      .sort(sort ?? { order: 1, author: 1 })
       .skip((page - 1) * pageSize)
       .limit(pageSize)
       .toArray(),
@@ -86,6 +88,14 @@ export async function getMessageById(id: string) {
   return doc ? fromDocument(doc) : null;
 }
 
+export async function findMessageByOrder(order: number) {
+  const db = await getDb();
+  const doc = await db
+    .collection<LeadershipMessageDocument>(LEADERSHIP_MESSAGE_COLLECTION)
+    .findOne({ order });
+  return doc ? fromDocument(doc) : null;
+}
+
 export async function createMessage(input: LeadershipMessageCreateInput) {
   const db = await getDb();
   const doc = toDocument(input);
@@ -101,7 +111,7 @@ export async function updateMessage(id: string, patch: LeadershipMessageUpdateIn
 
   const set: Record<string, unknown> = { updatedAt: new Date() };
   const allowed: (keyof LeadershipMessageCreateInput)[] = [
-    "title", "author", "role", "excerpt", "photo",
+    "title", "author", "role", "order", "excerpt", "photo",
   ];
   for (const key of allowed) {
     if (key in patch && patch[key] !== undefined) set[key] = patch[key];
@@ -135,6 +145,7 @@ export function ensureMessageIndexes() {
         const db = await getDb();
         const col = db.collection<LeadershipMessageDocument>(LEADERSHIP_MESSAGE_COLLECTION);
         const wanted: IndexDescription[] = [
+          { key: { order: 1 }, name: "order" },
           { key: { createdAt: -1 }, name: "created_at_desc" },
           { key: { title: "text", author: "text" }, name: "text_search" },
         ];

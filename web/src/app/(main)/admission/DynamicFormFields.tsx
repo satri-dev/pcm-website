@@ -11,12 +11,13 @@ interface DynamicFormFieldsProps {
   fields: AdmissionPageContent["applicationForm"]["personalInfoFields"];
   formData: Record<string, any>;
   onUpdate: (fieldId: string, value: any) => void;
+  disabledFieldIds?: Set<string>;
 }
 
 type FieldItem = AdmissionPageContent["applicationForm"]["personalInfoFields"][number];
 
 const inputClass =
-  "w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm bg-white placeholder:text-gray-400 transition-all focus:outline-none focus:border-[#16285B] focus:ring-2 focus:ring-[#16285B]/10";
+  "w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm bg-white placeholder:text-gray-400 transition-all focus:outline-none focus:border-[#16285B] focus:ring-2 focus:ring-[#16285B]/10 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed";
 
 function Label({ field }: { field: { label: string; required?: boolean } }) {
   return (
@@ -31,7 +32,7 @@ function HelpText({ text }: { text?: string }) {
   return <p className="text-xs text-gray-500 mt-1.5">{text}</p>;
 }
 
-export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFieldsProps) {
+export function DynamicFormFields({ fields, formData, onUpdate, disabledFieldIds }: DynamicFormFieldsProps) {
   const [uploaded, setUploaded] = useState<Record<string, { url: string; name: string }>>({});
 
   if (!fields || fields.length === 0) {
@@ -40,6 +41,50 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
         <p>No fields configured yet. Please configure fields in the admin panel.</p>
       </div>
     );
+  }
+
+  // Helper to find guardian type field
+  function getGuardianType(): string | undefined {
+    const guardianField = fields.find((f) => {
+      const ll = f.label.toLowerCase();
+      return ll.includes("guardian") && ll.includes("type");
+    });
+    if (!guardianField) return undefined;
+    return formData[guardianField.id] as string | undefined;
+  }
+
+  // Helper to check if field is conditional guardian field
+  function isConditionalGuardianField(field: FieldItem): boolean {
+    const ll = field.label.toLowerCase();
+    return (
+      ll.includes("father") ||
+      ll.includes("mother") ||
+      ll.includes("relationship") ||
+      (ll.includes("guardian") && !ll.includes("type"))
+    );
+  }
+
+  // Helper to check if guardian field should be shown
+  function shouldShowGuardianField(field: FieldItem): boolean {
+    const guardianType = getGuardianType();
+    if (!guardianType) return false; // Hide all guardian fields until type is selected
+    
+    const ll = field.label.toLowerCase();
+    
+    // Relationship field only shows for "other"
+    if (ll.includes("relationship")) {
+      return guardianType === "other";
+    }
+    
+    if (guardianType === "father") {
+      return ll.includes("father");
+    } else if (guardianType === "mother") {
+      return ll.includes("mother");
+    } else if (guardianType === "other") {
+      return ll.includes("guardian") && !ll.includes("type");
+    }
+    
+    return false;
   }
 
   // Build a lookup of location fields by grouping them via a shared label suffix
@@ -79,9 +124,51 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
       {fields
         .slice()
         .sort((a, b) => a.order - b.order)
+        .filter((field) => {
+          // Filter out conditional guardian fields that shouldn't be shown
+          if (isConditionalGuardianField(field)) {
+            return shouldShowGuardianField(field);
+          }
+          return true;
+        })
         .map((field) => {
           const value = formData[field.id];
+          const disabled = !!disabledFieldIds?.has(field.id);
           const group = getLocationGroup(field);
+
+          // Check if this is a Guardian Type dropdown - add onChange to clear dependent fields
+          const isGuardianTypeField = field.label.toLowerCase().includes("guardian") && field.label.toLowerCase().includes("type");
+          
+          if (isGuardianTypeField && field.fieldType === "dropdown") {
+            return (
+              <div key={field.id}>
+                <Label field={field} />
+                <select
+                  value={value || ""}
+                  onChange={(e) => {
+                    const newType = e.target.value;
+                    onUpdate(field.id, newType);
+                    // Clear all guardian-related fields when type changes
+                    fields.forEach((f) => {
+                      if (isConditionalGuardianField(f)) {
+                        onUpdate(f.id, "");
+                      }
+                    });
+                  }}
+                  required={field.required}
+                  className={inputClass}
+                >
+                  <option value="">Select {field.label}</option>
+                  {field.options?.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label || opt.value}
+                    </option>
+                  ))}
+                </select>
+                <HelpText text={field.helpText} />
+              </div>
+            );
+          }
 
           // --- Nepal Province cascading select ---
           if (group?.role === "province") {
@@ -97,6 +184,7 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
                     if (districtField) onUpdate(districtField.id, "");
                   }}
                   required={field.required}
+                  disabled={disabled}
                   className={inputClass}
                 >
                   <option value="">Select {field.label}</option>
@@ -129,7 +217,7 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
                     }
                   }}
                   required={field.required}
-                  disabled={!selectedProvince}
+                  disabled={disabled || !selectedProvince}
                   className={`${inputClass} ${!selectedProvince ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}`}
                 >
                   <option value="">
@@ -166,7 +254,7 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
                     }
                   }}
                   required={field.required}
-                  disabled={!selectedDistrict}
+                  disabled={disabled || !selectedDistrict}
                   className={`${inputClass} ${!selectedDistrict ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}`}
                 >
                   <option value="">
@@ -199,7 +287,7 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
                   value={value || ""}
                   onChange={(e) => onUpdate(field.id, e.target.value)}
                   required={field.required}
-                  disabled={!selectedMunicipality}
+                  disabled={disabled || !selectedMunicipality}
                   className={`${inputClass} ${!selectedMunicipality ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}`}
                 >
                   <option value="">
@@ -235,6 +323,7 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
                   }}
                   placeholder={field.placeholder}
                   required={field.required}
+                  disabled={disabled}
                   maxLength={isPhone ? 10 : undefined}
                   className={inputClass}
                 />
@@ -253,6 +342,7 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
                   onChange={(e) => onUpdate(field.id, e.target.value)}
                   placeholder={field.placeholder}
                   required={field.required}
+                  disabled={disabled}
                   rows={4}
                   className={`${inputClass} resize-none`}
                 />
@@ -271,6 +361,7 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
                   value={value || ""}
                   onChange={(e) => onUpdate(field.id, e.target.value)}
                   required={field.required}
+                  disabled={disabled}
                   className={inputClass}
                 />
                 <HelpText text={field.helpText} />
@@ -287,6 +378,7 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
                   value={value || ""}
                   onChange={(e) => onUpdate(field.id, e.target.value)}
                   required={field.required}
+                  disabled={disabled}
                   className={inputClass}
                 >
                   <option value="">Select {field.label}</option>
@@ -324,6 +416,7 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
                           value={opt.value}
                           checked={active}
                           onChange={(e) => onUpdate(field.id, e.target.value)}
+                          disabled={disabled}
                           className="sr-only"
                         />
                         <span
@@ -388,6 +481,7 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
                           type="checkbox"
                           value={opt.value}
                           checked={active}
+                          disabled={disabled}
                           onChange={(e) => {
                             const next = e.target.checked
                               ? [...values, opt.value]
@@ -473,6 +567,7 @@ export function DynamicFormFields({ fields, formData, onUpdate }: DynamicFormFie
                 value={value || ""}
                 onChange={(e) => onUpdate(field.id, e.target.value)}
                 placeholder={field.placeholder}
+                disabled={disabled}
                 className={inputClass}
               />
               <HelpText text={field.helpText} />

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import type { EventsPageSettings } from "@/types/events-page-settings";
 import type { EventItem as DbEventItem } from "@/types/events";
@@ -144,7 +145,10 @@ export default function EventsClient({ settings, eventItems }: Props) {
 
   const totalPages = Math.max(1, Math.ceil(eventItems.length / PER_PAGE));
   const current = Math.min(page, totalPages);
-  const visible = eventItems.slice((current - 1) * PER_PAGE, current * PER_PAGE);
+  const visible = eventItems.slice(
+    (current - 1) * PER_PAGE,
+    current * PER_PAGE,
+  );
 
   return (
     <div ref={rootRef} className="pcm-page">
@@ -203,9 +207,7 @@ export default function EventsClient({ settings, eventItems }: Props) {
               <div className="section-head reveal">
                 <span className="eyebrow">{settings.sectionEyebrow}</span>
                 <h2 className="section-title">{settings.sectionTitle}</h2>
-                <p className="section-sub">
-                  {settings.sectionSubtitle}
-                </p>
+                <p className="section-sub">{settings.sectionSubtitle}</p>
               </div>
               <Link className="btn btn-ghost reveal" href="/contact">
                 Ask about an event {ArrowRight}
@@ -222,10 +224,21 @@ export default function EventsClient({ settings, eventItems }: Props) {
                     style={{ transitionDelay: `${i * 60}ms` }}
                   >
                     <div className="event-card__media">
-                      <div
-                        className="event-card__bg--plain"
-                        style={{ height: "100%" }}
-                      />
+                      {e.image ? (
+                        <Image
+                          src={e.image}
+                          alt={e.title}
+                          fill
+                          className="event-card__img"
+                          style={{ objectFit: "cover" }}
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        />
+                      ) : (
+                        <div
+                          className="event-card__bg--plain"
+                          style={{ height: "100%" }}
+                        />
+                      )}
                       <div className="event-card__cal">
                         <b>{d}</b>
                         <span>{MONTHS_UPPER[m - 1]}</span>
@@ -236,7 +249,10 @@ export default function EventsClient({ settings, eventItems }: Props) {
                     </div>
                     <div className="event-card__body">
                       <h3>{e.title}</h3>
-                      <p className="event-card__desc">{e.description}</p>
+                      <div
+                        className="prose prose-sm max-w-none event-card__desc"
+                        dangerouslySetInnerHTML={{ __html: e.description }}
+                      />
                       <div className="event-card__meta">
                         <span>
                           {PinIcon}
@@ -275,16 +291,15 @@ export default function EventsClient({ settings, eventItems }: Props) {
             <div className="cta-band reveal">
               <div className="cta-band__inner">
                 <div>
-                  <span className="eyebrow on-dark">
-                    {settings.ctaEyebrow}
-                  </span>
+                  <span className="eyebrow on-dark">{settings.ctaEyebrow}</span>
                   <h2>{settings.ctaTitle}</h2>
-                  <p>
-                    {settings.ctaText}
-                  </p>
+                  <p>{settings.ctaText}</p>
                 </div>
                 <div className="cta-band__actions">
-                  <Link className="btn btn-gold btn-lg" href={settings.ctaPrimaryHref}>
+                  <Link
+                    className="btn btn-gold btn-lg"
+                    href={settings.ctaPrimaryHref}
+                  >
                     {settings.ctaPrimaryLabel} {ArrowRight}
                   </Link>
                   <Link

@@ -34,6 +34,7 @@ interface ProgramsClientProps {
   comparisonTable?: ProgramsPageContent["comparisonTable"];
   cta?: ProgramsPageContent["cta"];
   coordinatorsContent?: CoordinatorsContent;
+  featuredPrograms?: Program[];
   programs: Program[];
   coordinatorsData?: CoordinatorData[];
 }
@@ -108,6 +109,7 @@ export default function ProgramsClient({
   comparisonTable,
   cta,
   coordinatorsContent,
+  featuredPrograms,
   programs,
   coordinatorsData = [],
 }: ProgramsClientProps) {
@@ -139,7 +141,7 @@ export default function ProgramsClient({
     visiblePrograms: programs.map((p) => p.slug), // All visible by default
   };
   
-  const cards = programs.map(mapProgramToCard);
+  const cards = (featuredPrograms && featuredPrograms.length > 0 ? featuredPrograms : programs).map(mapProgramToCard);
   const compareRows = programs.map((program) =>
     applyComparisonOverrides(mapProgramToComparisonRow(program), comparisonTable?.rows?.[program.slug])
   );

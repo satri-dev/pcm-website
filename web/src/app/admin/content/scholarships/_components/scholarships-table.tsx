@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -26,6 +26,8 @@ interface ScholarshipsTableProps {
   onView: (scholarship: Scholarship) => void;
   onEdit: (scholarship: Scholarship) => void;
   onDelete: (scholarship: Scholarship) => void;
+  selectedIds: Set<string>;
+  onSelectionChange: (ids: Set<string>) => void;
 }
 
 export default function ScholarshipsTable({
@@ -34,6 +36,8 @@ export default function ScholarshipsTable({
   onView,
   onEdit,
   onDelete,
+  selectedIds,
+  onSelectionChange,
 }: ScholarshipsTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
@@ -55,6 +59,37 @@ export default function ScholarshipsTable({
     startIndex,
     startIndex + itemsPerPage
   );
+
+  const pageIds = useMemo(
+    () => paginatedScholarships.map((item) => item.id),
+    [paginatedScholarships]
+  );
+
+  const allPageSelected =
+    pageIds.length > 0 && pageIds.every((id) => selectedIds.has(id));
+  const somePageSelected = pageIds.some((id) => selectedIds.has(id));
+
+  const handleSelectAll = () => {
+    if (allPageSelected) {
+      const next = new Set(selectedIds);
+      pageIds.forEach((id) => next.delete(id));
+      onSelectionChange(next);
+    } else {
+      const next = new Set(selectedIds);
+      pageIds.forEach((id) => next.add(id));
+      onSelectionChange(next);
+    }
+  };
+
+  const handleToggleRow = (id: string) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    onSelectionChange(next);
+  };
 
   return (
     <div>
@@ -100,6 +135,17 @@ export default function ScholarshipsTable({
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[50px] bg-[var(--admin-surface-2)]">
+                <input
+                  type="checkbox"
+                  checked={allPageSelected}
+                  ref={(el) => {
+                    if (el) el.indeterminate = somePageSelected && !allPageSelected;
+                  }}
+                  onChange={handleSelectAll}
+                  className="h-4 w-4 rounded border-[var(--admin-line)] accent-[var(--admin-brand)] cursor-pointer"
+                />
+              </TableHead>
               <TableHead className="w-[40%] text-[var(--admin-muted)] hover:text-[var(--admin-brand)] font-bold text-[0.72rem] uppercase tracking-wider bg-[var(--admin-surface-2)] transition-colors cursor-pointer">
                 SCHEME
               </TableHead>
@@ -117,7 +163,7 @@ export default function ScholarshipsTable({
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-12">
+                <TableCell colSpan={5} className="text-center py-12">
                   <div className="flex flex-col items-center">
                     <RefreshCw
                       size={32}
@@ -129,7 +175,7 @@ export default function ScholarshipsTable({
               </TableRow>
             ) : paginatedScholarships.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-12">
+                <TableCell colSpan={5} className="text-center py-12">
                   <div className="flex flex-col items-center">
                     <Search size={40} className="opacity-30 mb-4" />
                     <p>No scholarships match your search.</p>
@@ -142,6 +188,14 @@ export default function ScholarshipsTable({
                   key={item.id}
                   className="hover:bg-[#fafbfe] transition-colors"
                 >
+                  <TableCell className="py-3 w-[50px]">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(item.id)}
+                      onChange={() => handleToggleRow(item.id)}
+                      className="h-4 w-4 rounded border-[var(--admin-line)] accent-[var(--admin-brand)] cursor-pointer"
+                    />
+                  </TableCell>
                   <TableCell className="py-3">
                     <div className="flex items-center gap-3">
                       <span className="avatar-sm">

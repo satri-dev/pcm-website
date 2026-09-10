@@ -406,7 +406,7 @@ export interface AdmissionPageContent {
     documentStep: {
       heading: string; // "Document Upload"
       description: string; // "Upload your required documents"
-      documentLabels: string[]; // ["SEE / SLC Mark-sheet", "SEE / SLC Character Certificate", ...]
+      documentLabels: Array<{ label: string; type: "document" | "image" }>;
     };
     // Step 5: Declaration & Consent
     declarationStep: {

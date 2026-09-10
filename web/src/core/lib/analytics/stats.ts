@@ -1,4 +1,4 @@
-import clientPromise from "../mongodb"
+import getClientPromise from "../mongodb"
 
 export async function getSiteVisits(
   days = 60
@@ -11,7 +11,7 @@ export async function getSiteVisits(
 
   startDate.setHours(0, 0, 0, 0)
 
-  const client = await clientPromise
+  const client = await getClientPromise()
 
   const db = client.db(
     process.env.MONGODB_DB

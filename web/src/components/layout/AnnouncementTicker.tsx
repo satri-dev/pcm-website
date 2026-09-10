@@ -1,12 +1,10 @@
 import Link from "next/link";
-import { connection } from "next/server";
-import { listTickers } from "@/repositories/ticker.repository";
+import { getTickerItems } from "@/lib/data/ticker";
 
 export default async function AnnouncementTicker() {
-  await connection();
-  const tickers = await listTickers();
+  const items = await getTickerItems();
 
-  if (tickers.length === 0) {
+  if (items.length === 0) {
     return null;
   }
 
@@ -18,36 +16,42 @@ export default async function AnnouncementTicker() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
         </svg>
       </div>
-      
+
       {/* Ticker content */}
       <div className="ticker-inner">
-        {tickers.map((ticker) => (
-          <span key={ticker.id} className="ticker-item">
-            <span className="hidden sm:inline">{ticker.message}</span>
-            <span className="sm:hidden">{ticker.message.length > 60 ? ticker.message.substring(0, 60) + '...' : ticker.message}</span>
-            {ticker.linkText && ticker.linkUrl && (
-              <>
-                {" — "}
-                <Link href={ticker.linkUrl} className="text-pcm-green hover:underline font-medium">
-                  {ticker.linkText}
-                </Link>
-              </>
-            )}
+        {items.map((item) => (
+          <span key={item.id} className="ticker-item">
+            <span className="hidden sm:inline">
+              <span className="font-semibold">{item.category}:</span> {item.title}
+            </span>
+            <span className="sm:hidden">
+              {(() => {
+                const text = `${item.category}: ${item.title}`;
+                return text.length > 60 ? text.substring(0, 60) + "..." : text;
+              })()}
+            </span>
+            {" — "}
+            <Link href={item.href} className="text-pcm-green hover:underline font-medium">
+              View Details
+            </Link>
           </span>
         ))}
         {/* Duplicate for seamless loop */}
-        {tickers.map((ticker) => (
-          <span key={`dup-${ticker.id}`} className="ticker-item">
-            <span className="hidden sm:inline">{ticker.message}</span>
-            <span className="sm:hidden">{ticker.message.length > 60 ? ticker.message.substring(0, 60) + '...' : ticker.message}</span>
-            {ticker.linkText && ticker.linkUrl && (
-              <>
-                {" — "}
-                <Link href={ticker.linkUrl} className="text-pcm-green hover:underline font-medium">
-                  {ticker.linkText}
-                </Link>
-              </>
-            )}
+        {items.map((item) => (
+          <span key={`dup-${item.id}`} className="ticker-item">
+            <span className="hidden sm:inline">
+              <span className="font-semibold">{item.category}:</span> {item.title}
+            </span>
+            <span className="sm:hidden">
+              {(() => {
+                const text = `${item.category}: ${item.title}`;
+                return text.length > 60 ? text.substring(0, 60) + "..." : text;
+              })()}
+            </span>
+            {" — "}
+            <Link href={item.href} className="text-pcm-green hover:underline font-medium">
+              View Details
+            </Link>
           </span>
         ))}
       </div>

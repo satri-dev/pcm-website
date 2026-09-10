@@ -50,9 +50,7 @@ export default function NoticesPageSettings({
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error || `Save failed (HTTP ${res.status})`);
       }
-      setMessage(
-        "Saved. The public /notices page now reflects these changes.",
-      );
+      setMessage("Saved. The public /notices page now reflects these changes.");
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Save failed");
     } finally {
@@ -116,22 +114,22 @@ export default function NoticesPageSettings({
         </div>
         <div className="admin-panel__body p-6 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="block">
+            <div className="block">
               {fieldLabel("Eyebrow")}
               <input
                 className={INPUT}
                 value={form.sectionEyebrow}
                 onChange={(e) => set("sectionEyebrow", e.target.value)}
               />
-            </label>
-            <label className="block">
+            </div>
+            <div className="block">
               {fieldLabel("Title")}
               <input
                 className={INPUT}
                 value={form.sectionTitle}
                 onChange={(e) => set("sectionTitle", e.target.value)}
               />
-            </label>
+            </div>
           </div>
         </div>
       </div>
