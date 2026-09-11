@@ -6,18 +6,13 @@ import { updateLegalPageSettings } from "@/repositories/legal-page-settings.repo
 import { TERMS_PAGE_SETTINGS_KEY, PRIVACY_PAGE_SETTINGS_KEY } from "@/types/legal-page-settings";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 
-const sectionSchema = z.object({
-  heading: z.string().min(1).max(300),
-  body: z.string().min(1).max(10000),
-});
-
 const settingsSchema = z.object({
   seoTitle: z.string().min(1).max(300),
   seoDescription: z.string().min(1).max(1000),
   heroTitle: z.string().min(1).max(300),
   heroSubtitle: z.string().min(1).max(1500),
   lastUpdated: z.string().min(1).max(100),
-  sections: z.array(sectionSchema).min(1).max(30),
+  content: z.string().min(10),
   ctaEyebrow: z.string().min(1).max(300),
   ctaTitle: z.string().min(1).max(300),
   ctaText: z.string().min(1).max(1500),
