@@ -71,7 +71,7 @@ export default function FacultyManager({ initialData }: FacultyManagerProps) {
         </div>
       </div>
 
-      <FacultyFormModal open={isModalOpen} onOpenChange={setIsModalOpen} faculty={editingItem} onSave={handleSave} saving={saving} />
+      <FacultyFormModal open={isModalOpen} onOpenChange={setIsModalOpen} faculty={editingItem} onSave={handleSave} existingFaculty={faculty} saving={saving} />
       <FacultyViewModal open={isViewOpen} onOpenChange={setIsViewOpen} faculty={viewingItem} />
     </main>
   );

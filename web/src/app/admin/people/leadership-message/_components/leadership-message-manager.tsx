@@ -50,7 +50,7 @@ export default function LeadershipMessageManager({ initialData }: LeadershipMess
           {error ? <div className="p-6 text-[var(--admin-red)]">{error}</div> : <LeadershipMessageTable messages={messages} onAdd={handleAdd} onView={handleView} onEdit={handleEdit} onDelete={handleDelete} />}
         </div>
       </div>
-      <LeadershipMessageFormModal open={isModalOpen} onOpenChange={setIsModalOpen} message={editingItem} onSave={handleSave} saving={saving} />
+      <LeadershipMessageFormModal open={isModalOpen} onOpenChange={setIsModalOpen} message={editingItem} onSave={handleSave} existingMessages={messages} saving={saving} />
       <LeadershipMessageViewModal open={isViewOpen} onOpenChange={setIsViewOpen} message={viewingItem} />
     </main>
   );

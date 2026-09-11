@@ -4,6 +4,8 @@ import { revalidateTag } from "next/cache";
 import {
   deleteBlogStudent,
   getBlogStudentById,
+  restoreBlogStudent,
+  hardDeleteBlogStudent,
   updateBlogStudent,
 } from "@/repositories/blog-student.repository";
 import { requireApiSession } from "@/core/lib/api-guard";
@@ -43,14 +45,52 @@ export async function GET(
 }
 
 // PATCH — admin only. Status changes: approve / set back to pending.
+// Also supports ?action=restore and ?action=permanent-delete (soft-delete management).
 export async function PATCH(
   request: NextRequest,
   ctx: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await ctx.params;
+  const { searchParams } = new URL(request.url);
+  const action = searchParams.get("action");
+
   const guard = await requireApiSession(["admin"]);
   if (!guard.ok) return guard.response;
 
-  const { id } = await ctx.params;
+  if (action === "restore" || action === "permanent-delete") {
+    if (action === "restore") {
+      try {
+        const restored = await restoreBlogStudent(id);
+        if (!restored) {
+          return NextResponse.json({ error: "Not found" }, { status: 404 });
+        }
+        revalidateTag(CACHE_TAGS.blogStudentList, "max");
+        return NextResponse.json({ ok: true });
+      } catch {
+        return NextResponse.json(
+          { error: "Failed to restore student blog" },
+          { status: 500 }
+        );
+      }
+    }
+
+    if (action === "permanent-delete") {
+      try {
+        const deleted = await hardDeleteBlogStudent(id);
+        if (!deleted) {
+          return NextResponse.json({ error: "Not found" }, { status: 404 });
+        }
+        revalidateTag(CACHE_TAGS.blogStudentList, "max");
+        return NextResponse.json({ ok: true });
+      } catch {
+        return NextResponse.json(
+          { error: "Failed to permanently delete student blog" },
+          { status: 500 }
+        );
+      }
+    }
+  }
+
   let body: { status?: string };
   try {
     body = await request.json();

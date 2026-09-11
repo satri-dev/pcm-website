@@ -18,6 +18,7 @@ export interface LeadershipMessage {
   title: string;
   author: string;
   role: string;
+  order: number;
   excerpt: string;
   photo: string;
 }
@@ -27,6 +28,7 @@ export interface LeadershipMessageDocument {
   title: string;
   author: string;
   role: string;
+  order: number;
   excerpt: string;
   photo: string;
 }
@@ -35,6 +37,7 @@ export interface LeadershipMessageCreateInput {
   title: string;
   author: string;
   role?: string;
+  order?: number;
   excerpt?: string;
   photo?: string;
 }

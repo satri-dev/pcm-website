@@ -22,8 +22,8 @@ import type { PageContent } from "@/types/page-content";
 import { connection } from "next/server";
 import { getGalleryPageSettings } from "@/repositories/gallery-settings.repository";
 import { getFaqPageSettings } from "@/repositories/faq-content.repository";
-import TickersManager from "../_components/tickers-manager";
-import { listTickers } from "@/repositories/ticker.repository";
+import TickerPreview from "../_components/ticker-preview";
+import { getTickerItems } from "@/lib/data/ticker";
 import TopBarManager from "../_components/topbar-manager";
 import {
   listAllTopBarLinks,
@@ -75,6 +75,8 @@ import BlogPageSettings from "../_components/blog-page-settings";
 import { getBlogPageSettings } from "@/repositories/blog-page-settings.repository";
 import BlogArticleSettings from "../_components/blog-article-settings";
 import { getBlogArticleSettings } from "@/repositories/blog-article-settings.repository";
+import LegalPageSettings from "../_components/legal-page-settings";
+import { getTermsPageSettings, getPrivacyPageSettings } from "@/lib/data/legal-pages";
 
 interface RouteCtx {
   params: Promise<{ slug: string | string[] }>;
@@ -157,14 +159,14 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
   }
 
   if (found.entry.slug === "tickers") {
-    const settings = await listTickers();
+    const items = await getTickerItems();
     return (
       <>
         <PageHeader
           title={found.entry.label}
-          subtitle="Pages · Content & CTA"
+          subtitle="Sections · Auto-generated from latest content"
         />
-        <TickersManager tickers={settings} />
+        <TickerPreview items={items} />
       </>
     );
   }
@@ -480,6 +482,32 @@ export default async function PagesSectionPage({ params }: RouteCtx) {
           subtitle="Pages · Content, SEO & submission copy"
         />
         <TestimonialPageSettings initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "terms") {
+    const settings = await getTermsPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content & SEO"
+        />
+        <LegalPageSettings slug="terms" initial={settings} />
+      </>
+    );
+  }
+
+  if (found.entry.slug === "privacy") {
+    const settings = await getPrivacyPageSettings();
+    return (
+      <>
+        <PageHeader
+          title={found.entry.label}
+          subtitle="Pages · Content & SEO"
+        />
+        <LegalPageSettings slug="privacy" initial={settings} />
       </>
     );
   }

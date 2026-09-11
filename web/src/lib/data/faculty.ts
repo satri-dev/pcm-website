@@ -13,6 +13,7 @@ export interface PublishedFacultyMember {
   name: string;
   role: string;
   group: FacultyGroup;
+  order: number;
   photo: string;
 }
 
@@ -32,11 +33,15 @@ export async function getPublishedFaculty(): Promise<PublishedFacultyGroups> {
     name: m.name,
     role: m.role,
     group: m.group,
+    order: m.order,
     photo: m.photo,
   }));
 
+  const byOrder = (a: PublishedFacultyMember, b: PublishedFacultyMember) =>
+    (a.order || 0) - (b.order || 0);
+
   return {
-    leadership: items.filter((m) => m.group === "Leadership"),
-    team: items.filter((m) => m.group !== "Leadership"),
+    leadership: items.filter((m) => m.group === "Leadership").sort(byOrder),
+    team: items.filter((m) => m.group !== "Leadership").sort(byOrder),
   };
 }

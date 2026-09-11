@@ -12,6 +12,7 @@ export interface PublishedMessage {
   title: string;
   author: string;
   role: string;
+  order: number;
   text: string;
   photo: string;
 }
@@ -22,12 +23,15 @@ export async function getPublishedMessages(): Promise<PublishedMessage[]> {
   cacheTag(CACHE_TAGS.messageList);
 
   const result = await listMessages({ pageSize: 100 });
-  return result.items.map((m) => ({
-    id: m.id,
-    title: m.title,
-    author: m.author,
-    role: m.role,
-    text: m.excerpt,
-    photo: m.photo,
-  }));
+  return result.items
+    .map((m) => ({
+      id: m.id,
+      title: m.title,
+      author: m.author,
+      role: m.role,
+      order: m.order,
+      text: m.excerpt,
+      photo: m.photo,
+    }))
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
 }

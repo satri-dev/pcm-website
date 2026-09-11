@@ -16,6 +16,8 @@ export interface UseBlogStudentsReturn {
   updateStatus: (id: string, status: BlogStudentStatus) => Promise<void>;
   updateItem: (id: string, values: Record<string, unknown>) => Promise<BlogStudent>;
   deleteItem: (id: string) => Promise<void>;
+  restoreItem: (id: string) => Promise<void>;
+  hardDeleteItem: (id: string) => Promise<void>;
 }
 
 export function useBlogStudents({
@@ -108,6 +110,22 @@ export function useBlogStudents({
     setItems((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const restoreItem = async (id: string) => {
+    const res = await fetch(`${API_BASE}/${id}?action=restore`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Restore failed (HTTP ${res.status})`);
+    }
+  };
+
+  const hardDeleteItem = async (id: string) => {
+    const res = await fetch(`${API_BASE}/${id}?action=permanent-delete`, { method: "PATCH" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Permanent delete failed (HTTP ${res.status})`);
+    }
+  };
+
   return {
     items,
     loading,
@@ -116,5 +134,7 @@ export function useBlogStudents({
     updateStatus,
     updateItem,
     deleteItem,
+    restoreItem,
+    hardDeleteItem,
   };
 }

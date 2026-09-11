@@ -57,6 +57,7 @@ import {
   FileQuestionMark,
   FileQuestionMarkIcon,
   ClipboardList,
+  FileText,
 } from "lucide-react";
 
 interface NavItem {
@@ -228,6 +229,18 @@ const pagesNav: PagesSectionNavItem[] = [
     ready: true,
   },
   {
+    label: "Terms & Services",
+    href: "/admin/pages/terms",
+    icon: FileText,
+    ready: true,
+  },
+  {
+    label: "Privacy Policy",
+    href: "/admin/pages/privacy",
+    icon: Shield,
+    ready: true,
+  },
+  {
     label: "Survey",
     href: "/admin/pages/survey",
     icon: ClipboardList,
@@ -371,21 +384,38 @@ const navigation: NavSection[] = [
         label: "Content Trash",
         href: "/admin/content/trash",
         icon: Trash2,
+        badgeKey: "trash",
       },
     ],
   },
   {
     title: "People",
     items: [
-      { label: "Faculty & Staff", href: "/admin/people/faculty", icon: Users },
-      { label: "Board of Directors", href: "/admin/people/bod", icon: Shield },
+      {
+        label: "Faculty & Staff",
+        href: "/admin/people/faculty",
+        icon: Users,
+        badgeKey: "faculty",
+      },
+      {
+        label: "Board of Directors",
+        href: "/admin/people/bod",
+        icon: Shield,
+        badgeKey: "board",
+      },
       {
         label: "Leadership Messages",
         href: "/admin/people/leadership-message",
         icon: MessageCircle,
+        badgeKey: "leadershipMessages",
       },
-      { label: "Alumni", href: "/admin/people/alumni", icon: UserCheck },
-      { label: "Clubs", href: "/admin/people/clubs", icon: Circle },
+      {
+        label: "Alumni",
+        href: "/admin/people/alumni",
+        icon: UserCheck,
+        badgeKey: "alumni",
+      },
+      { label: "Clubs", href: "/admin/people/clubs", icon: Circle, badgeKey: "clubs" },
     ],
   },
   {
@@ -413,27 +443,54 @@ const navigation: NavSection[] = [
         label: "Media Trash",
         href: "/admin/media/trash",
         icon: Trash2,
+        badgeKey: "mediaTrash",
       },
     ],
   },
   {
     title: "Campus",
     items: [
-      { label: "Facilities", href: "/admin/campus/facilities", icon: Building },
-      { label: "Campus Map", href: "/admin/campus/campus-map", icon: Map },
-      { label: "Campus Trash", href: "/admin/campus/trash", icon: Trash2 },
+      {
+        label: "Facilities",
+        href: "/admin/campus/facilities",
+        icon: Building,
+        badgeKey: "facilities",
+      },
+      {
+        label: "Campus Map",
+        href: "/admin/campus/campus-map",
+        icon: Map,
+        badgeKey: "campusMap",
+      },
+      {
+        label: "Campus Trash",
+        href: "/admin/campus/trash",
+        icon: Trash2,
+        badgeKey: "campusTrash",
+      },
     ],
   },
   {
     title: "System",
     items: [
-      { label: "Chatbot KB", href: "/admin/system/chat-bot", icon: Bot },
-      { label: "System Trash", href: "/admin/system/trash", icon: Trash2 },
-      { label: "Backups", href: "/admin/system/backups", icon: HardDrive },
+      {
+        label: "Chatbot KB",
+        href: "/admin/system/chat-bot",
+        icon: Bot,
+        badgeKey: "chatbot",
+      },
+      {
+        label: "System Trash",
+        href: "/admin/system/trash",
+        icon: Trash2,
+        badgeKey: "systemTrash",
+      },
+      { label: "Backups", href: "/admin/system/backups", icon: HardDrive, badgeKey: "backups" },
       {
         label: "Users & Roles",
         href: "/admin/system/users",
         icon: ShieldCheck,
+        badgeKey: "users",
       },
       { label: "Settings", href: "/admin/system/settings", icon: Settings },
     ],

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { revalidatePath, revalidateTag } from "next/cache";
 import {
   deleteFaculty,
+  findFacultyByOrder,
   getFacultyById,
   updateFaculty,
 } from "@/repositories/faculty.repository";
@@ -15,6 +16,7 @@ const updateSchema = z
     name: z.string().min(2).max(200),
     role: z.string().min(2).max(200),
     group: z.enum(FACULTY_GROUPS as unknown as [string, ...string[]]),
+    order: z.number().int().min(0),
     photo: z.string().optional(),
     email: z.string().optional(),
     phone: z.string().optional(),
@@ -73,6 +75,16 @@ export async function PATCH(
 
   const { id } = await ctx.params;
   try {
+    if (parsed.data.order && parsed.data.order > 0) {
+      const existing = await findFacultyByOrder(parsed.data.order);
+      if (existing && existing.id !== id) {
+        return NextResponse.json(
+          { error: `Order ${parsed.data.order} is already assigned to ${existing.name}` },
+          { status: 409 }
+        );
+      }
+    }
+
     const updated = await updateFaculty(id, parsed.data as FacultyUpdateInput);
     if (!updated) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });

@@ -84,7 +84,9 @@ export async function POST(request: NextRequest) {
     const created = await createNews(parsed.data);
     revalidateTag(CACHE_TAGS.newsList, "max");
     revalidateTag(CACHE_TAGS.news(created.slug), "max");
+    revalidateTag(CACHE_TAGS.tickerItems, "max");
     revalidatePath("/news");
+    revalidatePath("/");
     return NextResponse.json(created, { status: 201 });
   } catch (err) {
     if (

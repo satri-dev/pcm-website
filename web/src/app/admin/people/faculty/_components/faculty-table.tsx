@@ -27,9 +27,11 @@ export default function FacultyTable({ faculty, onAdd, onView, onEdit, onDelete 
     return matchesSearch && matchesGroup;
   });
 
-  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const sorted = [...filtered].sort((a, b) => (a.order || 0) - (b.order || 0));
+
+  const totalPages = Math.ceil(sorted.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginated = filtered.slice(startIndex, startIndex + itemsPerPage);
+  const paginated = sorted.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div>
@@ -55,13 +57,14 @@ export default function FacultyTable({ faculty, onAdd, onView, onEdit, onDelete 
               <TableHead className="w-1/2 text-[var(--admin-muted)] hover:text-[var(--admin-brand)] font-bold text-[0.72rem] uppercase tracking-wider bg-[var(--admin-surface-2)] transition-colors cursor-pointer">NAME</TableHead>
               <TableHead className="text-[var(--admin-muted)] hover:text-[var(--admin-brand)] font-bold text-[0.72rem] uppercase tracking-wider bg-[var(--admin-surface-2)] transition-colors cursor-pointer">ROLE</TableHead>
               <TableHead className="text-[var(--admin-muted)] hover:text-[var(--admin-brand)] font-bold text-[0.72rem] uppercase tracking-wider bg-[var(--admin-surface-2)] transition-colors cursor-pointer">GROUP</TableHead>
+              <TableHead className="text-[var(--admin-muted)] hover:text-[var(--admin-brand)] font-bold text-[0.72rem] uppercase tracking-wider bg-[var(--admin-surface-2)] transition-colors cursor-pointer">ORDER</TableHead>
               <TableHead className="text-right text-[var(--admin-muted)] hover:text-[var(--admin-brand)] font-bold text-[0.72rem] uppercase tracking-wider bg-[var(--admin-surface-2)] transition-colors cursor-pointer">ACTIONS</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginated.length === 0 ? (
+{paginated.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-12">
+                <TableCell colSpan={5} className="text-center py-12">
                   <div className="flex flex-col items-center">
                     <Users size={40} className="opacity-30 mb-4" />
                     <p>No records match your search.</p>
@@ -84,6 +87,7 @@ export default function FacultyTable({ faculty, onAdd, onView, onEdit, onDelete 
                   </TableCell>
                   <TableCell className="text-sm py-3">{item.role}</TableCell>
                   <TableCell className="text-sm py-3"><span className="badge badge--blue">{item.group}</span></TableCell>
+                  <TableCell className="text-sm py-3">{item.order ?? "—"}</TableCell>
                   <TableCell className="py-3">
                     <div className="row-actions justify-end">
                       <button type="button" className="act-btn" onClick={() => onView(item)} title="View"><Eye size={15} /></button>
@@ -98,9 +102,9 @@ export default function FacultyTable({ faculty, onAdd, onView, onEdit, onDelete 
         </Table>
       </div>
 
-      {filtered.length > 0 && (
+      {sorted.length > 0 && (
         <div className="flex items-center justify-between p-5 border-t border-[var(--admin-line)] flex-wrap gap-3">
-          <div className="text-sm text-[var(--admin-muted)]">Showing {startIndex + 1}–{Math.min(startIndex + itemsPerPage, filtered.length)} of <b>{filtered.length}</b></div>
+          <div className="text-sm text-[var(--admin-muted)]">Showing {startIndex + 1}–{Math.min(startIndex + itemsPerPage, sorted.length)} of <b>{sorted.length}</b></div>
           <div className="flex gap-3 items-center">
             <Select value={itemsPerPage.toString()} onValueChange={(val) => { setItemsPerPage(Number(val)); setCurrentPage(1); }}>
               <SelectTrigger className="w-28"><SelectValue /></SelectTrigger>

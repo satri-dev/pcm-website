@@ -4,6 +4,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import {
   createFaculty,
   ensureFacultyIndexes,
+  findFacultyByOrder,
   listFaculty,
 } from "@/repositories/faculty.repository";
 import { FACULTY_GROUPS, type FacultyCreateInput } from "@/types/faculty";
@@ -14,6 +15,7 @@ const createSchema = z.object({
   name: z.string().min(2).max(200),
   role: z.string().min(2).max(200),
   group: z.enum(FACULTY_GROUPS as unknown as [string, ...string[]]),
+  order: z.number().int().min(0).optional(),
   photo: z.string().optional(),
   email: z.string().optional(),
   phone: z.string().optional(),
@@ -61,6 +63,16 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    if (parsed.data.order && parsed.data.order > 0) {
+      const existing = await findFacultyByOrder(parsed.data.order);
+      if (existing) {
+        return NextResponse.json(
+          { error: `Order ${parsed.data.order} is already assigned to ${existing.name}` },
+          { status: 409 }
+        );
+      }
+    }
+
     const created = await createFaculty(parsed.data as FacultyCreateInput);
     revalidateTag(CACHE_TAGS.facultyList, "max");
     revalidatePath("/about/faculty");

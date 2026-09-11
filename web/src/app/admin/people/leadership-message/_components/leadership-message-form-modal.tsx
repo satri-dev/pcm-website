@@ -13,6 +13,7 @@ const msgSchema = z.object({
   title: z.string().min(2, "Title is required").max(200),
   author: z.string().min(1, "Author is required").max(200),
   role: z.string().optional(),
+  order: z.number().int().min(0, "Order must be 0 or higher").optional(),
   excerpt: z.string().optional(),
   photo: z.string().optional(),
 });
@@ -31,6 +32,7 @@ interface LeadershipMessageFormModalProps {
   onOpenChange: (open: boolean) => void;
   message: LeadershipMessage | null;
   onSave: (message: LeadershipMessage) => void;
+  existingMessages?: LeadershipMessage[];
   saving?: boolean;
 }
 
@@ -39,13 +41,19 @@ const PEOPLE_API = [
   { api: "/api/admin/people/board?pageSize=100", source: "Board of Directors" as const },
 ];
 
-export default function LeadershipMessageFormModal({ open, onOpenChange, message, onSave, saving = false }: LeadershipMessageFormModalProps) {
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<MsgSchema>({
+export default function LeadershipMessageFormModal({ open, onOpenChange, message, onSave, existingMessages = [], saving = false }: LeadershipMessageFormModalProps) {
+  const { register, handleSubmit, reset, setValue, watch, setError, clearErrors, formState: { errors } } = useForm<MsgSchema>({
     resolver: zodResolver(msgSchema),
-    defaultValues: { title: "", author: "", role: "", excerpt: "", photo: "" },
+    defaultValues: { title: "", author: "", role: "", order: 0, excerpt: "", photo: "" },
   });
 
   const photo = watch("photo") || "";
+  const order = Number(watch("order")) || 0;
+
+  const takenOrders = existingMessages
+    .filter((m) => m.id !== message?.id && m.order > 0)
+    .map((m) => m.order)
+    .sort((a, b) => a - b);
   const [people, setPeople] = useState<PersonOption[]>([]);
   const [peopleLoading, setPeopleLoading] = useState(false);
   const [peopleError, setPeopleError] = useState("");
@@ -82,8 +90,8 @@ export default function LeadershipMessageFormModal({ open, onOpenChange, message
   }, [open]);
 
   useEffect(() => {
-    if (message) { reset({ title: message.title, author: message.author, role: message.role || "", excerpt: message.excerpt || "", photo: message.photo || "" }); }
-    else { reset({ title: "", author: "", role: "", excerpt: "", photo: "" }); }
+    if (message) { reset({ title: message.title, author: message.author, role: message.role || "", order: message.order || 0, excerpt: message.excerpt || "", photo: message.photo || "" }); }
+    else { reset({ title: "", author: "", role: "", order: 0, excerpt: "", photo: "" }); }
   }, [message, reset, open]);
 
   const applyPerson = (name: string) => {
@@ -94,12 +102,22 @@ export default function LeadershipMessageFormModal({ open, onOpenChange, message
     setValue("photo", person.photo, { shouldValidate: true });
   };
 
+  const orderTaken = order > 0 && takenOrders.includes(order);
+
   const onSubmit = async (data: MsgSchema) => {
+    const targetOrder = data.order || 0;
+    if (targetOrder > 0 && takenOrders.includes(targetOrder)) {
+      setError("order", { type: "manual", message: `Order ${targetOrder} is already taken. Choose a different order.` });
+      return;
+    }
+    clearErrors("order");
+
     const msgData: LeadershipMessage = {
       id: message?.id || `msg-${Date.now()}`,
       title: data.title,
       author: data.author,
       role: data.role || "",
+      order: targetOrder,
       excerpt: data.excerpt || "",
       photo: data.photo || "",
     };
@@ -146,6 +164,14 @@ export default function LeadershipMessageFormModal({ open, onOpenChange, message
 
               <div className={fv("author")}><label>Author Name <span className="req">*</span></label><input type="text" {...register("author")} placeholder="Type a name manually" />{errors.author && <div className="field__err">{errors.author.message}</div>}</div>
               <div className={fv("role")}><label>Role</label><select {...register("role")}><option value="">— Select —</option>{[...new Set([...(message?.role ? [message.role] : []), ...LEADERSHIP_ROLES])].map((r) => <option key={r} value={r}>{r}</option>)}</select></div>
+
+              <div className={fv("order")}>
+                <label>Order</label>
+                <input type="number" min={0} step={1} {...register("order", { valueAsNumber: true })} placeholder="0" onFocus={() => clearErrors("order")} />
+                {order > 0 && orderTaken && <div className="field__err">Order {order} is already assigned to another message.</div>}
+                {errors.order && <div className="field__err">{errors.order.message}</div>}
+                {takenOrders.length > 0 && <small className="hint">Occupied: {takenOrders.join(", ")}{message ? ` · current: ${message.order || 0}` : ""}</small>}
+              </div>
 
               <div className="field field--full">
                 <label>Profile Photo</label>

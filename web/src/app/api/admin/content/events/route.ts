@@ -75,7 +75,9 @@ export async function POST(request: NextRequest) {
     const created = await createEvent(parsed.data);
     revalidateTag(CACHE_TAGS.eventsList, "max");
     revalidateTag(CACHE_TAGS.event(created.slug), "max");
+    revalidateTag(CACHE_TAGS.tickerItems, "max");
     revalidatePath("/events");
+    revalidatePath("/");
     return NextResponse.json(created, { status: 201 });
   } catch (err) {
     console.error("Error creating event:", err);

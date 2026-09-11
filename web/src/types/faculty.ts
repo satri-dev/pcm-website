@@ -31,6 +31,7 @@ export interface Faculty {
   name: string;
   role: string;
   group: FacultyGroup;
+  order: number;
   photo: string;
   email: string;
   phone: string;
@@ -41,6 +42,7 @@ export interface FacultyDocument {
   name: string;
   role: string;
   group: FacultyGroup;
+  order: number;
   photo: string;
   email: string;
   phone: string;
@@ -50,6 +52,7 @@ export interface FacultyCreateInput {
   name: string;
   role: string;
   group: FacultyGroup;
+  order?: number;
   photo?: string;
   email?: string;
   phone?: string;

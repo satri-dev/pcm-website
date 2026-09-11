@@ -31,6 +31,10 @@ import {
   listTrashedSurveys,
   autoPurgeTrashedSurveys,
 } from "@/repositories/surveys.repository";
+import {
+  listTrashedBlogStudents,
+  autoPurgeTrashedBlogStudents,
+} from "@/repositories/blog-student.repository";
 
 export async function GET() {
   await Promise.all([
@@ -42,9 +46,10 @@ export async function GET() {
     autoPurgeTrashedScholarships(),
     autoPurgeTrashedFaqs(),
     autoPurgeTrashedSurveys(),
+    autoPurgeTrashedBlogStudents(),
   ]);
 
-  const [news, notices, results, events, programs, scholarships, faqs, surveys] =
+  const [news, notices, results, events, programs, scholarships, faqs, surveys, blogStudents] =
     await Promise.all([
       listTrashedNews({ pageSize: 200 }),
       listTrashedNotices({ pageSize: 200 }),
@@ -54,6 +59,7 @@ export async function GET() {
       listTrashedScholarships({ pageSize: 200 }),
       listTrashedFaqs({ pageSize: 200 }),
       listTrashedSurveys({ pageSize: 200 }),
+      listTrashedBlogStudents({ pageSize: 200 }),
     ]);
 
   const items = [
@@ -103,6 +109,12 @@ export async function GET() {
       id: i.id,
       name: i.title,
       collection: "surveys",
+      deletedAt: i.deletedAt,
+    })),
+    ...blogStudents.items.map((i) => ({
+      id: i.id,
+      name: i.title,
+      collection: "blog_student",
       deletedAt: i.deletedAt,
     })),
   ].sort(

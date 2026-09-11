@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Save, Link2, Plus, Trash2 } from "lucide-react";
+import { Save, Link2 } from "lucide-react";
 import {
   NEWS_PAGE_SETTINGS_DEFAULTS,
   type NewsPageSettings,
@@ -41,26 +41,6 @@ export default function NewsPageSettings({
     value: NewsPageSettings[K],
   ) => setForm((prev) => ({ ...prev, [key]: value }));
 
-  /* ── Sidebar notices helpers ── */
-  const updateNotice = (
-    idx: number,
-    patch: Partial<{ day: string; month: string; title: string; ago: string }>,
-  ) => {
-    set(
-      "sidebarNotices",
-      form.sidebarNotices.map((n, i) => (i === idx ? { ...n, ...patch } : n)),
-    );
-  };
-  const addNotice = () => {
-    set("sidebarNotices", [
-      ...form.sidebarNotices,
-      { day: "", month: "", title: "", ago: "" },
-    ]);
-  };
-  const removeNotice = (idx: number) => {
-    set("sidebarNotices", form.sidebarNotices.filter((_, i) => i !== idx));
-  };
-
   /* ── Save ── */
   const handleSave = async () => {
     setSaving(true);
@@ -75,9 +55,7 @@ export default function NewsPageSettings({
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error || `Save failed (HTTP ${res.status})`);
       }
-      setMessage(
-        "Saved. The public /news page now reflects these changes.",
-      );
+      setMessage("Saved. The public /news page now reflects these changes.");
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Save failed");
     } finally {
@@ -94,7 +72,7 @@ export default function NewsPageSettings({
           </h2>
           <p className="mt-1 mb-0 text-[0.9rem] text-[var(--admin-muted)]">
             Edit every section of the public /news page — hero, featured story,
-            stories, sidebar notices, newsletter and CTA band.
+            stories, newsletter and CTA band.
           </p>
         </div>
         <a
@@ -188,103 +166,24 @@ export default function NewsPageSettings({
         </div>
       </div>
 
-      {/* ── Sidebar Notices ── */}
+      {/* ── Sidebar ── */}
       <div className="admin-panel">
         <div className="admin-panel__head">
-          <h3>Sidebar Notices</h3>
+          <h3>Sidebar</h3>
         </div>
         <div className="admin-panel__body p-6 space-y-4">
           <label className="block">
-            {fieldLabel("Notices Title")}
+            {fieldLabel("Notices Section Title")}
             <input
               className={INPUT}
               value={form.sidebarNoticesTitle}
               onChange={(e) => set("sidebarNoticesTitle", e.target.value)}
             />
           </label>
-
-          <div className="mt-4 flex items-center gap-3">
-            <h4 className="m-0 text-[0.95rem] font-bold text-[var(--admin-ink)]">
-              Notices ({form.sidebarNotices.length})
-            </h4>
-            <button
-              type="button"
-              className="admin-btn admin-btn--sm"
-              onClick={addNotice}
-            >
-              <Plus size={14} /> Add Notice
-            </button>
-          </div>
-
-          <div className="space-y-4">
-            {form.sidebarNotices.map((notice, i) => (
-              <div
-                key={i}
-                className="rounded-xl border border-[var(--admin-line)] p-4 space-y-3"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-mono text-[0.72rem] font-bold uppercase tracking-wider text-[var(--admin-brand)]">
-                    Notice {i + 1}
-                  </span>
-                  <button
-                    type="button"
-                    className="admin-icon-btn danger"
-                    aria-label="Remove"
-                    onClick={() => removeNotice(i)}
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <label className="block">
-                    {fieldLabel("Day")}
-                    <input
-                      className={INPUT}
-                      value={notice.day}
-                      onChange={(e) =>
-                        updateNotice(i, { day: e.target.value })
-                      }
-                      placeholder="06"
-                    />
-                  </label>
-                  <label className="block">
-                    {fieldLabel("Month")}
-                    <input
-                      className={INPUT}
-                      value={notice.month}
-                      onChange={(e) =>
-                        updateNotice(i, { month: e.target.value })
-                      }
-                      placeholder="Jul"
-                    />
-                  </label>
-                  <label className="block">
-                    {fieldLabel("Ago")}
-                    <input
-                      className={INPUT}
-                      value={notice.ago}
-                      onChange={(e) =>
-                        updateNotice(i, { ago: e.target.value })
-                      }
-                      placeholder="1 month ago"
-                    />
-                  </label>
-                </div>
-
-                <label className="block">
-                  {fieldLabel("Title")}
-                  <input
-                    className={INPUT}
-                    value={notice.title}
-                    onChange={(e) =>
-                      updateNotice(i, { title: e.target.value })
-                    }
-                  />
-                </label>
-              </div>
-            ))}
-          </div>
+          <p className="text-sm text-[var(--admin-muted)] mt-2">
+            The actual notices are pulled from the database. This field only
+            controls the section heading.
+          </p>
         </div>
       </div>
 

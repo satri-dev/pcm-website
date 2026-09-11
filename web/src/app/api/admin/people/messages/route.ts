@@ -4,6 +4,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import {
   createMessage,
   ensureMessageIndexes,
+  findMessageByOrder,
   listMessages,
 } from "@/repositories/message.repository";
 import { requireApiSession } from "@/core/lib/api-guard";
@@ -13,6 +14,7 @@ const createSchema = z.object({
   title: z.string().min(2).max(200),
   author: z.string().min(2).max(200),
   role: z.string().optional(),
+  order: z.number().int().min(0).optional(),
   excerpt: z.string().optional(),
   photo: z.string().optional(),
 });
@@ -57,6 +59,16 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    if (parsed.data.order && parsed.data.order > 0) {
+      const existing = await findMessageByOrder(parsed.data.order);
+      if (existing) {
+        return NextResponse.json(
+          { error: `Order ${parsed.data.order} is already assigned to ${existing.author}` },
+          { status: 409 }
+        );
+      }
+    }
+
     const created = await createMessage(parsed.data);
     revalidateTag(CACHE_TAGS.messageList, "max");
     revalidatePath("/about/message");
