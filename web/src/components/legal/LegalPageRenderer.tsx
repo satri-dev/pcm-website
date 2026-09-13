@@ -51,12 +51,7 @@ export default function LegalPageRenderer({ page }: { page: LegalPageSettings })
         <div className="wrap-wide" style={{ maxWidth: 820 }}>
           <div className="prose">
             <p><strong>Last updated:</strong> {page.lastUpdated}</p>
-            {page.sections.map((sec, idx) => (
-              <div key={idx}>
-                <h2>{sec.heading}</h2>
-                <div dangerouslySetInnerHTML={{ __html: sec.body }} />
-              </div>
-            ))}
+            <div dangerouslySetInnerHTML={{ __html: page.content }} />
           </div>
         </div>
       </section>

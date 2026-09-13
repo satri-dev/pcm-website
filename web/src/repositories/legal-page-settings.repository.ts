@@ -12,10 +12,22 @@ interface SettingsDoc {
   value: Record<string, unknown>;
 }
 
+/** @deprecated Legacy shape stored in older DB records. */
+interface LegacySection {
+  heading: string;
+  body: string;
+}
+
 function getDefaultsForKey(key: string): LegalPageSettings {
   if (key === TERMS_PAGE_SETTINGS_KEY) return TERMS_PAGE_SETTINGS_DEFAULTS;
   if (key === PRIVACY_PAGE_SETTINGS_KEY) return PRIVACY_PAGE_SETTINGS_DEFAULTS;
   throw new UnknownKeyError(key);
+}
+
+function migrateSectionsToContent(sections: LegacySection[]): string {
+  return sections
+    .map((s) => `<h2>${s.heading}</h2>${s.body}`)
+    .join("");
 }
 
 function fromDoc(
@@ -25,6 +37,19 @@ function fromDoc(
   const v = value ?? {};
   const defaults: Record<string, unknown> = { ...getDefaultsForKey(key) };
   const merged: Record<string, unknown> = { ...defaults, ...v };
+
+  if (
+    !merged.content &&
+    Array.isArray(merged.sections) &&
+    merged.sections.length > 0
+  ) {
+    merged.content = migrateSectionsToContent(
+      merged.sections as LegacySection[]
+    );
+  }
+
+  delete merged.sections;
+
   return merged as unknown as LegalPageSettings;
 }
 

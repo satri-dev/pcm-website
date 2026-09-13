@@ -6,14 +6,14 @@ import { CACHE_TAGS } from "@/lib/cache-tags";
 
 export async function getTermsPageSettings() {
   "use cache";
-  cacheLife("hours");
+  cacheLife("rarely");
   cacheTag(CACHE_TAGS.termsPageSettings);
   return getLegalPageSettings(TERMS_PAGE_SETTINGS_KEY);
 }
 
 export async function getPrivacyPageSettings() {
   "use cache";
-  cacheLife("hours");
+  cacheLife("rarely");
   cacheTag(CACHE_TAGS.privacyPageSettings);
   return getLegalPageSettings(PRIVACY_PAGE_SETTINGS_KEY);
 }

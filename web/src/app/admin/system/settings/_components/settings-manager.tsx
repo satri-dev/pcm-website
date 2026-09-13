@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSettings } from "../hooks/useSettings";
 import SiteSettings from "./site-settings";
 import PasswordChange from "./password-change";
+import TwoFactorQR from "./two-factor-qr";
 import { Settings, RefreshCw } from "lucide-react";
 import type { SiteSettings as SiteSettingsType } from "../types/settings";
 
@@ -47,7 +48,7 @@ export default function SettingsManager({
       {/* Toast notification */}
       {toast && (
         <div
-          className={`fixed top-4 right-4 z-[100] px-4 py-3 rounded-xl shadow-lg text-sm font-semibold text-white transition-all ${
+          className={`fixed top-4 right-4 z-100 px-4 py-3 rounded-xl shadow-lg text-sm font-semibold text-white transition-all ${
             toast.type === "success"
               ? "bg-[var(--admin-green)]"
               : "bg-[var(--admin-red)]"
@@ -94,6 +95,9 @@ export default function SettingsManager({
 
         {/* Password Change */}
         <PasswordChange onChangePassword={changePassword} />
+
+        {/* Two-Factor QR Code */}
+        <TwoFactorQR />
       </div>
     </main>
   );

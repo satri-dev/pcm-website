@@ -8,7 +8,7 @@ import {
   createProgram,
   ensureProgramIndexes,
 } from "@/repositories/programs.repository";
-import { PROGRAM_LEVELS, PROGRAM_STATUSES } from "@/types/programs";
+import { PROGRAM_LEVELS, PROGRAM_STATUSES, ProgramCreateInput } from "@/types/programs";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 
 const createSchema = z.object({
@@ -51,11 +51,6 @@ export async function GET(request: NextRequest) {
       status: PROGRAM_STATUSES.find((s) => s === status) || undefined,
       level: PROGRAM_LEVELS.find((l) => l === level) || undefined,
     });
-
-    // Debug: log the IDs being returned
-    console.log("[GET /api/admin/content/programs] Returning", result.items.length, "programs");
-    console.log("[GET /api/admin/content/programs] Sample IDs:", result.items.slice(0, 3).map(p => p.id));
-
     return NextResponse.json(result);
   } catch (err) {
     console.error("[GET /api/admin/content/programs] Error:", err);
@@ -88,7 +83,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const created = await createProgram(parsed.data as any);
+    const created = await createProgram(parsed.data as ProgramCreateInput);
     
     // Invalidate programs list cache
     revalidateTag(CACHE_TAGS.programsList, "max");
