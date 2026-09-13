@@ -6,9 +6,11 @@ import {
 } from "@/repositories/testimonial.repository";
 import { revalidateTag } from "next/cache";
 import { CACHE_TAGS } from "@/lib/cache-tags";
+import { guardPublicWrite } from "@/core/lib/rate-limit";
+import { capString, sanitizeHtmlContent } from "@/lib/sanitize";
 
-function text(v: unknown): string {
-  return typeof v === "string" ? v.trim() : "";
+function text(v: unknown, maxLength: number): string {
+  return typeof v === "string" ? capString(v.trim(), maxLength) : "";
 }
 
 // GET /api/testimonials — public. Returns only approved, non-deleted
@@ -28,6 +30,9 @@ export async function GET() {
 // POST /api/testimonials — public. Accepts a new testimonial and stores it as
 // "pending" so an admin can review/approve it before it shows on the site.
 export async function POST(request: NextRequest) {
+  const limited = guardPublicWrite(request, { limit: 10, windowMs: 60_000 });
+  if (limited) return limited;
+
   let body: Record<string, unknown>;
   try {
     body = await request.json();
@@ -38,8 +43,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const name = text(body.name);
-  const content = text(body.content);
+  const name = text(body.name, 100);
+  const content = text(body.content, 10_000);
 
   if (!name) {
     return NextResponse.json(
@@ -58,11 +63,11 @@ export async function POST(request: NextRequest) {
     await ensureTestimonialIndexes();
     await createTestimonial({
       name,
-      content,
-      batch: text(body.batch) || undefined,
-      position: text(body.position) || undefined,
-      program: text(body.program) || undefined,
-      photo: text(body.photo) || undefined,
+      content: sanitizeHtmlContent(content),
+      batch: text(body.batch, 100) || undefined,
+      position: text(body.position, 100) || undefined,
+      program: text(body.program, 100) || undefined,
+      photo: text(body.photo, 2048) || undefined,
       status: "pending",
     });
     revalidateTag(CACHE_TAGS.testimonialsList, "max");

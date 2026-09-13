@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireApiSession } from "@/core/lib/api-guard";
 import { createTicker, listAllTickers } from "@/repositories/ticker.repository";
 import type { TickerCreateInput } from "@/types/ticker";
 
@@ -13,6 +14,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const guard = await requireApiSession(["admin", "editor"]);
+  if (!guard.ok) return guard.response;
+
   try {
     const body: TickerCreateInput = await request.json();
     const id = await createTicker(body);

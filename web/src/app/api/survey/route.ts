@@ -3,29 +3,42 @@ import {
   createSurveyResponse,
   ensureSurveyResponseIndexes,
 } from "@/repositories/survey-responses.repository";
+import type { SurveyAnswerValue } from "@/types/survey-response";
+import { guardPublicWrite } from "@/core/lib/rate-limit";
+import { capString, sanitizeUntrustedObject } from "@/lib/sanitize";
 
 // Public endpoint — intentionally unauthenticated so any visitor can submit.
-// The POST is intentionally fast: indexes are ensured once, then we do a single
-// indexed survey lookup + a single insert (no auth round-trips, no heavy work).
 export async function POST(req: NextRequest) {
+  const limited = guardPublicWrite(req, { limit: 10, windowMs: 60_000 });
+  if (limited) return limited;
+
   try {
     const body = await req.json();
     // The responder posts `surveySlug` (falls back to the legacy `surveyId`
     // field which historically carried the slug).
-    const surveySlug = (body.surveySlug ?? body.surveyId ?? "").trim();
-    const answers = body.answers;
-
-    if (!surveySlug)
+    if (typeof body.surveySlug !== "string" && typeof body.surveyId !== "string") {
       return NextResponse.json({ success: false, error: "Survey is required." }, { status: 400 });
-    if (!answers || typeof answers !== "object")
+    }
+    const surveySlug = String(body.surveySlug ?? body.surveyId).trim();
+
+    const rawAnswers = body.answers;
+    if (!rawAnswers || typeof rawAnswers !== "object" || Array.isArray(rawAnswers)) {
       return NextResponse.json({ success: false, error: "Answers are required." }, { status: 400 });
+    }
 
     await ensureSurveyResponseIndexes();
 
+    // Bound the answer payload and strip Mongo-DSL keys before persisting.
+    const answers = sanitizeUntrustedObject(rawAnswers as Record<string, unknown>, {
+      maxDepth: 3,
+      maxEntries: 200,
+    });
+
     const created = await createSurveyResponse({
       surveySlug,
-      respondent: typeof body.respondent === "string" ? body.respondent : undefined,
-      answers,
+      respondent:
+        typeof body.respondent === "string" ? capString(body.respondent.trim(), 200) : undefined,
+      answers: (answers ?? {}) as Record<string, SurveyAnswerValue>,
     });
 
     if (!created) {

@@ -28,7 +28,6 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  await requireApiSession(["admin", "editor", "viewer"]);
   const { id } = await params;
 
   await ensureChatbotIndexes();

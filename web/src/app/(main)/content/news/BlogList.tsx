@@ -42,11 +42,8 @@ export default function BlogList() {
 
         const result: BlogResponse = await response.json();
 
-        console.log("BLOG API RESPONSE:", result);
-
         setBlogs(result.items);
-      } catch (error) {
-        console.error(error);
+      } catch {
         setError("Failed to load blogs.");
       } finally {
         setLoading(false);

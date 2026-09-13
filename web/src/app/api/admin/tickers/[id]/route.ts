@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireApiSession } from "@/core/lib/api-guard";
 import { getTickerById, updateTicker, deleteTicker } from "@/repositories/ticker.repository";
 import type { TickerUpdateInput } from "@/types/ticker";
 
@@ -23,6 +24,9 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const guard = await requireApiSession(["admin", "editor"]);
+  if (!guard.ok) return guard.response;
+
   try {
     const { id } = await params;
     const body: TickerUpdateInput = await request.json();
@@ -41,6 +45,9 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const guard = await requireApiSession(["admin", "editor"]);
+  if (!guard.ok) return guard.response;
+
   try {
     const { id } = await params;
     const success = await deleteTicker(id);

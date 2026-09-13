@@ -7,6 +7,7 @@ import {
 import { getSurveySettings } from "@/lib/data/survey-page-settings";
 import { BUILD_PLACEHOLDER_SLUG } from "@/lib/constants";
 import SurveyResponder from "./SurveyResponder";
+import { getCanonicalUrl } from "@/lib/seo-utils";
 
 export async function generateStaticParams() {
   try {
@@ -31,7 +32,7 @@ export async function generateMetadata({
     title: survey.seo?.title || `${survey.title} | Surveys & Polls | PCM`,
     description: survey.seo?.description || survey.excerpt,
     keywords: survey.seo?.keywords,
-    alternates: { canonical: `/survey/${slug}` },
+    alternates: { canonical: getCanonicalUrl(`/survey/${slug}`) },
   };
 }
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getNoticesSettings } from "@/lib/data/notices-page-settings";
 import NoticesServer from "./NoticesServer";
+import { getCanonicalUrl } from "@/lib/seo-utils";
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getNoticesSettings();
@@ -8,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: settings.seoTitle,
     description: settings.seoDescription,
     keywords: settings.seoKeywords,
-    alternates: { canonical: "/notices" },
+    alternates: { canonical: getCanonicalUrl("/notices") },
   };
 }
 

@@ -1,0 +1,209 @@
+==========================================================================
+GOOGLE SEARCH CONSOLE - FIX OLD LARAVEL SITE CACHE ISSUE
+==========================================================================
+
+Your Next.js site is live but Google is still showing OLD Laravel content 
+in search results. Follow these steps to fix it:
+
+==========================================================================
+STEP 1: VERIFY OWNERSHIP (If not done already)
+==========================================================================
+
+1. Go to: https://search.google.com/search-console
+2. Add property: www.pcm.edu.np
+3. Verify using one of these methods:
+   - HTML file upload (recommended)
+   - Meta tag in <head>
+   - Google Analytics
+   - DNS TXT record
+
+==========================================================================
+STEP 2: SUBMIT NEW SITEMAP
+==========================================================================
+
+1. In Google Search Console, go to: Sitemaps
+2. Remove OLD sitemap if it exists
+3. Add NEW sitemap URL:
+   https://www.pcm.edu.np/sitemap.xml
+4. Click "Submit"
+5. Wait 5-10 minutes and refresh - should show "Success"
+
+==========================================================================
+STEP 3: REQUEST RE-INDEXING OF KEY PAGES
+==========================================================================
+
+Use the URL Inspection Tool to force re-crawl:
+
+Priority Pages to Re-Index (Do these FIRST):
+1. https://www.pcm.edu.np/
+2. https://www.pcm.edu.np/about
+3. https://www.pcm.edu.np/programs
+4. https://www.pcm.edu.np/programs/bba
+5. https://www.pcm.edu.np/programs/bba-finance
+6. https://www.pcm.edu.np/programs/bcsit
+7. https://www.pcm.edu.np/admission
+8. https://www.pcm.edu.np/contact
+
+For each URL:
+1. Go to: URL Inspection (top search bar in GSC)
+2. Paste the URL
+3. Click "Test Live URL"
+4. Wait for test to complete
+5. Click "Request Indexing"
+6. Confirm
+
+Do this for AT LEAST the 8 pages above. Google will prioritize these.
+
+==========================================================================
+STEP 4: IDENTIFY & REMOVE OLD LARAVEL URLS
+==========================================================================
+
+1. In GSC, go to: Coverage > Indexed
+2. Look for OLD URLs that don't exist in your new Next.js site
+3. For each old URL that's no longer relevant:
+   - Use URL Inspection tool
+   - If 404, let Google discover this naturally
+   - If redirecting, ensure 301 redirects are in place
+
+Common Old Laravel URLs to Check:
+- /admin (should be blocked by robots.txt or noindex)
+- Any .php URLs
+- Old blog/news URL structures
+- Old program page structures
+
+==========================================================================
+STEP 5: CHECK ROBOTS.TXT
+==========================================================================
+
+1. Visit: https://www.pcm.edu.np/robots.txt
+2. Verify it contains:
+
+User-agent: *
+Allow: /
+
+Host: https://www.pcm.edu.np
+Sitemap: https://www.pcm.edu.np/sitemap.xml
+
+3. In GSC, go to: Settings > Crawl Rate
+4. Ensure crawl rate is not restricted
+
+==========================================================================
+STEP 6: MONITOR INDEXING PROGRESS
+==========================================================================
+
+Track these metrics daily:
+
+1. GSC > Coverage:
+   - Valid pages (should increase)
+   - Error pages (should decrease)
+
+2. GSC > Sitemaps:
+   - Discovered URLs (should match your sitemap count)
+   - Indexed URLs (should increase daily)
+
+3. GSC > Performance:
+   - Impressions (may drop initially, then recover)
+   - Click-through rate (should improve with better meta)
+
+Expected Timeline:
+- Day 1-3: Google discovers new pages
+- Day 3-7: New pages start appearing in search
+- Day 7-14: Old cache gradually replaced
+- Day 14-30: Full transition to new content
+
+==========================================================================
+STEP 7: FORCE CACHE REFRESH (Advanced)
+==========================================================================
+
+If Google is STILL showing old content after 7 days:
+
+1. Use Google's Cache Removal Tool:
+   - GSC > Removals > Temporary Removals
+   - Add URLs showing old content
+   - This forces Google to re-fetch
+
+2. Submit URL Parameter Changes (if applicable):
+   - GSC > URL Parameters
+   - Configure any parameters
+
+3. Use "Fetch as Google":
+   - URL Inspection > Test Live URL
+   - This shows how Google sees your page
+
+==========================================================================
+STEP 8: VERIFY METADATA IS CORRECT
+==========================================================================
+
+For each key page, check in browser:
+
+1. Right-click > View Page Source
+2. Look for in <head>:
+
+<title>Your Page Title</title>
+<meta name="description" content="Your description">
+<link rel="canonical" href="https://www.pcm.edu.np/your-page">
+<meta property="og:title" content="Your Page Title">
+<meta property="og:url" content="https://www.pcm.edu.np/your-page">
+
+All URLs should be ABSOLUTE (start with https://)
+
+==========================================================================
+EMERGENCY: IF NOTHING WORKS AFTER 14 DAYS
+==========================================================================
+
+1. Check if your site is being crawled:
+   - GSC > Settings > Crawl Stats
+   - Should show increasing crawl requests
+
+2. Check for penalties:
+   - GSC > Security & Manual Actions
+   - Should show "No issues detected"
+
+3. Verify no blocks in production:
+   - Check no <meta name="robots" content="noindex">
+   - Check no X-Robots-Tag header blocking crawl
+
+4. Contact Google Support:
+   - GSC > Help > Contact Support
+   - Explain: "New site deployed, old cache not clearing"
+
+==========================================================================
+TRACKING PROGRESS
+==========================================================================
+
+Daily Checklist (First 7 Days):
+☐ Check GSC Coverage for new pages indexed
+☐ Check GSC Sitemaps for discovered/indexed ratio
+☐ Search for site:www.pcm.edu.np in Google to see indexed pages
+☐ Search for key terms to see if new pages appear
+
+Weekly Checklist (Week 2-4):
+☐ Compare indexed page count to total pages
+☐ Check search appearance for key pages
+☐ Monitor organic traffic in analytics
+☐ Check if old URLs are being de-indexed
+
+==========================================================================
+EXPECTED RESULTS
+==========================================================================
+
+After completing ALL steps above:
+
+✅ Week 1: New sitemap submitted and processing
+✅ Week 1: Key pages requested for re-indexing
+✅ Week 2: New pages start appearing in search results
+✅ Week 2-3: Old Laravel content gradually replaced
+✅ Week 3-4: Search results show NEW metadata and descriptions
+✅ Month 2: Full SEO recovery and improved rankings
+
+==========================================================================
+CONTACT INFO IF ISSUES PERSIST
+==========================================================================
+
+If Google still shows old content after 30 days:
+- This indicates a technical issue
+- Check your hosting platform for caching issues
+- Verify your domain DNS is correct
+- Consider contacting Vercel/Netlify support
+
+==========================================================================

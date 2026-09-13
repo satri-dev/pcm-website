@@ -6,17 +6,41 @@ import {
 import { getPageContentBySlug } from "@/repositories/page-content.repository";
 import type { AdmissionPageContent } from "@/types/page-content";
 import type { FileEntry } from "@/types/application";
+import { guardPublicWrite } from "@/core/lib/rate-limit";
+import { capString, sanitizeUntrustedObject } from "@/lib/sanitize";
 import {
   type FieldDef,
   validateFieldValue,
   validateObtainedVsFullMarks,
 } from "@/lib/application-validation";
 
+function cleanFileEntries(value: unknown): FileEntry[] {
+  if (!Array.isArray(value)) return [];
+  const out: FileEntry[] = [];
+  for (const entry of value.slice(0, 15)) {
+    if (typeof entry === "string") {
+      const url = capString(entry, 2048);
+      if (/^https?:\/\//.test(url)) out.push(url);
+    } else if (entry && typeof entry === "object" && !Array.isArray(entry)) {
+      const e = entry as Record<string, unknown>;
+      const url = typeof e.url === "string" ? capString(e.url, 2048) : "";
+      if (/^https?:\/\//.test(url)) {
+        const name = typeof e.name === "string" ? capString(e.name, 200) : "";
+        out.push({ url, name });
+      }
+    }
+  }
+  return out;
+}
+
 /**
  * POST /api/applications
  * Public endpoint used by the admission form to submit an application.
  */
 export async function POST(request: NextRequest) {
+  const limited = guardPublicWrite(request, { limit: 10, windowMs: 60_000 });
+  if (limited) return limited;
+
   let body: Record<string, unknown>;
   try {
     body = await request.json();
@@ -90,12 +114,8 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const documents: FileEntry[] = Array.isArray(body.documents)
-    ? (body.documents as FileEntry[])
-    : [];
-  const paymentSlips: FileEntry[] = Array.isArray(body.paymentSlips)
-    ? (body.paymentSlips as FileEntry[])
-    : [];
+  const documents = cleanFileEntries(body.documents);
+  const paymentSlips = cleanFileEntries(body.paymentSlips);
 
   if (documents.length === 0) {
     return NextResponse.json(
@@ -183,7 +203,12 @@ export async function POST(request: NextRequest) {
         }
       }
     } catch {
-      // If we can't fetch page content, skip field-level validation
+      // If we can't verify the configured fields, fail closed — never accept
+      // an unvalidated admission application.
+      return NextResponse.json(
+        { success: false, error: "Please try again in a moment." },
+        { status: 503 }
+      );
     }
   }
 
@@ -213,7 +238,10 @@ export async function POST(request: NextRequest) {
         // step, keyed by field id) so nothing is lost on submission.
         form:
           body.form && typeof body.form === "object"
-            ? (body.form as Record<string, unknown>)
+            ? (sanitizeUntrustedObject(body.form as Record<string, unknown>, {
+                maxDepth: 5,
+                maxEntries: 300,
+              }) as Record<string, unknown>)
             : {},
       },
     });

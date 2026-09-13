@@ -5,13 +5,52 @@ import { getDb } from "@/core/lib/db";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 import { getFeedbackSettings } from "@/lib/data/feedback-page-settings";
 import { ensureFeedbackIndexes } from "@/repositories/feedback.repository";
+import { guardPublicWrite } from "@/core/lib/rate-limit";
+import { capString, sanitizeUntrustedObject } from "@/lib/sanitize";
 
 export async function POST(req: NextRequest) {
+  const limited = guardPublicWrite(req, { limit: 10, windowMs: 60_000 });
+  if (limited) return limited;
+
   try {
     const settings = await getFeedbackSettings();
     const body = await req.json();
-    const fields: Record<string, unknown> = body?.fields ?? {};
+    const rawFields: Record<string, unknown> = body?.fields ?? {};
     const anonymous = Boolean(body?.anonymous);
+
+    // Given set of legal field ids: configured fields + the built-in rating.
+    const legalIds = new Set<string>(settings.fields.map((f) => f.id));
+    if (settings.ratingEnabled) legalIds.add("rating");
+
+    // Whitelist submitted keys, coerce numeric strings, and bound lengths.
+    const fields: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(rawFields)) {
+      if (!legalIds.has(key)) continue;
+      const config = settings.fields.find((f) => f.id === key);
+
+      if (config?.type === "number" && typeof value === "string" && value.trim() !== "") {
+        const numeric = Number(value);
+        fields[key] = Number.isNaN(numeric) ? value : numeric;
+        continue;
+      }
+
+      if (typeof value === "string") {
+        fields[key] = capString(value, config === undefined ? 200 : 5000);
+        continue;
+      }
+
+      if (typeof value === "number" || typeof value === "boolean") {
+        fields[key] = value;
+        continue;
+      }
+
+      // Only configured select fields accept arrays.
+      if (Array.isArray(value) && config) {
+        fields[key] = value.slice(0, 50).map((v) =>
+          typeof v === "string" ? capString(v, 200) : v
+        );
+      }
+    }
 
     // Rating is a built-in field when enabled.
     if (settings.ratingEnabled) {
@@ -68,7 +107,7 @@ export async function POST(req: NextRequest) {
 
     const db = await getDb();
     const cleanFields = fields as Record<string, unknown>;
-    
+
     // If anonymous, remove identifying fields (name, email)
     if (anonymous) {
       delete cleanFields.name;
@@ -79,7 +118,10 @@ export async function POST(req: NextRequest) {
 
     await db.collection("feedback").insertOne({
       _id: new ObjectId(),
-      fields: cleanFields,
+      fields: sanitizeUntrustedObject(cleanFields, {
+        maxDepth: 3,
+        maxEntries: 100,
+      }) as Record<string, unknown>,
       fieldSchema: settings.fields,
       anonymous,
       createdAt: new Date(),

@@ -12,6 +12,11 @@ import { getProgramBySlug, getProgramsList } from "@/lib/data/programs";
 import { getPageContent } from "@/lib/data/page-content";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 import CurriculumTabs from "@/feature/Program/components/CurriculumTabs";
+import {
+  getCanonicalUrl,
+  createOpenGraphMetadata,
+  createTwitterMetadata,
+} from "@/lib/seo-utils";
 import "../programs.css";
 
 // Generate static params from database programs
@@ -58,10 +63,38 @@ export async function generateMetadata({
 
   const name = dbProgram?.name || hardcodedProgram?.fullName || "Program";
   const tagline = programPage?.hero?.tagline || hardcodedProgram?.tagline || "";
+  const intro = dbProgram?.intro || hardcodedProgram?.tagline || tagline;
+  const image =
+    dbProgram?.image || programPage?.hero?.image || "/images/hero-1.jpg";
+  const canonical = getCanonicalUrl(`/programs/${slug}`);
+
+  // SEO keywords
+  const keywords = [
+    name,
+    `${name} in Pokhara`,
+    `${dbProgram?.code || ""} Pokhara`,
+    "Pokhara College of Management",
+    "PCM Pokhara",
+    "Pokhara University",
+  ].filter(Boolean);
 
   return {
-    title: `${name} | PCM Pokhara`,
-    description: tagline,
+    title: `${name} | Programs | PCM Pokhara`,
+    description: intro,
+    keywords,
+    alternates: { canonical },
+    openGraph: createOpenGraphMetadata({
+      title: name,
+      description: intro,
+      url: canonical,
+      image,
+      type: "website",
+    }),
+    twitter: createTwitterMetadata({
+      title: name,
+      description: intro,
+      image,
+    }),
   };
 }
 

@@ -2,20 +2,23 @@ import type { Metadata } from "next";
 import LifeClient from "./LifeClient";
 import { getLifeSettings } from "@/lib/data/life-page-settings";
 import { getLifeGalleryPhotos } from "@/lib/data/life-gallery";
+import { getCanonicalUrl } from "@/lib/seo-utils";
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getLifeSettings();
+  const canonical = getCanonicalUrl("/life");
+
   return {
     title: settings.seoTitle,
     description: settings.seoDescription,
     keywords: settings.seoKeywords,
-    alternates: { canonical: "/life" },
+    alternates: { canonical },
     openGraph: {
       type: "website",
       siteName: "Pokhara College of Management",
       title: settings.seoTitle,
       description: settings.seoDescription,
-      url: "https://www.pcm.edu.np/life",
+      url: canonical,
       locale: "en_US",
       images: [{ url: settings.ogImage }],
     },

@@ -119,16 +119,11 @@ export async function PUT(
     // Get existing page content for programs
     const existing = await getPageContentBySlug("programs");
     
-    console.log("[PUT /api/admin/pages/programs/[slug]] Existing content:", existing);
-    console.log("[PUT /api/admin/pages/programs/[slug]] New content for", parsed.data.programSlug, ":", parsed.data.content);
-    
     // Merge the new program-specific content
     const programPages = {
       ...(existing?.content?.programPages || {}),
       [parsed.data.programSlug]: parsed.data.content,
     };
-
-    console.log("[PUT /api/admin/pages/programs/[slug]] Merged programPages:", programPages);
 
     // Update the page content with the merged programPages
     const updated = await upsertPageContent("programs", {
@@ -136,13 +131,9 @@ export async function PUT(
       programPages,
     });
 
-    console.log("[PUT /api/admin/pages/programs/[slug]] Update result:", updated);
-
     // Invalidate caches
     revalidateTag(CACHE_TAGS.pageContent("programs"), "max");
     revalidateTag(CACHE_TAGS.program(slug), "max");
-    
-    console.log("[PUT /api/admin/pages/programs/[slug]] Cache invalidated for:", CACHE_TAGS.pageContent("programs"), CACHE_TAGS.program(slug));
 
     return NextResponse.json({ ok: true, updated });
   } catch (err) {

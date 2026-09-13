@@ -4,7 +4,8 @@ import { ObjectId } from "mongodb";
 export const USER_ROLES = ["admin", "editor", "viewer"] as const;
 export type UserRole = (typeof USER_ROLES)[number];
 
-export const DEFAULT_PASSWORD = "Password@123";
+// Default password - should be set via environment variable
+export const DEFAULT_PASSWORD = process.env.DEFAULT_USER_PASSWORD || "ChangeMe@123";
 
 /* ── Permission keys ── */
 export const PERMISSION_KEYS = [

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getPageContentBySlug } from "@/repositories/page-content.repository";
 import type { AdmissionPageContent } from "@/types/page-content";
 import type { FileEntry } from "@/types/application";
+import { guardPublicWrite } from "@/core/lib/rate-limit";
 import {
   type FieldDef,
   normalizeValue,
@@ -10,6 +11,9 @@ import {
 } from "@/lib/application-validation";
 
 export async function POST(request: NextRequest) {
+  const limited = guardPublicWrite(request, { limit: 60, windowMs: 60_000 });
+  if (limited) return limited;
+
   let body: Record<string, unknown>;
   try {
     body = await request.json();
@@ -44,9 +48,11 @@ export async function POST(request: NextRequest) {
     const doc = await getPageContentBySlug("admission");
     pageContent = (doc?.content as unknown as AdmissionPageContent) || null;
   } catch {
+    // Fail closed: if we cannot load the field configuration we cannot
+    // validate, and must not lie about the result being valid.
     return NextResponse.json(
-      { valid: true, errors: [] },
-      { status: 200 }
+      { valid: false, errors: ["Validation is temporarily unavailable. Please try again."] },
+      { status: 503 }
     );
   }
 
@@ -95,7 +101,7 @@ export async function POST(request: NextRequest) {
         const url = typeof d === "string" ? d : d.url;
         return normalizeValue(url);
       }).length;
-      const expectedCount = (pageContent as any)?.applicationForm?.documentStep?.documentLabels?.length ?? 0;
+      const expectedCount = pageContent?.applicationForm?.documentStep?.documentLabels?.length ?? 0;
       if (expectedCount > 0 && filledCount < expectedCount) {
         errors.push(`Please upload all ${expectedCount} required documents (${filledCount}/${expectedCount} uploaded)`);
       } else if (filledCount === 0) {

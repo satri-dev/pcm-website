@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getResultsSettings } from "@/lib/data/results-page-settings";
 import ResultsServer from "./ResultsServer";
+import { getCanonicalUrl } from "@/lib/seo-utils";
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getResultsSettings();
@@ -8,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: settings.seoTitle,
     description: settings.seoDescription,
     keywords: settings.seoKeywords,
-    alternates: { canonical: "/results" },
+    alternates: { canonical: getCanonicalUrl("/results") },
   };
 }
 

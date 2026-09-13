@@ -21,12 +21,18 @@ export async function createSurveyResponse(input: {
   const survey = await getSurveyBySlug(input.surveySlug);
   if (!survey || survey.status !== "published") return null;
 
+  // Enforce the survey's closing date ("YYYY-MM-DD") when one is set.
+  if (survey.endsOn) {
+    const today = new Date().toISOString().slice(0, 10);
+    if (survey.endsOn < today) return null;
+  }
+
   const db = await getDb();
   const doc: SurveyResponseDocument = {
     surveyId: new ObjectId(survey.id),
     surveySlug: survey.slug,
     surveyTitle: survey.title,
-    respondent: input.respondent?.trim() || undefined,
+    respondent: input.respondent?.trim().slice(0, 200) || undefined,
     answers: input.answers || {},
     createdAt: new Date(),
     updatedAt: new Date(),

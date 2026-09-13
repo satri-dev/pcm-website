@@ -146,6 +146,7 @@ export async function getNewsletterStats(): Promise<NewsletterStats> {
  * Delete a subscriber by ID (admin)
  */
 export async function deleteSubscriber(id: string): Promise<boolean> {
+  if (!ObjectId.isValid(id)) return false;
   const db = await getDb();
   const collection = db.collection<NewsletterSubscriberDocument>(COLLECTION);
 
