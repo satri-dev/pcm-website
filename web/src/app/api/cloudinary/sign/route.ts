@@ -1,143 +1,25 @@
-
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import cloudinary from "@/core/lib/cloudinary";
-import { guardPublicWrite } from "@/core/lib/rate-limit";
 
-const ALLOWED_SIGN_PARAMS = new Set([
-  "timestamp",
-  "upload_preset",
-  "source",
-  "public_id",
-  "folder",
-  "format",
-  "type",
-  "resource_type",
-]);
-
-const ALLOWED_UPLOAD_PRESETS = new Set([
-  "pcm-images",
-]);
-
-const MAX_PARAM_STRING = 500;
-const MAX_TOLERANCE_SECONDS = 600;
-
-function isPlainObject(
-  value: unknown
-): value is Record<string, unknown> {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    !Array.isArray(value)
-  );
-}
-
-export async function POST(request: NextRequest) {
-  const limited = guardPublicWrite(request, {
-    limit: 60,
-    windowMs: 60_000,
-  });
-
-  if (limited) return limited;
-
+export async function POST(request: Request) {
   try {
-    const apiSecret = process.env.CLOUDINARY_API_SECRET;
-    const apiKey = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
+    const { paramsToSign } = await request.json();
 
-    if (!apiSecret || !apiKey) {
-      console.error(
-        "Cloudinary environment variables are missing"
-      );
-
-      return NextResponse.json(
-        { error: "Cloudinary is not configured" },
-        { status: 500 }
-      );
-    }
-
-    const body: unknown = await request.json();
-
-    if (!isPlainObject(body)) {
-      return NextResponse.json(
-        { error: "Invalid request body" },
-        { status: 400 }
-      );
-    }
-
-    const paramsToSign = body.paramsToSign;
-
-    if (!isPlainObject(paramsToSign)) {
+    if (!paramsToSign) {
       return NextResponse.json(
         { error: "Missing paramsToSign" },
         { status: 400 }
       );
     }
 
-    // Validate timestamp without changing the original object.
-    const timestamp = Number(paramsToSign.timestamp);
-    const nowSeconds = Math.floor(Date.now() / 1000);
-
-    if (
-      !Number.isSafeInteger(timestamp) ||
-      Math.abs(nowSeconds - timestamp) > MAX_TOLERANCE_SECONDS
-    ) {
-      return NextResponse.json(
-        { error: "Invalid or expired timestamp" },
-        { status: 400 }
-      );
-    }
-
-    // Validate the exact parameters received from the widget.
-    for (const [key, value] of Object.entries(paramsToSign)) {
-      if (!ALLOWED_SIGN_PARAMS.has(key)) {
-        return NextResponse.json(
-          { error: `Unsupported signing parameter: ${key}` },
-          { status: 400 }
-        );
-      }
-
-      if (typeof value !== "string") {
-        return NextResponse.json(
-          { error: `Invalid parameter: ${key}` },
-          { status: 400 }
-        );
-      }
-
-      if (value.length === 0 || value.length > MAX_PARAM_STRING) {
-        return NextResponse.json(
-          { error: `Invalid parameter length: ${key}` },
-          { status: 400 }
-        );
-      }
-
-      if (
-        key === "upload_preset" &&
-        !ALLOWED_UPLOAD_PRESETS.has(value)
-      ) {
-        return NextResponse.json(
-          { error: "Invalid upload preset" },
-          { status: 400 }
-        );
-      }
-    }
-
-    if (!paramsToSign.upload_preset) {
-      return NextResponse.json(
-        { error: "Missing upload_preset" },
-        { status: 400 }
-      );
-    }
-
-    // IMPORTANT:
-    // Sign the exact paramsToSign object received from the widget.
-    // Do not rebuild it or add/remove fields.
     const signature = cloudinary.utils.api_sign_request(
       paramsToSign,
-      apiSecret
+      process.env.CLOUDINARY_API_SECRET!
     );
 
     return NextResponse.json({
       signature,
-      apiKey,
+      apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
     });
   } catch (error) {
     console.error("Cloudinary signature error:", error);

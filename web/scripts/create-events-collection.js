@@ -4,8 +4,12 @@
  * Reads MONGODB_URI / MONGODB_DB from the environment or web/.env
  */
 import { existsSync, readFileSync } from "fs";
-import { join } from "path";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 import { MongoClient } from "mongodb";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 function loadEnv() {
   const envPath = join(__dirname, "..", ".env");
@@ -56,7 +60,6 @@ const eventsJsonSchema = {
     },
     description: {
       bsonType: "string",
-      maxLength: 2000,
     },
     image: {
       bsonType: "string",

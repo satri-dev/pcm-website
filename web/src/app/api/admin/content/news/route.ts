@@ -89,6 +89,7 @@ export async function POST(request: NextRequest) {
     revalidatePath("/");
     return NextResponse.json(created, { status: 201 });
   } catch (err) {
+    console.error("News creation error:", err);
     if (
       typeof err === "object" &&
       err !== null &&
@@ -101,7 +102,10 @@ export async function POST(request: NextRequest) {
       );
     }
     return NextResponse.json(
-      { error: "Failed to create news article" },
+      {
+        error: "Failed to create news article",
+        message: err instanceof Error ? err.message : "Unknown error",
+      },
       { status: 500 }
     );
   }
