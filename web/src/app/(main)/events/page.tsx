@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getEventsSettings } from "@/lib/data/events-page-settings";
 import EventsServer from "./EventsServer";
+import { getCanonicalUrl } from "@/lib/seo-utils";
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getEventsSettings();
@@ -8,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: settings.seoTitle,
     description: settings.seoDescription,
     keywords: settings.seoKeywords,
-    alternates: { canonical: "/events" },
+    alternates: { canonical: getCanonicalUrl("/events") },
   };
 }
 

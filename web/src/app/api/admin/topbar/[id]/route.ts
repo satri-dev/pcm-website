@@ -1,5 +1,6 @@
 import { revalidateTag, revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
+import { requireApiSession } from "@/core/lib/api-guard";
 import { updateTopBarLink, deleteTopBarLink } from "@/repositories/topbar.repository";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 import type { TopBarLinkUpdateInput } from "@/types/topbar";
@@ -9,6 +10,9 @@ interface RouteContext {
 }
 
 export async function PUT(request: Request, { params }: RouteContext) {
+  const guard = await requireApiSession(["admin", "editor"]);
+  if (!guard.ok) return guard.response;
+
   try {
     const { id } = await params;
     const body: TopBarLinkUpdateInput = await request.json();
@@ -31,6 +35,9 @@ export async function PUT(request: Request, { params }: RouteContext) {
 }
 
 export async function DELETE(_request: Request, { params }: RouteContext) {
+  const guard = await requireApiSession(["admin", "editor"]);
+  if (!guard.ok) return guard.response;
+
   try {
     const { id } = await params;
     const success = await deleteTopBarLink(id);

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
+import { requireApiSession } from "@/core/lib/api-guard";
 import { getFooterSettings, updateFooterSettings } from "@/repositories/footer.repository";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 import type { FooterSettingsUpdateInput } from "@/types/footer";
@@ -15,6 +16,9 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
+  const guard = await requireApiSession(["admin", "editor"]);
+  if (!guard.ok) return guard.response;
+
   try {
     const body: FooterSettingsUpdateInput = await request.json();
     const settings = await updateFooterSettings(body);

@@ -1,5 +1,6 @@
 import { revalidateTag, revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
+import { requireApiSession } from "@/core/lib/api-guard";
 import { getTopBarContact, updateTopBarContact } from "@/repositories/topbar.repository";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 import type { TopBarContactUpdateInput } from "@/types/topbar";
@@ -15,6 +16,9 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
+  const guard = await requireApiSession(["admin", "editor"]);
+  if (!guard.ok) return guard.response;
+
   try {
     const body: TopBarContactUpdateInput = await request.json();
     const contact = await updateTopBarContact(body);

@@ -3,6 +3,7 @@ import { Poppins } from "next/font/google";
 import BlogsStudentClient from "./BlogsStudentClient";
 import { getPageCopy } from "@/lib/data/page-content";
 import { getApprovedBlogStudents } from "@/lib/data/blog-student";
+import { getCanonicalUrl } from "@/lib/seo-utils";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700", "800"],
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
   title: "Student Blogs | Pokhara College of Management",
   description:
     "First-person stories from PCM students — internships, festivals, clubs and growth at Pokhara College of Management.",
-  alternates: { canonical: "/blogs-student" },
+  alternates: { canonical: getCanonicalUrl("/blogs-student") },
 };
 
 export default async function BlogsStudentPage() {

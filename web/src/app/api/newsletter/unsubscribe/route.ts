@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { unsubscribeFromNewsletter } from "@/repositories/newsletter.repository";
+import { guardPublicWrite } from "@/core/lib/rate-limit";
 
 const unsubscribeSchema = z.object({
   email: z.string().email("Invalid email address"),
 });
 
 export async function POST(request: NextRequest) {
+  const limited = guardPublicWrite(request, { limit: 10, windowMs: 60_000 });
+  if (limited) return limited;
+
   try {
     const body = await request.json();
     const parsed = unsubscribeSchema.safeParse(body);
@@ -18,15 +22,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const success = await unsubscribeFromNewsletter(parsed.data.email);
+    await unsubscribeFromNewsletter(parsed.data.email);
 
-    if (!success) {
-      return NextResponse.json(
-        { error: "Email not found or already unsubscribed" },
-        { status: 404 }
-      );
-    }
-
+    // Unsubscribe is idempotent and returns a generic success — we don't reveal
+    // whether an address is (or was) subscribed.
     return NextResponse.json({
       success: true,
       message: "Successfully unsubscribed from newsletter",

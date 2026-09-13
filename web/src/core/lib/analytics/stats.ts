@@ -14,7 +14,7 @@ export async function getSiteVisits(
   const client = await getClientPromise()
 
   const db = client.db(
-    process.env.MONGODB_DB
+    process.env.MONGODB_DB_NAME || process.env.MONGODB_DB || "test"
   )
 
   return db

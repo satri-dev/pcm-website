@@ -3,6 +3,7 @@ import crypto from "crypto"
 
 import getClientPromise from "@/core/lib/mongodb"
 import { detectDevice } from "@/core/lib/analytics/device"
+import { guardPublicWrite } from "@/core/lib/rate-limit"
 
 const VISITOR_COOKIE = "analytics_visitor_id"
 const SESSION_COOKIE = "analytics_session_id"
@@ -22,6 +23,9 @@ function hashIp(ip: string) {
 
 export async function POST(request: NextRequest) {
   try {
+    const limited = guardPublicWrite(request, { limit: 120, windowMs: 60_000 })
+    if (limited) return limited
+
     const body = await request.json()
 
     const path =
@@ -76,7 +80,7 @@ export async function POST(request: NextRequest) {
     const client = await getClientPromise()
 
     const db = client.db(
-      process.env.MONGODB_DB
+      process.env.MONGODB_DB_NAME || process.env.MONGODB_DB || "test"
     )
 
     await db.collection("analytics_visits").insertOne({

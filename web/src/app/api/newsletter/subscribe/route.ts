@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { subscribeToNewsletter } from "@/repositories/newsletter.repository";
+import { guardPublicWrite } from "@/core/lib/rate-limit";
 
 const subscribeSchema = z.object({
   email: z.string().email("Invalid email address"),
-  source: z.string().optional(),
+  source: z.string().max(200).optional(),
 });
 
 export async function POST(request: NextRequest) {
+  const limited = guardPublicWrite(request, { limit: 10, windowMs: 60_000 });
+  if (limited) return limited;
+
   try {
     const body = await request.json();
     const parsed = subscribeSchema.safeParse(body);
@@ -19,16 +23,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const subscriber = await subscribeToNewsletter(parsed.data);
+    await subscribeToNewsletter(parsed.data);
 
     return NextResponse.json(
       {
         success: true,
         message: "Successfully subscribed to newsletter!",
-        subscriber: {
-          email: subscriber.email,
-          subscribedAt: subscriber.subscribedAt,
-        },
       },
       { status: 201 }
     );

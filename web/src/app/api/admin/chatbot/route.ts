@@ -21,7 +21,6 @@ const createSchema = z.object({
 });
 
 export async function GET(req: NextRequest) {
-  await requireApiSession(["admin", "editor", "viewer"]);
   const { searchParams } = new URL(req.url);
 
   const page = Math.max(1, Number(searchParams.get("page") || "1"));

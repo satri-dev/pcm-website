@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
-import { ObjectId } from "mongodb";
 import { z } from "zod";
 import {
   deleteProgram,
@@ -170,30 +169,20 @@ export async function DELETE(
 
   const { id } = await ctx.params;
   
-  console.log("[DELETE /api/admin/content/programs/[id]] ID:", id);
-  console.log("[DELETE /api/admin/content/programs/[id]] Is valid ObjectId?", ObjectId.isValid(id));
-  
   try {
     // Get program first to get the slug for cache invalidation
     const program = await getProgramById(id);
     
     if (!program) {
-      console.log("[DELETE /api/admin/content/programs/[id]] Program not found for ID:", id);
       return NextResponse.json({ 
-        error: "Program not found", 
-        debug: { id, isValidObjectId: ObjectId.isValid(id) }
+        error: "Program not found"
       }, { status: 404 });
     }
     
-    console.log("[DELETE /api/admin/content/programs/[id]] Found:", program.name);
-    
     const deleted = await deleteProgram(id, guard.session.user.id);
     if (!deleted) {
-      console.log("[DELETE /api/admin/content/programs/[id]] Delete returned false");
       return NextResponse.json({ error: "Failed to delete program" }, { status: 404 });
     }
-    
-    console.log("[DELETE /api/admin/content/programs/[id]] Success! Invalidating cache");
     
     // Invalidate cache after soft delete
     revalidateTag(CACHE_TAGS.programsList, "max");

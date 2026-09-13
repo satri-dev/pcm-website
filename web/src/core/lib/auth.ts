@@ -21,13 +21,34 @@ let _auth: any = null
 export async function getAuthInstance() {
   if (_auth) return _auth
   const db = await getDb()
+  
+  // Parse trusted origins from environment variable (comma-separated)
+  const trustedOrigins = process.env.BETTER_AUTH_TRUSTED_ORIGINS
+    ? process.env.BETTER_AUTH_TRUSTED_ORIGINS.split(',').map(origin => origin.trim())
+    : undefined
+  
   _auth = betterAuth({
     database: mongodbAdapter(db),
     appName: "PCM Admin",
+    
+    // Explicit baseURL configuration for better origin validation
+    baseURL: process.env.BETTER_AUTH_URL,
+    
+    // Trust additional origins from environment variable
+    ...(trustedOrigins && { trustedOrigins }),
 
     advanced: {
       useSecureCookies: process.env.NODE_ENV === "production",
       cookiePrefix: "pcm-admin",
+      rateLimit: {
+        enabled: true,
+        window: 60,
+        max: 100,
+        customRules: [
+          { path: "/sign-in/email", window: 60, max: 5 },
+          { path: "/sign-up/email", window: 60, max: 5 },
+        ],
+      },
     },
 
     session: {

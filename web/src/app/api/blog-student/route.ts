@@ -7,6 +7,8 @@ import {
   listApprovedBlogStudents,
 } from "@/repositories/blog-student.repository";
 import { CACHE_TAGS } from "@/lib/cache-tags";
+import { guardPublicWrite } from "@/core/lib/rate-limit";
+import { sanitizeHtmlContent } from "@/lib/sanitize";
 
 const slugRe = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -15,7 +17,7 @@ const createSchema = z.object({
   slug: z.string().max(120).regex(slugRe, "Slug must be lowercase letters, numbers and hyphens").optional(),
   excerpt: z.string().min(10),
   body: z.string().optional(),
-  image: z.string().optional(),
+  image: z.string().url("Invalid image URL").optional(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date"),
   tag: z.string().max(200).optional(),
   author: z.string().min(2).max(100),
@@ -39,6 +41,9 @@ export async function GET() {
 // POST /api/blog-student — public. Accepts a new article and stores it as
 // "pending" so an admin can review/approve it before it appears on the site.
 export async function POST(request: NextRequest) {
+  const limited = guardPublicWrite(request, { limit: 10, windowMs: 60_000 });
+  if (limited) return limited;
+
   let body: unknown;
   try {
     body = await request.json();
@@ -63,7 +68,14 @@ export async function POST(request: NextRequest) {
 
   try {
     await ensureBlogStudentIndexes();
-    const created = await createBlogStudent(parsed.data, "pending");
+    const created = await createBlogStudent(
+      {
+        ...parsed.data,
+        excerpt: sanitizeHtmlContent(parsed.data.excerpt),
+        body: parsed.data.body ? sanitizeHtmlContent(parsed.data.body) : undefined,
+      },
+      "pending"
+    );
     revalidateTag(CACHE_TAGS.blogStudentList, "max");
     return NextResponse.json({
       success: true,

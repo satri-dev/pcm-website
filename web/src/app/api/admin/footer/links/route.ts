@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
+import { requireApiSession } from "@/core/lib/api-guard";
 import {
   listAllFooterLinks,
   createFooterLink,
@@ -21,6 +22,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const guard = await requireApiSession(["admin", "editor"]);
+  if (!guard.ok) return guard.response;
+
   try {
     const body = await request.json();
     const input: FooterLinkCreateInput = {

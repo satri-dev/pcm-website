@@ -566,14 +566,7 @@ export default function AdminSidebar() {
     // Fetch programs for sidebar navigation
     fetch("/api/admin/content/programs?pageSize=50")
       .then(async (res) => {
-        console.log("[AdminSidebar] Programs API response status:", res.status);
         if (!res.ok) {
-          const text = await res.text();
-          console.error(
-            "[AdminSidebar] Programs API failed:",
-            res.status,
-            text,
-          );
           return null;
         }
         return res.json();
@@ -584,20 +577,12 @@ export default function AdminSidebar() {
             items: { slug: string; name: string; code: string }[];
           } | null,
         ) => {
-          console.log("[AdminSidebar] Programs loaded:", data);
           if (data?.items) {
-            console.log(
-              "[AdminSidebar] Setting programs state with",
-              data.items.length,
-              "items",
-            );
             setPrograms(data.items);
           }
         },
       )
-      .catch((err) => {
-        console.error("[AdminSidebar] Failed to load programs:", err);
-      });
+      .catch(() => {});
   }, []);
 
   function isActive(href: string) {

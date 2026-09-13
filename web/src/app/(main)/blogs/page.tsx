@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import BlogsServer from "./BlogsServer";
 import { getBlogSettings } from "@/lib/data/blog-page-settings";
+import { getCanonicalUrl } from "@/lib/seo-utils";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700", "800"],
@@ -16,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: settings.seoTitle,
     description: settings.seoDescription,
     keywords: settings.seoKeywords,
-    alternates: { canonical: "/blogs" },
+    alternates: { canonical: getCanonicalUrl("/blogs") },
   };
 }
 

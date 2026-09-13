@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -7,6 +8,11 @@ import {
 } from "@/lib/data/news";
 import { getNewsArticleSettingsCached } from "@/lib/data/news-article-settings";
 import { BUILD_PLACEHOLDER_SLUG } from "@/lib/constants";
+import {
+  getCanonicalUrl,
+  createOpenGraphMetadata,
+  createTwitterMetadata,
+} from "@/lib/seo-utils";
 
 export async function generateStaticParams() {
   try {
@@ -23,17 +29,38 @@ export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
-}) {
+}): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPublishedNewsBySlugCached(slug);
   const settings = await getNewsArticleSettingsCached();
   if (!post) return {};
+
+  const title =
+    post.seo?.title || `${post.title} ${settings.seoTitleSuffix.trim()}`.trim();
+  const description = post.seo?.description || post.excerpt;
+  const canonical = getCanonicalUrl(`/news/${slug}`);
+
   return {
-    title:
-      post.seo?.title ||
-      `${post.title} ${settings.seoTitleSuffix.trim()}`.trim(),
-    description: post.seo?.description || post.excerpt,
-    keywords: post.seo?.keywords,
+    title,
+    description,
+    keywords:
+      post.seo?.keywords ||
+      [post.category, "PCM News", "Pokhara College of Management"].filter(
+        Boolean,
+      ),
+    alternates: { canonical },
+    openGraph: createOpenGraphMetadata({
+      title: post.title,
+      description,
+      url: canonical,
+      image: post.image,
+      type: "article",
+    }),
+    twitter: createTwitterMetadata({
+      title: post.title,
+      description,
+      image: post.image,
+    }),
   };
 }
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
+import { requireApiSession } from "@/core/lib/api-guard";
 import {
   getFooterLinkById,
   updateFooterLink,
@@ -41,6 +42,9 @@ export async function PUT(
   request: NextRequest,
   context: RouteContext
 ) {
+  const guard = await requireApiSession(["admin", "editor"]);
+  if (!guard.ok) return guard.response;
+
   try {
     const { id } = await context.params;
     const body = await request.json();
@@ -78,6 +82,9 @@ export async function DELETE(
   request: NextRequest,
   context: RouteContext
 ) {
+  const guard = await requireApiSession(["admin", "editor"]);
+  if (!guard.ok) return guard.response;
+
   try {
     const { id } = await context.params;
     const success = await deleteFooterLink(id);

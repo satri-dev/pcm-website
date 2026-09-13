@@ -1,9 +1,14 @@
+// Use environment variable for base URL, fallback for development
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_VERCEL_URL 
+  ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` 
+  : "http://localhost:3000";
+
 export const siteConfig = {
   name: "Pokhara College of Management",
   shortName: "PCM",
   description: "Pokhara College of Management — affordable, quality management and IT education in Pokhara. BBA, BBA-Finance and BCSIT degrees affiliated to Pokhara University.",
-  url: "https://www.pcm.edu.np",
-  ogImage: "https://www.pcm.edu.np/images/hero-1.jpg",
+  url: BASE_URL,
+  ogImage: `${BASE_URL}/images/hero-1.jpg`,
   links: {
     facebook: "https://www.facebook.com/239069093193587",
     instagram: "https://www.instagram.com/",

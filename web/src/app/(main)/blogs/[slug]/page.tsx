@@ -8,6 +8,11 @@ import {
 } from "@/lib/data/blogs";
 import { getBlogArticleSettingsCached } from "@/lib/data/blog-article-settings";
 import { BUILD_PLACEHOLDER_SLUG } from "@/lib/constants";
+import {
+  getCanonicalUrl,
+  createOpenGraphMetadata,
+  createTwitterMetadata,
+} from "@/lib/seo-utils";
 
 function stripHtml(html: string): string {
   return html
@@ -48,18 +53,27 @@ export async function generateMetadata({
   if (!post) return {};
 
   const description = stripHtml(post.excerpt).slice(0, 160);
+  const canonical = getCanonicalUrl(`/blogs/${slug}`);
 
   return {
     title: `${post.title} ${settings.seoTitleSuffix.trim()}`.trim(),
     description: description || post.excerpt,
-    openGraph: {
+    keywords: post.category
+      ? [post.category, "PCM Blog", "Pokhara College of Management"]
+      : undefined,
+    alternates: { canonical },
+    openGraph: createOpenGraphMetadata({
       title: post.title,
       description,
+      url: canonical,
+      image: post.thumbnail,
       type: "article",
-      publishedTime: new Date(post.date).toISOString(),
-      authors: post.author ? [post.author] : undefined,
-      ...(post.thumbnail ? { images: [{ url: post.thumbnail }] } : {}),
-    },
+    }),
+    twitter: createTwitterMetadata({
+      title: post.title,
+      description,
+      image: post.thumbnail,
+    }),
   };
 }
 

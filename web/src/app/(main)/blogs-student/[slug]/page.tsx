@@ -7,6 +7,7 @@ import {
   getApprovedBlogStudents,
 } from "@/lib/data/blog-student";
 import { BUILD_PLACEHOLDER_SLUG } from "@/lib/constants";
+import { getCanonicalUrl } from "@/lib/seo-utils";
 
 function stripHtml(html: string): string {
   return html
@@ -46,18 +47,26 @@ export async function generateMetadata({
   if (!post) return {};
 
   const description = stripHtml(post.excerpt).slice(0, 160);
+  const canonical = getCanonicalUrl(`/blogs-student/${post.slug}`);
 
   return {
     title: `${post.title} | Student Blogs | Pokhara College of Management`,
     description: description || post.body,
-    alternates: { canonical: `/blogs-student/${post.slug}` },
+    alternates: { canonical },
     openGraph: {
       title: post.title,
       description,
+      url: canonical,
       type: "article",
       publishedTime: `${post.date}T00:00:00.000Z`,
       authors: post.author ? [post.author] : undefined,
       ...(post.image ? { images: [{ url: post.image }] } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description,
+      ...(post.image ? { images: [post.image] } : {}),
     },
   };
 }
