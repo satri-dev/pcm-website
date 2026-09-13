@@ -5,6 +5,7 @@ export async function POST(request: Request) {
   try {
     const { paramsToSign } = await request.json();
 
+    //check
     if (!paramsToSign) {
       return NextResponse.json(
         { error: "Missing paramsToSign" },
