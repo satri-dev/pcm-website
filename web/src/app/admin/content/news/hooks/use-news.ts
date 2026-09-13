@@ -78,6 +78,20 @@ export function useNews({
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
+      
+      // Handle validation errors with detailed field information
+      if (res.status === 422 && err.issues) {
+        const fieldErrors = err.issues.fieldErrors || {};
+        const errorMessages = Object.entries(fieldErrors)
+          .map(([field, messages]: [string, any]) => {
+            const messageArray = Array.isArray(messages) ? messages : [messages];
+            return `${field}: ${messageArray.join(", ")}`;
+          })
+          .join("\n");
+        
+        throw new Error(errorMessages || err.error || "Validation failed");
+      }
+      
       throw new Error(err.error || `Create failed (HTTP ${res.status})`);
     }
     const created = await res.json();
@@ -96,6 +110,20 @@ export function useNews({
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
+      
+      // Handle validation errors with detailed field information
+      if (res.status === 422 && err.issues) {
+        const fieldErrors = err.issues.fieldErrors || {};
+        const errorMessages = Object.entries(fieldErrors)
+          .map(([field, messages]: [string, any]) => {
+            const messageArray = Array.isArray(messages) ? messages : [messages];
+            return `${field}: ${messageArray.join(", ")}`;
+          })
+          .join("\n");
+        
+        throw new Error(errorMessages || err.error || "Validation failed");
+      }
+      
       throw new Error(err.error || `Update failed (HTTP ${res.status})`);
     }
     const updated = await res.json();

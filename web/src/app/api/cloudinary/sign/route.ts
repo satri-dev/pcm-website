@@ -3,10 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 import cloudinary from "@/core/lib/cloudinary";
 import { guardPublicWrite } from "@/core/lib/rate-limit";
 
-// Only these parameters may be signed.
 const ALLOWED_SIGN_PARAMS = new Set([
   "timestamp",
   "upload_preset",
+  "source",
   "public_id",
   "folder",
   "format",
@@ -14,10 +14,8 @@ const ALLOWED_SIGN_PARAMS = new Set([
   "resource_type",
 ]);
 
-// Only approved presets may be used.
 const ALLOWED_UPLOAD_PRESETS = new Set([
   "pcm-images",
-  "pcm-documents",
 ]);
 
 const MAX_PARAM_STRING = 500;
@@ -74,20 +72,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate timestamp.
-    const timestampValue = paramsToSign.timestamp;
-
-    if (
-      typeof timestampValue !== "number" &&
-      typeof timestampValue !== "string"
-    ) {
-      return NextResponse.json(
-        { error: "Invalid timestamp" },
-        { status: 400 }
-      );
-    }
-
-    const timestamp = Number(timestampValue);
+    // Validate timestamp without changing the original object.
+    const timestamp = Number(paramsToSign.timestamp);
     const nowSeconds = Math.floor(Date.now() / 1000);
 
     if (
@@ -100,15 +86,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const signed: Record<string, string> = {
-      timestamp: String(timestamp),
-    };
-
+    // Validate the exact parameters received from the widget.
     for (const [key, value] of Object.entries(paramsToSign)) {
-      if (key === "timestamp") continue;
-
       if (!ALLOWED_SIGN_PARAMS.has(key)) {
-        continue;
+        return NextResponse.json(
+          { error: `Unsupported signing parameter: ${key}` },
+          { status: 400 }
+        );
       }
 
       if (typeof value !== "string") {
@@ -134,19 +118,20 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-
-      signed[key] = value;
     }
 
-    if (!signed.upload_preset) {
+    if (!paramsToSign.upload_preset) {
       return NextResponse.json(
         { error: "Missing upload_preset" },
         { status: 400 }
       );
     }
 
+    // IMPORTANT:
+    // Sign the exact paramsToSign object received from the widget.
+    // Do not rebuild it or add/remove fields.
     const signature = cloudinary.utils.api_sign_request(
-      signed,
+      paramsToSign,
       apiSecret
     );
 

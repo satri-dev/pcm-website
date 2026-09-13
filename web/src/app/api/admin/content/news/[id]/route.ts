@@ -24,7 +24,7 @@ const updateSchema = z
     slug: z
       .string()
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Invalid slug"),
-    excerpt: z.string().min(1).max(1000),
+    excerpt: z.string().min(1),
     content: z.string().optional().default(""),
     category: z.string().min(1).max(100),
     image: z.string().optional(),
