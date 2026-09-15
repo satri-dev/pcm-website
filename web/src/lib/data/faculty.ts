@@ -20,6 +20,7 @@ export interface PublishedFacultyMember {
 export interface PublishedFacultyGroups {
   leadership: PublishedFacultyMember[];
   team: PublishedFacultyMember[];
+  staff: PublishedFacultyMember[];
 }
 
 export async function getPublishedFaculty(): Promise<PublishedFacultyGroups> {
@@ -42,6 +43,9 @@ export async function getPublishedFaculty(): Promise<PublishedFacultyGroups> {
 
   return {
     leadership: items.filter((m) => m.group === "Leadership").sort(byOrder),
-    team: items.filter((m) => m.group !== "Leadership").sort(byOrder),
+    team: items
+      .filter((m) => m.group === "Faculty" || m.group === "Administration")
+      .sort(byOrder),
+    staff: items.filter((m) => m.group === "Staff").sort(byOrder),
   };
 }

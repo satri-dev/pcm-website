@@ -9,7 +9,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { EventItem, EventType } from "@/types/events";
+import { EventItem } from "@/types/events";
 import { Save, X } from "lucide-react";
 import RichTextEditor from "../../../_components/editor/rich-text-editor";
 import ImageUpload from "@/components/cloudinary/ImageUpload";
@@ -135,7 +135,7 @@ export default function EventsFormModal({
       id: event?.id || `event-${Date.now()}`,
       title: data.title,
       slug: data.slug,
-      type: data.type as EventType,
+      type: data.type,
       date: data.date,
       location: data.location,
       seats: data.seats,

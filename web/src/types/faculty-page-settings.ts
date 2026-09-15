@@ -32,6 +32,10 @@ export interface FacultyPageSettings {
   teamEyebrow: string;
   teamTitle: string;
 
+  // Staff section
+  staffEyebrow: string;
+  staffTitle: string;
+
   // By the numbers
   statsEyebrow: string;
   statsTitle: string;
@@ -71,6 +75,9 @@ export const FACULTY_PAGE_SETTINGS_DEFAULTS: FacultyPageSettings = {
 
   teamEyebrow: "Our team",
   teamTitle: "Faculty & administration",
+
+  staffEyebrow: "Staff",
+  staffTitle: "Support staff",
 
   statsEyebrow: "By the numbers",
   statsTitle: "A legacy measured in outcomes",

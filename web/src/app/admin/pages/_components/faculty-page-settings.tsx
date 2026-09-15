@@ -83,9 +83,9 @@ export default function FacultyPageSettings({
           </h2>
           <p className="mt-1 mb-0 text-[0.9rem] text-[var(--admin-muted)]">
             Edit the sections of the public /about/faculty page — hero,
-            leadership headings, faculty &amp; administration headings, by the
-            numbers and CTA band. The faculty/staff cards come from the Faculty
-            content manager.
+            leadership headings, faculty &amp; administration headings, staff
+            headings, by the numbers and CTA band. The faculty/staff cards come
+            from the Faculty content manager.
           </p>
         </div>
         <a
@@ -235,6 +235,43 @@ export default function FacultyPageSettings({
               The faculty and staff cards displayed here come from the Faculty
               content manager — grouped by their configured group (Leadership vs
               others).
+            </p>
+            <a className="admin-btn mt-3" href="/admin/people/faculty">
+              Manage Faculty & Staff →
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Staff section ── */}
+      <div className="admin-panel">
+        <div className="admin-panel__head">
+          <h3>Staff Section</h3>
+        </div>
+        <div className="admin-panel__body p-6 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label className="block">
+              {fieldLabel("Eyebrow")}
+              <input
+                className={INPUT}
+                value={form.staffEyebrow}
+                onChange={(e) => set("staffEyebrow", e.target.value)}
+              />
+            </label>
+            <label className="block">
+              {fieldLabel("Title")}
+              <input
+                className={INPUT}
+                value={form.staffTitle}
+                onChange={(e) => set("staffTitle", e.target.value)}
+              />
+            </label>
+          </div>
+
+          <div className="rounded-xl border border-[var(--admin-line)] bg-black/[0.02] p-4">
+            <p className="m-0 text-[0.9rem] text-[var(--admin-muted)]">
+              Members assigned the &quot;Staff&quot; group in the Faculty content
+              manager appear in this section.
             </p>
             <a className="admin-btn mt-3" href="/admin/people/faculty">
               Manage Faculty & Staff →

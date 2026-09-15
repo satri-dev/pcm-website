@@ -56,6 +56,11 @@ export default async function FacultyPage() {
     role: m.role,
     photo: m.photo,
   }));
+  const staff = groups.staff.map((m) => ({
+    name: m.name,
+    role: m.role,
+    photo: m.photo,
+  }));
 
   return (
     <div className={poppins.variable}>
@@ -89,10 +94,13 @@ export default async function FacultyPage() {
           <FacultyGrid
             leadership={leadership}
             team={team}
+            staff={staff}
             leadershipEyebrow={settings.leadershipEyebrow}
             leadershipTitle={settings.leadershipTitle}
             teamEyebrow={settings.teamEyebrow}
             teamTitle={settings.teamTitle}
+            staffEyebrow={settings.staffEyebrow}
+            staffTitle={settings.staffTitle}
           />
 
           {/* ── By the numbers ── */}
