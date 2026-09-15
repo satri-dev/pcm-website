@@ -1,16 +1,8 @@
 // src/types/events.ts
 // Canonical schema for the "events" collection
 
-export type EventType = "Workshop" | "Seminar" | "Festival" | "Tour" | "Sports";
+export type EventType = string;
 export type EventStatus = "published" | "draft";
-
-export const EVENT_TYPES: readonly EventType[] = [
-  "Workshop",
-  "Seminar",
-  "Festival",
-  "Tour",
-  "Sports",
-];
 
 export const EVENT_STATUSES: readonly EventStatus[] = ["published", "draft"];
 

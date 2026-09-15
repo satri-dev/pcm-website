@@ -12,17 +12,23 @@ export interface FacultyPerson {
 export function FacultyGrid({
   leadership,
   team,
+  staff,
   leadershipEyebrow,
   leadershipTitle,
   teamEyebrow,
   teamTitle,
+  staffEyebrow,
+  staffTitle,
 }: {
   leadership: FacultyPerson[];
   team: FacultyPerson[];
+  staff: FacultyPerson[];
   leadershipEyebrow: string;
   leadershipTitle: string;
   teamEyebrow: string;
   teamTitle: string;
+  staffEyebrow: string;
+  staffTitle: string;
 }) {
   return (
     <>
@@ -58,6 +64,26 @@ export function FacultyGrid({
               {team.map((person, i) => (
                 <FacultyCard
                   key={person.name || `member-${i}`}
+                  person={person}
+                  index={i % 4}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+      <section className="section">
+        <div className="wrap-wide">
+          <SectionHead eyebrow={staffEyebrow} title={staffTitle} />
+          {staff.length === 0 ? (
+            <p style={{ padding: "1rem 0", color: "var(--muted)" }}>
+              No staff members found.
+            </p>
+          ) : (
+            <div className="grid g-4" style={{ marginTop: "2rem" }}>
+              {staff.map((person, i) => (
+                <FacultyCard
+                  key={person.name || `staff-${i}`}
                   person={person}
                   index={i % 4}
                 />

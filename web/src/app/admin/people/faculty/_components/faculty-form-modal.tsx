@@ -5,14 +5,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Faculty, FACULTY_GROUPS, FACULTY_ROLES } from "@/types/faculty";
+import { Faculty, FacultyGroup, FACULTY_GROUPS, FACULTY_ROLES } from "@/types/faculty";
 import { Save, X } from "lucide-react";
 import ImageUpload from "@/components/cloudinary/ImageUpload";
 
 const facultySchema = z.object({
   name: z.string().min(2, "Full name is required").max(200),
   role: z.string().min(1, "Role is required").max(200),
-  group: z.enum(["Leadership", "Faculty", "Administration"]),
+  group: z.enum(FACULTY_GROUPS as unknown as [FacultyGroup, ...FacultyGroup[]]),
   order: z.number().int().min(0, "Order must be 0 or higher").optional(),
   photo: z.string().optional(),
   email: z.string().email("Valid email is required").optional().or(z.literal("")),

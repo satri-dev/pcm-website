@@ -30,6 +30,9 @@ const settingsSchema = z.object({
   teamEyebrow: z.string().min(1).max(200),
   teamTitle: z.string().min(1).max(300),
 
+  staffEyebrow: z.string().min(1).max(200),
+  staffTitle: z.string().min(1).max(300),
+
   statsEyebrow: z.string().min(1).max(200),
   statsTitle: z.string().min(1).max(300),
   stats: z.array(statSchema).max(12),

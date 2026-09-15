@@ -1,9 +1,14 @@
-export type FacultyGroup = "Leadership" | "Faculty" | "Administration";
+export type FacultyGroup =
+  | "Leadership"
+  | "Faculty"
+  | "Administration"
+  | "Staff";
 
 export const FACULTY_GROUPS: readonly FacultyGroup[] = [
   "Leadership",
   "Faculty",
   "Administration",
+  "Staff",
 ];
 
 export const FACULTY_ROLES: readonly string[] = [

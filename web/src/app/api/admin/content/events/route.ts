@@ -6,7 +6,7 @@ import {
   ensureEventIndexes,
   listEvents,
 } from "@/repositories/events.repository";
-import { EVENT_TYPES, EVENT_STATUSES } from "@/types/events";
+import { EVENT_STATUSES } from "@/types/events";
 import { requireApiSession } from "@/core/lib/api-guard";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 
@@ -15,7 +15,7 @@ const createSchema = z.object({
   slug: z
     .string()
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Invalid slug"),
-  type: z.enum(["Workshop", "Seminar", "Festival", "Tour", "Sports"]),
+  type: z.string().min(1).max(100),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date"),
   location: z.string().min(1).max(200),
   seats: z.number().int().min(0),
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     pageSize,
     search: search || undefined,
     status: EVENT_STATUSES.find((s) => s === status) || undefined,
-    type: EVENT_TYPES.find((t) => t === type) || undefined,
+    type: type || undefined,
   });
 
   return NextResponse.json(result);
