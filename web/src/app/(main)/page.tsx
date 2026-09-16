@@ -154,23 +154,24 @@ export default async function HomePage() {
       <BreadcrumbSchema />
       <EducationalOrganizationSchema />
       <HeroSlider slides={homepage.heroSlides} />
-      <WelcomeSection stats={homepage.welcomeStats} />
-      <WhyChoosePCM reasons={homepage.whyChooseReasons} />
-      <ProgramsSection programs={programsData.items} />
-      <AdmissionSection admission={homepage.admission} />
-      <FacilitiesSection facilities={facilitiesData.items} />
+      <WelcomeSection text={homepage.welcomeText} stats={homepage.welcomeStats} />
+      <WhyChoosePCM text={homepage.whyChooseText} reasons={homepage.whyChooseReasons} />
+      <ProgramsSection text={homepage.programsText} programs={programsData.items} />
+      {homepage.admission.enabled && <AdmissionSection admission={homepage.admission} />}
+      <FacilitiesSection text={homepage.facilitiesText} facilities={facilitiesData.items} />
       <NewsSection 
+        text={homepage.newsText}
         news={newsData.items} 
         notices={noticesData.items}
         results={resultsData.items}
         events={eventsData.items}
       />
-      <EventsSection events={eventsData.items} />
+      <EventsSection text={homepage.eventsText} events={eventsData.items} />
       <Suspense fallback={<GallerySectionLoading />}>
-        <GallerySection />
+        <GallerySection text={homepage.galleryText} />
       </Suspense>
-      <BlogsSection blogs={blogsData.items} />
-      <TestimonialsSection testimonials={homepage.testimonials} />
+      <BlogsSection text={homepage.blogsText} blogs={blogsData.items} />
+      <TestimonialsSection text={homepage.testimonialsText} testimonials={homepage.testimonials} />
       <CTASection cta={homepage.cta} />
       <AdmissionModalServer />
     </>

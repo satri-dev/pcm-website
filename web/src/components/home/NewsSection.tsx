@@ -8,8 +8,10 @@ import { News } from "@/types/news";
 import { Notice } from "@/types/notices";
 import { Result } from "@/types/results";
 import { EventItem } from "@/types/events";
+import { safeImg } from "@/lib/sanitize";
 
 interface Props {
+  text: import("@/types/homepage").SectionText;
   news: News[];
   notices: Notice[];
   results: Result[];
@@ -23,8 +25,9 @@ const tabs = [
   { id: "events", label: "Events" }
 ];
 
-export default function NewsSection({ news, notices, results, events }: Props) {
+export default function NewsSection({ text, news, notices, results, events }: Props) {
   const [activeTab, setActiveTab] = useState("news");
+  const t = text ?? { badge: "Newsroom", heading: "Latest from PCM", description: "Stories, achievements and campus updates.", linkLabel: "", linkHref: "" };
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -35,7 +38,7 @@ export default function NewsSection({ news, notices, results, events }: Props) {
               <Link key={item.slug} href={`/news/${item.slug}`} className="flex gap-4 p-4 rounded-lg hover:bg-secondary/50 transition-colors">
                 {item.image && (
                   <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                    <Image src={item.image} alt="" width={64} height={64} className="object-cover w-full h-full" />
+                    <Image src={safeImg(item.image)} alt="" width={64} height={64} className="object-cover w-full h-full" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
@@ -84,7 +87,7 @@ export default function NewsSection({ news, notices, results, events }: Props) {
               <Link key={item.slug} href={`/events/${item.slug}`} className="flex gap-4 p-4 rounded-lg hover:bg-secondary/50 transition-colors">
                 {item.image && (
                   <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                    <Image src={item.image} alt="" width={64} height={64} className="object-cover w-full h-full" />
+                    <Image src={safeImg(item.image)} alt="" width={64} height={64} className="object-cover w-full h-full" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
@@ -110,13 +113,13 @@ export default function NewsSection({ news, notices, results, events }: Props) {
           <div>
             <div className="max-w-2xl mb-8">
               <span className="inline-block px-4 py-2 rounded-full bg-pcm-blue/10 text-pcm-blue text-sm font-mono uppercase tracking-wider mb-4">
-                Newsroom
+                {t.badge}
               </span>
               <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-display font-semibold text-pcm-navy mb-4">
-                Latest from PCM
+                {t.heading}
               </h2>
               <p className="text-muted-foreground text-lg">
-                Stories, achievements and campus updates.
+                {t.description}
               </p>
             </div>
 
@@ -125,7 +128,7 @@ export default function NewsSection({ news, notices, results, events }: Props) {
                 <Link key={item.slug} href={`/news/${item.slug}`} className="group bg-card border border-border rounded-2xl overflow-hidden shadow-pcm-sm hover:shadow-pcm-md transition-all hover:-translate-y-1">
                   <div className="relative aspect-[16/10]">
                     {item.image && (
-                      <Image src={item.image} alt={item.title} fill sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw" className="object-cover" />
+                      <Image src={safeImg(item.image)} alt={item.title} fill sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw" className="object-cover" />
                     )}
                     <div className="absolute top-4 left-4 px-3 py-1.5 rounded-md bg-pcm-dark/85 text-white text-xs font-mono">
                       {item.publishedAt}

@@ -40,6 +40,19 @@ export default function AdmissionManager({ admission, onSave }: Props) {
 
       {/* Header fields */}
       <div className="form-grid mb-6">
+        <div className="field" style={{ gridColumn: "1 / -1" }}>
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={data.enabled}
+              onChange={(e) => setData((d) => ({ ...d, enabled: e.target.checked }))}
+              className="w-4 h-4 rounded border-gray-300 text-pcm-blue focus:ring-pcm-blue"
+            />
+            <span className="text-sm font-medium text-[var(--admin-ink)]">
+              Show admission section on homepage
+            </span>
+          </label>
+        </div>
         <div className="field">
           <label>Badge text</label>
           <input

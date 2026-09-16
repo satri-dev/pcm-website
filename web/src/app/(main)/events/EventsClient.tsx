@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import type { EventsPageSettings } from "@/types/events-page-settings";
 import type { EventItem as DbEventItem } from "@/types/events";
 import Pagination from "../Pagination";
+import { safeImg } from "@/lib/sanitize";
 import "../pcm-pages.css";
 
 interface Props {
@@ -224,21 +225,14 @@ export default function EventsClient({ settings, eventItems }: Props) {
                     style={{ transitionDelay: `${i * 60}ms` }}
                   >
                     <div className="event-card__media">
-                      {e.image ? (
-                        <Image
-                          src={e.image}
-                          alt={e.title}
-                          fill
-                          className="event-card__img"
-                          style={{ objectFit: "cover" }}
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        />
-                      ) : (
-                        <div
-                          className="event-card__bg--plain"
-                          style={{ height: "100%" }}
-                        />
-                      )}
+                      <Image
+                        src={safeImg(e.image)}
+                        alt={e.title}
+                        fill
+                        className="event-card__img"
+                        style={{ objectFit: "cover" }}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
                       <div className="event-card__cal">
                         <b>{d}</b>
                         <span>{MONTHS_UPPER[m - 1]}</span>

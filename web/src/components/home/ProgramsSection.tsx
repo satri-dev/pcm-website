@@ -2,23 +2,31 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { Program as ProgramType } from "@/types/programs";
+import type { ProgramsText } from "@/types/homepage";
 
-export default function ProgramsSection({ programs }: { programs: ProgramType[] }) {
+export default function ProgramsSection({
+  text,
+  programs,
+}: {
+  text: ProgramsText;
+  programs: ProgramType[];
+}) {
+  const t = text ?? { badge: "Programs", heading: "Three paths to a strong career", description: "Every PCM program blends conceptual depth with real-world practice, non-credit skill courses and internship experience.", linkLabel: "All programs", linkHref: "/programs" };
   return (
     <section className="py-[clamp(3.5rem,8vw,6.5rem)] bg-secondary/40 border-y border-border">
       <div className="container">
         <div className="flex flex-wrap items-end justify-between gap-4 mb-11">
           <div className="max-w-[640px]">
-            <span className="font-mono text-[0.74rem] tracking-[0.2em] uppercase text-pcm-blue">Programs</span>
+            <span className="font-mono text-[0.74rem] tracking-[0.2em] uppercase text-pcm-blue">{t.badge}</span>
             <h2 className="mt-2 text-[clamp(1.8rem,3.4vw,2.6rem)] font-display font-semibold text-pcm-navy">
-              Three paths to a strong career
+              {t.heading}
             </h2>
             <p className="mt-2 text-muted-foreground">
-              Every PCM program blends conceptual depth with real-world practice, non-credit skill courses and internship experience.
+              {t.description}
             </p>
           </div>
-          <Link href="/programs" className="inline-flex items-center gap-1 font-bold text-pcm-blue hover:gap-2 transition-all">
-            All programs <ArrowRight className="w-4 h-4" />
+          <Link href={t.linkHref} className="inline-flex items-center gap-1 font-bold text-pcm-blue hover:gap-2 transition-all">
+            {t.linkLabel} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 

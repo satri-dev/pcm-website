@@ -1,9 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { WelcomeStat } from "@/types/homepage";
+import type { WelcomeStat, WelcomeText } from "@/types/homepage";
 
-export default function WelcomeSection({ stats }: { stats: WelcomeStat[] }) {
+export default function WelcomeSection({
+  text,
+  stats,
+}: {
+  text: WelcomeText;
+  stats: WelcomeStat[];
+}) {
+  const t = text ?? { badge: "Welcome to PCM", heading: "Education that opens doors", description: "Affiliated to Pokhara University, PCM has been shaping confident, capable graduates since 2002 through hands-on learning, dedicated mentors and a vibrant campus culture." };
   const [counters, setCounters] = useState(stats.map(() => 0));
 
   useEffect(() => {
@@ -28,13 +35,13 @@ export default function WelcomeSection({ stats }: { stats: WelcomeStat[] }) {
       <div className="container">
         <div className="max-w-3xl mx-auto text-center mb-12">
           <span className="inline-block px-4 py-2 rounded-full bg-pcm-blue/10 text-pcm-blue text-sm font-mono uppercase tracking-wider mb-4">
-            Welcome to PCM
+            {t.badge}
           </span>
           <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-display font-semibold text-pcm-navy mb-4">
-            Education that opens doors
+            {t.heading}
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Affiliated to Pokhara University, PCM has been shaping confident, capable graduates since 2002 through hands-on learning, dedicated mentors and a vibrant campus culture.
+            {t.description}
           </p>
         </div>
         

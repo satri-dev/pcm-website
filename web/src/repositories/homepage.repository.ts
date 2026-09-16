@@ -9,14 +9,45 @@ import {
   DEFAULT_HOMEPAGE_DATA,
 } from "@/types/homepage";
 
+const FALLBACK_IMAGE = "/images/hero-1.jpg";
+
+function isValidUrl(s: string | undefined): boolean {
+  return !!s && (s.startsWith("/") || s.startsWith("http"));
+}
+
+function sanitizeUrl(s: string | undefined, fallback = FALLBACK_IMAGE): string {
+  return isValidUrl(s) ? s! : fallback;
+}
+
 function fromDocument(doc: HomepageDocument): HomepageData {
   return {
     id: doc._id!.toString(),
-    heroSlides: doc.heroSlides, // No limit applied
+    heroSlides: (doc.heroSlides ?? []).map((s) => ({
+      ...s,
+      image: sanitizeUrl(s.image),
+      primaryCta: { ...s.primaryCta, href: isValidUrl(s.primaryCta?.href) ? s.primaryCta.href : "/" },
+      secondaryCta: { ...s.secondaryCta, href: isValidUrl(s.secondaryCta?.href) ? s.secondaryCta.href : "/" },
+    })),
+    welcomeText: { ...DEFAULT_HOMEPAGE_DATA.welcomeText, ...doc.welcomeText },
     welcomeStats: doc.welcomeStats,
+    whyChooseText: { ...DEFAULT_HOMEPAGE_DATA.whyChooseText, ...doc.whyChooseText },
     whyChooseReasons: doc.whyChooseReasons,
-    testimonials: doc.testimonials,
-    admission: doc.admission,
+    programsText: { ...DEFAULT_HOMEPAGE_DATA.programsText, ...doc.programsText },
+    facilitiesText: { ...DEFAULT_HOMEPAGE_DATA.facilitiesText, ...doc.facilitiesText },
+    eventsText: { ...DEFAULT_HOMEPAGE_DATA.eventsText, ...doc.eventsText },
+    galleryText: { ...DEFAULT_HOMEPAGE_DATA.galleryText, ...doc.galleryText },
+    blogsText: { ...DEFAULT_HOMEPAGE_DATA.blogsText, ...doc.blogsText },
+    newsText: { ...DEFAULT_HOMEPAGE_DATA.newsText, ...doc.newsText },
+    testimonialsText: { ...DEFAULT_HOMEPAGE_DATA.testimonialsText, ...doc.testimonialsText },
+    testimonials: (doc.testimonials ?? []).map((t) => ({
+      ...t,
+      photo: sanitizeUrl(t.photo),
+    })),
+    admission: {
+      ...DEFAULT_HOMEPAGE_DATA.admission,
+      ...doc.admission,
+      posterImage: sanitizeUrl(doc.admission?.posterImage),
+    },
     cta: doc.cta,
     updatedAt: (doc.updatedAt ?? new Date()).toISOString(),
   };
@@ -49,8 +80,17 @@ export async function updateHomepage(
   const set: Record<string, unknown> = { updatedAt: new Date() };
   const allowed: (keyof HomepageUpdateInput)[] = [
     "heroSlides",
+    "welcomeText",
     "welcomeStats",
+    "whyChooseText",
     "whyChooseReasons",
+    "programsText",
+    "facilitiesText",
+    "eventsText",
+    "galleryText",
+    "blogsText",
+    "newsText",
+    "testimonialsText",
     "testimonials",
     "admission",
     "cta",
