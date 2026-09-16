@@ -1049,6 +1049,22 @@
   to { opacity: 1; transform: none; }
 }
 
+/* Per-section save row (bottom right) */
+.pp-section__save {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--admin-line);
+}
+.pp-section__save-error {
+  margin-right: auto;
+  font-size: 0.78rem;
+  color: #dc2626;
+}
+
 /* Reusable card for repeatable items */
 .pp-card {
   border: 1px solid var(--admin-line);

@@ -401,17 +401,27 @@ export default async function ProgramPage({
             <h2 className="section-title" style={{ marginTop: "0.5rem" }}>
               {displayData.overviewTitle}
             </h2>
-            {displayData.overviewBody.map((para: string, i: number) => (
-              <p
-                key={i}
-                style={{
-                  marginTop: i === 0 ? "1rem" : "0.75rem",
-                  color: "var(--body-c)",
-                }}
-              >
-                {para}
-              </p>
-            ))}
+            {typeof displayData.overviewBody === "string"
+              ? (displayData.overviewBody && (
+                  <div
+                    style={{
+                      marginTop: "1rem",
+                      color: "var(--body-c)",
+                    }}
+                    dangerouslySetInnerHTML={{ __html: displayData.overviewBody }}
+                  />
+                ))
+              : displayData.overviewBody.map((para: string, i: number) => (
+                  <p
+                    key={i}
+                    style={{
+                      marginTop: i === 0 ? "1rem" : "0.75rem",
+                      color: "var(--body-c)",
+                    }}
+                  >
+                    {para}
+                  </p>
+                ))}
 
             {/* Growth Section (if exists in CMS) */}
             {displayData.growthSection?.title &&
