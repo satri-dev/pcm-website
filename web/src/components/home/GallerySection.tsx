@@ -3,17 +3,18 @@ import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { cacheLife } from "next/cache";
 import { listGallery } from "@/repositories/gallery.repository";
-import { getGalleryPageSettings } from "@/repositories/gallery-settings.repository";
 import { adaptGalleryItems } from "@/feature/gallery/lib/adapt";
+import type { SectionText } from "@/types/homepage";
 
-export default async function GallerySection() {
+export default async function GallerySection({
+  text,
+}: {
+  text: SectionText;
+}) {
   "use cache";
   cacheLife("content");
 
-  const [{ items }, settings] = await Promise.all([
-    listGallery({ pageSize: 10 }),
-    getGalleryPageSettings(),
-  ]);
+  const { items } = await listGallery({ pageSize: 10 });
 
   const { albums } = adaptGalleryItems(items);
   const galleryImages = albums.slice(0, 5).map((album) => ({
@@ -23,24 +24,26 @@ export default async function GallerySection() {
     href: `/gallery`,
   }));
 
+  const t = text ?? { badge: "Glimpses of PCM", heading: "Explore our albums", description: "Click any album to browse its photos up close.", linkLabel: "Full gallery", linkHref: "/gallery" };
+
   return (
     <section className="py-[clamp(4rem,8vw,6rem)] bg-secondary/30">
       <div className="container">
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
           <div className="max-w-2xl">
             <span className="inline-block px-4 py-2 rounded-full bg-pcm-blue/10 text-pcm-blue text-sm font-mono uppercase tracking-wider mb-4">
-              {settings.eyebrow}
+              {t.badge}
             </span>
             <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-display font-semibold text-pcm-navy mb-4">
-              {settings.title}
+              {t.heading}
             </h2>
-            <p className="text-muted-foreground text-lg">{settings.subtitle}</p>
+            <p className="text-muted-foreground text-lg">{t.description}</p>
           </div>
           <Link
-            href="/gallery"
+            href={t.linkHref}
             className="inline-flex items-center gap-2 text-pcm-blue hover:text-pcm-blue-700 font-semibold transition-colors group"
           >
-            Full gallery
+            {t.linkLabel}
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>

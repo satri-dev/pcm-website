@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { HomepageData, HomepageUpdateInput } from "@/types/homepage";
+import { DEFAULT_HOMEPAGE_DATA } from "@/types/homepage";
 import HeroSlidesManager from "./hero-slides-manager";
 import StatsManager from "./stats-manager";
 import ReasonsManager from "./reasons-manager";
 import TestimonialsManager from "./testimonials-manager";
 import AdmissionManager from "./admission-manager";
+import SectionTextManager from "./section-text-manager";
 import CTAManager from "./cta-manager";
 
 const API = "/api/admin/pages/home";
@@ -15,6 +17,12 @@ const tabs = [
   { id: "hero", label: "Hero Slides" },
   { id: "stats", label: "Welcome Stats" },
   { id: "reasons", label: "Why Choose PCM" },
+  { id: "programs", label: "Programs" },
+  { id: "facilities", label: "Facilities" },
+  { id: "events", label: "Events" },
+  { id: "gallery", label: "Gallery" },
+  { id: "blogs", label: "Blogs" },
+  { id: "news", label: "News" },
   { id: "testimonials", label: "Testimonials" },
   { id: "admission", label: "Admission" },
   { id: "cta", label: "CTA" },
@@ -27,7 +35,12 @@ export default function HomepageManager({
 }: {
   initialData: HomepageData;
 }) {
-  const [data, setData] = useState<HomepageData>(initialData);
+  const [data, setData] = useState<HomepageData>({
+    ...DEFAULT_HOMEPAGE_DATA,
+    ...initialData,
+    id: initialData.id,
+    updatedAt: initialData.updatedAt,
+  });
   const [activeTab, setActiveTab] = useState<TabId>("hero");
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
@@ -135,21 +148,82 @@ export default function HomepageManager({
           )}
           {activeTab === "stats" && (
             <StatsManager
+              welcomeText={data.welcomeText}
               stats={data.welcomeStats}
+              onSaveText={(text) => handleSave({ welcomeText: text })}
               onSave={(stats) => handleSave({ welcomeStats: stats })}
             />
           )}
           {activeTab === "reasons" && (
             <ReasonsManager
+              whyChooseText={data.whyChooseText}
               reasons={data.whyChooseReasons}
+              onSaveText={(text) => handleSave({ whyChooseText: text })}
               onSave={(reasons) => handleSave({ whyChooseReasons: reasons })}
             />
           )}
-          {activeTab === "testimonials" && (
-            <TestimonialsManager
-              testimonials={data.testimonials}
-              onSave={(t) => handleSave({ testimonials: t })}
+          {activeTab === "programs" && (
+            <SectionTextManager
+              label="Programs Section Header"
+              data={data.programsText}
+              onSave={(text) => handleSave({ programsText: text })}
+              defaults={DEFAULT_HOMEPAGE_DATA.programsText}
             />
+          )}
+          {activeTab === "facilities" && (
+            <SectionTextManager
+              label="Facilities Section Header"
+              data={data.facilitiesText}
+              onSave={(text) => handleSave({ facilitiesText: text })}
+              defaults={DEFAULT_HOMEPAGE_DATA.facilitiesText}
+            />
+          )}
+          {activeTab === "events" && (
+            <SectionTextManager
+              label="Events Section Header"
+              data={data.eventsText}
+              onSave={(text) => handleSave({ eventsText: text })}
+              defaults={DEFAULT_HOMEPAGE_DATA.eventsText}
+            />
+          )}
+          {activeTab === "gallery" && (
+            <SectionTextManager
+              label="Gallery Section Header"
+              data={data.galleryText}
+              onSave={(text) => handleSave({ galleryText: text })}
+              defaults={DEFAULT_HOMEPAGE_DATA.galleryText}
+            />
+          )}
+          {activeTab === "blogs" && (
+            <SectionTextManager
+              label="Blogs Section Header"
+              data={data.blogsText}
+              onSave={(text) => handleSave({ blogsText: text })}
+              defaults={DEFAULT_HOMEPAGE_DATA.blogsText}
+            />
+          )}
+          {activeTab === "news" && (
+            <SectionTextManager
+              label="News Section Header"
+              data={data.newsText}
+              onSave={(text) => handleSave({ newsText: text })}
+              defaults={DEFAULT_HOMEPAGE_DATA.newsText}
+            />
+          )}
+          {activeTab === "testimonials" && (
+            <div className="space-y-8">
+              <SectionTextManager
+                label="Testimonials Section Header"
+                data={data.testimonialsText}
+                onSave={(text) => handleSave({ testimonialsText: text })}
+                defaults={DEFAULT_HOMEPAGE_DATA.testimonialsText}
+              />
+              <hr className="border-[var(--admin-border)]" />
+              <TestimonialsManager
+                testimonials={data.testimonials}
+                onSave={(t) => handleSave({ testimonials: t })}
+              />
+            </div>
           )}
           {activeTab === "admission" && (
             <AdmissionManager

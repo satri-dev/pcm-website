@@ -2,29 +2,36 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import type { Blog } from "@/app/admin/media/blogs/types/blog";
+import type { SectionText } from "@/types/homepage";
 
-export default function BlogsSection({ blogs }: { blogs: Blog[] }) {
+export default function BlogsSection({
+  text,
+  blogs,
+}: {
+  text: SectionText;
+  blogs: Blog[];
+}) {
+  const t = text ?? { badge: "From the blog", heading: "Ideas worth reading", description: "Career guidance, industry trends and honest advice from the PCM community.", linkLabel: "All articles", linkHref: "/blogs" };
   return (
     <section className="py-[clamp(4rem,8vw,6rem)] bg-background">
       <div className="container">
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
           <div className="max-w-2xl">
             <span className="inline-block px-4 py-2 rounded-full bg-pcm-blue/10 text-pcm-blue text-sm font-mono uppercase tracking-wider mb-4">
-              From the blog
+              {t.badge}
             </span>
             <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-display font-semibold text-pcm-navy mb-4">
-              Ideas worth reading
+              {t.heading}
             </h2>
             <p className="text-muted-foreground text-lg">
-              Career guidance, industry trends and honest advice from the PCM
-              community.
+              {t.description}
             </p>
           </div>
           <Link
-            href="/blogs"
+            href={t.linkHref}
             className="inline-flex items-center gap-2 text-pcm-blue hover:text-pcm-blue-700 font-semibold transition-colors group"
           >
-            All articles
+            {t.linkLabel}
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>

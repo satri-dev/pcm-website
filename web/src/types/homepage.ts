@@ -25,7 +25,13 @@ export interface HeroSlide {
   stats: HeroStat[];
 }
 
-/* ── Welcome stats ────────────────────────────────────── */
+/* ── Welcome section ─────────────────────────────────── */
+
+export interface WelcomeText {
+  badge: string;
+  heading: string;
+  description: string;
+}
 
 export interface WelcomeStat {
   value: number;
@@ -35,10 +41,28 @@ export interface WelcomeStat {
 
 /* ── Why choose PCM ───────────────────────────────────── */
 
+export interface WhyChooseText {
+  badge: string;
+  heading: string;
+  description: string;
+  linkLabel: string;
+  linkHref: string;
+}
+
 export interface WhyChooseReason {
   icon: string;
   title: string;
   desc: string;
+}
+
+/* ── Programs section ─────────────────────────────────── */
+
+export interface ProgramsText {
+  badge: string;
+  heading: string;
+  description: string;
+  linkLabel: string;
+  linkHref: string;
 }
 
 /* ── Testimonials ─────────────────────────────────────── */
@@ -65,6 +89,7 @@ export interface AdmissionDetail {
 }
 
 export interface AdmissionConfig {
+  enabled: boolean;
   badge: string;
   heading: string;
   subheading: string;
@@ -83,13 +108,42 @@ export interface CTAConfig {
   secondaryButton: { label: string; href: string };
 }
 
+/* ── Facilities section ───────────────────────────────── */
+
+export interface FacilitiesText {
+  badge: string;
+  heading: string;
+  description: string;
+  linkLabel: string;
+  linkHref: string;
+}
+
+/* ── Section text types ───────────────────────────────── */
+
+export interface SectionText {
+  badge: string;
+  heading: string;
+  description: string;
+  linkLabel: string;
+  linkHref: string;
+}
+
 /* ── Root document ────────────────────────────────────── */
 
 export interface HomepageData {
   id: string;
   heroSlides: HeroSlide[];
+  welcomeText: WelcomeText;
   welcomeStats: WelcomeStat[];
+  whyChooseText: WhyChooseText;
   whyChooseReasons: WhyChooseReason[];
+  programsText: ProgramsText;
+  facilitiesText: FacilitiesText;
+  eventsText: SectionText;
+  galleryText: SectionText;
+  blogsText: SectionText;
+  newsText: SectionText;
+  testimonialsText: SectionText;
   testimonials: HomepageTestimonial[];
   admission: AdmissionConfig;
   cta: CTAConfig;
@@ -99,8 +153,17 @@ export interface HomepageData {
 export interface HomepageDocument {
   _id?: import("mongodb").ObjectId;
   heroSlides: HeroSlide[];
+  welcomeText: WelcomeText;
   welcomeStats: WelcomeStat[];
+  whyChooseText: WhyChooseText;
   whyChooseReasons: WhyChooseReason[];
+  programsText: ProgramsText;
+  facilitiesText: FacilitiesText;
+  eventsText: SectionText;
+  galleryText: SectionText;
+  blogsText: SectionText;
+  newsText: SectionText;
+  testimonialsText: SectionText;
   testimonials: HomepageTestimonial[];
   admission: AdmissionConfig;
   cta: CTAConfig;
@@ -110,8 +173,17 @@ export interface HomepageDocument {
 
 export interface HomepageUpdateInput {
   heroSlides?: HeroSlide[];
+  welcomeText?: WelcomeText;
   welcomeStats?: WelcomeStat[];
+  whyChooseText?: WhyChooseText;
   whyChooseReasons?: WhyChooseReason[];
+  programsText?: ProgramsText;
+  facilitiesText?: FacilitiesText;
+  eventsText?: SectionText;
+  galleryText?: SectionText;
+  blogsText?: SectionText;
+  newsText?: SectionText;
+  testimonialsText?: SectionText;
   testimonials?: HomepageTestimonial[];
   admission?: AdmissionConfig;
   cta?: CTAConfig;
@@ -167,12 +239,26 @@ export const DEFAULT_HOMEPAGE_DATA: Omit<HomepageDocument, "_id" | "createdAt" |
       ],
     },
   ],
+  welcomeText: {
+    badge: "Welcome to PCM",
+    heading: "Education that opens doors",
+    description:
+      "Affiliated to Pokhara University, PCM has been shaping confident, capable graduates since 2002 through hands-on learning, dedicated mentors and a vibrant campus culture.",
+  },
   welcomeStats: [
     { value: 80, suffix: "%", label: "Success stories" },
     { value: 100, suffix: "", label: "Dean's List Scholars" },
     { value: 1000, suffix: "", label: "Graduates" },
     { value: 23, suffix: "", label: "Years of Excellence" },
   ],
+  whyChooseText: {
+    badge: "The PCM difference",
+    heading: "Why choose PCM?",
+    description:
+      "Twenty-three years of affordable, quality education — here is what sets us apart.",
+    linkLabel: "About PCM",
+    linkHref: "/about",
+  },
   whyChooseReasons: [
     { icon: "🎓", title: "PU-affiliated degrees", desc: "All three programs are awarded by Pokhara University — a nationally recognised qualification employers trust." },
     { icon: "💰", title: "Scholarships for all", desc: "Merit and need-based awards with up to 100% coverage, because quality education should stay affordable." },
@@ -181,6 +267,62 @@ export const DEFAULT_HOMEPAGE_DATA: Omit<HomepageDocument, "_id" | "createdAt" |
     { icon: "🎉", title: "A campus that comes alive", desc: "Fests, sports, clubs and community drives build confidence and a network that lasts a lifetime." },
     { icon: "📍", title: "Central, safe location", desc: "On Gyan Marg in Nadipur, Pokhara-2 — easy to reach, hard to leave, and close to everything you need." },
   ],
+  programsText: {
+    badge: "Programs",
+    heading: "Three paths to a strong career",
+    description:
+      "Every PCM program blends conceptual depth with real-world practice, non-credit skill courses and internship experience.",
+    linkLabel: "All programs",
+    linkHref: "/programs",
+  },
+  facilitiesText: {
+    badge: "Our campus",
+    heading: "Facilities designed around you",
+    description:
+      "Modern classrooms, dedicated labs and space to play and unwind — everything you need to learn well.",
+    linkLabel: "All facilities",
+    linkHref: "/facilities",
+  },
+  eventsText: {
+    badge: "Campus calendar",
+    heading: "Upcoming events",
+    description:
+      "Fests, seminars, workshops and tours — find your next moment at PCM.",
+    linkLabel: "All events",
+    linkHref: "/events",
+  },
+  galleryText: {
+    badge: "Glimpses of PCM",
+    heading: "Explore our albums",
+    description:
+      "Click any album to browse its photos up close.",
+    linkLabel: "Full gallery",
+    linkHref: "/gallery",
+  },
+  blogsText: {
+    badge: "From the blog",
+    heading: "Ideas worth reading",
+    description:
+      "Career guidance, industry trends and honest advice from the PCM community.",
+    linkLabel: "All articles",
+    linkHref: "/blogs",
+  },
+  newsText: {
+    badge: "Newsroom",
+    heading: "Latest from PCM",
+    description:
+      "Stories, achievements and campus updates.",
+    linkLabel: "",
+    linkHref: "",
+  },
+  testimonialsText: {
+    badge: "Voices of PCM",
+    heading: "What our achievers say",
+    description:
+      "Graduates on the Dean's List reflect on their four-year journey at PCM",
+    linkLabel: "",
+    linkHref: "",
+  },
   testimonials: [
     {
       id: "1",
@@ -212,6 +354,7 @@ export const DEFAULT_HOMEPAGE_DATA: Omit<HomepageDocument, "_id" | "createdAt" |
     },
   ],
   admission: {
+    enabled: true,
     badge: "Admissions 2083",
     heading: "Join PCM this intake",
     subheading: "A simple, transparent admission process — scholarships available for deserving students.",

@@ -119,7 +119,7 @@ export default function TestimonialsManager({ testimonials, onSave }: Props) {
                         />
                       </div>
                     </div>
-                    {t.photo && (
+                    {t.photo && (t.photo.startsWith('http://') || t.photo.startsWith('https://') || t.photo.startsWith('/')) && (
                       <div className="flex-shrink-0 w-20 h-20 relative rounded-full overflow-hidden border border-[var(--admin-border)]">
                         <Image
                           src={t.photo}

@@ -3,10 +3,18 @@
 import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
-import type { HomepageTestimonial } from "@/types/homepage";
+import type { HomepageTestimonial, SectionText } from "@/types/homepage";
+import { safeImg } from "@/lib/sanitize";
 
-export default function TestimonialsSection({ testimonials }: { testimonials: HomepageTestimonial[] }) {
+export default function TestimonialsSection({
+  text,
+  testimonials,
+}: {
+  text: SectionText;
+  testimonials: HomepageTestimonial[];
+}) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const t = text ?? { badge: "Voices of PCM", heading: "What our achievers say", description: "Graduates on the Dean's List reflect on their four-year journey at PCM", linkLabel: "", linkHref: "" };
 
   const next = useCallback(() => {
     setActiveIndex((i) => (i + 1) % testimonials.length);
@@ -34,13 +42,13 @@ export default function TestimonialsSection({ testimonials }: { testimonials: Ho
         {/* Header */}
         <div className="max-w-3xl mx-auto text-center mb-16">
           <span className="inline-block px-4 py-2 rounded-full bg-pcm-green/10 text-pcm-green text-sm font-semibold uppercase tracking-wider mb-4">
-            Voices of PCM
+            {t.badge}
           </span>
           <h2 className="text-[clamp(2rem,4vw,2.8rem)] font-display font-bold text-pcm-navy mb-4">
-            What our achievers say
+            {t.heading}
           </h2>
           <p className="text-gray-600 text-base lg:text-lg">
-            Graduates on the Dean's List reflect on their four-year journey at PCM
+            {t.description}
           </p>
         </div>
 
@@ -60,7 +68,7 @@ export default function TestimonialsSection({ testimonials }: { testimonials: Ho
                   <div className="relative">
                     <div className="w-24 h-24 lg:w-28 lg:h-28 rounded-full overflow-hidden ring-4 ring-pcm-green/20 shadow-lg">
                       <Image
-                        src={activeTestimonial.photo}
+                        src={safeImg(activeTestimonial.photo)}
                         alt={activeTestimonial.name}
                         width={112}
                         height={112}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, GraduationCap, BookOpen, Laptop } from "lucide-react";
 import type { FacilityItem } from "@/app/admin/campus/facilities/types/facilities";
+import type { FacilitiesText } from "@/types/homepage";
 
 const iconMap: Record<string, typeof GraduationCap> = {
   Learning: GraduationCap,
@@ -11,27 +12,34 @@ const iconMap: Record<string, typeof GraduationCap> = {
   "Student Life": GraduationCap,
 };
 
-export default function FacilitiesSection({ facilities }: { facilities: FacilityItem[] }) {
+export default function FacilitiesSection({
+  text,
+  facilities,
+}: {
+  text: FacilitiesText;
+  facilities: FacilityItem[];
+}) {
+  const t = text ?? { badge: "Our campus", heading: "Facilities designed around you", description: "Modern classrooms, dedicated labs and space to play and unwind — everything you need to learn well.", linkLabel: "All facilities", linkHref: "/facilities" };
   return (
     <section className="py-[clamp(4rem,8vw,6rem)] bg-secondary/30">
       <div className="container">
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
           <div className="max-w-2xl">
             <span className="inline-block px-4 py-2 rounded-full bg-pcm-blue/10 text-pcm-blue text-sm font-mono uppercase tracking-wider mb-4">
-              Our campus
+              {t.badge}
             </span>
             <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-display font-semibold text-pcm-navy mb-4">
-              Facilities designed around you
+              {t.heading}
             </h2>
             <p className="text-muted-foreground text-lg">
-              Modern classrooms, dedicated labs and space to play and unwind — everything you need to learn well.
+              {t.description}
             </p>
           </div>
           <Link
-            href="/facilities"
+            href={t.linkHref}
             className="inline-flex items-center gap-2 text-pcm-blue hover:text-pcm-blue-700 font-semibold transition-colors group"
           >
-            All facilities
+            {t.linkLabel}
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
