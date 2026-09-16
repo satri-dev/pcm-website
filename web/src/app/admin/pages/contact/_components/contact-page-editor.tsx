@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CheckCircle2, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import type { ContactPageContent } from "@/types/page-content";
+import { SectionSaveButton } from "../../_components/section-save-button";
 
 interface ContactPageEditorProps {
   initialContent: ContactPageContent;
@@ -19,9 +20,21 @@ const SECTIONS = [
 ];
 const ALL_SECTION_IDS = SECTIONS.map((s) => s.id);
 
+// Maps a UI section id to the key it lives under in ContactPageContent
+const SECTION_TO_KEY: Record<string, keyof ContactPageContent> = {
+  hero: "hero",
+  details: "contactDetails",
+  form: "contactForm",
+  map: "mapEmbed",
+  cta: "cta",
+  seo: "seo",
+};
+
 export default function ContactPageEditor({ initialContent }: ContactPageEditorProps) {
   const [content, setContent] = useState<ContactPageContent>(initialContent);
   const [saving, setSaving] = useState(false);
+  const [savingSection, setSavingSection] = useState<string | null>(null);
+  const [sectionErrors, setSectionErrors] = useState<Record<string, string>>({});
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(ALL_SECTION_IDS));
 
   const toggleSection = (id: string) => {
@@ -63,6 +76,38 @@ export default function ContactPageEditor({ initialContent }: ContactPageEditorP
       toast.error(error instanceof Error ? error.message : "Failed to save changes");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const saveSection = async (sectionId: string) => {
+    const dataKey = SECTION_TO_KEY[sectionId];
+    setSavingSection(sectionId);
+    setSectionErrors((prev) => ({ ...prev, [sectionId]: "" }));
+
+    try {
+      const response = await fetch("/api/admin/pages/contact", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          section: dataKey,
+          content: content[dataKey],
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to save");
+      }
+
+      const sectionTitle = SECTIONS.find((s) => s.id === sectionId)?.title;
+      toast.success(`${sectionTitle ?? "Section"} saved successfully!`);
+    } catch (error) {
+      const errorMsg =
+        error instanceof Error ? error.message : "Failed to save changes";
+      setSectionErrors((prev) => ({ ...prev, [sectionId]: errorMsg }));
+      toast.error(errorMsg);
+    } finally {
+      setSavingSection(null);
     }
   };
 
@@ -170,6 +215,12 @@ export default function ContactPageEditor({ initialContent }: ContactPageEditorP
             />
           </div>
         </div>
+        <SectionSaveButton
+          id="hero"
+          saving={savingSection === "hero"}
+          error={sectionErrors.hero}
+          onSave={saveSection}
+        />
         </div>
         )}
       </section>
@@ -426,6 +477,12 @@ export default function ContactPageEditor({ initialContent }: ContactPageEditorP
             </div>
           </div>
         </div>
+        <SectionSaveButton
+          id="details"
+          saving={savingSection === "details"}
+          error={sectionErrors.details}
+          onSave={saveSection}
+        />
         </div>
         )}
       </section>
@@ -744,6 +801,12 @@ export default function ContactPageEditor({ initialContent }: ContactPageEditorP
             />
           </div>
         </div>
+        <SectionSaveButton
+          id="form"
+          saving={savingSection === "form"}
+          error={sectionErrors.form}
+          onSave={saveSection}
+        />
         </div>
         )}
       </section>
@@ -796,6 +859,12 @@ export default function ContactPageEditor({ initialContent }: ContactPageEditorP
             </p>
           </div>
         </div>
+        <SectionSaveButton
+          id="map"
+          saving={savingSection === "map"}
+          error={sectionErrors.map}
+          onSave={saveSection}
+        />
         </div>
         )}
       </section>
@@ -936,6 +1005,12 @@ export default function ContactPageEditor({ initialContent }: ContactPageEditorP
             </div>
           </div>
         </div>
+        <SectionSaveButton
+          id="cta"
+          saving={savingSection === "cta"}
+          error={sectionErrors.cta}
+          onSave={saveSection}
+        />
         </div>
         )}
       </section>
@@ -1015,6 +1090,12 @@ export default function ContactPageEditor({ initialContent }: ContactPageEditorP
             </p>
           </div>
         </div>
+        <SectionSaveButton
+          id="seo"
+          saving={savingSection === "seo"}
+          error={sectionErrors.seo}
+          onSave={saveSection}
+        />
         </div>
         )}
       </section>

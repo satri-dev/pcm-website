@@ -13,6 +13,7 @@ import {
 import { toast } from "sonner";
 import type { PageContent, ProgramsPageContent } from "@/types/page-content";
 import type { Program } from "@/types/programs";
+import { SectionSaveButton } from "../../_components/section-save-button";
 
 interface ProgramsPageEditorProps {
   initialContent: PageContent | null;
@@ -53,6 +54,16 @@ const SECTIONS = [
 ];
 const ALL_SECTION_IDS = SECTIONS.map((s) => s.id);
 
+// Maps a UI section id to the key it lives under in ProgramsPageContent
+const SECTION_TO_KEY: Record<string, keyof ProgramsPageContent> = {
+  hero: "hero",
+  intro: "intro",
+  featured: "featuredProgramRefs",
+  comparison: "comparisonTable",
+  coordinators: "coordinators",
+  cta: "cta",
+};
+
 export default function ProgramsPageEditor({
   initialContent,
   availablePrograms,
@@ -60,6 +71,10 @@ export default function ProgramsPageEditor({
 }: ProgramsPageEditorProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
+  const [savingSection, setSavingSection] = useState<string | null>(null);
+  const [sectionErrors, setSectionErrors] = useState<Record<string, string>>(
+    {},
+  );
   const [error, setError] = useState("");
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(),
@@ -165,6 +180,41 @@ export default function ProgramsPageEditor({
       toast.error(errorMsg);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const saveSection = async (sectionId: string) => {
+    const dataKey = SECTION_TO_KEY[sectionId];
+    setSavingSection(sectionId);
+    setSectionErrors((prev) => ({ ...prev, [sectionId]: "" }));
+    setError("");
+
+    try {
+      const res = await fetch("/api/admin/pages/programs", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          section: dataKey,
+          content: formData[dataKey],
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `Save failed (HTTP ${res.status})`);
+      }
+
+      router.refresh();
+      const sectionTitle = SECTIONS.find((s) => s.id === sectionId)?.title;
+      toast.success(`${sectionTitle ?? "Section"} saved successfully!`);
+    } catch (err) {
+      const errorMsg =
+        err instanceof Error ? err.message : "Failed to save changes";
+      setSectionErrors((prev) => ({ ...prev, [sectionId]: errorMsg }));
+      setError(errorMsg);
+      toast.error(errorMsg);
+    } finally {
+      setSavingSection(null);
     }
   };
 
@@ -365,6 +415,12 @@ export default function ProgramsPageEditor({
                   />
                 </div>
               </div>
+              <SectionSaveButton
+                id="hero"
+                saving={savingSection === "hero"}
+                error={sectionErrors.hero}
+                onSave={saveSection}
+              />
             </div>
           )}
         </section>
@@ -423,6 +479,12 @@ export default function ProgramsPageEditor({
                   />
                 </div>
               </div>
+              <SectionSaveButton
+                id="intro"
+                saving={savingSection === "intro"}
+                error={sectionErrors.intro}
+                onSave={saveSection}
+              />
             </div>
           )}
         </section>
@@ -525,6 +587,12 @@ export default function ProgramsPageEditor({
                     : "No programs selected"}
                 </div>
               </div>
+              <SectionSaveButton
+                id="featured"
+                saving={savingSection === "featured"}
+                error={sectionErrors.featured}
+                onSave={saveSection}
+              />
             </div>
           )}
         </section>
@@ -690,6 +758,12 @@ export default function ProgramsPageEditor({
                   </div>
                 )}
               </div>
+              <SectionSaveButton
+                id="comparison"
+                saving={savingSection === "comparison"}
+                error={sectionErrors.comparison}
+                onSave={saveSection}
+              />
             </div>
           )}
         </section>
@@ -940,6 +1014,12 @@ export default function ProgramsPageEditor({
                   </div>
                 </div>
               </div>
+              <SectionSaveButton
+                id="coordinators"
+                saving={savingSection === "coordinators"}
+                error={sectionErrors.coordinators}
+                onSave={saveSection}
+              />
             </div>
           )}
         </section>
@@ -1015,6 +1095,12 @@ export default function ProgramsPageEditor({
                   />
                 </div>
               </div>
+              <SectionSaveButton
+                id="cta"
+                saving={savingSection === "cta"}
+                error={sectionErrors.cta}
+                onSave={saveSection}
+              />
             </div>
           )}
         </section>
