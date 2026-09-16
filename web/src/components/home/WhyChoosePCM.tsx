@@ -1,19 +1,26 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import type { WhyChooseReason } from "@/types/homepage";
+import type { WhyChooseText, WhyChooseReason } from "@/types/homepage";
 
-export default function WhyChoosePCM({ reasons }: { reasons: WhyChooseReason[] }) {
+export default function WhyChoosePCM({
+  text,
+  reasons,
+}: {
+  text: WhyChooseText;
+  reasons: WhyChooseReason[];
+}) {
+  const t = text ?? { badge: "The PCM difference", heading: "Why choose PCM?", description: "Twenty-three years of affordable, quality education — here is what sets us apart.", linkLabel: "About PCM", linkHref: "/about" };
   return (
     <section className="py-[clamp(3.5rem,8vw,6.5rem)]">
       <div className="container">
         <div className="flex flex-wrap items-end justify-between gap-4 mb-11">
           <div className="max-w-[640px]">
-            <span className="font-mono text-[0.74rem] tracking-[0.2em] uppercase text-pcm-blue">The PCM difference</span>
-            <h2 className="mt-2 text-[clamp(1.8rem,3.4vw,2.6rem)] font-display font-semibold text-pcm-navy">Why choose PCM?</h2>
-            <p className="mt-2 text-muted-foreground">Twenty-three years of affordable, quality education — here is what sets us apart.</p>
+            <span className="font-mono text-[0.74rem] tracking-[0.2em] uppercase text-pcm-blue">{t.badge}</span>
+            <h2 className="mt-2 text-[clamp(1.8rem,3.4vw,2.6rem)] font-display font-semibold text-pcm-navy">{t.heading}</h2>
+            <p className="mt-2 text-muted-foreground">{t.description}</p>
           </div>
-          <Link href="/about" className="inline-flex items-center gap-1 font-bold text-pcm-blue hover:gap-2 transition-all">
-            About PCM <ArrowRight className="w-4 h-4" />
+          <Link href={t.linkHref} className="inline-flex items-center gap-1 font-bold text-pcm-blue hover:gap-2 transition-all">
+            {t.linkLabel} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 

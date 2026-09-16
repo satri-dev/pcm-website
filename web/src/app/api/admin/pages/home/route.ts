@@ -35,9 +35,18 @@ export async function PUT(req: NextRequest) {
     if (body.heroSlides !== undefined) {
       patch.heroSlides = Array.isArray(body.heroSlides) ? body.heroSlides : [];
     }
+    if (body.welcomeText !== undefined) patch.welcomeText = body.welcomeText;
     if (body.welcomeStats !== undefined) patch.welcomeStats = body.welcomeStats;
+    if (body.whyChooseText !== undefined) patch.whyChooseText = body.whyChooseText;
     if (body.whyChooseReasons !== undefined)
       patch.whyChooseReasons = body.whyChooseReasons;
+    if (body.programsText !== undefined) patch.programsText = body.programsText;
+    if (body.facilitiesText !== undefined) patch.facilitiesText = body.facilitiesText;
+    if (body.eventsText !== undefined) patch.eventsText = body.eventsText;
+    if (body.galleryText !== undefined) patch.galleryText = body.galleryText;
+    if (body.blogsText !== undefined) patch.blogsText = body.blogsText;
+    if (body.newsText !== undefined) patch.newsText = body.newsText;
+    if (body.testimonialsText !== undefined) patch.testimonialsText = body.testimonialsText;
     if (body.testimonials !== undefined)
       patch.testimonials = body.testimonials;
     if (body.admission !== undefined) patch.admission = body.admission;

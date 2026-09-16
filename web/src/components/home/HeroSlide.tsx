@@ -6,11 +6,20 @@ import { buttonVariants } from "@/components/ui/button";
 import HeroBadge from "./HeroBadge";
 import StatsOverlay from "./StatsOverlay";
 
+function safeSrc(src: string | undefined, fallback = "/images/hero-1.jpg") {
+  if (!src || (!src.startsWith("/") && !src.startsWith("http"))) return fallback;
+  return src;
+}
+
 export default function HeroSlide({ slide }: { slide: HeroSlideType }) {
+  const imageSrc = safeSrc(slide.image);
+  const primaryHref = slide.primaryCta?.href?.startsWith("/") || slide.primaryCta?.href?.startsWith("http") ? slide.primaryCta.href : "/";
+  const secondaryHref = slide.secondaryCta?.href?.startsWith("/") || slide.secondaryCta?.href?.startsWith("http") ? slide.secondaryCta.href : "/";
+
   return (
     <article className="relative flex items-center min-w-full flex-[0_0_100%]">
       <Image
-        src={slide.image}
+        src={imageSrc}
         alt=""
         fill
         priority
@@ -28,10 +37,10 @@ export default function HeroSlide({ slide }: { slide: HeroSlideType }) {
         <p className="mt-3 sm:mt-4 text-sm sm:text-base lg:text-[1.05rem] max-w-[48ch] text-white/72">{slide.sub}</p>
 
         <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-[0.9rem] mt-5 sm:mt-6">
-          <Link href={slide.primaryCta.href} className={buttonVariants({ variant: "gold", size: "lg", className: "w-full sm:w-auto" })}>
+          <Link href={primaryHref} className={buttonVariants({ variant: "gold", size: "lg", className: "w-full sm:w-auto" })}>
             {slide.primaryCta.label} <ArrowRight className="w-4 h-4" />
           </Link>
-          <Link href={slide.secondaryCta.href} className={buttonVariants({ variant: "ghostOnDark", size: "lg", className: "w-full sm:w-auto" })}>
+          <Link href={secondaryHref} className={buttonVariants({ variant: "ghostOnDark", size: "lg", className: "w-full sm:w-auto" })}>
             {slide.secondaryCta.label}
           </Link>
         </div>

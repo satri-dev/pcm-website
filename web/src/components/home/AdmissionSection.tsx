@@ -4,6 +4,11 @@ import { buttonVariants } from "@/components/ui/button";
 import { ArrowRight, Calendar, Clock, BookOpen, Award } from "lucide-react";
 import type { AdmissionConfig } from "@/types/homepage";
 
+function safeImg(src: string | undefined, fallback = "/images/hero-1.jpg") {
+  if (!src || (!src.startsWith("/") && !src.startsWith("http"))) return fallback;
+  return src;
+}
+
 export default function AdmissionSection({ admission }: { admission: AdmissionConfig }) {
   return (
     <section className="py-[clamp(4rem,8vw,6rem)] bg-gradient-to-b from-white to-gray-50">
@@ -29,7 +34,7 @@ export default function AdmissionSection({ admission }: { admission: AdmissionCo
               <div className="lg:hidden mb-8">
                 <div className="relative w-full max-w-sm mx-auto aspect-[4/5] rounded-2xl overflow-hidden shadow-lg">
                   <Image
-                    src={admission.posterImage}
+                    src={safeImg(admission.posterImage)}
                     alt="Admissions open"
                     fill
                     sizes="(max-width: 1024px) 100vw, 400px"
@@ -82,7 +87,7 @@ export default function AdmissionSection({ admission }: { admission: AdmissionCo
               <div className="hidden lg:block mb-6">
                 <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-xl ring-1 ring-gray-200">
                   <Image
-                    src={admission.posterImage}
+                    src={safeImg(admission.posterImage)}
                     alt="Admissions open"
                     fill
                     sizes="400px"

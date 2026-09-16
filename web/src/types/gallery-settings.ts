@@ -8,6 +8,8 @@ export interface GalleryPageSettings {
   eyebrow: string;
   title: string;
   subtitle: string;
+  linkLabel: string;
+  linkHref: string;
   ctaEyebrow: string;
   ctaTitle: string;
   ctaText: string;
@@ -27,6 +29,8 @@ export const GALLERY_PAGE_SETTINGS_DEFAULTS: GalleryPageSettings = {
   title: "Explore our albums",
   subtitle:
     "Browse by category, open any album, then click a photo to view it full-size.",
+  linkLabel: "Full gallery",
+  linkHref: "/gallery",
   ctaEyebrow: "Enter to Learn — Go Forth to Serve",
   ctaTitle: "Want to see it in person?",
   ctaText: "Book a campus visit and experience the PCM community for yourself.",
