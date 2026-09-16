@@ -10,15 +10,30 @@ import {
   ChevronDown,
   ExternalLink,
   Info,
+  Pencil,
   Plus,
   Save,
   Trash2,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { Program } from "@/types/programs";
 import ImageUpload from "@/components/cloudinary/ImageUpload";
 import { SectionSaveButton } from "@/app/admin/pages/_components/section-save-button";
 import RichTextEditor from "@/app/admin/_components/editor/rich-text-editor";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 /* ----------------------------------------------------------------
    Types
@@ -416,6 +431,15 @@ function normalizeOverviewBody(body: unknown): string {
   return typeof body === "string" ? body : "";
 }
 
+// Plain-text preview for table cells (descriptions are stored as rich-text HTML).
+function stripHtml(html: string): string {
+  return (html || "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function defaults(initialContent: Partial<ProgramPageContent>): ProgramPageContent {
   return {
     hero: { tagline: initialContent?.hero?.tagline ?? "" },
@@ -629,6 +653,193 @@ export default function ProgramPageEditor({
 
   const filledSections = SECTIONS.map((s) => isSectionFilled(s.id, formData));
 
+  const [concentrationModal, setConcentrationModal] = useState<
+    { mode: "add" } | { mode: "edit"; index: number } | null
+  >(null);
+  const [concentrationDraft, setConcentrationDraft] = useState<TextItem>({
+    title: "",
+    description: "",
+  });
+
+  const openAddConcentration = () => {
+    setConcentrationDraft({ title: "", description: "" });
+    setConcentrationModal({ mode: "add" });
+  };
+
+  const openEditConcentration = (index: number) => {
+    setConcentrationDraft({ ...formData.concentrations[index] });
+    setConcentrationModal({ mode: "edit", index });
+  };
+
+  const closeConcentrationModal = () => setConcentrationModal(null);
+
+  const saveConcentration = () => {
+    if (!concentrationModal) return;
+    update((f) => {
+      if (concentrationModal.mode === "edit") {
+        return {
+          ...f,
+          concentrations: f.concentrations.map((item, i) =>
+            i === concentrationModal.index ? { ...concentrationDraft } : item
+          ),
+        };
+      }
+      return {
+        ...f,
+        concentrations: [...f.concentrations, { ...concentrationDraft }],
+      };
+    });
+    closeConcentrationModal();
+  };
+
+  const removeConcentration = async (index: number) => {
+    const ok = await confirmAction({
+      title: `Remove concentration "${formData.concentrations[index].title || `#${index + 1}`}"?`,
+      description: "This will remove it from the Areas of Concentration list.",
+    });
+    if (ok) {
+      update((f) => ({
+        ...f,
+        concentrations: f.concentrations.filter((_, i) => i !== index),
+      }));
+    }
+  };
+
+  const [admissionModal, setAdmissionModal] = useState<
+    { mode: "add" } | { mode: "edit"; index: number } | null
+  >(null);
+  const [admissionDraft, setAdmissionDraft] = useState<AdmissionItem>({
+    title: "",
+    detail: "",
+  });
+
+  const openAddAdmission = () => {
+    setAdmissionDraft({ title: "", detail: "" });
+    setAdmissionModal({ mode: "add" });
+  };
+
+  const openEditAdmission = (index: number) => {
+    setAdmissionDraft({ ...formData.admissionRequirements[index] });
+    setAdmissionModal({ mode: "edit", index });
+  };
+
+  const closeAdmissionModal = () => setAdmissionModal(null);
+
+  const saveAdmission = () => {
+    if (!admissionModal) return;
+    update((f) => {
+      if (admissionModal.mode === "edit") {
+        return {
+          ...f,
+          admissionRequirements: f.admissionRequirements.map((item, i) =>
+            i === admissionModal.index ? { ...admissionDraft } : item
+          ),
+        };
+      }
+      return {
+        ...f,
+        admissionRequirements: [...f.admissionRequirements, { ...admissionDraft }],
+      };
+    });
+    closeAdmissionModal();
+  };
+
+  const removeAdmission = async (index: number) => {
+    const ok = await confirmAction({
+      title: `Remove requirement "${formData.admissionRequirements[index].title || `#${index + 1}`}"?`,
+      description: "This will remove it from the Admission Requirements list.",
+    });
+    if (ok) {
+      update((f) => ({
+        ...f,
+        admissionRequirements: f.admissionRequirements.filter((_, i) => i !== index),
+      }));
+    }
+  };
+
+  const [semesterModal, setSemesterModal] = useState<
+    { mode: "add" } | { mode: "edit"; index: number } | null
+  >(null);
+  const [semesterDraft, setSemesterDraft] = useState<Semester>({
+    label: "",
+    courses: [],
+  });
+
+  const openAddSemester = () => {
+    setSemesterDraft({ label: "", courses: [] });
+    setSemesterModal({ mode: "add" });
+  };
+
+  const openEditSemester = (index: number) => {
+    const sem = formData.curriculum[index];
+    setSemesterDraft({ label: sem.label, courses: sem.courses.map((c) => ({ ...c })) });
+    setSemesterModal({ mode: "edit", index });
+  };
+
+  const closeSemesterModal = () => setSemesterModal(null);
+
+  const saveSemester = () => {
+    if (!semesterModal) return;
+    update((f) => {
+      if (semesterModal.mode === "edit") {
+        return {
+          ...f,
+          curriculum: f.curriculum.map((s, i) =>
+            i === semesterModal.index ? { label: semesterDraft.label, courses: semesterDraft.courses } : s
+          ),
+        };
+      }
+      return {
+        ...f,
+        curriculum: [
+          ...f.curriculum,
+          { label: semesterDraft.label, courses: semesterDraft.courses },
+        ],
+      };
+    });
+    closeSemesterModal();
+  };
+
+  const removeSemester = async (index: number) => {
+    const ok = await confirmAction({
+      title: `Remove "${formData.curriculum[index].label || `Sem ${index + 1}`}"?`,
+      description: "All of its courses will also be removed. This cannot be undone.",
+    });
+    if (ok) {
+      update((f) => ({
+        ...f,
+        curriculum: f.curriculum.filter((_, i) => i !== index),
+      }));
+    }
+  };
+
+  const updateSemesterCourse = (
+    courseIdx: number,
+    field: "code" | "description" | "credits",
+    value: string
+  ) => {
+    setSemesterDraft((d) => ({
+      ...d,
+      courses: d.courses.map((c, ci) =>
+        ci === courseIdx ? { ...c, [field]: value } : c
+      ),
+    }));
+  };
+
+  const addSemesterCourse = () => {
+    setSemesterDraft((d) => ({
+      ...d,
+      courses: [...d.courses, { code: "", description: "", credits: "" }],
+    }));
+  };
+
+  const removeSemesterCourse = (courseIdx: number) => {
+    setSemesterDraft((d) => ({
+      ...d,
+      courses: d.courses.filter((_, ci) => ci !== courseIdx),
+    }));
+  };
+
   return (
     <form onSubmit={handleSubmit}>
       <div className="pp-editor" style={{ paddingBottom: "80px" }}>
@@ -779,58 +990,58 @@ export default function ProgramPageEditor({
             }
           >
             <div className="space-y-3">
-              {formData.concentrations.map((conc, idx) => (
-                <RepeatableCard
-                  key={`concentration-${idx}`}
-                  badge="Concentration"
-                  index={idx + 1}
-                  onRemove={() =>
-                    update((f) => ({
-                      ...f,
-                      concentrations: f.concentrations.filter((_, i) => i !== idx),
-                    }))
-                  }
-                >
-                  <Field label="Title" className="field--full">
-                    <input
-                      type="text"
-                      value={conc.title}
-                      onChange={(e) =>
-                        update((f) => ({
-                          ...f,
-                          concentrations: f.concentrations.map((item, i) =>
-                            i === idx ? { ...item, title: e.target.value } : item
-                          ),
-                        }))
-                      }
-                      placeholder="Software Development"
-                    />
-                  </Field>
-                  <Field label="Description" className="field--full">
-                    <textarea
-                      rows={2}
-                      value={conc.description}
-                      onChange={(e) =>
-                        update((f) => ({
-                          ...f,
-                          concentrations: f.concentrations.map((item, i) =>
-                            i === idx ? { ...item, description: e.target.value } : item
-                          ),
-                        }))
-                      }
-                      placeholder="Learn modern programming languages and frameworks..."
-                    />
-                  </Field>
-                </RepeatableCard>
-              ))}
-              <AddButton
-                onClick={() =>
-                  update((f) => ({
-                    ...f,
-                    concentrations: [...f.concentrations, { title: "", description: "" }],
-                  }))
-                }
-              >
+              {formData.concentrations.length === 0 ? (
+                <p className="text-sm text-[var(--admin-muted)]">
+                  No concentrations yet. Click &quot;Add Concentration&quot; to create one.
+                </p>
+              ) : (
+                <div className="overflow-x-auto rounded-lg border border-[var(--admin-line)]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12 bg-[var(--admin-surface-2)]">#</TableHead>
+                        <TableHead className="bg-[var(--admin-surface-2)]">TITLE</TableHead>
+                        <TableHead className="bg-[var(--admin-surface-2)]">DESCRIPTION</TableHead>
+                        <TableHead className="text-right bg-[var(--admin-surface-2)]">ACTIONS</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {formData.concentrations.map((conc, idx) => (
+                        <TableRow key={`concentration-${idx}`}>
+                          <TableCell className="w-12 py-2.5">{idx + 1}</TableCell>
+                          <TableCell className="py-2.5 text-sm font-semibold">
+                            {conc.title || "Untitled"}
+                          </TableCell>
+                          <TableCell className="max-w-[420px] whitespace-normal py-2.5 text-sm text-[var(--admin-muted)]">
+                            {conc.description ? stripHtml(conc.description) : "—"}
+                          </TableCell>
+                          <TableCell className="py-2.5">
+                            <div className="row-actions justify-end">
+                              <button
+                                type="button"
+                                className="act-btn"
+                                onClick={() => openEditConcentration(idx)}
+                                title="Edit concentration"
+                              >
+                                <Pencil size={15} />
+                              </button>
+                              <button
+                                type="button"
+                                className="act-btn danger"
+                                onClick={() => removeConcentration(idx)}
+                                title="Remove concentration"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+              <AddButton onClick={openAddConcentration}>
                 Add Concentration
               </AddButton>
             </div>
@@ -904,61 +1115,58 @@ export default function ProgramPageEditor({
             }
           >
             <div className="space-y-3">
-              {formData.admissionRequirements.map((req, idx) => (
-                <RepeatableCard
-                  key={`admission-${idx}`}
-                  badge="Requirement"
-                  index={idx + 1}
-                  onRemove={() =>
-                    update((f) => ({
-                      ...f,
-                      admissionRequirements: f.admissionRequirements.filter((_, i) => i !== idx),
-                    }))
-                  }
-                >
-                  <Field label="Title" className="field--full">
-                    <input
-                      type="text"
-                      value={req.title}
-                      onChange={(e) =>
-                        update((f) => ({
-                          ...f,
-                          admissionRequirements: f.admissionRequirements.map((item, i) =>
-                            i === idx ? { ...item, title: e.target.value } : item
-                          ),
-                        }))
-                      }
-                      placeholder="Minimum 12 years of formal schooling"
-                    />
-                  </Field>
-                  <Field label="Detail" className="field--full">
-                    <textarea
-                      rows={2}
-                      value={req.detail}
-                      onChange={(e) =>
-                        update((f) => ({
-                          ...f,
-                          admissionRequirements: f.admissionRequirements.map((item, i) =>
-                            i === idx ? { ...item, detail: e.target.value } : item
-                          ),
-                        }))
-                      }
-                      placeholder="10+2, A-Level, or equivalent..."
-                    />
-                  </Field>
-                </RepeatableCard>
-              ))}
-              <AddButton
-                onClick={() =>
-                  update((f) => ({
-                    ...f,
-                    admissionRequirements: [
-                      ...f.admissionRequirements,
-                      { title: "", detail: "" },
-                    ],
-                  }))
-                }
-              >
+              {formData.admissionRequirements.length === 0 ? (
+                <p className="text-sm text-[var(--admin-muted)]">
+                  No requirements yet. Click &quot;Add Requirement&quot; to create one.
+                </p>
+              ) : (
+                <div className="overflow-x-auto rounded-lg border border-[var(--admin-line)]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12 bg-[var(--admin-surface-2)]">#</TableHead>
+                        <TableHead className="bg-[var(--admin-surface-2)]">TITLE</TableHead>
+                        <TableHead className="bg-[var(--admin-surface-2)]">DETAIL</TableHead>
+                        <TableHead className="text-right bg-[var(--admin-surface-2)]">ACTIONS</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {formData.admissionRequirements.map((req, idx) => (
+                        <TableRow key={`admission-${idx}`}>
+                          <TableCell className="w-12 py-2.5">{idx + 1}</TableCell>
+                          <TableCell className="py-2.5 text-sm font-semibold">
+                            {req.title || "Untitled"}
+                          </TableCell>
+                          <TableCell className="max-w-[420px] whitespace-normal py-2.5 text-sm text-[var(--admin-muted)]">
+                            {req.detail ? stripHtml(req.detail) : "—"}
+                          </TableCell>
+                          <TableCell className="py-2.5">
+                            <div className="row-actions justify-end">
+                              <button
+                                type="button"
+                                className="act-btn"
+                                onClick={() => openEditAdmission(idx)}
+                                title="Edit requirement"
+                              >
+                                <Pencil size={15} />
+                              </button>
+                              <button
+                                type="button"
+                                className="act-btn danger"
+                                onClick={() => removeAdmission(idx)}
+                                title="Remove requirement"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+              <AddButton onClick={openAddAdmission}>
                 Add Requirement
               </AddButton>
             </div>
@@ -1217,15 +1425,14 @@ export default function ProgramPageEditor({
                 />
               </Field>
               <Field label="Description" className="field--full">
-                <textarea
-                  rows={2}
-                  value={formData.curriculumSection.description}
-                  onChange={(e) =>
+                <RichTextEditor
+                  content={formData.curriculumSection.description}
+                  onChange={(html) =>
                     update((f) => ({
                       ...f,
                       curriculumSection: {
                         ...f.curriculumSection,
-                        description: e.target.value,
+                        description: html,
                       },
                     }))
                   }
@@ -1248,175 +1455,59 @@ export default function ProgramPageEditor({
             </Field>
 
             <div className="space-y-3">
-              {formData.curriculum.map((sem, semIdx) => (
-                <div key={`semester-${semIdx}`} className="pp-semester">
-                  <div className="pp-semester__head">
-                    <input
-                      type="text"
-                      value={sem.label}
-                      onChange={(e) =>
-                        update((f) => ({
-                          ...f,
-                          curriculum: f.curriculum.map((s, i) =>
-                            i === semIdx ? { ...s, label: e.target.value } : s
-                          ),
-                        }))
-                      }
-                      placeholder={`Sem ${semIdx + 1}`}
-                      className="pp-semester__label"
-                    />
-                    <RemoveButton
-                      onClick={async () => {
-                        const label = sem.label || `Sem ${semIdx + 1}`;
-                        const ok = await confirmAction({
-                          title: `Remove ${label}?`,
-                          description: "All of its courses will also be removed. This cannot be undone.",
-                        });
-                        if (!ok) return;
-                        update((f) => ({
-                          ...f,
-                          curriculum: f.curriculum.filter((_, i) => i !== semIdx),
-                        }));
-                        toast.success(`${label} removed`, { position: "bottom-right" });
-                      }}
-                      label={`Remove ${sem.label || `Sem ${semIdx + 1}`}`}
-                    />
-                  </div>
-
-                  <div className="pp-course-head" aria-hidden="true">
-                    <span>Code</span>
-                    <span>Course</span>
-                    <span>Credits</span>
-                    <span />
-                  </div>
-
-                  <div className="space-y-2">
-                    {sem.courses.map((course, courseIdx) => (
-                      <div key={`course-${semIdx}-${courseIdx}`} className="pp-course-grid">
-                        <input
-                          type="text"
-                          value={course.code}
-                          onChange={(e) =>
-                            update((f) => ({
-                              ...f,
-                              curriculum: f.curriculum.map((s, si) =>
-                                si === semIdx
-                                  ? {
-                                      ...s,
-                                      courses: s.courses.map((c, ci) =>
-                                        ci === courseIdx ? { ...c, code: e.target.value } : c
-                                      ),
-                                    }
-                                  : s
-                              ),
-                            }))
-                          }
-                          placeholder="CSC 101"
-                        />
-                        <input
-                          type="text"
-                          value={course.description}
-                          onChange={(e) =>
-                            update((f) => ({
-                              ...f,
-                              curriculum: f.curriculum.map((s, si) =>
-                                si === semIdx
-                                  ? {
-                                      ...s,
-                                      courses: s.courses.map((c, ci) =>
-                                        ci === courseIdx
-                                          ? { ...c, description: e.target.value }
-                                          : c
-                                      ),
-                                    }
-                                  : s
-                              ),
-                            }))
-                          }
-                          placeholder="Introduction to Computer Science"
-                        />
-                        <input
-                          type="text"
-                          value={course.credits}
-                          onChange={(e) =>
-                            update((f) => ({
-                              ...f,
-                              curriculum: f.curriculum.map((s, si) =>
-                                si === semIdx
-                                  ? {
-                                      ...s,
-                                      courses: s.courses.map((c, ci) =>
-                                        ci === courseIdx ? { ...c, credits: e.target.value } : c
-                                      ),
-                                    }
-                                  : s
-                              ),
-                            }))
-                          }
-                          placeholder="3"
-                        />
-                        <RemoveButton
-                          onClick={async () => {
-                            const courseLabel = course.code || `Course ${courseIdx + 1}`;
-                            const semLabel = sem.label || `Sem ${semIdx + 1}`;
-                            const ok = await confirmAction({
-                              title: `Remove ${courseLabel}?`,
-                              description: `This course will be removed from ${semLabel}. This cannot be undone.`,
-                            });
-                            if (!ok) return;
-                            update((f) => ({
-                              ...f,
-                              curriculum: f.curriculum.map((s, si) =>
-                                si === semIdx
-                                  ? {
-                                      ...s,
-                                      courses: s.courses.filter((_, ci) => ci !== courseIdx),
-                                    }
-                                  : s
-                              ),
-                            }));
-                            toast.success(`${courseLabel} removed from ${semLabel}`, { position: "bottom-right" });
-                          }}
-                          label={`Remove course ${courseIdx + 1}`}
-                        />
-                      </div>
-                    ))}
-                  </div>
-
-                  <AddButton
-                    onClick={() =>
-                      update((f) => ({
-                        ...f,
-                        curriculum: f.curriculum.map((s, si) =>
-                          si === semIdx
-                            ? {
-                                ...s,
-                                courses: [...s.courses, { code: "", description: "", credits: "" }],
-                              }
-                            : s
-                        ),
-                      }))
-                    }
-                  >
-                    Add Course
-                  </AddButton>
+              {formData.curriculum.length === 0 ? (
+                <p className="text-sm text-[var(--admin-muted)]">
+                  No semesters yet. Click &quot;Add Semester&quot; to create one.
+                </p>
+              ) : (
+                <div className="overflow-x-auto rounded-lg border border-[var(--admin-line)]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12 bg-[var(--admin-surface-2)]">#</TableHead>
+                        <TableHead className="bg-[var(--admin-surface-2)]">SEMESTER</TableHead>
+                        <TableHead className="bg-[var(--admin-surface-2)]">COURSES</TableHead>
+                        <TableHead className="text-right bg-[var(--admin-surface-2)]">ACTIONS</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {formData.curriculum.map((sem, semIdx) => (
+                        <TableRow key={`semester-${semIdx}`}>
+                          <TableCell className="w-12 py-2.5">{semIdx + 1}</TableCell>
+                          <TableCell className="py-2.5 text-sm font-semibold">
+                            {sem.label || `Sem ${semIdx + 1}`}
+                          </TableCell>
+                          <TableCell className="py-2.5 text-sm text-[var(--admin-muted)]">
+                            {sem.courses.length} {sem.courses.length === 1 ? "course" : "courses"}
+                          </TableCell>
+                          <TableCell className="py-2.5">
+                            <div className="row-actions justify-end">
+                              <button
+                                type="button"
+                                className="act-btn"
+                                onClick={() => openEditSemester(semIdx)}
+                                title="Edit semester"
+                              >
+                                <Pencil size={15} />
+                              </button>
+                              <button
+                                type="button"
+                                className="act-btn danger"
+                                onClick={() => removeSemester(semIdx)}
+                                title="Remove semester"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
-              ))}
+              )}
+              <AddButton onClick={openAddSemester}>Add Semester</AddButton>
             </div>
-
-            <AddButton
-              onClick={() =>
-                update((f) => ({
-                  ...f,
-                  curriculum: [
-                    ...f.curriculum,
-                    { label: `Sem ${f.curriculum.length + 1}`, courses: [] },
-                  ],
-                }))
-              }
-            >
-              Add Semester
-            </AddButton>
           </CollapsibleSection>
 
           <CollapsibleSection
@@ -1723,6 +1814,264 @@ export default function ProgramPageEditor({
           </button>
         </div>
       </div>
+
+      <Dialog
+        open={concentrationModal !== null}
+        onOpenChange={(open) => !open && closeConcentrationModal()}
+      >
+        <DialogContent
+          showCloseButton={false}
+          className="news-modal w-[min(100%,520px)] sm:max-w-[520px] max-h-[90vh] overflow-y-auto flex flex-col gap-0 rounded-[16px] p-0 ring-0 outline-none"
+        >
+          <div className="modal__head">
+            <DialogTitle className="m-0 text-[1.05rem] font-normal">
+              {concentrationModal?.mode === "edit"
+                ? "Edit Concentration"
+                : "Add Concentration"}
+            </DialogTitle>
+            <button
+              type="button"
+              className="admin-icon-btn"
+              aria-label="Close"
+              onClick={closeConcentrationModal}
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="modal__body">
+            <div className="form-grid">
+              <div className="field field--full">
+                <label htmlFor="concentration-title">
+                  Title <span className="req">*</span>
+                </label>
+                <input
+                  id="concentration-title"
+                  type="text"
+                  value={concentrationDraft.title}
+                  onChange={(e) =>
+                    setConcentrationDraft((d) => ({ ...d, title: e.target.value }))
+                  }
+                  placeholder="Software Development"
+                />
+              </div>
+              <div className="field field--full">
+                <label htmlFor="concentration-description">Description</label>
+                <RichTextEditor
+                  content={concentrationDraft.description}
+                  onChange={(html) =>
+                    setConcentrationDraft((d) => ({ ...d, description: html }))
+                  }
+                  placeholder="Learn modern programming languages and frameworks..."
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="modal__foot">
+            <button
+              type="button"
+              className="admin-btn"
+              onClick={closeConcentrationModal}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="admin-btn admin-btn--primary"
+              onClick={saveConcentration}
+              disabled={!concentrationDraft.title.trim()}
+            >
+              {concentrationModal?.mode === "edit" ? "Update" : "Add"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={admissionModal !== null}
+        onOpenChange={(open) => !open && closeAdmissionModal()}
+      >
+        <DialogContent
+          showCloseButton={false}
+          className="news-modal w-[min(100%,520px)] sm:max-w-[520px] max-h-[90vh] overflow-y-auto flex flex-col gap-0 rounded-[16px] p-0 ring-0 outline-none"
+        >
+          <div className="modal__head">
+            <DialogTitle className="m-0 text-[1.05rem] font-normal">
+              {admissionModal?.mode === "edit"
+                ? "Edit Requirement"
+                : "Add Requirement"}
+            </DialogTitle>
+            <button
+              type="button"
+              className="admin-icon-btn"
+              aria-label="Close"
+              onClick={closeAdmissionModal}
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="modal__body">
+            <div className="form-grid">
+              <div className="field field--full">
+                <label htmlFor="admission-title">
+                  Title <span className="req">*</span>
+                </label>
+                <input
+                  id="admission-title"
+                  type="text"
+                  value={admissionDraft.title}
+                  onChange={(e) =>
+                    setAdmissionDraft((d) => ({ ...d, title: e.target.value }))
+                  }
+                  placeholder="Minimum 12 years of formal schooling"
+                />
+              </div>
+              <div className="field field--full">
+                <label htmlFor="admission-detail">Detail</label>
+                <RichTextEditor
+                  content={admissionDraft.detail}
+                  onChange={(html) =>
+                    setAdmissionDraft((d) => ({ ...d, detail: html }))
+                  }
+                  placeholder="10+2, A-Level, or equivalent..."
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="modal__foot">
+            <button
+              type="button"
+              className="admin-btn"
+              onClick={closeAdmissionModal}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="admin-btn admin-btn--primary"
+              onClick={saveAdmission}
+              disabled={!admissionDraft.title.trim()}
+            >
+              {admissionModal?.mode === "edit" ? "Update" : "Add"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={semesterModal !== null}
+        onOpenChange={(open) => !open && closeSemesterModal()}
+      >
+        <DialogContent
+          showCloseButton={false}
+          className="news-modal w-[min(100%,640px)] sm:max-w-[640px] max-h-[90vh] overflow-y-auto flex flex-col gap-0 rounded-[16px] p-0 ring-0 outline-none"
+        >
+          <div className="modal__head">
+            <DialogTitle className="m-0 text-[1.05rem] font-normal">
+              {semesterModal?.mode === "edit"
+                ? "Edit Semester"
+                : "Add Semester"}
+            </DialogTitle>
+            <button
+              type="button"
+              className="admin-icon-btn"
+              aria-label="Close"
+              onClick={closeSemesterModal}
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="modal__body">
+            <div className="form-grid">
+              <div className="field field--full">
+                <label htmlFor="semester-label">
+                  Semester Label <span className="req">*</span>
+                </label>
+                <input
+                  id="semester-label"
+                  type="text"
+                  value={semesterDraft.label}
+                  onChange={(e) =>
+                    setSemesterDraft((d) => ({ ...d, label: e.target.value }))
+                  }
+                  placeholder="Sem I"
+                />
+              </div>
+              <div className="field field--full">
+                <label>Courses</label>
+                {semesterDraft.courses.length === 0 ? (
+                  <p className="text-sm text-[var(--admin-muted)]">
+                    No courses yet. Click &quot;Add Course&quot; to add one.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {semesterDraft.courses.map((course, courseIdx) => (
+                      <div
+                        key={`draft-course-${courseIdx}`}
+                        className="pp-course-grid"
+                      >
+                        <input
+                          type="text"
+                          value={course.code}
+                          onChange={(e) =>
+                            updateSemesterCourse(courseIdx, "code", e.target.value)
+                          }
+                          placeholder="CSC 101"
+                        />
+                        <input
+                          type="text"
+                          value={course.description}
+                          onChange={(e) =>
+                            updateSemesterCourse(courseIdx, "description", e.target.value)
+                          }
+                          placeholder="Introduction to Computer Science"
+                        />
+                        <input
+                          type="text"
+                          value={course.credits}
+                          onChange={(e) =>
+                            updateSemesterCourse(courseIdx, "credits", e.target.value)
+                          }
+                          placeholder="3"
+                        />
+                        <RemoveButton
+                          onClick={() => removeSemesterCourse(courseIdx)}
+                          label={`Remove course ${courseIdx + 1}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <AddButton onClick={addSemesterCourse}>
+                  Add Course
+                </AddButton>
+              </div>
+            </div>
+          </div>
+
+          <div className="modal__foot">
+            <button
+              type="button"
+              className="admin-btn"
+              onClick={closeSemesterModal}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="admin-btn admin-btn--primary"
+              onClick={saveSemester}
+              disabled={!semesterDraft.label.trim()}
+            >
+              {semesterModal?.mode === "edit" ? "Update" : "Add"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </form>
   );
 }

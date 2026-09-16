@@ -481,7 +481,13 @@ export default async function ProgramPage({
                             marginTop: "0.2rem",
                           }}
                         >
-                          {c.description}
+                          {/<[a-zA-Z][^>]*>/.test(c.description || "") ? (
+                            <span
+                              dangerouslySetInnerHTML={{ __html: c.description }}
+                            />
+                          ) : (
+                            c.description
+                          )}
                         </p>
                       </div>
                     </li>
@@ -541,7 +547,11 @@ export default async function ProgramPage({
                             marginTop: "0.2rem",
                           }}
                         >
-                          {req.detail}
+                          {/<[a-zA-Z][^>]*>/.test(req.detail || "") ? (
+                            <span dangerouslySetInnerHTML={{ __html: req.detail }} />
+                          ) : (
+                            req.detail
+                          )}
                         </p>
                       </div>
                     </li>
@@ -644,7 +654,17 @@ export default async function ProgramPage({
                 {displayData.curriculumSection.title}
               </h2>
               <p className="section-sub">
-                {displayData.curriculumSection.description}
+                {/<[a-zA-Z][^>]*>/.test(
+                  displayData.curriculumSection.description || ""
+                ) ? (
+                  <span
+                    dangerouslySetInnerHTML={{
+                      __html: displayData.curriculumSection.description,
+                    }}
+                  />
+                ) : (
+                  displayData.curriculumSection.description
+                )}
               </p>
             </div>
             <div style={{ marginTop: "2.2rem" }}>
