@@ -450,7 +450,15 @@ export default async function ProgramPage({
                                 marginTop: "0.2rem",
                               }}
                             >
-                              {item.description}
+                              {/<[a-zA-Z][^>]*>/.test(item.description || "") ? (
+                                <span
+                                  dangerouslySetInnerHTML={{
+                                    __html: item.description,
+                                  }}
+                                />
+                              ) : (
+                                item.description
+                              )}
                             </p>
                           </div>
                         </li>
@@ -708,7 +716,17 @@ export default async function ProgramPage({
                   {displayData.coordinator.role}
                 </div>
                 <p className="leader-card__text">
-                  {displayData.coordinator.quote}
+                  {/<[a-zA-Z][^>]*>/.test(
+                    displayData.coordinator.quote || ""
+                  ) ? (
+                    <span
+                      dangerouslySetInnerHTML={{
+                        __html: displayData.coordinator.quote,
+                      }}
+                    />
+                  ) : (
+                    displayData.coordinator.quote
+                  )}
                 </p>
                 <Link
                   className="link-arrow"
