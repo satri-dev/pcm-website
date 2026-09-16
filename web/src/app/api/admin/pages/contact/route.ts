@@ -5,7 +5,14 @@ import { getDb } from "@/core/lib/db";
 import { PAGE_CONTENT_COLLECTION } from "@/types/page-content";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 
-const CONTACT_SECTIONS = ["hero", "details", "form", "map", "cta", "seo"] as const;
+const CONTACT_SECTIONS = [
+  "hero",
+  "contactDetails",
+  "contactForm",
+  "mapEmbed",
+  "cta",
+  "seo",
+] as const;
 
 export async function PUT(request: NextRequest) {
   const guard = await requireApiSession(["admin", "editor"]);

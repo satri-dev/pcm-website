@@ -97,6 +97,7 @@ export interface ProgramPageContent {
       secondary: CtaButton;
     };
   };
+  seo: { title: string; description: string; keywords: string[] };
 }
 
 interface SectionMeta {
@@ -116,6 +117,7 @@ const SECTIONS: SectionMeta[] = [
   { id: "coordinator", title: "Program Coordinator", desc: "Coordinator profile card" },
   { id: "growth", title: "Growth Section", desc: "How students grow at PCM" },
   { id: "callout", title: "Callout & CTA", desc: "Bottom callout and CTA boxes" },
+  { id: "seo", title: "SEO & Metadata", desc: "Title, description and keywords" },
 ];
 
 const ALL_SECTION_IDS = SECTIONS.map((s) => s.id);
@@ -158,6 +160,8 @@ function isSectionFilled(id: string, f: ProgramPageContent): boolean {
       return Boolean(
         f.callout.title || f.callout.body || f.cta.title || f.cta.body
       );
+    case "seo":
+      return Boolean(f.seo.title || f.seo.description || f.seo.keywords.length > 0);
     default:
       return false;
   }
@@ -415,7 +419,11 @@ function stripHtml(html: string): string {
     .trim();
 }
 
-function defaults(initialContent: Partial<ProgramPageContent>): ProgramPageContent {
+function defaults(
+  initialContent: Partial<ProgramPageContent>,
+  program?: Program
+): ProgramPageContent {
+  const cachedTitle = program?.name?.toLowerCase();
   return {
     hero: { tagline: initialContent?.hero?.tagline ?? "" },
     overview: {
@@ -480,6 +488,29 @@ function defaults(initialContent: Partial<ProgramPageContent>): ProgramPageConte
         },
       },
     },
+    seo: {
+      title:
+        initialContent?.seo?.title ||
+        (program?.name
+          ? `${program.name} | Pokhara College of Management`
+          : ""),
+      description:
+        initialContent?.seo?.description ||
+        (program?.name
+          ? `${program.name} at Pokhara College of Management — overview, curriculum, admission requirements and career opportunities.`
+          : ""),
+      keywords:
+        initialContent?.seo?.keywords?.length && initialContent.seo.keywords.length > 0
+          ? initialContent.seo.keywords
+          : [
+              cachedTitle,
+              program?.code ? program.code.toLowerCase() : "",
+              `${cachedTitle} in Pokhara`,
+              "Pokhara College of Management",
+              "PCM Pokhara",
+              "Pokhara University",
+            ].filter((k): k is string => Boolean(k)),
+    },
   };
 }
 
@@ -499,7 +530,9 @@ export default function ProgramPageEditor({
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set() // All sections collapsed initially
   );
-  const [formData, setFormData] = useState<ProgramPageContent>(() => defaults(initialContent));
+  const [formData, setFormData] = useState<ProgramPageContent>(() =>
+    defaults(initialContent, program)
+  );
 
   const update = (next: ProgramPageContent | ((prev: ProgramPageContent) => ProgramPageContent)) => {
     setDirty(true);
@@ -585,6 +618,8 @@ export default function ProgramPageEditor({
         return { growthSection: f.growthSection };
       case "callout":
         return { callout: f.callout, cta: { title: f.cta.title, body: f.cta.body } };
+      case "seo":
+        return { seo: f.seo };
       default:
         return {};
     }
@@ -1769,6 +1804,70 @@ export default function ProgramPageEditor({
                 />
               </Field>
             </SubSection>
+          </CollapsibleSection>
+
+          <CollapsibleSection
+            number={11}
+            id="seo"
+            title={SECTIONS[10].title}
+            desc={SECTIONS[10].desc}
+            isExpanded={expandedSections.has("seo")}
+            isFilled={filledSections[10]}
+            onToggle={() => toggleSection("seo")}
+            footer={
+              <SectionSaveButton
+                id="seo"
+                saving={savingSection === "seo"}
+                error={sectionErrors.seo}
+                onSave={saveSection}
+              />
+            }
+          >
+            <div className="space-y-4">
+              <Field label="SEO Title" className="field--full">
+                <input
+                  type="text"
+                  value={formData.seo.title}
+                  onChange={(e) => update((f) => ({ ...f, seo: { ...f.seo, title: e.target.value } }))}
+                  placeholder={`${program.name} | Pokhara College of Management`}
+                  maxLength={60}
+                />
+                <p className="text-xs text-[var(--admin-muted)] mt-1">
+                  {formData.seo.title.length}/60 characters (recommended: 50–60)
+                </p>
+              </Field>
+              <Field label="Meta Description" className="field--full">
+                <textarea
+                  rows={3}
+                  value={formData.seo.description}
+                  onChange={(e) => update((f) => ({ ...f, seo: { ...f.seo, description: e.target.value } }))}
+                  placeholder={`Discover the ${program.name} program at Pokhara College of Management — overview, curriculum, admission and career opportunities.`}
+                  maxLength={160}
+                />
+                <p className="text-xs text-[var(--admin-muted)] mt-1">
+                  {formData.seo.description.length}/160 characters (recommended: 150–160)
+                </p>
+              </Field>
+              <Field label="Keywords (comma-separated)" className="field--full">
+                <input
+                  type="text"
+                  value={formData.seo.keywords.join(", ")}
+                  onChange={(e) =>
+                    update((f) => ({
+                      ...f,
+                      seo: {
+                        ...f.seo,
+                        keywords: e.target.value.split(",").map((k) => k.trim()).filter(Boolean),
+                      },
+                    }))
+                  }
+                  placeholder={`${program.code?.toLowerCase()}, ${program.name?.toLowerCase()}, PCM Pokhara, Pokhara University`}
+                />
+                <p className="text-xs text-[var(--admin-muted)] mt-1">
+                  {formData.seo.keywords.length} keywords (recommended: 5–10)
+                </p>
+              </Field>
+            </div>
           </CollapsibleSection>
         </div>
 

@@ -293,21 +293,6 @@ export default function ApplicationFormSection({
                   )}
                 </div>
               ))}
-              <button
-                type="button"
-                onClick={() =>
-                  setContent((prev) => ({
-                    ...prev,
-                    applicationForm: {
-                      ...prev.applicationForm,
-                      stepLabels: [...prev.applicationForm.stepLabels, "New Step"],
-                    },
-                  }))
-                }
-                className="h-9 px-3 inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg border border-dashed border-blue-300 transition"
-              >
-                <Plus size={15} /> Add Step
-              </button>
             </div>
             <p className="mt-2 text-xs text-slate-400">
               These labels appear in the multi-step navigation at the top of the admission form.
