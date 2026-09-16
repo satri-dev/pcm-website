@@ -638,6 +638,14 @@
   margin: 0.75rem 0;
 }
 
+.ProseMirror ul {
+  list-style: disc;
+}
+
+.ProseMirror ol {
+  list-style: decimal;
+}
+
 .ProseMirror li {
   margin: 0.25rem 0;
 }

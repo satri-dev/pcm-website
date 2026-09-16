@@ -379,13 +379,16 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
                 <div className="w-11 h-11 rounded-full bg-[#16285B] text-white flex items-center justify-center font-bold text-sm shrink-0">{s.number}</div>
                 <div>
                   <h3 className="font-bold text-gray-900 mb-1">{s.title}</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">
-                    {/<[a-zA-Z][^>]*>/.test(s.description || "") ? (
-                      <span dangerouslySetInnerHTML={{ __html: s.description }} />
-                    ) : (
-                      s.description
-                    )}
-                  </p>
+                  {/<[a-zA-Z][^>]*>/.test(s.description || "") ? (
+                    <div
+                      className="text-gray-600 text-sm leading-relaxed rich-body"
+                      dangerouslySetInnerHTML={{ __html: s.description }}
+                    />
+                  ) : (
+                    <p className="text-gray-600 text-sm leading-relaxed">
+                      {s.description}
+                    </p>
+                  )}
                 </div>
               </div>
             ))}
@@ -405,6 +408,7 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
                 <p className="text-gray-600 mt-3 max-w-2xl">
                   {/<[a-zA-Z][^>]*>/.test(content.applyOptions.description || "") ? (
                     <span
+                      className="rich-body"
                       dangerouslySetInnerHTML={{
                         __html: content.applyOptions.description,
                       }}
@@ -421,6 +425,7 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
                   <p className="text-gray-600 text-sm mb-4">
                     {/<[a-zA-Z][^>]*>/.test(content.applyOptions.onlineOption.description || "") ? (
                       <span
+                        className="rich-body"
                         dangerouslySetInnerHTML={{
                           __html: content.applyOptions.onlineOption.description,
                         }}
@@ -437,6 +442,7 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
                   <p className="text-gray-600 text-sm mb-4">
                     {/<[a-zA-Z][^>]*>/.test(content.applyOptions.offlineOption.description || "") ? (
                       <span
+                        className="rich-body"
                         dangerouslySetInnerHTML={{
                           __html: content.applyOptions.offlineOption.description,
                         }}
@@ -808,6 +814,7 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
             <p className="text-sm text-gray-600">
               {/<[a-zA-Z][^>]*>/.test(content.needHelp.description || "") ? (
                 <span
+                  className="rich-body"
                   dangerouslySetInnerHTML={{ __html: content.needHelp.description }}
                 />
               ) : (
@@ -833,6 +840,7 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
                 <p className="max-w-[56ch] max-md:mx-auto" style={{ color: "rgba(255,255,255,0.72)" }}>
                   {/<[a-zA-Z][^>]*>/.test(content.cta.description || "") ? (
                     <span
+                      className="rich-body"
                       dangerouslySetInnerHTML={{ __html: content.cta.description }}
                     />
                   ) : (
