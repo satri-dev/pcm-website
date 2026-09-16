@@ -105,7 +105,7 @@ export interface ProgramsPageContent {
       };
       overview?: {
         title: string;
-        body: string[];
+        body: string; // HTML body (rich text editor output)
       };
       concentrations?: Array<{
         title: string;
