@@ -95,8 +95,14 @@ export interface ProgramsPageContent {
     description: string;
     visiblePrograms: string[];
   };
-  featuredProgramRefs: string[]; // Array of program slugs (NOT full program objects)
-  
+featuredProgramRefs: string[]; // Array of program slugs (NOT full program objects)
+
+  seo?: {
+    title: string;
+    description: string;
+    keywords: string[];
+  };
+
   // Per-program page content (keyed by slug)
   programPages?: {
     [slug: string]: {
@@ -179,6 +185,11 @@ export interface ProgramsPageContent {
           };
         };
       };
+      seo?: {
+        title: string;
+        description: string;
+        keywords: string[];
+      };
     };
   };
 }
@@ -197,6 +208,7 @@ export const PROGRAMS_PAGE_SCHEMA = {
   },
   cta: { heading: "editable", body: "editable", phone: "editable" },
   featuredProgramRefs: "editable", // Admin can reorder/select which programs to feature
+  seo: { title: "editable", description: "editable", keywords: "editable" },
   programPages: "editable", // Per-program page content
 } as const;
 

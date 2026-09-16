@@ -85,6 +85,11 @@ const ctaSchema = z.object({
     }).optional(),
   }).optional(),
 });
+const seoSchema = z.object({
+  title: z.string().optional(),
+  description: z.string().optional(),
+  keywords: z.array(z.string()).optional(),
+});
 
 const contentSchema = z.object({
   hero: heroSchema.optional(),
@@ -100,6 +105,7 @@ const contentSchema = z.object({
   growthSection: growthSectionSchema.optional(),
   callout: calloutSchema.optional(),
   cta: ctaSchema.optional(),
+  seo: seoSchema.optional(),
 });
 
 const updateSchema = z.object({

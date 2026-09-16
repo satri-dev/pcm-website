@@ -379,7 +379,13 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
                 <div className="w-11 h-11 rounded-full bg-[#16285B] text-white flex items-center justify-center font-bold text-sm shrink-0">{s.number}</div>
                 <div>
                   <h3 className="font-bold text-gray-900 mb-1">{s.title}</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">{s.description}</p>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    {/<[a-zA-Z][^>]*>/.test(s.description || "") ? (
+                      <span dangerouslySetInnerHTML={{ __html: s.description }} />
+                    ) : (
+                      s.description
+                    )}
+                  </p>
                 </div>
               </div>
             ))}
@@ -396,19 +402,49 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
               <div className="mb-8">
                 <span className="text-[0.74rem] tracking-[0.2em] uppercase font-semibold text-[#21409a]">{content.applyOptions.eyebrow}</span>
                 <h2 className="text-[clamp(1.6rem,3vw,2.2rem)] mt-2 font-semibold text-gray-900">{content.applyOptions.heading}</h2>
-                <p className="text-gray-600 mt-3 max-w-2xl">{content.applyOptions.description}</p>
+                <p className="text-gray-600 mt-3 max-w-2xl">
+                  {/<[a-zA-Z][^>]*>/.test(content.applyOptions.description || "") ? (
+                    <span
+                      dangerouslySetInnerHTML={{
+                        __html: content.applyOptions.description,
+                      }}
+                    />
+                  ) : (
+                    content.applyOptions.description
+                  )}
+                </p>
               </div>
               <div className="grid sm:grid-cols-2 gap-5">
                 <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
                   <div className="w-12 h-12 rounded-xl bg-[#f0f4ff] flex items-center justify-center mb-4"><Search className="w-6 h-6 text-[#16285B]" /></div>
                   <h3 className="font-bold text-gray-900 mb-2">{content.applyOptions.onlineOption.title}</h3>
-                  <p className="text-gray-600 text-sm mb-4">{content.applyOptions.onlineOption.description}</p>
+                  <p className="text-gray-600 text-sm mb-4">
+                    {/<[a-zA-Z][^>]*>/.test(content.applyOptions.onlineOption.description || "") ? (
+                      <span
+                        dangerouslySetInnerHTML={{
+                          __html: content.applyOptions.onlineOption.description,
+                        }}
+                      />
+                    ) : (
+                      content.applyOptions.onlineOption.description
+                    )}
+                  </p>
                   <a href="#apply-form" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#16285B] text-white font-semibold text-sm hover:bg-[#1e3a7a] transition-colors">{content.applyOptions.onlineOption.buttonText} <ArrowRight className="w-4 h-4" /></a>
                 </div>
                 <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
                   <div className="w-12 h-12 rounded-xl bg-[#f0f4ff] flex items-center justify-center mb-4"><Upload className="w-6 h-6 text-[#16285B]" /></div>
                   <h3 className="font-bold text-gray-900 mb-2">{content.applyOptions.offlineOption.title}</h3>
-                  <p className="text-gray-600 text-sm mb-4">{content.applyOptions.offlineOption.description}</p>
+                  <p className="text-gray-600 text-sm mb-4">
+                    {/<[a-zA-Z][^>]*>/.test(content.applyOptions.offlineOption.description || "") ? (
+                      <span
+                        dangerouslySetInnerHTML={{
+                          __html: content.applyOptions.offlineOption.description,
+                        }}
+                      />
+                    ) : (
+                      content.applyOptions.offlineOption.description
+                    )}
+                  </p>
                   <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-300 text-gray-600 font-semibold text-sm hover:bg-gray-50 transition-colors cursor-pointer">{content.applyOptions.offlineOption.buttonText} <Upload className="w-4 h-4" /></span>
                 </div>
               </div>
@@ -770,7 +806,13 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
           <div className="bg-[#f0f4ff] rounded-xl p-5 mt-6">
             <h4 className="font-bold text-gray-900 text-sm mb-1">{content.needHelp.heading}</h4>
             <p className="text-sm text-gray-600">
-              {content.needHelp.description}{' '}
+              {/<[a-zA-Z][^>]*>/.test(content.needHelp.description || "") ? (
+                <span
+                  dangerouslySetInnerHTML={{ __html: content.needHelp.description }}
+                />
+              ) : (
+                content.needHelp.description
+              )}{' '}
               <a href={`mailto:${content.needHelp.email}`} className="text-[#16285B] font-semibold">{content.needHelp.email}</a>
               {' '}or call {content.needHelp.phone}.
             </p>
@@ -788,7 +830,15 @@ export default function AdmissionClient({ content }: AdmissionClientProps) {
               <div>
                 <span className="inline-flex items-center gap-2 text-[0.74rem] tracking-[0.2em] uppercase text-[#51B747]">{content.cta.eyebrow}</span>
                 <h2 className="text-[clamp(1.6rem,3vw,2.2rem)] mt-2 mb-2 font-semibold">{content.cta.heading}</h2>
-                <p className="max-w-[56ch] max-md:mx-auto" style={{ color: "rgba(255,255,255,0.72)" }}>{content.cta.description}</p>
+                <p className="max-w-[56ch] max-md:mx-auto" style={{ color: "rgba(255,255,255,0.72)" }}>
+                  {/<[a-zA-Z][^>]*>/.test(content.cta.description || "") ? (
+                    <span
+                      dangerouslySetInnerHTML={{ __html: content.cta.description }}
+                    />
+                  ) : (
+                    content.cta.description
+                  )}
+                </p>
               </div>
               <div className="flex flex-wrap gap-3.5 max-md:justify-center">
                 <a href={content.cta.primaryButtonLink} className="inline-flex items-center gap-1.5 px-7 py-3.5 rounded-[14px] font-bold text-[0.98rem] bg-[#51B747] text-[#16285b] hover:bg-[#3f9e35] hover:-translate-y-1 hover:shadow-[0_14px_34px_rgba(81,183,71,0.28)] transition-all">{content.cta.primaryButtonText} <ArrowRight className="w-4 h-4" /></a>

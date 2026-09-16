@@ -68,31 +68,36 @@ export async function generateMetadata({
     dbProgram?.image || programPage?.hero?.image || "/images/hero-1.jpg";
   const canonical = getCanonicalUrl(`/programs/${slug}`);
 
-  // SEO keywords
-  const keywords = [
-    name,
-    `${name} in Pokhara`,
-    `${dbProgram?.code || ""} Pokhara`,
-    "Pokhara College of Management",
-    "PCM Pokhara",
-    "Pokhara University",
-  ].filter(Boolean);
+  // SEO keywords — use admin overrides when present
+  const seoKeywords = programPage?.seo?.keywords?.length
+    ? programPage.seo.keywords
+    : [
+        name,
+        `${name} in Pokhara`,
+        `${dbProgram?.code || ""} Pokhara`,
+        "Pokhara College of Management",
+        "PCM Pokhara",
+        "Pokhara University",
+      ].filter(Boolean);
+
+  const seoTitle = programPage?.seo?.title || `${name} | Programs | PCM Pokhara`;
+  const seoDescription = programPage?.seo?.description || intro;
 
   return {
-    title: `${name} | Programs | PCM Pokhara`,
-    description: intro,
-    keywords,
+    title: seoTitle,
+    description: seoDescription,
+    keywords: seoKeywords,
     alternates: { canonical },
     openGraph: createOpenGraphMetadata({
-      title: name,
-      description: intro,
+      title: programPage?.seo?.title || name,
+      description: seoDescription,
       url: canonical,
       image,
       type: "website",
     }),
     twitter: createTwitterMetadata({
-      title: name,
-      description: intro,
+      title: programPage?.seo?.title || name,
+      description: seoDescription,
       image,
     }),
   };

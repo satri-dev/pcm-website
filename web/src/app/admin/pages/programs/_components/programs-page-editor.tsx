@@ -45,13 +45,14 @@ const SECTIONS = [
     title: "Comparison Table",
     desc: "Heading, column headers and program data",
   },
-  {
-    id: "coordinators",
-    title: "Coordinators Section",
-    desc: "Section visibility, eyebrow, heading and description",
-  },
-  { id: "cta", title: "Call-to-Action", desc: "CTA heading, body and phone" },
-];
+{
+      id: "coordinators",
+      title: "Coordinators Section",
+      desc: "Section visibility, eyebrow, heading and description",
+    },
+    { id: "cta", title: "Call-to-Action", desc: "CTA heading, body and phone" },
+    { id: "seo", title: "SEO & Metadata", desc: "Title, description and keywords" },
+  ];
 const ALL_SECTION_IDS = SECTIONS.map((s) => s.id);
 
 // Maps a UI section id to the key it lives under in ProgramsPageContent
@@ -62,6 +63,7 @@ const SECTION_TO_KEY: Record<string, keyof ProgramsPageContent> = {
   comparison: "comparisonTable",
   coordinators: "coordinators",
   cta: "cta",
+  seo: "seo",
 };
 
 export default function ProgramsPageEditor({
@@ -142,6 +144,23 @@ export default function ProgramsPageEditor({
         content.cta?.body ||
         "Apply online in minutes, or reach out and we'll guide you through every step.",
       phone: content.cta?.phone || "(061) 544761",
+    },
+    seo: {
+      title:
+        content.seo?.title || "Programs | BBA, BBA-Finance & BCSIT at PCM Pokhara",
+      description:
+        content.seo?.description ||
+        "Explore BBA, BBA-Finance and BCSIT degrees at Pokhara College of Management, affiliated to Pokhara University.",
+      keywords: content.seo?.keywords || [
+        "programs",
+        "bachelor programs pokhara",
+        "bca pokhara",
+        "bba pokhara",
+        "bba finance pokhara",
+        "bcsit pokhara",
+        "pokhara college of management",
+        "pcm pokhara",
+      ],
     },
     featuredProgramRefs: content.featuredProgramRefs || [
       "bcsit",
@@ -1099,6 +1118,117 @@ export default function ProgramsPageEditor({
                 id="cta"
                 saving={savingSection === "cta"}
                 error={sectionErrors.cta}
+                onSave={saveSection}
+              />
+            </div>
+          )}
+        </section>
+
+        {/* SEO & Metadata - EDITABLE */}
+        <section
+          className={`pp-section ${expandedSections.has("seo") ? "is-expanded" : ""}`}
+        >
+          <button
+            type="button"
+            className="pp-section__toggle"
+            aria-expanded={expandedSections.has("seo")}
+            onClick={() => toggleSection("seo")}
+          >
+            <span className="pp-section__num">7</span>
+            <span className="pp-section__text">
+              <span className="pp-section__title">SEO & Metadata</span>
+              <span className="pp-section__desc">
+                Title, description and keywords
+              </span>
+            </span>
+            <span className="badge badge--green">Editable</span>
+            <span className="pp-section__chevron">
+              <ChevronDown size={18} />
+            </span>
+          </button>
+          {expandedSections.has("seo") && (
+            <div className="pp-section__body">
+              <div className="form-grid">
+                <div className="field field--full">
+                  <label htmlFor="seo-title">SEO Title</label>
+                  <input
+                    id="seo-title"
+                    type="text"
+                    value={formData.seo?.title ?? ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        seo: {
+                          title: e.target.value,
+                          description: formData.seo?.description ?? "",
+                          keywords: formData.seo?.keywords ?? [],
+                        },
+                      })
+                    }
+                    placeholder="Programs | BBA, BBA-Finance & BCSIT at PCM Pokhara"
+                    maxLength={60}
+                  />
+                  <span className="hint">
+                    {formData.seo?.title.length ?? 0}/60 characters (recommended:
+                    50-60)
+                  </span>
+                </div>
+                <div className="field field--full">
+                  <label htmlFor="seo-description">Meta Description</label>
+                  <textarea
+                    id="seo-description"
+                    rows={3}
+                    value={formData.seo?.description ?? ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        seo: {
+                          title: formData.seo?.title ?? "",
+                          description: e.target.value,
+                          keywords: formData.seo?.keywords ?? [],
+                        },
+                      })
+                    }
+                    placeholder="Explore BBA, BBA-Finance and BCSIT degrees at Pokhara College of Management, affiliated to Pokhara University."
+                    maxLength={160}
+                  />
+                  <span className="hint">
+                    {formData.seo?.description.length ?? 0}/160 characters
+                    (recommended: 150-160)
+                  </span>
+                </div>
+                <div className="field field--full">
+                  <label htmlFor="seo-keywords">
+                    Keywords (comma-separated)
+                  </label>
+                  <input
+                    id="seo-keywords"
+                    type="text"
+                    value={(formData.seo?.keywords ?? []).join(", ")}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        seo: {
+                          title: formData.seo?.title ?? "",
+                          description: formData.seo?.description ?? "",
+                          keywords: e.target.value
+                            .split(",")
+                            .map((k) => k.trim())
+                            .filter(Boolean),
+                        },
+                      })
+                    }
+                    placeholder="programs, bba pokhara, bcsit pokhara, pcm"
+                  />
+                  <span className="hint">
+                    {formData.seo?.keywords.length ?? 0} keywords (recommended: 5-10)
+                  </span>
+                </div>
+              </div>
+              <SectionSaveButton
+                id="seo"
+                saving={savingSection === "seo"}
+                error={sectionErrors.seo}
                 onSave={saveSection}
               />
             </div>
