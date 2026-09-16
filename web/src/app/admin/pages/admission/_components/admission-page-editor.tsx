@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import type { AdmissionPageContent } from "@/types/page-content";
 import ImageUpload from "@/components/cloudinary/ImageUpload";
 import ApplicationFormSection from "./application-form-section";
+import { SectionSaveButton } from "@/app/admin/pages/_components/section-save-button";
 
 interface AdmissionPageEditorProps {
   initialContent: AdmissionPageContent;
@@ -25,9 +26,57 @@ const SECTIONS = [
 ];
 const ALL_SECTION_IDS = SECTIONS.map((s) => s.id);
 
+// Maps a UI section id to the key it lives under in AdmissionPageContent
+const UI_TO_KEY: Record<string, keyof AdmissionPageContent> = {
+  hero: "hero",
+  process: "admissionProcess",
+  apply: "applyOptions",
+  documents: "requiredDocuments",
+  form: "applicationForm",
+  bank: "bankDetails",
+  success: "successMessage",
+  needhelp: "needHelp",
+  cta: "cta",
+  seo: "seo",
+};
+
+const slugify = (label: string) =>
+  label
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, "")
+    .trim()
+    .replace(/\s+/g, "_");
+
+function normalizeApplicationForm(
+  applicationForm: AdmissionPageContent["applicationForm"],
+): AdmissionPageContent["applicationForm"] {
+  return {
+    ...applicationForm,
+    personalInfoFields: applicationForm.personalInfoFields.map((f, i) => ({
+      ...f,
+      id: slugify(f.label) || f.id,
+      order: i + 1,
+    })),
+    contactInfoFields: applicationForm.contactInfoFields.map((f, i) => ({
+      ...f,
+      id: slugify(f.label) || f.id,
+      order: i + 1,
+    })),
+    academicInfoFields: applicationForm.academicInfoFields.map((f, i) => ({
+      ...f,
+      id: slugify(f.label) || f.id,
+      order: i + 1,
+    })),
+  };
+}
+
 export default function AdmissionPageEditor({ initialContent }: AdmissionPageEditorProps) {
   const [content, setContent] = useState<AdmissionPageContent>(initialContent);
   const [saving, setSaving] = useState(false);
+  const [savingSection, setSavingSection] = useState<string | null>(null);
+  const [sectionErrors, setSectionErrors] = useState<Record<string, string>>(
+    {},
+  );
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
   const toggleSection = (id: string) => {
@@ -52,33 +101,9 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
     setSaving(true);
 
     try {
-      const slugify = (label: string) =>
-        label
-          .toLowerCase()
-          .replace(/[^a-z0-9\s]/g, "")
-          .trim()
-          .replace(/\s+/g, "_");
-
       const contentToSave = {
         ...content,
-        applicationForm: {
-          ...content.applicationForm,
-          personalInfoFields: content.applicationForm.personalInfoFields.map((f, i) => ({
-            ...f,
-            id: slugify(f.label) || f.id,
-            order: i + 1,
-          })),
-          contactInfoFields: content.applicationForm.contactInfoFields.map((f, i) => ({
-            ...f,
-            id: slugify(f.label) || f.id,
-            order: i + 1,
-          })),
-          academicInfoFields: content.applicationForm.academicInfoFields.map((f, i) => ({
-            ...f,
-            id: slugify(f.label) || f.id,
-            order: i + 1,
-          })),
-        },
+        applicationForm: normalizeApplicationForm(content.applicationForm),
       };
 
       const response = await fetch("/api/admin/pages/admission", {
@@ -99,6 +124,42 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
       toast.error(error instanceof Error ? error.message : "Failed to save changes");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const saveSection = async (sectionId: string) => {
+    const dataKey = UI_TO_KEY[sectionId];
+    const dataValue =
+      dataKey === "applicationForm"
+        ? normalizeApplicationForm(content.applicationForm)
+        : content[dataKey];
+
+    setSavingSection(sectionId);
+    setSectionErrors((prev) => ({ ...prev, [sectionId]: "" }));
+
+    try {
+      const response = await fetch("/api/admin/pages/admission", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ section: dataKey, content: dataValue }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to save");
+      }
+
+      setContent({ ...content, [dataKey]: dataValue });
+      const sectionTitle = SECTIONS.find((s) => s.id === sectionId)?.title;
+      toast.success(`${sectionTitle ?? "Section"} saved successfully!`);
+    } catch (error) {
+      const errorMsg =
+        error instanceof Error ? error.message : "Failed to save changes";
+      setSectionErrors((prev) => ({ ...prev, [sectionId]: errorMsg }));
+      console.error("Section save error:", error);
+      toast.error(errorMsg);
+    } finally {
+      setSavingSection(null);
     }
   };
 
@@ -253,6 +314,12 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
                 />
               </div>
             </div>
+            <SectionSaveButton
+              id="hero"
+              saving={savingSection === "hero"}
+              error={sectionErrors.hero}
+              onSave={saveSection}
+            />
           </div>
         )}
       </section>
@@ -347,6 +414,12 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
                 </div>
               </div>
             </div>
+            <SectionSaveButton
+              id="process"
+              saving={savingSection === "process"}
+              error={sectionErrors.process}
+              onSave={saveSection}
+            />
           </div>
         )}
       </section>
@@ -488,6 +561,12 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
                 </div>
               </div>
             </div>
+            <SectionSaveButton
+              id="apply"
+              saving={savingSection === "apply"}
+              error={sectionErrors.apply}
+              onSave={saveSection}
+            />
           </div>
         )}
       </section>
@@ -580,6 +659,12 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
                 </div>
               </div>
             </div>
+            <SectionSaveButton
+              id="documents"
+              saving={savingSection === "documents"}
+              error={sectionErrors.documents}
+              onSave={saveSection}
+            />
           </div>
         )}
       </section>
@@ -597,6 +682,12 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
         {expandedSections.has("form") && (
           <div className="pp-section__body">
             <ApplicationFormSection content={content} setContent={setContent} />
+            <SectionSaveButton
+              id="form"
+              saving={savingSection === "form"}
+              error={sectionErrors.form}
+              onSave={saveSection}
+            />
           </div>
         )}
       </section>
@@ -669,6 +760,12 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
                 />
               </div>
             </div>
+            <SectionSaveButton
+              id="bank"
+              saving={savingSection === "bank"}
+              error={sectionErrors.bank}
+              onSave={saveSection}
+            />
           </div>
         )}
       </section>
@@ -714,6 +811,12 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
                 />
               </div>
             </div>
+            <SectionSaveButton
+              id="success"
+              saving={savingSection === "success"}
+              error={sectionErrors.success}
+              onSave={saveSection}
+            />
           </div>
         )}
       </section>
@@ -771,6 +874,12 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
                 />
               </div>
             </div>
+            <SectionSaveButton
+              id="needhelp"
+              saving={savingSection === "needhelp"}
+              error={sectionErrors.needhelp}
+              onSave={saveSection}
+            />
           </div>
         )}
       </section>
@@ -867,6 +976,12 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
                 </div>
               </div>
             </div>
+            <SectionSaveButton
+              id="cta"
+              saving={savingSection === "cta"}
+              error={sectionErrors.cta}
+              onSave={saveSection}
+            />
           </div>
         )}
       </section>
@@ -958,6 +1073,12 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
                 </div>
               </div>
             </div>
+            <SectionSaveButton
+              id="seo"
+              saving={savingSection === "seo"}
+              error={sectionErrors.seo}
+              onSave={saveSection}
+            />
           </div>
         )}
       </section>
