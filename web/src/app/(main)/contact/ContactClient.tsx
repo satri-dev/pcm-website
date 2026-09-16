@@ -78,13 +78,17 @@ export default function ContactClient({ content }: ContactClientProps) {
           <div className="reveal">
             <span className="eyebrow">Contact details</span>
             <h2 className="section-title">{content.contactDetails.sectionHeading}</h2>
-            <p style={{ margin: "1rem 0 1.6rem" }}>
-              {/<[a-zA-Z][^>]*>/.test(content.contactDetails.sectionBody || "") ? (
-                <span dangerouslySetInnerHTML={{ __html: content.contactDetails.sectionBody }} />
-              ) : (
-                content.contactDetails.sectionBody
-              )}
-            </p>
+            {/<[a-zA-Z][^>]*>/.test(content.contactDetails.sectionBody || "") ? (
+              <div
+                className="rich-body"
+                style={{ margin: "1rem 0 1.6rem" }}
+                dangerouslySetInnerHTML={{ __html: content.contactDetails.sectionBody }}
+              />
+            ) : (
+              <p style={{ margin: "1rem 0 1.6rem" }}>
+                {content.contactDetails.sectionBody}
+              </p>
+            )}
             <div className="contact-info">
               {/* Address */}
               <div className="ci-item reveal">
