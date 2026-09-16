@@ -5,20 +5,51 @@ import { getDb } from "@/core/lib/db";
 import { PAGE_CONTENT_COLLECTION } from "@/types/page-content";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 
+const ADMISSION_SECTIONS = [
+  "hero",
+  "admissionProcess",
+  "applyOptions",
+  "requiredDocuments",
+  "applicationForm",
+  "bankDetails",
+  "successMessage",
+  "needHelp",
+  "cta",
+  "seo",
+];
+
 export async function PUT(request: NextRequest) {
   const guard = await requireApiSession(["admin", "editor"]);
   if (!guard.ok) return guard.response;
 
   try {
     const body = await request.json();
-    const { content } = body;
+    const { content, section } = body;
 
     if (!content) {
       return NextResponse.json({ error: "Content is required" }, { status: 400 });
     }
 
+    if (section && !ADMISSION_SECTIONS.includes(section)) {
+      return NextResponse.json(
+        { error: `Unknown section: ${section}` },
+        { status: 400 }
+      );
+    }
+
     const db = await getDb();
     const collection = db.collection(PAGE_CONTENT_COLLECTION);
+
+    let contentToSave = content;
+    if (section) {
+      // Partial save — merge only this section into the existing content so
+      // the rest of the admission page stays untouched.
+      const existing = await collection.findOne({ slug: "admission" });
+      contentToSave = {
+        ...(existing?.content || {}),
+        [section]: content,
+      };
+    }
 
     // Upsert the admission page content
     await collection.updateOne(
@@ -26,7 +57,7 @@ export async function PUT(request: NextRequest) {
       {
         $set: {
           slug: "admission",
-          content,
+          content: contentToSave,
           updatedAt: new Date(),
         },
         $setOnInsert: {

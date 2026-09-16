@@ -17,6 +17,8 @@ import {
 import { toast } from "sonner";
 import type { Program } from "@/types/programs";
 import ImageUpload from "@/components/cloudinary/ImageUpload";
+import { SectionSaveButton } from "@/app/admin/pages/_components/section-save-button";
+import RichTextEditor from "@/app/admin/_components/editor/rich-text-editor";
 
 /* ----------------------------------------------------------------
    Types
@@ -61,7 +63,7 @@ interface CtaButton {
 }
 export interface ProgramPageContent {
   hero: { tagline: string };
-  overview: { title: string; body: string[] };
+  overview: { title: string; body: string };
   concentrations: TextItem[];
   careers: string[];
   admissionRequirements: AdmissionItem[];
@@ -108,7 +110,7 @@ function isSectionFilled(id: string, f: ProgramPageContent): boolean {
     case "hero":
       return f.hero.tagline.trim().length > 0;
     case "overview":
-      return f.overview.title.trim().length > 0 || f.overview.body.length > 0;
+      return f.overview.title.trim().length > 0 || f.overview.body.trim().length > 0;
     case "concentrations":
       return f.concentrations.length > 0;
     case "careers":
@@ -307,6 +309,7 @@ function CollapsibleSection({
   isFilled,
   onToggle,
   children,
+  footer,
 }: {
   number: number;
   id: string;
@@ -316,6 +319,7 @@ function CollapsibleSection({
   isFilled: boolean;
   onToggle: () => void;
   children: React.ReactNode;
+  footer?: React.ReactNode;
 }) {
   return (
     <section className={`pp-section ${isExpanded ? "is-expanded" : ""}`} id={`section-${id}`}>
@@ -337,7 +341,12 @@ function CollapsibleSection({
           <ChevronDown size={18} />
         </span>
       </button>
-      {isExpanded && <div className="pp-section__body">{children}</div>}
+      {isExpanded && (
+        <div className="pp-section__body">
+          {children}
+          {footer}
+        </div>
+      )}
     </section>
   );
 }
@@ -401,12 +410,18 @@ interface ProgramPageEditorProps {
   initialContent?: Partial<ProgramPageContent>;
 }
 
+// Legacy content stored overview.body as an array of paragraphs; normalize to HTML.
+function normalizeOverviewBody(body: unknown): string {
+  if (Array.isArray(body)) return body.map((p) => `<p>${p}</p>`).join("");
+  return typeof body === "string" ? body : "";
+}
+
 function defaults(initialContent: Partial<ProgramPageContent>): ProgramPageContent {
   return {
     hero: { tagline: initialContent?.hero?.tagline ?? "" },
     overview: {
       title: initialContent?.overview?.title ?? "",
-      body: initialContent?.overview?.body ?? [],
+      body: normalizeOverviewBody(initialContent?.overview?.body ?? ""),
     },
     concentrations: initialContent?.concentrations ?? [],
     careers: initialContent?.careers ?? [],
@@ -475,6 +490,10 @@ export default function ProgramPageEditor({
 }: ProgramPageEditorProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
+  const [savingSection, setSavingSection] = useState<string | null>(null);
+  const [sectionErrors, setSectionErrors] = useState<Record<string, string>>(
+    {},
+  );
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
   const [dirty, setDirty] = useState(false);
@@ -534,6 +553,77 @@ export default function ProgramPageEditor({
       toast.error(errorMsg);
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Which data keys each section owns — used to save only that section.
+  const sectionPayload = (
+    id: string,
+    f: ProgramPageContent,
+  ): Record<string, unknown> => {
+    switch (id) {
+      case "hero":
+        return { hero: f.hero };
+      case "overview":
+        return { overview: f.overview };
+      case "concentrations":
+        return { concentrations: f.concentrations };
+      case "careers":
+        return { careers: f.careers };
+      case "admission":
+        return { admissionRequirements: f.admissionRequirements };
+      case "quickFacts":
+        return { quickFacts: f.quickFacts, cta: { buttons: f.cta.buttons } };
+      case "curriculum":
+        return {
+          curriculum: f.curriculum,
+          totalCredits: f.totalCredits,
+          curriculumSection: f.curriculumSection,
+        };
+      case "coordinator":
+        return { coordinator: f.coordinator };
+      case "growth":
+        return { growthSection: f.growthSection };
+      case "callout":
+        return { callout: f.callout, cta: { title: f.cta.title, body: f.cta.body } };
+      default:
+        return {};
+    }
+  };
+
+  const saveSection = async (sectionId: string) => {
+    setSavingSection(sectionId);
+    setSectionErrors((prev) => ({ ...prev, [sectionId]: "" }));
+    setError("");
+
+    try {
+      const res = await fetch(`/api/admin/pages/programs/${program.slug}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          programSlug: program.slug,
+          section: sectionId,
+          content: sectionPayload(sectionId, formData),
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `Save failed (HTTP ${res.status})`);
+      }
+
+      setDirty(false);
+      setSaved(true);
+      router.refresh();
+      const sectionTitle = SECTIONS.find((s) => s.id === sectionId)?.title;
+      toast.success(`${sectionTitle ?? "Section"} saved successfully!`);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Save failed";
+      setSectionErrors((prev) => ({ ...prev, [sectionId]: errorMsg }));
+      setError(errorMsg);
+      toast.error(errorMsg);
+    } finally {
+      setSavingSection(null);
     }
   };
 
@@ -598,6 +688,14 @@ export default function ProgramPageEditor({
             isExpanded={expandedSections.has("hero")}
             isFilled={filledSections[0]}
             onToggle={() => toggleSection("hero")}
+            footer={
+              <SectionSaveButton
+                id="hero"
+                saving={savingSection === "hero"}
+                error={sectionErrors.hero}
+                onSave={saveSection}
+              />
+            }
           >
             <Field
               label="Hero Tagline"
@@ -623,6 +721,14 @@ export default function ProgramPageEditor({
             isExpanded={expandedSections.has("overview")}
             isFilled={filledSections[1]}
             onToggle={() => toggleSection("overview")}
+            footer={
+              <SectionSaveButton
+                id="overview"
+                saving={savingSection === "overview"}
+                error={sectionErrors.overview}
+                onSave={saveSection}
+              />
+            }
           >
             <div className="form-grid">
               <Field label="Section Title" htmlFor="overview-title" className="field--full">
@@ -637,24 +743,19 @@ export default function ProgramPageEditor({
                 />
               </Field>
               <Field
-                label="Body Paragraphs (one per line)"
+                label="Body Paragraphs"
                 htmlFor="overview-body"
                 className="field--full"
               >
-                <textarea
-                  id="overview-body"
-                  rows={6}
-                  value={formData.overview.body.join("\n")}
-                  onChange={(e) =>
+                <RichTextEditor
+                  content={formData.overview.body}
+                  onChange={(html) =>
                     update((f) => ({
                       ...f,
-                      overview: {
-                        ...f.overview,
-                        body: e.target.value.split("\n").filter((p) => p.trim()),
-                      },
+                      overview: { ...f.overview, body: html },
                     }))
                   }
-                  placeholder="Enter each paragraph on a new line..."
+                  placeholder="Write the overview content..."
                 />
               </Field>
             </div>
@@ -668,6 +769,14 @@ export default function ProgramPageEditor({
             isExpanded={expandedSections.has("concentrations")}
             isFilled={filledSections[2]}
             onToggle={() => toggleSection("concentrations")}
+            footer={
+              <SectionSaveButton
+                id="concentrations"
+                saving={savingSection === "concentrations"}
+                error={sectionErrors.concentrations}
+                onSave={saveSection}
+              />
+            }
           >
             <div className="space-y-3">
               {formData.concentrations.map((conc, idx) => (
@@ -735,6 +844,14 @@ export default function ProgramPageEditor({
             isExpanded={expandedSections.has("careers")}
             isFilled={filledSections[3]}
             onToggle={() => toggleSection("careers")}
+            footer={
+              <SectionSaveButton
+                id="careers"
+                saving={savingSection === "careers"}
+                error={sectionErrors.careers}
+                onSave={saveSection}
+              />
+            }
           >
             <div className="space-y-3">
               {formData.careers.map((career, idx) => (
@@ -777,6 +894,14 @@ export default function ProgramPageEditor({
             isExpanded={expandedSections.has("admission")}
             isFilled={filledSections[4]}
             onToggle={() => toggleSection("admission")}
+            footer={
+              <SectionSaveButton
+                id="admission"
+                saving={savingSection === "admission"}
+                error={sectionErrors.admission}
+                onSave={saveSection}
+              />
+            }
           >
             <div className="space-y-3">
               {formData.admissionRequirements.map((req, idx) => (
@@ -847,6 +972,14 @@ export default function ProgramPageEditor({
             isExpanded={expandedSections.has("quickFacts")}
             isFilled={filledSections[5]}
             onToggle={() => toggleSection("quickFacts")}
+            footer={
+              <SectionSaveButton
+                id="quickFacts"
+                saving={savingSection === "quickFacts"}
+                error={sectionErrors.quickFacts}
+                onSave={saveSection}
+              />
+            }
           >
             <SubSection
               title="Field Values"
@@ -1044,6 +1177,14 @@ export default function ProgramPageEditor({
             isExpanded={expandedSections.has("curriculum")}
             isFilled={filledSections[6]}
             onToggle={() => toggleSection("curriculum")}
+            footer={
+              <SectionSaveButton
+                id="curriculum"
+                saving={savingSection === "curriculum"}
+                error={sectionErrors.curriculum}
+                onSave={saveSection}
+              />
+            }
           >
             <SubSection
               title="Section Heading"
@@ -1286,6 +1427,14 @@ export default function ProgramPageEditor({
             isExpanded={expandedSections.has("coordinator")}
             isFilled={filledSections[7]}
             onToggle={() => toggleSection("coordinator")}
+            footer={
+              <SectionSaveButton
+                id="coordinator"
+                saving={savingSection === "coordinator"}
+                error={sectionErrors.coordinator}
+                onSave={saveSection}
+              />
+            }
           >
             <div className="form-grid">
               <Field label="Name" className="field--full">
@@ -1393,6 +1542,14 @@ export default function ProgramPageEditor({
             isExpanded={expandedSections.has("growth")}
             isFilled={filledSections[8]}
             onToggle={() => toggleSection("growth")}
+            footer={
+              <SectionSaveButton
+                id="growth"
+                saving={savingSection === "growth"}
+                error={sectionErrors.growth}
+                onSave={saveSection}
+              />
+            }
           >
             <div className="space-y-3">
               <Field label="Section Title" className="field--full">
@@ -1487,6 +1644,14 @@ export default function ProgramPageEditor({
             isExpanded={expandedSections.has("callout")}
             isFilled={filledSections[9]}
             onToggle={() => toggleSection("callout")}
+            footer={
+              <SectionSaveButton
+                id="callout"
+                saving={savingSection === "callout"}
+                error={sectionErrors.callout}
+                onSave={saveSection}
+              />
+            }
           >
             <SubSection title="Callout Box" desc="The highlighted note inside the page body.">
               <Field label="Title" className="field--full">
