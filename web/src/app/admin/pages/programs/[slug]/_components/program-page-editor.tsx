@@ -272,31 +272,6 @@ function RemoveButton({
   );
 }
 
-function RepeatableCard({
-  badge,
-  index,
-  onRemove,
-  children,
-}: {
-  badge: string;
-  index: number;
-  onRemove: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="pp-card">
-      <div className="pp-card__head">
-        <div className="pp-card__title">
-          <span className="pp-card__title-badge">{badge}</span>
-          {index}
-        </div>
-        <RemoveButton onClick={onRemove} label={`Remove ${badge.toLowerCase()} ${index}`} />
-      </div>
-      <div className="space-y-3">{children}</div>
-    </div>
-  );
-}
-
 function SubSection({
   title,
   desc,
@@ -840,6 +815,88 @@ export default function ProgramPageEditor({
     }));
   };
 
+  const [coordinatorModal, setCoordinatorModal] = useState(false);
+  const [coordinatorDraft, setCoordinatorDraft] = useState({
+    name: "",
+    initials: "",
+    image: "",
+    role: "",
+    quote: "",
+  });
+
+  const openEditCoordinator = () => {
+    setCoordinatorDraft({ ...formData.coordinator });
+    setCoordinatorModal(true);
+  };
+
+  const closeCoordinatorModal = () => setCoordinatorModal(false);
+
+  const saveCoordinator = () => {
+    update((f) => ({ ...f, coordinator: { ...coordinatorDraft } }));
+    closeCoordinatorModal();
+  };
+
+  const [growthModal, setGrowthModal] = useState<
+    { mode: "add" } | { mode: "edit"; index: number } | null
+  >(null);
+  const [growthDraft, setGrowthDraft] = useState<TextItem>({
+    title: "",
+    description: "",
+  });
+
+  const openAddGrowthItem = () => {
+    setGrowthDraft({ title: "", description: "" });
+    setGrowthModal({ mode: "add" });
+  };
+
+  const openEditGrowthItem = (index: number) => {
+    setGrowthDraft({ ...formData.growthSection.items[index] });
+    setGrowthModal({ mode: "edit", index });
+  };
+
+  const closeGrowthModal = () => setGrowthModal(null);
+
+  const saveGrowthItem = () => {
+    if (!growthModal) return;
+    update((f) => {
+      if (growthModal.mode === "edit") {
+        return {
+          ...f,
+          growthSection: {
+            ...f.growthSection,
+            items: f.growthSection.items.map((itm, i) =>
+              i === growthModal.index ? { ...growthDraft } : itm
+            ),
+          },
+        };
+      }
+      return {
+        ...f,
+        growthSection: {
+          ...f.growthSection,
+          items: [...f.growthSection.items, { ...growthDraft }],
+        },
+      };
+    });
+    closeGrowthModal();
+  };
+
+  const removeGrowthItem = async (index: number) => {
+    const ok = await confirmAction({
+      title: `Remove "${formData.growthSection.items[index].title || `#${index + 1}`}"?`,
+      description: "This will remove it from the Growth items list.",
+    });
+    if (ok) {
+      update((f) => ({
+        ...f,
+        growthSection: {
+          ...f.growthSection,
+          items: f.growthSection.items.filter((_, i) => i !== index),
+        },
+      }));
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit}>
       <div className="pp-editor" style={{ paddingBottom: "80px" }}>
@@ -995,24 +1052,24 @@ export default function ProgramPageEditor({
                   No concentrations yet. Click &quot;Add Concentration&quot; to create one.
                 </p>
               ) : (
-                <div className="overflow-x-auto rounded-lg border border-[var(--admin-line)]">
-                  <Table>
+                <div className="pp-table-wrap rounded-lg border border-[var(--admin-line)]">
+                  <Table className="table-fixed">
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-12 bg-[var(--admin-surface-2)]">#</TableHead>
-                        <TableHead className="bg-[var(--admin-surface-2)]">TITLE</TableHead>
+                        <TableHead className="w-2/5 truncate bg-[var(--admin-surface-2)]">TITLE</TableHead>
                         <TableHead className="bg-[var(--admin-surface-2)]">DESCRIPTION</TableHead>
-                        <TableHead className="text-right bg-[var(--admin-surface-2)]">ACTIONS</TableHead>
+                        <TableHead className="w-28 text-right bg-[var(--admin-surface-2)]">ACTIONS</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {formData.concentrations.map((conc, idx) => (
                         <TableRow key={`concentration-${idx}`}>
                           <TableCell className="w-12 py-2.5">{idx + 1}</TableCell>
-                          <TableCell className="py-2.5 text-sm font-semibold">
+                          <TableCell className="truncate py-2.5 text-sm font-semibold">
                             {conc.title || "Untitled"}
                           </TableCell>
-                          <TableCell className="max-w-[420px] whitespace-normal py-2.5 text-sm text-[var(--admin-muted)]">
+                          <TableCell className="cell-ellipsis py-2.5 text-sm text-[var(--admin-muted)]">
                             {conc.description ? stripHtml(conc.description) : "—"}
                           </TableCell>
                           <TableCell className="py-2.5">
@@ -1120,24 +1177,24 @@ export default function ProgramPageEditor({
                   No requirements yet. Click &quot;Add Requirement&quot; to create one.
                 </p>
               ) : (
-                <div className="overflow-x-auto rounded-lg border border-[var(--admin-line)]">
-                  <Table>
+                <div className="pp-table-wrap rounded-lg border border-[var(--admin-line)]">
+                  <Table className="table-fixed">
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-12 bg-[var(--admin-surface-2)]">#</TableHead>
-                        <TableHead className="bg-[var(--admin-surface-2)]">TITLE</TableHead>
+                        <TableHead className="w-2/5 truncate bg-[var(--admin-surface-2)]">TITLE</TableHead>
                         <TableHead className="bg-[var(--admin-surface-2)]">DETAIL</TableHead>
-                        <TableHead className="text-right bg-[var(--admin-surface-2)]">ACTIONS</TableHead>
+                        <TableHead className="w-28 text-right bg-[var(--admin-surface-2)]">ACTIONS</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {formData.admissionRequirements.map((req, idx) => (
                         <TableRow key={`admission-${idx}`}>
                           <TableCell className="w-12 py-2.5">{idx + 1}</TableCell>
-                          <TableCell className="py-2.5 text-sm font-semibold">
+                          <TableCell className="truncate py-2.5 text-sm font-semibold">
                             {req.title || "Untitled"}
                           </TableCell>
-                          <TableCell className="max-w-[420px] whitespace-normal py-2.5 text-sm text-[var(--admin-muted)]">
+                          <TableCell className="cell-ellipsis py-2.5 text-sm text-[var(--admin-muted)]">
                             {req.detail ? stripHtml(req.detail) : "—"}
                           </TableCell>
                           <TableCell className="py-2.5">
@@ -1460,21 +1517,21 @@ export default function ProgramPageEditor({
                   No semesters yet. Click &quot;Add Semester&quot; to create one.
                 </p>
               ) : (
-                <div className="overflow-x-auto rounded-lg border border-[var(--admin-line)]">
-                  <Table>
+                <div className="pp-table-wrap rounded-lg border border-[var(--admin-line)]">
+                  <Table className="table-fixed">
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-12 bg-[var(--admin-surface-2)]">#</TableHead>
-                        <TableHead className="bg-[var(--admin-surface-2)]">SEMESTER</TableHead>
+                        <TableHead className="w-1/3 truncate bg-[var(--admin-surface-2)]">SEMESTER</TableHead>
                         <TableHead className="bg-[var(--admin-surface-2)]">COURSES</TableHead>
-                        <TableHead className="text-right bg-[var(--admin-surface-2)]">ACTIONS</TableHead>
+                        <TableHead className="w-28 text-right bg-[var(--admin-surface-2)]">ACTIONS</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {formData.curriculum.map((sem, semIdx) => (
                         <TableRow key={`semester-${semIdx}`}>
                           <TableCell className="w-12 py-2.5">{semIdx + 1}</TableCell>
-                          <TableCell className="py-2.5 text-sm font-semibold">
+                          <TableCell className="truncate py-2.5 text-sm font-semibold">
                             {sem.label || `Sem ${semIdx + 1}`}
                           </TableCell>
                           <TableCell className="py-2.5 text-sm text-[var(--admin-muted)]">
@@ -1527,101 +1584,42 @@ export default function ProgramPageEditor({
               />
             }
           >
-            <div className="form-grid">
-              <Field label="Name" className="field--full">
-                <input
-                  type="text"
-                  value={formData.coordinator.name}
-                  onChange={(e) =>
-                    update((f) => ({
-                      ...f,
-                      coordinator: { ...f.coordinator, name: e.target.value },
-                    }))
-                  }
-                  placeholder="Dr. John Doe"
-                />
-              </Field>
-              <Field label="Initials">
-                <input
-                  type="text"
-                  value={formData.coordinator.initials}
-                  onChange={(e) =>
-                    update((f) => ({
-                      ...f,
-                      coordinator: { ...f.coordinator, initials: e.target.value },
-                    }))
-                  }
-                  placeholder="JD"
-                />
-              </Field>
-              <Field label="Role">
-                <input
-                  type="text"
-                  value={formData.coordinator.role}
-                  onChange={(e) =>
-                    update((f) => ({
-                      ...f,
-                      coordinator: { ...f.coordinator, role: e.target.value },
-                    }))
-                  }
-                  placeholder="BCA Coordinator"
-                />
-              </Field>
-              <Field
-                label="Coordinator Image"
-                hint="Upload coordinator photo via Cloudinary"
-                className="field--full"
-              >
-                <div className="space-y-2">
-                  <ImageUpload
-                    onUpload={(result) =>
-                      update((f) => ({
-                        ...f,
-                        coordinator: { ...f.coordinator, image: result.secure_url },
-                      }))
-                    }
-                  />
-                  {formData.coordinator.image && (
-                    <div className="flex items-center gap-3 rounded-md border border-gray-200 bg-gray-50 p-3">
-                      <img
-                        src={formData.coordinator.image}
-                        alt="Coordinator preview"
-                        className="h-16 w-16 rounded-md object-cover"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-gray-600 truncate">
-                          {formData.coordinator.image}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          update((f) => ({
-                            ...f,
-                            coordinator: { ...f.coordinator, image: "" },
-                          }))
-                        }
-                        className="text-sm text-red-600 hover:text-red-700"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </Field>
-              <Field label="Quote" className="field--full">
-                <textarea
-                  rows={4}
-                  value={formData.coordinator.quote}
-                  onChange={(e) =>
-                    update((f) => ({
-                      ...f,
-                      coordinator: { ...f.coordinator, quote: e.target.value },
-                    }))
-                  }
-                  placeholder="Technology is evolving fast..."
-                />
-              </Field>
+            <div className="space-y-3">
+              <div className="pp-table-wrap rounded-lg border border-[var(--admin-line)]">
+                <Table className="table-fixed">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12 bg-[var(--admin-surface-2)]">#</TableHead>
+                      <TableHead className="w-1/3 truncate bg-[var(--admin-surface-2)]">NAME</TableHead>
+                      <TableHead className="truncate bg-[var(--admin-surface-2)]">ROLE</TableHead>
+                      <TableHead className="w-28 text-right bg-[var(--admin-surface-2)]">ACTIONS</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell className="w-12 py-2.5">1</TableCell>
+                      <TableCell className="truncate py-2.5 text-sm font-semibold">
+                        {formData.coordinator.name || "Dr. John Doe"}
+                      </TableCell>
+                      <TableCell className="truncate py-2.5 text-sm text-[var(--admin-muted)]">
+                        {formData.coordinator.role || "BCA Coordinator"}
+                      </TableCell>
+                      <TableCell className="py-2.5">
+                        <div className="row-actions justify-end">
+                          <button
+                            type="button"
+                            className="act-btn"
+                            onClick={openEditCoordinator}
+                            title="Edit coordinator"
+                          >
+                            <Pencil size={15} />
+                          </button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           </CollapsibleSection>
 
@@ -1657,73 +1655,59 @@ export default function ProgramPageEditor({
                 />
               </Field>
 
-              {formData.growthSection.items.map((item, idx) => (
-                <RepeatableCard
-                  key={`growth-${idx}`}
-                  badge="Item"
-                  index={idx + 1}
-                  onRemove={() =>
-                    update((f) => ({
-                      ...f,
-                      growthSection: {
-                        ...f.growthSection,
-                        items: f.growthSection.items.filter((_, i) => i !== idx),
-                      },
-                    }))
-                  }
-                >
-                  <Field label="Title" className="field--full">
-                    <input
-                      type="text"
-                      value={item.title}
-                      onChange={(e) =>
-                        update((f) => ({
-                          ...f,
-                          growthSection: {
-                            ...f.growthSection,
-                            items: f.growthSection.items.map((itm, i) =>
-                              i === idx ? { ...itm, title: e.target.value } : itm
-                            ),
-                          },
-                        }))
-                      }
-                      placeholder="Industry exposure"
-                    />
-                  </Field>
-                  <Field label="Description" className="field--full">
-                    <textarea
-                      rows={2}
-                      value={item.description}
-                      onChange={(e) =>
-                        update((f) => ({
-                          ...f,
-                          growthSection: {
-                            ...f.growthSection,
-                            items: f.growthSection.items.map((itm, i) =>
-                              i === idx ? { ...itm, description: e.target.value } : itm
-                            ),
-                          },
-                        }))
-                      }
-                      placeholder="Guest lectures and workshops..."
-                    />
-                  </Field>
-                </RepeatableCard>
-              ))}
+              {formData.growthSection.items.length === 0 ? (
+                <p className="text-sm text-[var(--admin-muted)]">
+                  No growth items yet. Click &quot;Add Growth Item&quot; to create one.
+                </p>
+              ) : (
+                <div className="pp-table-wrap rounded-lg border border-[var(--admin-line)]">
+                  <Table className="table-fixed">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12 bg-[var(--admin-surface-2)]">#</TableHead>
+                        <TableHead className="w-2/5 truncate bg-[var(--admin-surface-2)]">TITLE</TableHead>
+                        <TableHead className="bg-[var(--admin-surface-2)]">DESCRIPTION</TableHead>
+                        <TableHead className="w-28 text-right bg-[var(--admin-surface-2)]">ACTIONS</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {formData.growthSection.items.map((item, idx) => (
+                        <TableRow key={`growth-${idx}`}>
+                          <TableCell className="w-12 py-2.5">{idx + 1}</TableCell>
+                          <TableCell className="truncate py-2.5 text-sm font-semibold">
+                            {item.title}
+                          </TableCell>
+                          <TableCell className="cell-ellipsis py-2.5 text-sm text-[var(--admin-muted)]">
+                            {stripHtml(item.description)}
+                          </TableCell>
+                          <TableCell className="py-2.5">
+                            <div className="row-actions justify-end">
+                              <button
+                                type="button"
+                                className="act-btn"
+                                onClick={() => openEditGrowthItem(idx)}
+                                title="Edit growth item"
+                              >
+                                <Pencil size={15} />
+                              </button>
+                              <button
+                                type="button"
+                                className="act-btn danger"
+                                onClick={() => removeGrowthItem(idx)}
+                                title="Remove growth item"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
 
-              <AddButton
-                onClick={() =>
-                  update((f) => ({
-                    ...f,
-                    growthSection: {
-                      ...f.growthSection,
-                      items: [...f.growthSection.items, { title: "", description: "" }],
-                    },
-                  }))
-                }
-              >
-                Add Growth Item
-              </AddButton>
+              <AddButton onClick={openAddGrowthItem}>Add Growth Item</AddButton>
             </div>
           </CollapsibleSection>
 
@@ -2068,6 +2052,205 @@ export default function ProgramPageEditor({
               disabled={!semesterDraft.label.trim()}
             >
               {semesterModal?.mode === "edit" ? "Update" : "Add"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={coordinatorModal}
+        onOpenChange={(open) => !open && closeCoordinatorModal()}
+      >
+        <DialogContent
+          showCloseButton={false}
+          className="news-modal w-[min(100%,640px)] sm:max-w-[640px] max-h-[90vh] overflow-y-auto flex flex-col gap-0 rounded-[16px] p-0 ring-0 outline-none"
+        >
+          <div className="modal__head">
+            <DialogTitle className="m-0 text-[1.05rem] font-normal">
+              Edit Coordinator
+            </DialogTitle>
+            <button
+              type="button"
+              className="admin-icon-btn"
+              aria-label="Close"
+              onClick={closeCoordinatorModal}
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="modal__body">
+            <div className="form-grid">
+              <div className="field field--full">
+                <label htmlFor="coordinator-name">Name</label>
+                <input
+                  id="coordinator-name"
+                  type="text"
+                  value={coordinatorDraft.name}
+                  onChange={(e) =>
+                    setCoordinatorDraft((d) => ({ ...d, name: e.target.value }))
+                  }
+                  placeholder="Dr. John Doe"
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="coordinator-initials">Initials</label>
+                <input
+                  id="coordinator-initials"
+                  type="text"
+                  value={coordinatorDraft.initials}
+                  onChange={(e) =>
+                    setCoordinatorDraft((d) => ({ ...d, initials: e.target.value }))
+                  }
+                  placeholder="JD"
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="coordinator-role">Role</label>
+                <input
+                  id="coordinator-role"
+                  type="text"
+                  value={coordinatorDraft.role}
+                  onChange={(e) =>
+                    setCoordinatorDraft((d) => ({ ...d, role: e.target.value }))
+                  }
+                  placeholder="BCA Coordinator"
+                />
+              </div>
+              <div className="field field--full">
+                <label>Coordinator Image</label>
+                <div className="space-y-2">
+                  <ImageUpload
+                    onUpload={(result) =>
+                      setCoordinatorDraft((d) => ({
+                        ...d,
+                        image: result.secure_url,
+                      }))
+                    }
+                  />
+                  {coordinatorDraft.image && (
+                    <div className="flex items-center gap-3 rounded-md border border-gray-200 bg-gray-50 p-3">
+                      <img
+                        src={coordinatorDraft.image}
+                        alt="Coordinator preview"
+                        className="h-16 w-16 rounded-md object-cover"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-600 truncate">
+                          {coordinatorDraft.image}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCoordinatorDraft((d) => ({ ...d, image: "" }))
+                        }
+                        className="text-sm text-red-600 hover:text-red-700"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="field field--full">
+                <label htmlFor="coordinator-quote">Quote</label>
+                <RichTextEditor
+                  content={coordinatorDraft.quote}
+                  onChange={(html) =>
+                    setCoordinatorDraft((d) => ({ ...d, quote: html }))
+                  }
+                  placeholder="Technology is evolving fast..."
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="modal__foot">
+            <button
+              type="button"
+              className="admin-btn"
+              onClick={closeCoordinatorModal}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="admin-btn admin-btn--primary"
+              onClick={saveCoordinator}
+            >
+              Save
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={growthModal !== null}
+        onOpenChange={(open) => !open && closeGrowthModal()}
+      >
+        <DialogContent
+          showCloseButton={false}
+          className="news-modal w-[min(100%,520px)] sm:max-w-[520px] max-h-[90vh] overflow-y-auto flex flex-col gap-0 rounded-[16px] p-0 ring-0 outline-none"
+        >
+          <div className="modal__head">
+            <DialogTitle className="m-0 text-[1.05rem] font-normal">
+              {growthModal?.mode === "edit" ? "Edit Growth Item" : "Add Growth Item"}
+            </DialogTitle>
+            <button
+              type="button"
+              className="admin-icon-btn"
+              aria-label="Close"
+              onClick={closeGrowthModal}
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="modal__body">
+            <div className="form-grid">
+              <div className="field field--full">
+                <label htmlFor="growth-title">
+                  Title <span className="req">*</span>
+                </label>
+                <input
+                  id="growth-title"
+                  type="text"
+                  value={growthDraft.title}
+                  onChange={(e) =>
+                    setGrowthDraft((d) => ({ ...d, title: e.target.value }))
+                  }
+                  placeholder="Industry exposure"
+                />
+              </div>
+              <div className="field field--full">
+                <label htmlFor="growth-description">Description</label>
+                <RichTextEditor
+                  content={growthDraft.description}
+                  onChange={(html) =>
+                    setGrowthDraft((d) => ({ ...d, description: html }))
+                  }
+                  placeholder="Guest lectures and workshops..."
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="modal__foot">
+            <button
+              type="button"
+              className="admin-btn"
+              onClick={closeGrowthModal}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="admin-btn admin-btn--primary"
+              onClick={saveGrowthItem}
+              disabled={!growthDraft.title.trim()}
+            >
+              {growthModal?.mode === "edit" ? "Update" : "Add"}
             </button>
           </div>
         </DialogContent>

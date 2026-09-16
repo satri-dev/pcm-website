@@ -344,6 +344,18 @@
   border-color: var(--admin-gold);
 }
 
+/* ---------- Table cell ellipsis ---------- */
+.cell-ellipsis {
+  max-width: 420px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pp-table-wrap [data-slot="table-container"] {
+  overflow-x: visible;
+}
+
 /* ---------- Dashboard grid ---------- */
 .admin-dashboard { display: grid; gap: 1.25rem; }
 
