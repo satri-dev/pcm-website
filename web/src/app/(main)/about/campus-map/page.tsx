@@ -133,7 +133,16 @@ export default async function CampusMapPage() {
               <RevealBox className="split__content">
                 <span className="eyebrow">{settings.locationEyebrow}</span>
                 <h2 className="section-title">{settings.locationTitle}</h2>
-                <p className="mt-4">{settings.locationParagraph}</p>
+                {/^<[a-z]+[\s>]/i.test(settings.locationParagraph.trim()) ? (
+                  <div
+                    className="mt-4"
+                    dangerouslySetInnerHTML={{
+                      __html: settings.locationParagraph,
+                    }}
+                  />
+                ) : (
+                  <p className="mt-4">{settings.locationParagraph}</p>
+                )}
                 {settings.locationChecklist.length > 0 && (
                   <CheckList
                     className="check-list mt-5"

@@ -92,11 +92,19 @@ export default async function BoardPage() {
               <RevealBox>
                 <span className="eyebrow">{settings.promiseEyebrow}</span>
                 <h2 className="section-title">{settings.promiseTitle}</h2>
-                {settings.promiseParagraphs.map((p, i) => (
-                  <p key={i} style={i === 0 ? { marginTop: "1rem" } : undefined}>
-                    {p}
-                  </p>
-                ))}
+                {settings.promiseParagraphs.map((p, i) =>
+                  /^<[a-z]+[\s>]/i.test(p.trim()) ? (
+                    <div
+                      key={i}
+                      style={i === 0 ? { marginTop: "1rem" } : undefined}
+                      dangerouslySetInnerHTML={{ __html: p }}
+                    />
+                  ) : (
+                    <p key={i} style={i === 0 ? { marginTop: "1rem" } : undefined}>
+                      {p}
+                    </p>
+                  )
+                )}
                 {settings.promiseChecklist.length > 0 && (
                   <div style={{ marginTop: "1.2rem" }}>
                     <CheckList className="checklist" items={settings.promiseChecklist} />
