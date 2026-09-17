@@ -11,11 +11,14 @@ interface Props {
 
 export default function GpaResult({ result, calculated }: Props) {
   const { sgpa, totalCredits, totalGradePoints, subjects } = result;
-  const hasData = calculated && totalCredits > 0;
-  const color   = hasData ? gpaColor(sgpa) : "var(--muted-c)";
-  const pct     = hasData ? Math.min((sgpa / 4.0) * 100, 100) : 0;
+  const hasData    = calculated && totalCredits > 0;
+  const anyFailed  = calculated && subjects.some((s) => s.failedPassMark);
 
-  // SVG ring
+  // If any subject failed pass mark → overall result is FAIL, hide numeric GPA
+  const color  = !hasData ? "var(--muted-c)" : anyFailed ? "#dc2626" : gpaColor(sgpa);
+  // For fail state draw the full ring in red; otherwise fill proportionally
+  const pct    = hasData && !anyFailed ? Math.min((sgpa / 4.0) * 100, 100) : anyFailed ? 100 : 0;
+
   const R   = 52;
   const CIR = 2 * Math.PI * R;
   const offset = CIR - (pct / 100) * CIR;
@@ -23,7 +26,7 @@ export default function GpaResult({ result, calculated }: Props) {
   return (
     <aside className="gpa-result-card">
       {/* Ring */}
-      <div className="gpa-ring-wrap" aria-label={`SGPA ${sgpa.toFixed(2)} out of 4.0`}>
+      <div className="gpa-ring-wrap" aria-label={anyFailed ? "Overall result: FAIL" : `SGPA ${sgpa.toFixed(2)} out of 4.0`}>
         <svg viewBox="0 0 120 120" className="gpa-ring-svg" aria-hidden="true">
           <circle cx="60" cy="60" r={R} className="gpa-ring-bg" />
           <circle
@@ -37,13 +40,19 @@ export default function GpaResult({ result, calculated }: Props) {
           />
         </svg>
         <div className="gpa-ring-label">
-          <span className="gpa-ring-score" style={{ color }}>
-            {hasData ? sgpa.toFixed(2) : "—"}
-          </span>
-          <span className="gpa-ring-out">/ 4.0</span>
-          <span className="gpa-ring-standing" style={{ color }}>
-            {!calculated ? "Click Calculate" : hasData ? gpaStanding(sgpa) : "Enter marks"}
-          </span>
+          {anyFailed ? (
+            <span className="gpa-ring-score" style={{ color, fontSize: "1.6rem", letterSpacing: "-.02em" }}>FAIL</span>
+          ) : (
+            <>
+              <span className="gpa-ring-score" style={{ color }}>
+                {hasData ? sgpa.toFixed(2) : "—"}
+              </span>
+              <span className="gpa-ring-out">/ 4.0</span>
+              <span className="gpa-ring-standing" style={{ color }}>
+                {!calculated ? "Click Calculate" : hasData ? gpaStanding(sgpa) : "Enter marks"}
+              </span>
+            </>
+          )}
         </div>
       </div>
 
@@ -55,7 +64,7 @@ export default function GpaResult({ result, calculated }: Props) {
         </div>
         <div className="gpa-stat">
           <span>Grade Points</span>
-          <b>{hasData ? totalGradePoints.toFixed(2) : "—"}</b>
+          <b>{hasData ? (anyFailed ? "—" : totalGradePoints.toFixed(2)) : "—"}</b>
         </div>
         <div className="gpa-stat">
           <span>Subjects</span>
@@ -70,11 +79,17 @@ export default function GpaResult({ result, calculated }: Props) {
           {subjects
             .filter((s) => !isNaN(s.gradePoint))
             .map((s) => (
-              <div key={s.id} className="gpa-breakdown-row">
-                <span className="gpa-breakdown-name">{s.name || "Subject"}</span>
+              <div
+                key={s.id}
+                className={`gpa-breakdown-row${s.failedPassMark ? " gpa-breakdown-row--fail" : ""}`}
+                title={s.failedPassMark ? s.failReason : undefined}
+              >
+                <span className="gpa-breakdown-name">
+                  {s.name || "Subject"}
+                </span>
                 <span
                   className="gpa-breakdown-grade"
-                  style={{ color: GRADE_COLORS[s.grade] ?? "var(--muted-c)" }}
+                  style={{ color: s.failedPassMark ? "#dc2626" : (GRADE_COLORS[s.grade] ?? "var(--muted-c)") }}
                 >
                   {s.grade}
                 </span>

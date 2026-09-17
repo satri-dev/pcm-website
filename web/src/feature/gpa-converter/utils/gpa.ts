@@ -45,12 +45,28 @@ export function calcGpa(subjects: Subject[]): GpaResult {
         creditHours: NaN, theoryObtained: NaN, practicalObtained: NaN,
         totalObtained: NaN, totalFull: NaN,
         percentage: NaN, grade: "—", gradePoint: NaN, gradePoints: NaN,
+        failedPassMark: false,
       };
     }
 
-    const pct    = (totalObt / totalFull) * 100;
-    const entry  = percentToGrade(pct);
-    const gp     = credits * entry.gradePoint;
+    // ── Pass-mark check (40% required in each component separately) ──
+    const theoryPassMark     = thFull * 0.4;
+    const practicalPassMark  = prFull * 0.4;   // 0 when no practical
+    const failedTheory       = thObt < theoryPassMark;
+    const failedPractical    = prFull > 0 && prObt < practicalPassMark;
+    const failedPassMark     = failedTheory || failedPractical;
+
+    // Build a human-readable reason (used by the UI)
+    const failReasons: string[] = [];
+    if (failedTheory)    failReasons.push(`Theory < ${theoryPassMark.toFixed(1)} (40% of ${thFull})`);
+    if (failedPractical) failReasons.push(`Practical < ${practicalPassMark.toFixed(1)} (40% of ${prFull})`);
+
+    const pct   = (totalObt / totalFull) * 100;
+    // If student failed a pass-mark check, override to F (0.0) regardless of combined %
+    const entry = failedPassMark
+      ? PU_GRADING_SCALE[PU_GRADING_SCALE.length - 1]   // the F entry
+      : percentToGrade(pct);
+    const gp    = credits * entry.gradePoint;
 
     totalCredits     += credits;
     totalGradePoints += gp;
@@ -67,6 +83,8 @@ export function calcGpa(subjects: Subject[]): GpaResult {
       grade:            entry.grade,
       gradePoint:       entry.gradePoint,
       gradePoints:      Math.round(gp * 100) / 100,
+      failedPassMark,
+      failReason:       failReasons.length ? failReasons.join(" · ") : undefined,
     };
   });
 

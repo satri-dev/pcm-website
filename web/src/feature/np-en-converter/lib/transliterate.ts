@@ -304,11 +304,28 @@ export function romanToDevanagari(input: string): string {
       if (matchedVowel) {
         const [, matra] = matchedVowel;
         if (matra === "") {
-          // inherent 'a' — add nothing (it's implicit)
+          // inherent 'a' — check if the very next chars form another vowel
+          // If yes, skip this 'a' (it's a separator) so the real vowel attaches as matra
+          const nextPos = i + vowelLen;
+          let skipped = false;
+          for (const [rv, , nextMatra] of romanVowelsSorted) {
+            if (rv === "a") continue; // don't match 'a' again
+            if (input.startsWith(rv, nextPos)) {
+              // skip the 'a', attach next vowel as matra instead
+              result += nextMatra;
+              i = nextPos + rv.length;
+              skipped = true;
+              break;
+            }
+          }
+          if (!skipped) {
+            // truly inherent 'a' — add nothing
+            i += vowelLen;
+          }
         } else {
           result += matra;
+          i += vowelLen;
         }
-        i += vowelLen;
       } else if (i < input.length && /[a-zA-Z]/.test(input[i])) {
         // Next char is a letter but not a vowel we recognise — add virama
         // (consonant cluster)
