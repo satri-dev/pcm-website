@@ -1,16 +1,14 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Save, Link2, Plus, Trash2, GripVertical, Check } from "lucide-react";
+import { Save, Link2, Trash2, Check } from "lucide-react";
 import ImageUpload from "@/components/cloudinary/ImageUpload";
 import DocumentUpload from "@/components/cloudinary/DocumentUpload";
 import {
   FEEDBACK_PAGE_SETTINGS_DEFAULTS,
-  FEEDBACK_FIELD_TYPES,
-  type FeedbackFieldConfig,
-  type FeedbackFieldType,
   type FeedbackPageSettings,
 } from "@/types/feedback-page-settings";
+import FeedbackFieldsManager from "./feedback-fields-manager";
 import Image from "next/image";
 
 const API_BASE = "/api/admin/pages/feedback-settings";
@@ -25,29 +23,6 @@ function fieldLabel(c: ReactNode) {
     </span>
   );
 }
-
-function makeId(label: string): string {
-  const base = label
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 40);
-  return base || `field-${Date.now()}`;
-}
-
-const TYPE_LABEL: Record<FeedbackFieldType, string> = {
-  text: "Short text",
-  textarea: "Long text",
-  number: "Number",
-  email: "Email",
-  checkbox: "Checkbox",
-  "checkbox-group": "Checkbox Group",
-  select: "Dropdown",
-  radio: "Radio buttons",
-  rating: "Star Rating",
-  image: "Image upload",
-  document: "File upload",
-};
 
 // TextField component moved outside render
 const TextField = ({
@@ -106,6 +81,8 @@ const ImageField = ({
         <Image
           src={value}
           alt=""
+          width={80}
+          height={56}
           className="h-14 w-20 rounded-lg border border-(--admin-line) object-cover"
         />
       ) : null}
@@ -139,35 +116,6 @@ export default function FeedbackPageSettings({
     key: K,
     value: FeedbackPageSettings[K],
   ) => setForm((prev) => ({ ...prev, [key]: value }));
-
-  const setField = (idx: number, patch: Partial<FeedbackFieldConfig>) =>
-    set(
-      "fields",
-      form.fields.map((f, i) => (i === idx ? { ...f, ...patch } : f)),
-    );
-
-  const addField = () => {
-    const n = form.fields.length + 1;
-    const id = `field${n}`;
-    set("fields", [
-      ...form.fields,
-      { id, label: `Field ${n}`, type: "text", required: false, options: [] },
-    ]);
-  };
-
-  const removeField = (idx: number) =>
-    set(
-      "fields",
-      form.fields.filter((_, i) => i !== idx),
-    );
-
-  const moveField = (idx: number, dir: -1 | 1) => {
-    const t = idx + dir;
-    if (t < 0 || t >= form.fields.length) return;
-    const next = [...form.fields];
-    [next[idx], next[t]] = [next[t], next[idx]];
-    set("fields", next);
-  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -422,196 +370,10 @@ export default function FeedbackPageSettings({
             the type of each field. Select, radio &amp; checkbox-group fields
             expose an options editor; number &amp; rating fields expose min/max.
           </p>
-          <div className="flex flex-col gap-3">
-            {form.fields.map((field, idx) => (
-              <div
-                key={idx}
-                className="rounded-lg border border-(--admin-line) bg-(--admin-surface) p-4 space-y-3"
-              >
-                <div className="flex items-center gap-2">
-                  <GripVertical size={16} className="text-(--admin-muted)" />
-                  <b className="text-sm text-(--admin-ink)">
-                    {idx + 1}. {field.label || field.id}
-                  </b>
-                  <span className="rounded-full bg-black/5 px-2 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wide text-(--admin-muted)">
-                    {TYPE_LABEL[field.type] ?? field.type}
-                  </span>
-                  <div className="ml-auto flex gap-1">
-                    <button
-                      type="button"
-                      className="admin-icon-btn"
-                      onClick={() => moveField(idx, -1)}
-                      title="Move up"
-                    >
-                      ↑
-                    </button>
-                    <button
-                      type="button"
-                      className="admin-icon-btn"
-                      onClick={() => moveField(idx, 1)}
-                      title="Move down"
-                    >
-                      ↓
-                    </button>
-                    <button
-                      type="button"
-                      className="admin-icon-btn text-[var(--admin-red)] hover:bg-red-50"
-                      onClick={() => removeField(idx)}
-                      title="Remove field"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <label className="block">
-                    {fieldLabel("Field ID")}
-                    <input
-                      className={INPUT}
-                      value={field.id}
-                      onChange={(e) =>
-                        setField(idx, {
-                          id: makeId(e.target.value) || e.target.value,
-                        })
-                      }
-                      placeholder="unique-id"
-                    />
-                  </label>
-                  <label className="block">
-                    {fieldLabel("Label")}
-                    <input
-                      className={INPUT}
-                      value={field.label}
-                      onChange={(e) => setField(idx, { label: e.target.value })}
-                    />
-                  </label>
-                  <label className="block">
-                    {fieldLabel("Type")}
-                    <select
-                      className={INPUT}
-                      value={field.type}
-                      onChange={(e) =>
-                        setField(idx, {
-                          type: e.target.value as FeedbackFieldType,
-                        })
-                      }
-                    >
-                      {FEEDBACK_FIELD_TYPES.map((t) => (
-                        <option key={t} value={t}>
-                          {TYPE_LABEL[t]}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                </div>
-
-                {field.type === "select" ||
-                field.type === "radio" ||
-                field.type === "checkbox-group" ? (
-                  <div>
-                    {fieldLabel("Options — one per line")}
-                    <textarea
-                      rows={3}
-                      className={INPUT}
-                      placeholder={"General\nAcademics\nFacilities"}
-                      value={(field.options ?? []).join("\n")}
-                      onChange={(e) =>
-                        setField(idx, {
-                          options: e.target.value
-                            .split("\n")
-                            .map((l) => l.trim()),
-                        })
-                      }
-                    />
-                  </div>
-                ) : null}
-
-                {field.type === "number" || field.type === "rating" ? (
-                  <div className="grid grid-cols-2 gap-3">
-                    <label className="block">
-                      {fieldLabel("Min")}
-                      <input
-                        type="number"
-                        className={INPUT}
-                        value={field.min ?? ""}
-                        onChange={(e) =>
-                          setField(idx, {
-                            min:
-                              e.target.value === ""
-                                ? undefined
-                                : Number(e.target.value),
-                          })
-                        }
-                      />
-                    </label>
-                    <label className="block">
-                      {fieldLabel(
-                        field.type === "rating" ? "Max (stars)" : "Max",
-                      )}
-                      <input
-                        type="number"
-                        className={INPUT}
-                        value={field.max ?? (field.type === "rating" ? 5 : "")}
-                        onChange={(e) =>
-                          setField(idx, {
-                            max:
-                              e.target.value === ""
-                                ? undefined
-                                : Number(e.target.value),
-                          })
-                        }
-                      />
-                    </label>
-                  </div>
-                ) : null}
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {field.type !== "checkbox" && (
-                    <label className="block">
-                      {fieldLabel("Placeholder (optional)")}
-                      <input
-                        className={INPUT}
-                        value={field.placeholder ?? ""}
-                        onChange={(e) =>
-                          setField(idx, { placeholder: e.target.value })
-                        }
-                      />
-                    </label>
-                  )}
-                  <label className="block">
-                    {fieldLabel("Hint (optional)")}
-                    <input
-                      className={INPUT}
-                      value={field.hint ?? ""}
-                      onChange={(e) => setField(idx, { hint: e.target.value })}
-                    />
-                  </label>
-                  <label className="flex items-center gap-2 rounded-lg border border-(--admin-line) bg-black/[0.02] p-3">
-                    <input
-                      type="checkbox"
-                      className="h-5 w-5 accent-[#51B747]"
-                      checked={field.required}
-                      onChange={(e) =>
-                        setField(idx, { required: e.target.checked })
-                      }
-                    />
-                    <span className="text-[0.9rem] font-medium text-[var(--admin-ink)]">
-                      Required
-                    </span>
-                  </label>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <button
-            type="button"
-            className="admin-btn admin-btn--sm"
-            onClick={addField}
-          >
-            <Plus size={14} /> Add field
-          </button>
+          <FeedbackFieldsManager
+            fields={form.fields}
+            onChange={(next) => set("fields", next)}
+          />
         </div>
       </div>
 

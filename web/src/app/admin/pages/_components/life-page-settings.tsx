@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Save, Link2, Plus, Trash2, GripVertical } from "lucide-react";
+import { Save, Link2 } from "lucide-react";
 import {
   LIFE_PAGE_SETTINGS_DEFAULTS,
-  type LifeFeatureCard,
   type LifePageSettings,
 } from "@/types/life-page-settings";
+import FeatureCardsManager from "./life-cards-manager";
 
 const API_BASE = "/api/admin/pages/life-settings";
 
@@ -38,38 +38,15 @@ export default function LifePageSettings({
     value: LifePageSettings[K]
   ) => setForm((prev) => ({ ...prev, [key]: value }));
 
-  const moveArr = <T,>(arr: T[], idx: number, dir: -1 | 1): T[] => {
-    const t = idx + dir;
-    if (t < 0 || t >= arr.length) return arr;
-    const next = [...arr];
-    [next[idx], next[t]] = [next[t], next[idx]];
-    return next;
-  };
-
-  const makeCards = (key: "eventCards" | "workshopCards" | "clubCards") => ({
-    update(idx: number, patch: Partial<LifeFeatureCard>) {
-      set(key, form[key].map((p, i) => (i === idx ? { ...p, ...patch } : p)));
-    },
-    add() {
-      set(key, [...form[key], { title: "", desc: "" }]);
-    },
-    remove(idx: number) {
-      set(key, form[key].filter((_, i) => i !== idx));
-    },
-  });
-
-  const events = makeCards("eventCards");
-  const workshops = makeCards("workshopCards");
-  const clubs = makeCards("clubCards");
-
-  const handleSave = async () => {
+  const handleSave = async (overrides?: Partial<LifePageSettings>) => {
     setSaving(true);
     setMessage("");
     try {
+      const payload = { ...form, ...overrides };
       const res = await fetch(API_BASE, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -78,85 +55,11 @@ export default function LifePageSettings({
       setMessage("Saved. The public /life page now reflects these changes.");
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Save failed");
+      throw err;
     } finally {
       setSaving(false);
     }
   };
-
-  const renderCards = (
-    key: "eventCards" | "workshopCards" | "clubCards",
-    cards: LifeFeatureCard[],
-    helpers: ReturnType<typeof makeCards>
-  ) => (
-    <div>
-      <div className="flex items-center justify-between">
-        <span className="text-[0.85rem] font-medium text-[var(--admin-ink)]">
-          Cards ({cards.length})
-        </span>
-        <button
-          type="button"
-          className="admin-btn admin-btn--sm"
-          onClick={() => helpers.add()}
-        >
-          <Plus size={14} /> Add Card
-        </button>
-      </div>
-      <div className="mt-2 flex flex-col gap-2">
-        {cards.map((card, i) => (
-          <div
-            key={i}
-            className="rounded-lg border border-[var(--admin-line)] bg-[var(--admin-surface)] p-3"
-          >
-            <div className="flex items-center gap-2 mb-2">
-              <GripVertical size={16} className="text-[var(--admin-muted)]" />
-              <b className="text-sm">Card {i + 1}</b>
-              <div className="ml-auto flex gap-1">
-                <button
-                  type="button"
-                  className="admin-icon-btn"
-                  onClick={() => set(key, moveArr(cards, i, -1))}
-                  title="Move up"
-                >
-                  ↑
-                </button>
-                <button
-                  type="button"
-                  className="admin-icon-btn"
-                  onClick={() => set(key, moveArr(cards, i, 1))}
-                  title="Move down"
-                >
-                  ↓
-                </button>
-                <button
-                  type="button"
-                  className="admin-icon-btn text-[var(--admin-red)] hover:bg-red-50"
-                  onClick={() => helpers.remove(i)}
-                  title="Remove"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <input
-                className={INPUT}
-                placeholder="Card title"
-                value={card.title}
-                onChange={(e) => helpers.update(i, { title: e.target.value })}
-              />
-              <textarea
-                className={INPUT}
-                rows={2}
-                placeholder="Card description"
-                value={card.desc}
-                onChange={(e) => helpers.update(i, { desc: e.target.value })}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
 
   return (
     <main className="p-6 space-y-6">
@@ -293,7 +196,14 @@ export default function LifePageSettings({
               />
             </label>
           </div>
-          {renderCards("eventCards", form.eventCards, events)}
+          <FeatureCardsManager
+            sectionName="Events & Tours"
+            items={form.eventCards}
+            onItemsUpdate={(next) => set("eventCards", next)}
+            onSave={async (next) => {
+              await handleSave({ eventCards: next });
+            }}
+          />
         </div>
       </div>
 
@@ -329,7 +239,14 @@ export default function LifePageSettings({
               />
             </label>
           </div>
-          {renderCards("workshopCards", form.workshopCards, workshops)}
+          <FeatureCardsManager
+            sectionName="Workshops & Seminars"
+            items={form.workshopCards}
+            onItemsUpdate={(next) => set("workshopCards", next)}
+            onSave={async (next) => {
+              await handleSave({ workshopCards: next });
+            }}
+          />
         </div>
       </div>
 
@@ -365,7 +282,14 @@ export default function LifePageSettings({
               />
             </label>
           </div>
-          {renderCards("clubCards", form.clubCards, clubs)}
+          <FeatureCardsManager
+            sectionName="Student Clubs"
+            items={form.clubCards}
+            onItemsUpdate={(next) => set("clubCards", next)}
+            onSave={async (next) => {
+              await handleSave({ clubCards: next });
+            }}
+          />
         </div>
       </div>
 
@@ -498,7 +422,7 @@ export default function LifePageSettings({
       <div className="flex items-center gap-4">
         <button
           type="button"
-          onClick={handleSave}
+          onClick={() => handleSave()}
           disabled={saving}
           className="admin-btn admin-btn--primary"
         >

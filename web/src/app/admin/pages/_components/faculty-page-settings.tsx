@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Save, Link2, Plus, Trash2 } from "lucide-react";
+import { Save, Link2 } from "lucide-react";
 import {
   FACULTY_PAGE_SETTINGS_DEFAULTS,
   type FacultyPageSettings,
-  type FacultyStat,
 } from "@/types/faculty-page-settings";
+import FacultyStatsManager from "./faculty-stats-manager";
 
 const API_BASE = "/api/admin/pages/faculty-settings";
 
@@ -19,10 +19,6 @@ function fieldLabel(c: ReactNode) {
       {c}
     </span>
   );
-}
-
-function uid() {
-  return Math.random().toString(36).slice(2, 10);
 }
 
 export default function FacultyPageSettings({
@@ -42,23 +38,15 @@ export default function FacultyPageSettings({
     value: FacultyPageSettings[K]
   ) => setForm((prev) => ({ ...prev, [key]: value }));
 
-  const updateStat = (idx: number, patch: Partial<FacultyStat>) => {
-    set("stats", form.stats.map((p, i) => (i === idx ? { ...p, ...patch } : p)));
-  };
-  const addStat = () => {
-    set("stats", [...form.stats, { id: uid(), count: 0, suffix: "", label: "" }]);
-  };
-  const removeStat = (idx: number) =>
-    set("stats", form.stats.filter((_, i) => i !== idx));
-
-  const handleSave = async () => {
+  const handleSave = async (overrides?: Partial<FacultyPageSettings>) => {
     setSaving(true);
     setMessage("");
     try {
+      const payload = { ...form, ...overrides };
       const res = await fetch(API_BASE, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -69,6 +57,7 @@ export default function FacultyPageSettings({
       );
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Save failed");
+      throw err;
     } finally {
       setSaving(false);
     }
@@ -283,7 +272,7 @@ export default function FacultyPageSettings({
       {/* ── By the numbers ── */}
       <div className="admin-panel">
         <div className="admin-panel__head">
-          <h3>By the Numbers — Stats</h3>
+          <h3 className="font-bold">By the Numbers — Stats</h3>
         </div>
         <div className="admin-panel__body p-6 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -305,71 +294,13 @@ export default function FacultyPageSettings({
             </label>
           </div>
 
-          <div className="mt-4 flex items-center gap-3">
-            <h4 className="m-0 text-[0.95rem] font-bold text-[var(--admin-ink)]">
-              Stats ({form.stats.length})
-            </h4>
-            <button
-              type="button"
-              className="admin-btn admin-btn--sm"
-              onClick={addStat}
-            >
-              <Plus size={14} /> Add Stat
-            </button>
-          </div>
-
-          <div className="space-y-3">
-            {form.stats.map((stat, i) => (
-              <div
-                key={stat.id}
-                className="grid grid-cols-1 md:grid-cols-[auto_1fr_90px_1fr_auto] gap-3 items-end rounded-xl border border-[var(--admin-line)] p-3"
-              >
-                <span className="font-mono text-[0.72rem] font-bold uppercase tracking-wider text-[var(--admin-brand)]">
-                  {stat.id}
-                </span>
-                <label className="block">
-                  {fieldLabel("Count")}
-                  <input
-                    type="number"
-                    min={0}
-                    className={INPUT}
-                    value={stat.count}
-                    onChange={(e) =>
-                      updateStat(i, {
-                        count: Math.max(0, Number(e.target.value) || 0),
-                      })
-                    }
-                  />
-                </label>
-                <label className="block">
-                  {fieldLabel("Suffix")}
-                  <input
-                    className={INPUT}
-                    value={stat.suffix}
-                    onChange={(e) => updateStat(i, { suffix: e.target.value })}
-                  />
-                </label>
-                <label className="block">
-                  {fieldLabel("Label")}
-                  <input
-                    className={INPUT}
-                    value={stat.label}
-                    onChange={(e) => updateStat(i, { label: e.target.value })}
-                  />
-                </label>
-                <div className="flex gap-1 pb-1">
-                  <button
-                    type="button"
-                    className="admin-icon-btn danger"
-                    aria-label="Remove"
-                    onClick={() => removeStat(i)}
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+          <FacultyStatsManager
+            stats={form.stats}
+            onStatsUpdate={(stats) => set("stats", stats)}
+            onSave={async (stats) => {
+              await handleSave({ stats });
+            }}
+          />
         </div>
       </div>
 
@@ -439,7 +370,7 @@ export default function FacultyPageSettings({
       <div className="flex items-center gap-4">
         <button
           type="button"
-          onClick={handleSave}
+          onClick={() => handleSave()}
           disabled={saving}
           className="admin-btn admin-btn--primary"
         >

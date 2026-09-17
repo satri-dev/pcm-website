@@ -97,11 +97,19 @@ export default function AlumniClient({
           <div className="reveal">
             <span className="eyebrow">{settings.familyEyebrow}</span>
             <h2 className="section-title">{settings.familyTitle}</h2>
-            {settings.familyParagraphs.map((p, i) => (
-              <p key={i} style={i === 0 ? { marginTop: "1rem" } : undefined}>
-                {p}
-              </p>
-            ))}
+            {settings.familyParagraphs.map((p, i) =>
+              /^<[a-z]+[\s>]/i.test(p.trim()) ? (
+                <div
+                  key={i}
+                  style={i === 0 ? { marginTop: "1rem" } : undefined}
+                  dangerouslySetInnerHTML={{ __html: p }}
+                />
+              ) : (
+                <p key={i} style={i === 0 ? { marginTop: "1rem" } : undefined}>
+                  {p}
+                </p>
+              )
+            )}
             {settings.familyPills.length > 0 && (
               <div className="pill-row" style={{ marginTop: "1.4rem" }}>
                 {settings.familyPills.map((pill) => (
@@ -177,7 +185,13 @@ export default function AlumniClient({
                   {pathIcons[path.iconType]}
                 </div>
                 <h3>{path.title}</h3>
-                <p>{path.description}</p>
+                {/^<[a-z]+[\s>]/i.test(path.description.trim()) ? (
+                  <div
+                    dangerouslySetInnerHTML={{ __html: path.description }}
+                  />
+                ) : (
+                  <p>{path.description}</p>
+                )}
               </div>
             ))}
           </div>
