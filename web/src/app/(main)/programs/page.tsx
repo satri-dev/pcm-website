@@ -19,11 +19,30 @@ interface ProgramPageContent {
 }
 
 // Programs page now uses cache components for hybrid data (programs + page_content)
-export const metadata: Metadata = {
+const DEFAULT_PROGRAMS_SEO = {
   title: "Programs | BBA, BBA-Finance & BCSIT at PCM Pokhara",
   description:
     "Explore BBA, BBA-Finance and BCSIT degrees at Pokhara College of Management, affiliated to Pokhara University.",
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  const pageContentData = await getPageContent("programs");
+  const content = (pageContentData?.content || {}) as Partial<ProgramsPageContent>;
+  const seo = content.seo;
+
+  return {
+    title: seo?.title || DEFAULT_PROGRAMS_SEO.title,
+    description: seo?.description || DEFAULT_PROGRAMS_SEO.description,
+    keywords: seo?.keywords?.length
+      ? seo.keywords
+      : [
+          "programs",
+          "bachelor programs pokhara",
+          "pokhara college of management",
+          "pcm pokhara",
+        ],
+  };
+}
 
 export default async function ProgramsPage() {
   // Fetch both data sources in parallel (each has its own cache tag)

@@ -123,7 +123,16 @@ export default async function FacilityPage() {
               <RevealBox className="split__content">
                 <span className="eyebrow">{settings.designedEyebrow}</span>
                 <h2 className="section-title">{settings.designedTitle}</h2>
-                <p className="mt-4">{settings.designedParagraph}</p>
+                {/^<[a-z]+[\s>]/i.test(settings.designedParagraph.trim()) ? (
+                  <div
+                    className="mt-4"
+                    dangerouslySetInnerHTML={{
+                      __html: settings.designedParagraph,
+                    }}
+                  />
+                ) : (
+                  <p className="mt-4">{settings.designedParagraph}</p>
+                )}
                 {settings.designedChecklist.length > 0 && (
                   <CheckList
                     className="check-list mt-5"

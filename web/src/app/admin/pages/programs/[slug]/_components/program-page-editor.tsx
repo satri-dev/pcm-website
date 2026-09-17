@@ -10,13 +10,30 @@ import {
   ChevronDown,
   ExternalLink,
   Info,
+  Pencil,
   Plus,
   Save,
   Trash2,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { Program } from "@/types/programs";
 import ImageUpload from "@/components/cloudinary/ImageUpload";
+import { SectionSaveButton } from "@/app/admin/pages/_components/section-save-button";
+import RichTextEditor from "@/app/admin/_components/editor/rich-text-editor";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 /* ----------------------------------------------------------------
    Types
@@ -61,7 +78,7 @@ interface CtaButton {
 }
 export interface ProgramPageContent {
   hero: { tagline: string };
-  overview: { title: string; body: string[] };
+  overview: { title: string; body: string };
   concentrations: TextItem[];
   careers: string[];
   admissionRequirements: AdmissionItem[];
@@ -80,6 +97,7 @@ export interface ProgramPageContent {
       secondary: CtaButton;
     };
   };
+  seo: { title: string; description: string; keywords: string[] };
 }
 
 interface SectionMeta {
@@ -99,6 +117,7 @@ const SECTIONS: SectionMeta[] = [
   { id: "coordinator", title: "Program Coordinator", desc: "Coordinator profile card" },
   { id: "growth", title: "Growth Section", desc: "How students grow at PCM" },
   { id: "callout", title: "Callout & CTA", desc: "Bottom callout and CTA boxes" },
+  { id: "seo", title: "SEO & Metadata", desc: "Title, description and keywords" },
 ];
 
 const ALL_SECTION_IDS = SECTIONS.map((s) => s.id);
@@ -108,7 +127,7 @@ function isSectionFilled(id: string, f: ProgramPageContent): boolean {
     case "hero":
       return f.hero.tagline.trim().length > 0;
     case "overview":
-      return f.overview.title.trim().length > 0 || f.overview.body.length > 0;
+      return f.overview.title.trim().length > 0 || f.overview.body.trim().length > 0;
     case "concentrations":
       return f.concentrations.length > 0;
     case "careers":
@@ -141,6 +160,8 @@ function isSectionFilled(id: string, f: ProgramPageContent): boolean {
       return Boolean(
         f.callout.title || f.callout.body || f.cta.title || f.cta.body
       );
+    case "seo":
+      return Boolean(f.seo.title || f.seo.description || f.seo.keywords.length > 0);
     default:
       return false;
   }
@@ -255,31 +276,6 @@ function RemoveButton({
   );
 }
 
-function RepeatableCard({
-  badge,
-  index,
-  onRemove,
-  children,
-}: {
-  badge: string;
-  index: number;
-  onRemove: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="pp-card">
-      <div className="pp-card__head">
-        <div className="pp-card__title">
-          <span className="pp-card__title-badge">{badge}</span>
-          {index}
-        </div>
-        <RemoveButton onClick={onRemove} label={`Remove ${badge.toLowerCase()} ${index}`} />
-      </div>
-      <div className="space-y-3">{children}</div>
-    </div>
-  );
-}
-
 function SubSection({
   title,
   desc,
@@ -307,6 +303,7 @@ function CollapsibleSection({
   isFilled,
   onToggle,
   children,
+  footer,
 }: {
   number: number;
   id: string;
@@ -316,6 +313,7 @@ function CollapsibleSection({
   isFilled: boolean;
   onToggle: () => void;
   children: React.ReactNode;
+  footer?: React.ReactNode;
 }) {
   return (
     <section className={`pp-section ${isExpanded ? "is-expanded" : ""}`} id={`section-${id}`}>
@@ -337,7 +335,12 @@ function CollapsibleSection({
           <ChevronDown size={18} />
         </span>
       </button>
-      {isExpanded && <div className="pp-section__body">{children}</div>}
+      {isExpanded && (
+        <div className="pp-section__body">
+          {children}
+          {footer}
+        </div>
+      )}
     </section>
   );
 }
@@ -401,12 +404,31 @@ interface ProgramPageEditorProps {
   initialContent?: Partial<ProgramPageContent>;
 }
 
-function defaults(initialContent: Partial<ProgramPageContent>): ProgramPageContent {
+// Legacy content stored overview.body as an array of paragraphs; normalize to HTML.
+function normalizeOverviewBody(body: unknown): string {
+  if (Array.isArray(body)) return body.map((p) => `<p>${p}</p>`).join("");
+  return typeof body === "string" ? body : "";
+}
+
+// Plain-text preview for table cells (descriptions are stored as rich-text HTML).
+function stripHtml(html: string): string {
+  return (html || "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function defaults(
+  initialContent: Partial<ProgramPageContent>,
+  program?: Program
+): ProgramPageContent {
+  const cachedTitle = program?.name?.toLowerCase();
   return {
     hero: { tagline: initialContent?.hero?.tagline ?? "" },
     overview: {
       title: initialContent?.overview?.title ?? "",
-      body: initialContent?.overview?.body ?? [],
+      body: normalizeOverviewBody(initialContent?.overview?.body ?? ""),
     },
     concentrations: initialContent?.concentrations ?? [],
     careers: initialContent?.careers ?? [],
@@ -466,6 +488,29 @@ function defaults(initialContent: Partial<ProgramPageContent>): ProgramPageConte
         },
       },
     },
+    seo: {
+      title:
+        initialContent?.seo?.title ||
+        (program?.name
+          ? `${program.name} | Pokhara College of Management`
+          : ""),
+      description:
+        initialContent?.seo?.description ||
+        (program?.name
+          ? `${program.name} at Pokhara College of Management — overview, curriculum, admission requirements and career opportunities.`
+          : ""),
+      keywords:
+        initialContent?.seo?.keywords?.length && initialContent.seo.keywords.length > 0
+          ? initialContent.seo.keywords
+          : [
+              cachedTitle,
+              program?.code ? program.code.toLowerCase() : "",
+              `${cachedTitle} in Pokhara`,
+              "Pokhara College of Management",
+              "PCM Pokhara",
+              "Pokhara University",
+            ].filter((k): k is string => Boolean(k)),
+    },
   };
 }
 
@@ -475,13 +520,19 @@ export default function ProgramPageEditor({
 }: ProgramPageEditorProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
+  const [savingSection, setSavingSection] = useState<string | null>(null);
+  const [sectionErrors, setSectionErrors] = useState<Record<string, string>>(
+    {},
+  );
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set() // All sections collapsed initially
   );
-  const [formData, setFormData] = useState<ProgramPageContent>(() => defaults(initialContent));
+  const [formData, setFormData] = useState<ProgramPageContent>(() =>
+    defaults(initialContent, program)
+  );
 
   const update = (next: ProgramPageContent | ((prev: ProgramPageContent) => ProgramPageContent)) => {
     setDirty(true);
@@ -537,7 +588,349 @@ export default function ProgramPageEditor({
     }
   };
 
+  // Which data keys each section owns — used to save only that section.
+  const sectionPayload = (
+    id: string,
+    f: ProgramPageContent,
+  ): Record<string, unknown> => {
+    switch (id) {
+      case "hero":
+        return { hero: f.hero };
+      case "overview":
+        return { overview: f.overview };
+      case "concentrations":
+        return { concentrations: f.concentrations };
+      case "careers":
+        return { careers: f.careers };
+      case "admission":
+        return { admissionRequirements: f.admissionRequirements };
+      case "quickFacts":
+        return { quickFacts: f.quickFacts, cta: { buttons: f.cta.buttons } };
+      case "curriculum":
+        return {
+          curriculum: f.curriculum,
+          totalCredits: f.totalCredits,
+          curriculumSection: f.curriculumSection,
+        };
+      case "coordinator":
+        return { coordinator: f.coordinator };
+      case "growth":
+        return { growthSection: f.growthSection };
+      case "callout":
+        return { callout: f.callout, cta: { title: f.cta.title, body: f.cta.body } };
+      case "seo":
+        return { seo: f.seo };
+      default:
+        return {};
+    }
+  };
+
+  const saveSection = async (sectionId: string) => {
+    setSavingSection(sectionId);
+    setSectionErrors((prev) => ({ ...prev, [sectionId]: "" }));
+    setError("");
+
+    try {
+      const res = await fetch(`/api/admin/pages/programs/${program.slug}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          programSlug: program.slug,
+          section: sectionId,
+          content: sectionPayload(sectionId, formData),
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `Save failed (HTTP ${res.status})`);
+      }
+
+      setDirty(false);
+      setSaved(true);
+      router.refresh();
+      const sectionTitle = SECTIONS.find((s) => s.id === sectionId)?.title;
+      toast.success(`${sectionTitle ?? "Section"} saved successfully!`);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Save failed";
+      setSectionErrors((prev) => ({ ...prev, [sectionId]: errorMsg }));
+      setError(errorMsg);
+      toast.error(errorMsg);
+    } finally {
+      setSavingSection(null);
+    }
+  };
+
   const filledSections = SECTIONS.map((s) => isSectionFilled(s.id, formData));
+
+  const [concentrationModal, setConcentrationModal] = useState<
+    { mode: "add" } | { mode: "edit"; index: number } | null
+  >(null);
+  const [concentrationDraft, setConcentrationDraft] = useState<TextItem>({
+    title: "",
+    description: "",
+  });
+
+  const openAddConcentration = () => {
+    setConcentrationDraft({ title: "", description: "" });
+    setConcentrationModal({ mode: "add" });
+  };
+
+  const openEditConcentration = (index: number) => {
+    setConcentrationDraft({ ...formData.concentrations[index] });
+    setConcentrationModal({ mode: "edit", index });
+  };
+
+  const closeConcentrationModal = () => setConcentrationModal(null);
+
+  const saveConcentration = () => {
+    if (!concentrationModal) return;
+    update((f) => {
+      if (concentrationModal.mode === "edit") {
+        return {
+          ...f,
+          concentrations: f.concentrations.map((item, i) =>
+            i === concentrationModal.index ? { ...concentrationDraft } : item
+          ),
+        };
+      }
+      return {
+        ...f,
+        concentrations: [...f.concentrations, { ...concentrationDraft }],
+      };
+    });
+    closeConcentrationModal();
+  };
+
+  const removeConcentration = async (index: number) => {
+    const ok = await confirmAction({
+      title: `Remove concentration "${formData.concentrations[index].title || `#${index + 1}`}"?`,
+      description: "This will remove it from the Areas of Concentration list.",
+    });
+    if (ok) {
+      update((f) => ({
+        ...f,
+        concentrations: f.concentrations.filter((_, i) => i !== index),
+      }));
+    }
+  };
+
+  const [admissionModal, setAdmissionModal] = useState<
+    { mode: "add" } | { mode: "edit"; index: number } | null
+  >(null);
+  const [admissionDraft, setAdmissionDraft] = useState<AdmissionItem>({
+    title: "",
+    detail: "",
+  });
+
+  const openAddAdmission = () => {
+    setAdmissionDraft({ title: "", detail: "" });
+    setAdmissionModal({ mode: "add" });
+  };
+
+  const openEditAdmission = (index: number) => {
+    setAdmissionDraft({ ...formData.admissionRequirements[index] });
+    setAdmissionModal({ mode: "edit", index });
+  };
+
+  const closeAdmissionModal = () => setAdmissionModal(null);
+
+  const saveAdmission = () => {
+    if (!admissionModal) return;
+    update((f) => {
+      if (admissionModal.mode === "edit") {
+        return {
+          ...f,
+          admissionRequirements: f.admissionRequirements.map((item, i) =>
+            i === admissionModal.index ? { ...admissionDraft } : item
+          ),
+        };
+      }
+      return {
+        ...f,
+        admissionRequirements: [...f.admissionRequirements, { ...admissionDraft }],
+      };
+    });
+    closeAdmissionModal();
+  };
+
+  const removeAdmission = async (index: number) => {
+    const ok = await confirmAction({
+      title: `Remove requirement "${formData.admissionRequirements[index].title || `#${index + 1}`}"?`,
+      description: "This will remove it from the Admission Requirements list.",
+    });
+    if (ok) {
+      update((f) => ({
+        ...f,
+        admissionRequirements: f.admissionRequirements.filter((_, i) => i !== index),
+      }));
+    }
+  };
+
+  const [semesterModal, setSemesterModal] = useState<
+    { mode: "add" } | { mode: "edit"; index: number } | null
+  >(null);
+  const [semesterDraft, setSemesterDraft] = useState<Semester>({
+    label: "",
+    courses: [],
+  });
+
+  const openAddSemester = () => {
+    setSemesterDraft({ label: "", courses: [] });
+    setSemesterModal({ mode: "add" });
+  };
+
+  const openEditSemester = (index: number) => {
+    const sem = formData.curriculum[index];
+    setSemesterDraft({ label: sem.label, courses: sem.courses.map((c) => ({ ...c })) });
+    setSemesterModal({ mode: "edit", index });
+  };
+
+  const closeSemesterModal = () => setSemesterModal(null);
+
+  const saveSemester = () => {
+    if (!semesterModal) return;
+    update((f) => {
+      if (semesterModal.mode === "edit") {
+        return {
+          ...f,
+          curriculum: f.curriculum.map((s, i) =>
+            i === semesterModal.index ? { label: semesterDraft.label, courses: semesterDraft.courses } : s
+          ),
+        };
+      }
+      return {
+        ...f,
+        curriculum: [
+          ...f.curriculum,
+          { label: semesterDraft.label, courses: semesterDraft.courses },
+        ],
+      };
+    });
+    closeSemesterModal();
+  };
+
+  const removeSemester = async (index: number) => {
+    const ok = await confirmAction({
+      title: `Remove "${formData.curriculum[index].label || `Sem ${index + 1}`}"?`,
+      description: "All of its courses will also be removed. This cannot be undone.",
+    });
+    if (ok) {
+      update((f) => ({
+        ...f,
+        curriculum: f.curriculum.filter((_, i) => i !== index),
+      }));
+    }
+  };
+
+  const updateSemesterCourse = (
+    courseIdx: number,
+    field: "code" | "description" | "credits",
+    value: string
+  ) => {
+    setSemesterDraft((d) => ({
+      ...d,
+      courses: d.courses.map((c, ci) =>
+        ci === courseIdx ? { ...c, [field]: value } : c
+      ),
+    }));
+  };
+
+  const addSemesterCourse = () => {
+    setSemesterDraft((d) => ({
+      ...d,
+      courses: [...d.courses, { code: "", description: "", credits: "" }],
+    }));
+  };
+
+  const removeSemesterCourse = (courseIdx: number) => {
+    setSemesterDraft((d) => ({
+      ...d,
+      courses: d.courses.filter((_, ci) => ci !== courseIdx),
+    }));
+  };
+
+  const [coordinatorModal, setCoordinatorModal] = useState(false);
+  const [coordinatorDraft, setCoordinatorDraft] = useState({
+    name: "",
+    initials: "",
+    image: "",
+    role: "",
+    quote: "",
+  });
+
+  const openEditCoordinator = () => {
+    setCoordinatorDraft({ ...formData.coordinator });
+    setCoordinatorModal(true);
+  };
+
+  const closeCoordinatorModal = () => setCoordinatorModal(false);
+
+  const saveCoordinator = () => {
+    update((f) => ({ ...f, coordinator: { ...coordinatorDraft } }));
+    closeCoordinatorModal();
+  };
+
+  const [growthModal, setGrowthModal] = useState<
+    { mode: "add" } | { mode: "edit"; index: number } | null
+  >(null);
+  const [growthDraft, setGrowthDraft] = useState<TextItem>({
+    title: "",
+    description: "",
+  });
+
+  const openAddGrowthItem = () => {
+    setGrowthDraft({ title: "", description: "" });
+    setGrowthModal({ mode: "add" });
+  };
+
+  const openEditGrowthItem = (index: number) => {
+    setGrowthDraft({ ...formData.growthSection.items[index] });
+    setGrowthModal({ mode: "edit", index });
+  };
+
+  const closeGrowthModal = () => setGrowthModal(null);
+
+  const saveGrowthItem = () => {
+    if (!growthModal) return;
+    update((f) => {
+      if (growthModal.mode === "edit") {
+        return {
+          ...f,
+          growthSection: {
+            ...f.growthSection,
+            items: f.growthSection.items.map((itm, i) =>
+              i === growthModal.index ? { ...growthDraft } : itm
+            ),
+          },
+        };
+      }
+      return {
+        ...f,
+        growthSection: {
+          ...f.growthSection,
+          items: [...f.growthSection.items, { ...growthDraft }],
+        },
+      };
+    });
+    closeGrowthModal();
+  };
+
+  const removeGrowthItem = async (index: number) => {
+    const ok = await confirmAction({
+      title: `Remove "${formData.growthSection.items[index].title || `#${index + 1}`}"?`,
+      description: "This will remove it from the Growth items list.",
+    });
+    if (ok) {
+      update((f) => ({
+        ...f,
+        growthSection: {
+          ...f.growthSection,
+          items: f.growthSection.items.filter((_, i) => i !== index),
+        },
+      }));
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit}>
@@ -598,6 +991,14 @@ export default function ProgramPageEditor({
             isExpanded={expandedSections.has("hero")}
             isFilled={filledSections[0]}
             onToggle={() => toggleSection("hero")}
+            footer={
+              <SectionSaveButton
+                id="hero"
+                saving={savingSection === "hero"}
+                error={sectionErrors.hero}
+                onSave={saveSection}
+              />
+            }
           >
             <Field
               label="Hero Tagline"
@@ -623,6 +1024,14 @@ export default function ProgramPageEditor({
             isExpanded={expandedSections.has("overview")}
             isFilled={filledSections[1]}
             onToggle={() => toggleSection("overview")}
+            footer={
+              <SectionSaveButton
+                id="overview"
+                saving={savingSection === "overview"}
+                error={sectionErrors.overview}
+                onSave={saveSection}
+              />
+            }
           >
             <div className="form-grid">
               <Field label="Section Title" htmlFor="overview-title" className="field--full">
@@ -637,24 +1046,19 @@ export default function ProgramPageEditor({
                 />
               </Field>
               <Field
-                label="Body Paragraphs (one per line)"
+                label="Body Paragraphs"
                 htmlFor="overview-body"
                 className="field--full"
               >
-                <textarea
-                  id="overview-body"
-                  rows={6}
-                  value={formData.overview.body.join("\n")}
-                  onChange={(e) =>
+                <RichTextEditor
+                  content={formData.overview.body}
+                  onChange={(html) =>
                     update((f) => ({
                       ...f,
-                      overview: {
-                        ...f.overview,
-                        body: e.target.value.split("\n").filter((p) => p.trim()),
-                      },
+                      overview: { ...f.overview, body: html },
                     }))
                   }
-                  placeholder="Enter each paragraph on a new line..."
+                  placeholder="Write the overview content..."
                 />
               </Field>
             </div>
@@ -668,60 +1072,68 @@ export default function ProgramPageEditor({
             isExpanded={expandedSections.has("concentrations")}
             isFilled={filledSections[2]}
             onToggle={() => toggleSection("concentrations")}
+            footer={
+              <SectionSaveButton
+                id="concentrations"
+                saving={savingSection === "concentrations"}
+                error={sectionErrors.concentrations}
+                onSave={saveSection}
+              />
+            }
           >
             <div className="space-y-3">
-              {formData.concentrations.map((conc, idx) => (
-                <RepeatableCard
-                  key={`concentration-${idx}`}
-                  badge="Concentration"
-                  index={idx + 1}
-                  onRemove={() =>
-                    update((f) => ({
-                      ...f,
-                      concentrations: f.concentrations.filter((_, i) => i !== idx),
-                    }))
-                  }
-                >
-                  <Field label="Title" className="field--full">
-                    <input
-                      type="text"
-                      value={conc.title}
-                      onChange={(e) =>
-                        update((f) => ({
-                          ...f,
-                          concentrations: f.concentrations.map((item, i) =>
-                            i === idx ? { ...item, title: e.target.value } : item
-                          ),
-                        }))
-                      }
-                      placeholder="Software Development"
-                    />
-                  </Field>
-                  <Field label="Description" className="field--full">
-                    <textarea
-                      rows={2}
-                      value={conc.description}
-                      onChange={(e) =>
-                        update((f) => ({
-                          ...f,
-                          concentrations: f.concentrations.map((item, i) =>
-                            i === idx ? { ...item, description: e.target.value } : item
-                          ),
-                        }))
-                      }
-                      placeholder="Learn modern programming languages and frameworks..."
-                    />
-                  </Field>
-                </RepeatableCard>
-              ))}
-              <AddButton
-                onClick={() =>
-                  update((f) => ({
-                    ...f,
-                    concentrations: [...f.concentrations, { title: "", description: "" }],
-                  }))
-                }
-              >
+              {formData.concentrations.length === 0 ? (
+                <p className="text-sm text-[var(--admin-muted)]">
+                  No concentrations yet. Click &quot;Add Concentration&quot; to create one.
+                </p>
+              ) : (
+                <div className="pp-table-wrap rounded-lg border border-[var(--admin-line)]">
+                  <Table className="table-fixed">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12 bg-[var(--admin-surface-2)]">#</TableHead>
+                        <TableHead className="w-2/5 truncate bg-[var(--admin-surface-2)]">TITLE</TableHead>
+                        <TableHead className="bg-[var(--admin-surface-2)]">DESCRIPTION</TableHead>
+                        <TableHead className="w-28 text-right bg-[var(--admin-surface-2)]">ACTIONS</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {formData.concentrations.map((conc, idx) => (
+                        <TableRow key={`concentration-${idx}`}>
+                          <TableCell className="w-12 py-2.5">{idx + 1}</TableCell>
+                          <TableCell className="truncate py-2.5 text-sm font-semibold">
+                            {conc.title || "Untitled"}
+                          </TableCell>
+                          <TableCell className="cell-ellipsis py-2.5 text-sm text-[var(--admin-muted)]">
+                            {conc.description ? stripHtml(conc.description) : "—"}
+                          </TableCell>
+                          <TableCell className="py-2.5">
+                            <div className="row-actions justify-end">
+                              <button
+                                type="button"
+                                className="act-btn"
+                                onClick={() => openEditConcentration(idx)}
+                                title="Edit concentration"
+                              >
+                                <Pencil size={15} />
+                              </button>
+                              <button
+                                type="button"
+                                className="act-btn danger"
+                                onClick={() => removeConcentration(idx)}
+                                title="Remove concentration"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+              <AddButton onClick={openAddConcentration}>
                 Add Concentration
               </AddButton>
             </div>
@@ -735,6 +1147,14 @@ export default function ProgramPageEditor({
             isExpanded={expandedSections.has("careers")}
             isFilled={filledSections[3]}
             onToggle={() => toggleSection("careers")}
+            footer={
+              <SectionSaveButton
+                id="careers"
+                saving={savingSection === "careers"}
+                error={sectionErrors.careers}
+                onSave={saveSection}
+              />
+            }
           >
             <div className="space-y-3">
               {formData.careers.map((career, idx) => (
@@ -777,63 +1197,68 @@ export default function ProgramPageEditor({
             isExpanded={expandedSections.has("admission")}
             isFilled={filledSections[4]}
             onToggle={() => toggleSection("admission")}
+            footer={
+              <SectionSaveButton
+                id="admission"
+                saving={savingSection === "admission"}
+                error={sectionErrors.admission}
+                onSave={saveSection}
+              />
+            }
           >
             <div className="space-y-3">
-              {formData.admissionRequirements.map((req, idx) => (
-                <RepeatableCard
-                  key={`admission-${idx}`}
-                  badge="Requirement"
-                  index={idx + 1}
-                  onRemove={() =>
-                    update((f) => ({
-                      ...f,
-                      admissionRequirements: f.admissionRequirements.filter((_, i) => i !== idx),
-                    }))
-                  }
-                >
-                  <Field label="Title" className="field--full">
-                    <input
-                      type="text"
-                      value={req.title}
-                      onChange={(e) =>
-                        update((f) => ({
-                          ...f,
-                          admissionRequirements: f.admissionRequirements.map((item, i) =>
-                            i === idx ? { ...item, title: e.target.value } : item
-                          ),
-                        }))
-                      }
-                      placeholder="Minimum 12 years of formal schooling"
-                    />
-                  </Field>
-                  <Field label="Detail" className="field--full">
-                    <textarea
-                      rows={2}
-                      value={req.detail}
-                      onChange={(e) =>
-                        update((f) => ({
-                          ...f,
-                          admissionRequirements: f.admissionRequirements.map((item, i) =>
-                            i === idx ? { ...item, detail: e.target.value } : item
-                          ),
-                        }))
-                      }
-                      placeholder="10+2, A-Level, or equivalent..."
-                    />
-                  </Field>
-                </RepeatableCard>
-              ))}
-              <AddButton
-                onClick={() =>
-                  update((f) => ({
-                    ...f,
-                    admissionRequirements: [
-                      ...f.admissionRequirements,
-                      { title: "", detail: "" },
-                    ],
-                  }))
-                }
-              >
+              {formData.admissionRequirements.length === 0 ? (
+                <p className="text-sm text-[var(--admin-muted)]">
+                  No requirements yet. Click &quot;Add Requirement&quot; to create one.
+                </p>
+              ) : (
+                <div className="pp-table-wrap rounded-lg border border-[var(--admin-line)]">
+                  <Table className="table-fixed">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12 bg-[var(--admin-surface-2)]">#</TableHead>
+                        <TableHead className="w-2/5 truncate bg-[var(--admin-surface-2)]">TITLE</TableHead>
+                        <TableHead className="bg-[var(--admin-surface-2)]">DETAIL</TableHead>
+                        <TableHead className="w-28 text-right bg-[var(--admin-surface-2)]">ACTIONS</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {formData.admissionRequirements.map((req, idx) => (
+                        <TableRow key={`admission-${idx}`}>
+                          <TableCell className="w-12 py-2.5">{idx + 1}</TableCell>
+                          <TableCell className="truncate py-2.5 text-sm font-semibold">
+                            {req.title || "Untitled"}
+                          </TableCell>
+                          <TableCell className="cell-ellipsis py-2.5 text-sm text-[var(--admin-muted)]">
+                            {req.detail ? stripHtml(req.detail) : "—"}
+                          </TableCell>
+                          <TableCell className="py-2.5">
+                            <div className="row-actions justify-end">
+                              <button
+                                type="button"
+                                className="act-btn"
+                                onClick={() => openEditAdmission(idx)}
+                                title="Edit requirement"
+                              >
+                                <Pencil size={15} />
+                              </button>
+                              <button
+                                type="button"
+                                className="act-btn danger"
+                                onClick={() => removeAdmission(idx)}
+                                title="Remove requirement"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+              <AddButton onClick={openAddAdmission}>
                 Add Requirement
               </AddButton>
             </div>
@@ -847,6 +1272,14 @@ export default function ProgramPageEditor({
             isExpanded={expandedSections.has("quickFacts")}
             isFilled={filledSections[5]}
             onToggle={() => toggleSection("quickFacts")}
+            footer={
+              <SectionSaveButton
+                id="quickFacts"
+                saving={savingSection === "quickFacts"}
+                error={sectionErrors.quickFacts}
+                onSave={saveSection}
+              />
+            }
           >
             <SubSection
               title="Field Values"
@@ -1044,6 +1477,14 @@ export default function ProgramPageEditor({
             isExpanded={expandedSections.has("curriculum")}
             isFilled={filledSections[6]}
             onToggle={() => toggleSection("curriculum")}
+            footer={
+              <SectionSaveButton
+                id="curriculum"
+                saving={savingSection === "curriculum"}
+                error={sectionErrors.curriculum}
+                onSave={saveSection}
+              />
+            }
           >
             <SubSection
               title="Section Heading"
@@ -1076,15 +1517,14 @@ export default function ProgramPageEditor({
                 />
               </Field>
               <Field label="Description" className="field--full">
-                <textarea
-                  rows={2}
-                  value={formData.curriculumSection.description}
-                  onChange={(e) =>
+                <RichTextEditor
+                  content={formData.curriculumSection.description}
+                  onChange={(html) =>
                     update((f) => ({
                       ...f,
                       curriculumSection: {
                         ...f.curriculumSection,
-                        description: e.target.value,
+                        description: html,
                       },
                     }))
                   }
@@ -1107,175 +1547,59 @@ export default function ProgramPageEditor({
             </Field>
 
             <div className="space-y-3">
-              {formData.curriculum.map((sem, semIdx) => (
-                <div key={`semester-${semIdx}`} className="pp-semester">
-                  <div className="pp-semester__head">
-                    <input
-                      type="text"
-                      value={sem.label}
-                      onChange={(e) =>
-                        update((f) => ({
-                          ...f,
-                          curriculum: f.curriculum.map((s, i) =>
-                            i === semIdx ? { ...s, label: e.target.value } : s
-                          ),
-                        }))
-                      }
-                      placeholder={`Sem ${semIdx + 1}`}
-                      className="pp-semester__label"
-                    />
-                    <RemoveButton
-                      onClick={async () => {
-                        const label = sem.label || `Sem ${semIdx + 1}`;
-                        const ok = await confirmAction({
-                          title: `Remove ${label}?`,
-                          description: "All of its courses will also be removed. This cannot be undone.",
-                        });
-                        if (!ok) return;
-                        update((f) => ({
-                          ...f,
-                          curriculum: f.curriculum.filter((_, i) => i !== semIdx),
-                        }));
-                        toast.success(`${label} removed`, { position: "bottom-right" });
-                      }}
-                      label={`Remove ${sem.label || `Sem ${semIdx + 1}`}`}
-                    />
-                  </div>
-
-                  <div className="pp-course-head" aria-hidden="true">
-                    <span>Code</span>
-                    <span>Course</span>
-                    <span>Credits</span>
-                    <span />
-                  </div>
-
-                  <div className="space-y-2">
-                    {sem.courses.map((course, courseIdx) => (
-                      <div key={`course-${semIdx}-${courseIdx}`} className="pp-course-grid">
-                        <input
-                          type="text"
-                          value={course.code}
-                          onChange={(e) =>
-                            update((f) => ({
-                              ...f,
-                              curriculum: f.curriculum.map((s, si) =>
-                                si === semIdx
-                                  ? {
-                                      ...s,
-                                      courses: s.courses.map((c, ci) =>
-                                        ci === courseIdx ? { ...c, code: e.target.value } : c
-                                      ),
-                                    }
-                                  : s
-                              ),
-                            }))
-                          }
-                          placeholder="CSC 101"
-                        />
-                        <input
-                          type="text"
-                          value={course.description}
-                          onChange={(e) =>
-                            update((f) => ({
-                              ...f,
-                              curriculum: f.curriculum.map((s, si) =>
-                                si === semIdx
-                                  ? {
-                                      ...s,
-                                      courses: s.courses.map((c, ci) =>
-                                        ci === courseIdx
-                                          ? { ...c, description: e.target.value }
-                                          : c
-                                      ),
-                                    }
-                                  : s
-                              ),
-                            }))
-                          }
-                          placeholder="Introduction to Computer Science"
-                        />
-                        <input
-                          type="text"
-                          value={course.credits}
-                          onChange={(e) =>
-                            update((f) => ({
-                              ...f,
-                              curriculum: f.curriculum.map((s, si) =>
-                                si === semIdx
-                                  ? {
-                                      ...s,
-                                      courses: s.courses.map((c, ci) =>
-                                        ci === courseIdx ? { ...c, credits: e.target.value } : c
-                                      ),
-                                    }
-                                  : s
-                              ),
-                            }))
-                          }
-                          placeholder="3"
-                        />
-                        <RemoveButton
-                          onClick={async () => {
-                            const courseLabel = course.code || `Course ${courseIdx + 1}`;
-                            const semLabel = sem.label || `Sem ${semIdx + 1}`;
-                            const ok = await confirmAction({
-                              title: `Remove ${courseLabel}?`,
-                              description: `This course will be removed from ${semLabel}. This cannot be undone.`,
-                            });
-                            if (!ok) return;
-                            update((f) => ({
-                              ...f,
-                              curriculum: f.curriculum.map((s, si) =>
-                                si === semIdx
-                                  ? {
-                                      ...s,
-                                      courses: s.courses.filter((_, ci) => ci !== courseIdx),
-                                    }
-                                  : s
-                              ),
-                            }));
-                            toast.success(`${courseLabel} removed from ${semLabel}`, { position: "bottom-right" });
-                          }}
-                          label={`Remove course ${courseIdx + 1}`}
-                        />
-                      </div>
-                    ))}
-                  </div>
-
-                  <AddButton
-                    onClick={() =>
-                      update((f) => ({
-                        ...f,
-                        curriculum: f.curriculum.map((s, si) =>
-                          si === semIdx
-                            ? {
-                                ...s,
-                                courses: [...s.courses, { code: "", description: "", credits: "" }],
-                              }
-                            : s
-                        ),
-                      }))
-                    }
-                  >
-                    Add Course
-                  </AddButton>
+              {formData.curriculum.length === 0 ? (
+                <p className="text-sm text-[var(--admin-muted)]">
+                  No semesters yet. Click &quot;Add Semester&quot; to create one.
+                </p>
+              ) : (
+                <div className="pp-table-wrap rounded-lg border border-[var(--admin-line)]">
+                  <Table className="table-fixed">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12 bg-[var(--admin-surface-2)]">#</TableHead>
+                        <TableHead className="w-1/3 truncate bg-[var(--admin-surface-2)]">SEMESTER</TableHead>
+                        <TableHead className="bg-[var(--admin-surface-2)]">COURSES</TableHead>
+                        <TableHead className="w-28 text-right bg-[var(--admin-surface-2)]">ACTIONS</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {formData.curriculum.map((sem, semIdx) => (
+                        <TableRow key={`semester-${semIdx}`}>
+                          <TableCell className="w-12 py-2.5">{semIdx + 1}</TableCell>
+                          <TableCell className="truncate py-2.5 text-sm font-semibold">
+                            {sem.label || `Sem ${semIdx + 1}`}
+                          </TableCell>
+                          <TableCell className="py-2.5 text-sm text-[var(--admin-muted)]">
+                            {sem.courses.length} {sem.courses.length === 1 ? "course" : "courses"}
+                          </TableCell>
+                          <TableCell className="py-2.5">
+                            <div className="row-actions justify-end">
+                              <button
+                                type="button"
+                                className="act-btn"
+                                onClick={() => openEditSemester(semIdx)}
+                                title="Edit semester"
+                              >
+                                <Pencil size={15} />
+                              </button>
+                              <button
+                                type="button"
+                                className="act-btn danger"
+                                onClick={() => removeSemester(semIdx)}
+                                title="Remove semester"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
-              ))}
+              )}
+              <AddButton onClick={openAddSemester}>Add Semester</AddButton>
             </div>
-
-            <AddButton
-              onClick={() =>
-                update((f) => ({
-                  ...f,
-                  curriculum: [
-                    ...f.curriculum,
-                    { label: `Sem ${f.curriculum.length + 1}`, courses: [] },
-                  ],
-                }))
-              }
-            >
-              Add Semester
-            </AddButton>
           </CollapsibleSection>
 
           <CollapsibleSection
@@ -1286,102 +1610,51 @@ export default function ProgramPageEditor({
             isExpanded={expandedSections.has("coordinator")}
             isFilled={filledSections[7]}
             onToggle={() => toggleSection("coordinator")}
+            footer={
+              <SectionSaveButton
+                id="coordinator"
+                saving={savingSection === "coordinator"}
+                error={sectionErrors.coordinator}
+                onSave={saveSection}
+              />
+            }
           >
-            <div className="form-grid">
-              <Field label="Name" className="field--full">
-                <input
-                  type="text"
-                  value={formData.coordinator.name}
-                  onChange={(e) =>
-                    update((f) => ({
-                      ...f,
-                      coordinator: { ...f.coordinator, name: e.target.value },
-                    }))
-                  }
-                  placeholder="Dr. John Doe"
-                />
-              </Field>
-              <Field label="Initials">
-                <input
-                  type="text"
-                  value={formData.coordinator.initials}
-                  onChange={(e) =>
-                    update((f) => ({
-                      ...f,
-                      coordinator: { ...f.coordinator, initials: e.target.value },
-                    }))
-                  }
-                  placeholder="JD"
-                />
-              </Field>
-              <Field label="Role">
-                <input
-                  type="text"
-                  value={formData.coordinator.role}
-                  onChange={(e) =>
-                    update((f) => ({
-                      ...f,
-                      coordinator: { ...f.coordinator, role: e.target.value },
-                    }))
-                  }
-                  placeholder="BCA Coordinator"
-                />
-              </Field>
-              <Field
-                label="Coordinator Image"
-                hint="Upload coordinator photo via Cloudinary"
-                className="field--full"
-              >
-                <div className="space-y-2">
-                  <ImageUpload
-                    onUpload={(result) =>
-                      update((f) => ({
-                        ...f,
-                        coordinator: { ...f.coordinator, image: result.secure_url },
-                      }))
-                    }
-                  />
-                  {formData.coordinator.image && (
-                    <div className="flex items-center gap-3 rounded-md border border-gray-200 bg-gray-50 p-3">
-                      <img
-                        src={formData.coordinator.image}
-                        alt="Coordinator preview"
-                        className="h-16 w-16 rounded-md object-cover"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-gray-600 truncate">
-                          {formData.coordinator.image}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          update((f) => ({
-                            ...f,
-                            coordinator: { ...f.coordinator, image: "" },
-                          }))
-                        }
-                        className="text-sm text-red-600 hover:text-red-700"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </Field>
-              <Field label="Quote" className="field--full">
-                <textarea
-                  rows={4}
-                  value={formData.coordinator.quote}
-                  onChange={(e) =>
-                    update((f) => ({
-                      ...f,
-                      coordinator: { ...f.coordinator, quote: e.target.value },
-                    }))
-                  }
-                  placeholder="Technology is evolving fast..."
-                />
-              </Field>
+            <div className="space-y-3">
+              <div className="pp-table-wrap rounded-lg border border-[var(--admin-line)]">
+                <Table className="table-fixed">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12 bg-[var(--admin-surface-2)]">#</TableHead>
+                      <TableHead className="w-1/3 truncate bg-[var(--admin-surface-2)]">NAME</TableHead>
+                      <TableHead className="truncate bg-[var(--admin-surface-2)]">ROLE</TableHead>
+                      <TableHead className="w-28 text-right bg-[var(--admin-surface-2)]">ACTIONS</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell className="w-12 py-2.5">1</TableCell>
+                      <TableCell className="truncate py-2.5 text-sm font-semibold">
+                        {formData.coordinator.name || "Dr. John Doe"}
+                      </TableCell>
+                      <TableCell className="truncate py-2.5 text-sm text-[var(--admin-muted)]">
+                        {formData.coordinator.role || "BCA Coordinator"}
+                      </TableCell>
+                      <TableCell className="py-2.5">
+                        <div className="row-actions justify-end">
+                          <button
+                            type="button"
+                            className="act-btn"
+                            onClick={openEditCoordinator}
+                            title="Edit coordinator"
+                          >
+                            <Pencil size={15} />
+                          </button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           </CollapsibleSection>
 
@@ -1393,6 +1666,14 @@ export default function ProgramPageEditor({
             isExpanded={expandedSections.has("growth")}
             isFilled={filledSections[8]}
             onToggle={() => toggleSection("growth")}
+            footer={
+              <SectionSaveButton
+                id="growth"
+                saving={savingSection === "growth"}
+                error={sectionErrors.growth}
+                onSave={saveSection}
+              />
+            }
           >
             <div className="space-y-3">
               <Field label="Section Title" className="field--full">
@@ -1409,73 +1690,59 @@ export default function ProgramPageEditor({
                 />
               </Field>
 
-              {formData.growthSection.items.map((item, idx) => (
-                <RepeatableCard
-                  key={`growth-${idx}`}
-                  badge="Item"
-                  index={idx + 1}
-                  onRemove={() =>
-                    update((f) => ({
-                      ...f,
-                      growthSection: {
-                        ...f.growthSection,
-                        items: f.growthSection.items.filter((_, i) => i !== idx),
-                      },
-                    }))
-                  }
-                >
-                  <Field label="Title" className="field--full">
-                    <input
-                      type="text"
-                      value={item.title}
-                      onChange={(e) =>
-                        update((f) => ({
-                          ...f,
-                          growthSection: {
-                            ...f.growthSection,
-                            items: f.growthSection.items.map((itm, i) =>
-                              i === idx ? { ...itm, title: e.target.value } : itm
-                            ),
-                          },
-                        }))
-                      }
-                      placeholder="Industry exposure"
-                    />
-                  </Field>
-                  <Field label="Description" className="field--full">
-                    <textarea
-                      rows={2}
-                      value={item.description}
-                      onChange={(e) =>
-                        update((f) => ({
-                          ...f,
-                          growthSection: {
-                            ...f.growthSection,
-                            items: f.growthSection.items.map((itm, i) =>
-                              i === idx ? { ...itm, description: e.target.value } : itm
-                            ),
-                          },
-                        }))
-                      }
-                      placeholder="Guest lectures and workshops..."
-                    />
-                  </Field>
-                </RepeatableCard>
-              ))}
+              {formData.growthSection.items.length === 0 ? (
+                <p className="text-sm text-[var(--admin-muted)]">
+                  No growth items yet. Click &quot;Add Growth Item&quot; to create one.
+                </p>
+              ) : (
+                <div className="pp-table-wrap rounded-lg border border-[var(--admin-line)]">
+                  <Table className="table-fixed">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12 bg-[var(--admin-surface-2)]">#</TableHead>
+                        <TableHead className="w-2/5 truncate bg-[var(--admin-surface-2)]">TITLE</TableHead>
+                        <TableHead className="bg-[var(--admin-surface-2)]">DESCRIPTION</TableHead>
+                        <TableHead className="w-28 text-right bg-[var(--admin-surface-2)]">ACTIONS</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {formData.growthSection.items.map((item, idx) => (
+                        <TableRow key={`growth-${idx}`}>
+                          <TableCell className="w-12 py-2.5">{idx + 1}</TableCell>
+                          <TableCell className="truncate py-2.5 text-sm font-semibold">
+                            {item.title}
+                          </TableCell>
+                          <TableCell className="cell-ellipsis py-2.5 text-sm text-[var(--admin-muted)]">
+                            {stripHtml(item.description)}
+                          </TableCell>
+                          <TableCell className="py-2.5">
+                            <div className="row-actions justify-end">
+                              <button
+                                type="button"
+                                className="act-btn"
+                                onClick={() => openEditGrowthItem(idx)}
+                                title="Edit growth item"
+                              >
+                                <Pencil size={15} />
+                              </button>
+                              <button
+                                type="button"
+                                className="act-btn danger"
+                                onClick={() => removeGrowthItem(idx)}
+                                title="Remove growth item"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
 
-              <AddButton
-                onClick={() =>
-                  update((f) => ({
-                    ...f,
-                    growthSection: {
-                      ...f.growthSection,
-                      items: [...f.growthSection.items, { title: "", description: "" }],
-                    },
-                  }))
-                }
-              >
-                Add Growth Item
-              </AddButton>
+              <AddButton onClick={openAddGrowthItem}>Add Growth Item</AddButton>
             </div>
           </CollapsibleSection>
 
@@ -1487,6 +1754,14 @@ export default function ProgramPageEditor({
             isExpanded={expandedSections.has("callout")}
             isFilled={filledSections[9]}
             onToggle={() => toggleSection("callout")}
+            footer={
+              <SectionSaveButton
+                id="callout"
+                saving={savingSection === "callout"}
+                error={sectionErrors.callout}
+                onSave={saveSection}
+              />
+            }
           >
             <SubSection title="Callout Box" desc="The highlighted note inside the page body.">
               <Field label="Title" className="field--full">
@@ -1530,6 +1805,70 @@ export default function ProgramPageEditor({
               </Field>
             </SubSection>
           </CollapsibleSection>
+
+          <CollapsibleSection
+            number={11}
+            id="seo"
+            title={SECTIONS[10].title}
+            desc={SECTIONS[10].desc}
+            isExpanded={expandedSections.has("seo")}
+            isFilled={filledSections[10]}
+            onToggle={() => toggleSection("seo")}
+            footer={
+              <SectionSaveButton
+                id="seo"
+                saving={savingSection === "seo"}
+                error={sectionErrors.seo}
+                onSave={saveSection}
+              />
+            }
+          >
+            <div className="space-y-4">
+              <Field label="SEO Title" className="field--full">
+                <input
+                  type="text"
+                  value={formData.seo.title}
+                  onChange={(e) => update((f) => ({ ...f, seo: { ...f.seo, title: e.target.value } }))}
+                  placeholder={`${program.name} | Pokhara College of Management`}
+                  maxLength={60}
+                />
+                <p className="text-xs text-[var(--admin-muted)] mt-1">
+                  {formData.seo.title.length}/60 characters (recommended: 50–60)
+                </p>
+              </Field>
+              <Field label="Meta Description" className="field--full">
+                <textarea
+                  rows={3}
+                  value={formData.seo.description}
+                  onChange={(e) => update((f) => ({ ...f, seo: { ...f.seo, description: e.target.value } }))}
+                  placeholder={`Discover the ${program.name} program at Pokhara College of Management — overview, curriculum, admission and career opportunities.`}
+                  maxLength={160}
+                />
+                <p className="text-xs text-[var(--admin-muted)] mt-1">
+                  {formData.seo.description.length}/160 characters (recommended: 150–160)
+                </p>
+              </Field>
+              <Field label="Keywords (comma-separated)" className="field--full">
+                <input
+                  type="text"
+                  value={formData.seo.keywords.join(", ")}
+                  onChange={(e) =>
+                    update((f) => ({
+                      ...f,
+                      seo: {
+                        ...f.seo,
+                        keywords: e.target.value.split(",").map((k) => k.trim()).filter(Boolean),
+                      },
+                    }))
+                  }
+                  placeholder={`${program.code?.toLowerCase()}, ${program.name?.toLowerCase()}, PCM Pokhara, Pokhara University`}
+                />
+                <p className="text-xs text-[var(--admin-muted)] mt-1">
+                  {formData.seo.keywords.length} keywords (recommended: 5–10)
+                </p>
+              </Field>
+            </div>
+          </CollapsibleSection>
         </div>
 
         <aside className="pp-editor__aside">
@@ -1558,6 +1897,463 @@ export default function ProgramPageEditor({
           </button>
         </div>
       </div>
+
+      <Dialog
+        open={concentrationModal !== null}
+        onOpenChange={(open) => !open && closeConcentrationModal()}
+      >
+        <DialogContent
+          showCloseButton={false}
+          className="news-modal w-[min(100%,520px)] sm:max-w-[520px] max-h-[90vh] overflow-y-auto flex flex-col gap-0 rounded-[16px] p-0 ring-0 outline-none"
+        >
+          <div className="modal__head">
+            <DialogTitle className="m-0 text-[1.05rem] font-normal">
+              {concentrationModal?.mode === "edit"
+                ? "Edit Concentration"
+                : "Add Concentration"}
+            </DialogTitle>
+            <button
+              type="button"
+              className="admin-icon-btn"
+              aria-label="Close"
+              onClick={closeConcentrationModal}
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="modal__body">
+            <div className="form-grid">
+              <div className="field field--full">
+                <label htmlFor="concentration-title">
+                  Title <span className="req">*</span>
+                </label>
+                <input
+                  id="concentration-title"
+                  type="text"
+                  value={concentrationDraft.title}
+                  onChange={(e) =>
+                    setConcentrationDraft((d) => ({ ...d, title: e.target.value }))
+                  }
+                  placeholder="Software Development"
+                />
+              </div>
+              <div className="field field--full">
+                <label htmlFor="concentration-description">Description</label>
+                <RichTextEditor
+                  content={concentrationDraft.description}
+                  onChange={(html) =>
+                    setConcentrationDraft((d) => ({ ...d, description: html }))
+                  }
+                  placeholder="Learn modern programming languages and frameworks..."
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="modal__foot">
+            <button
+              type="button"
+              className="admin-btn"
+              onClick={closeConcentrationModal}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="admin-btn admin-btn--primary"
+              onClick={saveConcentration}
+              disabled={!concentrationDraft.title.trim()}
+            >
+              {concentrationModal?.mode === "edit" ? "Update" : "Add"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={admissionModal !== null}
+        onOpenChange={(open) => !open && closeAdmissionModal()}
+      >
+        <DialogContent
+          showCloseButton={false}
+          className="news-modal w-[min(100%,520px)] sm:max-w-[520px] max-h-[90vh] overflow-y-auto flex flex-col gap-0 rounded-[16px] p-0 ring-0 outline-none"
+        >
+          <div className="modal__head">
+            <DialogTitle className="m-0 text-[1.05rem] font-normal">
+              {admissionModal?.mode === "edit"
+                ? "Edit Requirement"
+                : "Add Requirement"}
+            </DialogTitle>
+            <button
+              type="button"
+              className="admin-icon-btn"
+              aria-label="Close"
+              onClick={closeAdmissionModal}
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="modal__body">
+            <div className="form-grid">
+              <div className="field field--full">
+                <label htmlFor="admission-title">
+                  Title <span className="req">*</span>
+                </label>
+                <input
+                  id="admission-title"
+                  type="text"
+                  value={admissionDraft.title}
+                  onChange={(e) =>
+                    setAdmissionDraft((d) => ({ ...d, title: e.target.value }))
+                  }
+                  placeholder="Minimum 12 years of formal schooling"
+                />
+              </div>
+              <div className="field field--full">
+                <label htmlFor="admission-detail">Detail</label>
+                <RichTextEditor
+                  content={admissionDraft.detail}
+                  onChange={(html) =>
+                    setAdmissionDraft((d) => ({ ...d, detail: html }))
+                  }
+                  placeholder="10+2, A-Level, or equivalent..."
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="modal__foot">
+            <button
+              type="button"
+              className="admin-btn"
+              onClick={closeAdmissionModal}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="admin-btn admin-btn--primary"
+              onClick={saveAdmission}
+              disabled={!admissionDraft.title.trim()}
+            >
+              {admissionModal?.mode === "edit" ? "Update" : "Add"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={semesterModal !== null}
+        onOpenChange={(open) => !open && closeSemesterModal()}
+      >
+        <DialogContent
+          showCloseButton={false}
+          className="news-modal w-[min(100%,640px)] sm:max-w-[640px] max-h-[90vh] overflow-y-auto flex flex-col gap-0 rounded-[16px] p-0 ring-0 outline-none"
+        >
+          <div className="modal__head">
+            <DialogTitle className="m-0 text-[1.05rem] font-normal">
+              {semesterModal?.mode === "edit"
+                ? "Edit Semester"
+                : "Add Semester"}
+            </DialogTitle>
+            <button
+              type="button"
+              className="admin-icon-btn"
+              aria-label="Close"
+              onClick={closeSemesterModal}
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="modal__body">
+            <div className="form-grid">
+              <div className="field field--full">
+                <label htmlFor="semester-label">
+                  Semester Label <span className="req">*</span>
+                </label>
+                <input
+                  id="semester-label"
+                  type="text"
+                  value={semesterDraft.label}
+                  onChange={(e) =>
+                    setSemesterDraft((d) => ({ ...d, label: e.target.value }))
+                  }
+                  placeholder="Sem I"
+                />
+              </div>
+              <div className="field field--full">
+                <label>Courses</label>
+                {semesterDraft.courses.length === 0 ? (
+                  <p className="text-sm text-[var(--admin-muted)]">
+                    No courses yet. Click &quot;Add Course&quot; to add one.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {semesterDraft.courses.map((course, courseIdx) => (
+                      <div
+                        key={`draft-course-${courseIdx}`}
+                        className="pp-course-grid"
+                      >
+                        <input
+                          type="text"
+                          value={course.code}
+                          onChange={(e) =>
+                            updateSemesterCourse(courseIdx, "code", e.target.value)
+                          }
+                          placeholder="CSC 101"
+                        />
+                        <input
+                          type="text"
+                          value={course.description}
+                          onChange={(e) =>
+                            updateSemesterCourse(courseIdx, "description", e.target.value)
+                          }
+                          placeholder="Introduction to Computer Science"
+                        />
+                        <input
+                          type="text"
+                          value={course.credits}
+                          onChange={(e) =>
+                            updateSemesterCourse(courseIdx, "credits", e.target.value)
+                          }
+                          placeholder="3"
+                        />
+                        <RemoveButton
+                          onClick={() => removeSemesterCourse(courseIdx)}
+                          label={`Remove course ${courseIdx + 1}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <AddButton onClick={addSemesterCourse}>
+                  Add Course
+                </AddButton>
+              </div>
+            </div>
+          </div>
+
+          <div className="modal__foot">
+            <button
+              type="button"
+              className="admin-btn"
+              onClick={closeSemesterModal}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="admin-btn admin-btn--primary"
+              onClick={saveSemester}
+              disabled={!semesterDraft.label.trim()}
+            >
+              {semesterModal?.mode === "edit" ? "Update" : "Add"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={coordinatorModal}
+        onOpenChange={(open) => !open && closeCoordinatorModal()}
+      >
+        <DialogContent
+          showCloseButton={false}
+          className="news-modal w-[min(100%,640px)] sm:max-w-[640px] max-h-[90vh] overflow-y-auto flex flex-col gap-0 rounded-[16px] p-0 ring-0 outline-none"
+        >
+          <div className="modal__head">
+            <DialogTitle className="m-0 text-[1.05rem] font-normal">
+              Edit Coordinator
+            </DialogTitle>
+            <button
+              type="button"
+              className="admin-icon-btn"
+              aria-label="Close"
+              onClick={closeCoordinatorModal}
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="modal__body">
+            <div className="form-grid">
+              <div className="field field--full">
+                <label htmlFor="coordinator-name">Name</label>
+                <input
+                  id="coordinator-name"
+                  type="text"
+                  value={coordinatorDraft.name}
+                  onChange={(e) =>
+                    setCoordinatorDraft((d) => ({ ...d, name: e.target.value }))
+                  }
+                  placeholder="Dr. John Doe"
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="coordinator-initials">Initials</label>
+                <input
+                  id="coordinator-initials"
+                  type="text"
+                  value={coordinatorDraft.initials}
+                  onChange={(e) =>
+                    setCoordinatorDraft((d) => ({ ...d, initials: e.target.value }))
+                  }
+                  placeholder="JD"
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="coordinator-role">Role</label>
+                <input
+                  id="coordinator-role"
+                  type="text"
+                  value={coordinatorDraft.role}
+                  onChange={(e) =>
+                    setCoordinatorDraft((d) => ({ ...d, role: e.target.value }))
+                  }
+                  placeholder="BCA Coordinator"
+                />
+              </div>
+              <div className="field field--full">
+                <label>Coordinator Image</label>
+                <div className="space-y-2">
+                  <ImageUpload
+                    onUpload={(result) =>
+                      setCoordinatorDraft((d) => ({
+                        ...d,
+                        image: result.secure_url,
+                      }))
+                    }
+                  />
+                  {coordinatorDraft.image && (
+                    <div className="flex items-center gap-3 rounded-md border border-gray-200 bg-gray-50 p-3">
+                      <img
+                        src={coordinatorDraft.image}
+                        alt="Coordinator preview"
+                        className="h-16 w-16 rounded-md object-cover"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-600 truncate">
+                          {coordinatorDraft.image}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCoordinatorDraft((d) => ({ ...d, image: "" }))
+                        }
+                        className="text-sm text-red-600 hover:text-red-700"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="field field--full">
+                <label htmlFor="coordinator-quote">Quote</label>
+                <RichTextEditor
+                  content={coordinatorDraft.quote}
+                  onChange={(html) =>
+                    setCoordinatorDraft((d) => ({ ...d, quote: html }))
+                  }
+                  placeholder="Technology is evolving fast..."
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="modal__foot">
+            <button
+              type="button"
+              className="admin-btn"
+              onClick={closeCoordinatorModal}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="admin-btn admin-btn--primary"
+              onClick={saveCoordinator}
+            >
+              Save
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={growthModal !== null}
+        onOpenChange={(open) => !open && closeGrowthModal()}
+      >
+        <DialogContent
+          showCloseButton={false}
+          className="news-modal w-[min(100%,520px)] sm:max-w-[520px] max-h-[90vh] overflow-y-auto flex flex-col gap-0 rounded-[16px] p-0 ring-0 outline-none"
+        >
+          <div className="modal__head">
+            <DialogTitle className="m-0 text-[1.05rem] font-normal">
+              {growthModal?.mode === "edit" ? "Edit Growth Item" : "Add Growth Item"}
+            </DialogTitle>
+            <button
+              type="button"
+              className="admin-icon-btn"
+              aria-label="Close"
+              onClick={closeGrowthModal}
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="modal__body">
+            <div className="form-grid">
+              <div className="field field--full">
+                <label htmlFor="growth-title">
+                  Title <span className="req">*</span>
+                </label>
+                <input
+                  id="growth-title"
+                  type="text"
+                  value={growthDraft.title}
+                  onChange={(e) =>
+                    setGrowthDraft((d) => ({ ...d, title: e.target.value }))
+                  }
+                  placeholder="Industry exposure"
+                />
+              </div>
+              <div className="field field--full">
+                <label htmlFor="growth-description">Description</label>
+                <RichTextEditor
+                  content={growthDraft.description}
+                  onChange={(html) =>
+                    setGrowthDraft((d) => ({ ...d, description: html }))
+                  }
+                  placeholder="Guest lectures and workshops..."
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="modal__foot">
+            <button
+              type="button"
+              className="admin-btn"
+              onClick={closeGrowthModal}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="admin-btn admin-btn--primary"
+              onClick={saveGrowthItem}
+              disabled={!growthDraft.title.trim()}
+            >
+              {growthModal?.mode === "edit" ? "Update" : "Add"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </form>
   );
 }

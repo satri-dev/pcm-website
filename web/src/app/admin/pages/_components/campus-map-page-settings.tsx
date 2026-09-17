@@ -2,11 +2,13 @@
 
 import { useState, type ReactNode } from "react";
 import { Save, Link2 } from "lucide-react";
-import ImageUpload from "@/components/cloudinary/ImageUpload";
 import {
   CAMPUS_MAP_PAGE_SETTINGS_DEFAULTS,
   type CampusMapPageSettings,
 } from "@/types/campus-map-page-settings";
+import CampusMapLocationManager, {
+  type LocationSplitData,
+} from "./campus-map-location-manager";
 
 const API_BASE = "/api/admin/pages/campus-map-settings";
 
@@ -38,23 +40,15 @@ export default function CampusMapPageSettings({
     value: CampusMapPageSettings[K]
   ) => setForm((prev) => ({ ...prev, [key]: value }));
 
-  const setChecklist = (value: string) =>
-    set(
-      "locationChecklist",
-      value
-        .split("\n")
-        .map((l) => l.trim())
-        .filter(Boolean)
-    );
-
-  const handleSave = async () => {
+  const handleSave = async (overrides?: Partial<CampusMapPageSettings>) => {
     setSaving(true);
     setMessage("");
     try {
+      const payload = { ...form, ...overrides };
       const res = await fetch(API_BASE, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -65,6 +59,7 @@ export default function CampusMapPageSettings({
       );
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Save failed");
+      throw err;
     } finally {
       setSaving(false);
     }
@@ -241,105 +236,47 @@ export default function CampusMapPageSettings({
       {/* ── Location split ── */}
       <div className="admin-panel">
         <div className="admin-panel__head">
-          <h3>Location — Split Section</h3>
+          <h3 className="font-bold">Location — Split Section</h3>
         </div>
         <div className="admin-panel__body p-6 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="block">
-              {fieldLabel("Eyebrow")}
-              <input
-                className={INPUT}
-                value={form.locationEyebrow}
-                onChange={(e) => set("locationEyebrow", e.target.value)}
-              />
-            </label>
-            <label className="block">
-              {fieldLabel("Title")}
-              <input
-                className={INPUT}
-                value={form.locationTitle}
-                onChange={(e) => set("locationTitle", e.target.value)}
-              />
-            </label>
-          </div>
-          <label className="block">
-            {fieldLabel("Paragraph")}
-            <textarea
-              rows={4}
-              className={INPUT}
-              value={form.locationParagraph}
-              onChange={(e) => set("locationParagraph", e.target.value)}
-            />
-          </label>
-          <label className="block">
-            {fieldLabel("Checklist — one item per line")}
-            <textarea
-              rows={4}
-              className={INPUT}
-              value={form.locationChecklist.join("\n")}
-              onChange={(e) => setChecklist(e.target.value)}
-            />
-          </label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="block">
-              {fieldLabel("Badge Value")}
-              <input
-                className={INPUT}
-                value={form.locationBadgeValue}
-                onChange={(e) => set("locationBadgeValue", e.target.value)}
-              />
-            </label>
-            <label className="block">
-              {fieldLabel("Badge Label")}
-              <input
-                className={INPUT}
-                value={form.locationBadgeLabel}
-                onChange={(e) => set("locationBadgeLabel", e.target.value)}
-              />
-            </label>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="block">
-              {fieldLabel("Image URL")}
-              <input
-                className={INPUT}
-                value={form.locationImage}
-                onChange={(e) => set("locationImage", e.target.value)}
-              />
-            </label>
-            <label className="block">
-              {fieldLabel("Image Alt Text")}
-              <input
-                className={INPUT}
-                value={form.locationImageAlt}
-                onChange={(e) => set("locationImageAlt", e.target.value)}
-              />
-            </label>
-          </div>
-          <div>
-            {fieldLabel("Or upload a new image")}
-            <ImageUpload
-              onUpload={(r) => set("locationImage", r.secure_url)}
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="block">
-              {fieldLabel("Directions Button Label")}
-              <input
-                className={INPUT}
-                value={form.directionsButtonLabel}
-                onChange={(e) => set("directionsButtonLabel", e.target.value)}
-              />
-            </label>
-            <label className="block">
-              {fieldLabel("Directions Button Link")}
-              <input
-                className={INPUT}
-                value={form.directionsButtonHref}
-                onChange={(e) => set("directionsButtonHref", e.target.value)}
-              />
-            </label>
-          </div>
+          <CampusMapLocationManager
+            data={{
+              locationEyebrow: form.locationEyebrow,
+              locationTitle: form.locationTitle,
+              locationParagraph: form.locationParagraph,
+              locationChecklist: form.locationChecklist,
+              locationImage: form.locationImage,
+              locationImageAlt: form.locationImageAlt,
+              locationBadgeValue: form.locationBadgeValue,
+              locationBadgeLabel: form.locationBadgeLabel,
+              directionsButtonLabel: form.directionsButtonLabel,
+              directionsButtonHref: form.directionsButtonHref,
+            }}
+            onSave={async (draft: LocationSplitData) => {
+              set("locationEyebrow", draft.locationEyebrow);
+              set("locationTitle", draft.locationTitle);
+              set("locationParagraph", draft.locationParagraph);
+              set("locationChecklist", draft.locationChecklist);
+              set("locationImage", draft.locationImage);
+              set("locationImageAlt", draft.locationImageAlt);
+              set("locationBadgeValue", draft.locationBadgeValue);
+              set("locationBadgeLabel", draft.locationBadgeLabel);
+              set("directionsButtonLabel", draft.directionsButtonLabel);
+              set("directionsButtonHref", draft.directionsButtonHref);
+              await handleSave({
+                locationEyebrow: draft.locationEyebrow,
+                locationTitle: draft.locationTitle,
+                locationParagraph: draft.locationParagraph,
+                locationChecklist: draft.locationChecklist,
+                locationImage: draft.locationImage,
+                locationImageAlt: draft.locationImageAlt,
+                locationBadgeValue: draft.locationBadgeValue,
+                locationBadgeLabel: draft.locationBadgeLabel,
+                directionsButtonLabel: draft.directionsButtonLabel,
+                directionsButtonHref: draft.directionsButtonHref,
+              });
+            }}
+          />
         </div>
       </div>
 
@@ -409,7 +346,7 @@ export default function CampusMapPageSettings({
       <div className="flex items-center gap-4">
         <button
           type="button"
-          onClick={handleSave}
+          onClick={() => handleSave()}
           disabled={saving}
           className="admin-btn admin-btn--primary"
         >

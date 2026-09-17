@@ -1,11 +1,80 @@
 ﻿"use client";
 
 import { useState } from "react";
-import { CheckCircle2, ChevronDown, Plus, X } from "lucide-react";
+import { CheckCircle2, ChevronDown, Pencil, Plus, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import type { AdmissionPageContent } from "@/types/page-content";
 import ImageUpload from "@/components/cloudinary/ImageUpload";
 import ApplicationFormSection from "./application-form-section";
+import { SectionSaveButton } from "@/app/admin/pages/_components/section-save-button";
+import RichTextEditor from "@/app/admin/_components/editor/rich-text-editor";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+function stripHtml(html: string): string {
+  if (!html) return "";
+  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+// Sonner-based confirmation popup that resolves true only if the user confirms.
+function confirmAction({
+  title,
+  description,
+  confirmLabel = "Delete",
+  cancelLabel = "Cancel",
+}: {
+  title: string;
+  description?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+}): Promise<boolean> {
+  return new Promise((resolve) => {
+    toast.custom(
+      (id) => (
+        <div className="flex w-full flex-col gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-lg">
+          <div>
+            <p className="text-sm font-semibold text-gray-900">{title}</p>
+            {description && <p className="mt-1 text-sm text-gray-600">{description}</p>}
+          </div>
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              className="rounded-md px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
+              onClick={() => {
+                toast.dismiss(id);
+                resolve(false);
+              }}
+            >
+              {cancelLabel}
+            </button>
+            <button
+              type="button"
+              className="rounded-md px-3 py-1.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700"
+              onClick={() => {
+                toast.dismiss(id);
+                resolve(true);
+              }}
+            >
+              {confirmLabel}
+            </button>
+          </div>
+        </div>
+      ),
+      { duration: Infinity }
+    );
+  });
+}
 
 interface AdmissionPageEditorProps {
   initialContent: AdmissionPageContent;
@@ -25,9 +94,57 @@ const SECTIONS = [
 ];
 const ALL_SECTION_IDS = SECTIONS.map((s) => s.id);
 
+// Maps a UI section id to the key it lives under in AdmissionPageContent
+const UI_TO_KEY: Record<string, keyof AdmissionPageContent> = {
+  hero: "hero",
+  process: "admissionProcess",
+  apply: "applyOptions",
+  documents: "requiredDocuments",
+  form: "applicationForm",
+  bank: "bankDetails",
+  success: "successMessage",
+  needhelp: "needHelp",
+  cta: "cta",
+  seo: "seo",
+};
+
+const slugify = (label: string) =>
+  label
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, "")
+    .trim()
+    .replace(/\s+/g, "_");
+
+function normalizeApplicationForm(
+  applicationForm: AdmissionPageContent["applicationForm"],
+): AdmissionPageContent["applicationForm"] {
+  return {
+    ...applicationForm,
+    personalInfoFields: applicationForm.personalInfoFields.map((f, i) => ({
+      ...f,
+      id: slugify(f.label) || f.id,
+      order: i + 1,
+    })),
+    contactInfoFields: applicationForm.contactInfoFields.map((f, i) => ({
+      ...f,
+      id: slugify(f.label) || f.id,
+      order: i + 1,
+    })),
+    academicInfoFields: applicationForm.academicInfoFields.map((f, i) => ({
+      ...f,
+      id: slugify(f.label) || f.id,
+      order: i + 1,
+    })),
+  };
+}
+
 export default function AdmissionPageEditor({ initialContent }: AdmissionPageEditorProps) {
   const [content, setContent] = useState<AdmissionPageContent>(initialContent);
   const [saving, setSaving] = useState(false);
+  const [savingSection, setSavingSection] = useState<string | null>(null);
+  const [sectionErrors, setSectionErrors] = useState<Record<string, string>>(
+    {},
+  );
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
   const toggleSection = (id: string) => {
@@ -52,33 +169,9 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
     setSaving(true);
 
     try {
-      const slugify = (label: string) =>
-        label
-          .toLowerCase()
-          .replace(/[^a-z0-9\s]/g, "")
-          .trim()
-          .replace(/\s+/g, "_");
-
       const contentToSave = {
         ...content,
-        applicationForm: {
-          ...content.applicationForm,
-          personalInfoFields: content.applicationForm.personalInfoFields.map((f, i) => ({
-            ...f,
-            id: slugify(f.label) || f.id,
-            order: i + 1,
-          })),
-          contactInfoFields: content.applicationForm.contactInfoFields.map((f, i) => ({
-            ...f,
-            id: slugify(f.label) || f.id,
-            order: i + 1,
-          })),
-          academicInfoFields: content.applicationForm.academicInfoFields.map((f, i) => ({
-            ...f,
-            id: slugify(f.label) || f.id,
-            order: i + 1,
-          })),
-        },
+        applicationForm: normalizeApplicationForm(content.applicationForm),
       };
 
       const response = await fetch("/api/admin/pages/admission", {
@@ -102,37 +195,126 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
     }
   };
 
+  const saveSection = async (sectionId: string) => {
+    const dataKey = UI_TO_KEY[sectionId];
+    const dataValue =
+      dataKey === "applicationForm"
+        ? normalizeApplicationForm(content.applicationForm)
+        : content[dataKey];
+
+    setSavingSection(sectionId);
+    setSectionErrors((prev) => ({ ...prev, [sectionId]: "" }));
+
+    try {
+      const response = await fetch("/api/admin/pages/admission", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ section: dataKey, content: dataValue }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to save");
+      }
+
+      setContent({ ...content, [dataKey]: dataValue });
+      const sectionTitle = SECTIONS.find((s) => s.id === sectionId)?.title;
+      toast.success(`${sectionTitle ?? "Section"} saved successfully!`);
+    } catch (error) {
+      const errorMsg =
+        error instanceof Error ? error.message : "Failed to save changes";
+      setSectionErrors((prev) => ({ ...prev, [sectionId]: errorMsg }));
+      console.error("Section save error:", error);
+      toast.error(errorMsg);
+    } finally {
+      setSavingSection(null);
+    }
+  };
+
   // Process steps helpers
-  const addProcessStep = () => {
-    setContent({
-      ...content,
-      admissionProcess: {
-        ...content.admissionProcess,
-        steps: [
-          ...content.admissionProcess.steps,
-          { number: String(content.admissionProcess.steps.length + 1), title: "New Step", description: "" },
-        ],
-      },
+  const [stepModal, setStepModal] = useState<
+    { mode: "add" } | { mode: "edit"; index: number } | null
+  >(null);
+  const [stepDraft, setStepDraft] = useState<{
+    number: string;
+    title: string;
+    description: string;
+  }>({ number: "", title: "", description: "" });
+
+  const openAddStep = () => {
+    setStepDraft({
+      number: String(content.admissionProcess.steps.length + 1),
+      title: "",
+      description: "",
     });
+    setStepModal({ mode: "add" });
   };
 
-  const updateProcessStep = (index: number, field: "number" | "title" | "description", value: string) => {
-    const newSteps = [...content.admissionProcess.steps];
-    newSteps[index] = { ...newSteps[index], [field]: value };
-    setContent({
-      ...content,
-      admissionProcess: { ...content.admissionProcess, steps: newSteps },
-    });
+  const openEditStep = (index: number) => {
+    setStepDraft({ ...content.admissionProcess.steps[index] });
+    setStepModal({ mode: "edit", index });
   };
 
-  const removeProcessStep = (index: number) => {
-    setContent({
-      ...content,
-      admissionProcess: {
-        ...content.admissionProcess,
-        steps: content.admissionProcess.steps.filter((_, i) => i !== index),
-      },
+  const closeStepModal = () => setStepModal(null);
+
+  const saveStep = () => {
+    if (!stepModal) return;
+    setContent((prev) => {
+      const steps = [...prev.admissionProcess.steps];
+      if (stepModal.mode === "edit") {
+        steps[stepModal.index] = { ...stepDraft };
+      } else {
+        steps.push({ ...stepDraft });
+      }
+      return {
+        ...prev,
+        admissionProcess: { ...prev.admissionProcess, steps },
+      };
     });
+    closeStepModal();
+  };
+
+  const removeProcessStep = async (index: number) => {
+    const ok = await confirmAction({
+      title: `Remove step "${content.admissionProcess.steps[index].title || `#${index + 1}`}"?`,
+      description: "This will remove it from the admission process.",
+    });
+    if (!ok) return;
+    setContent((prev) => ({
+      ...prev,
+      admissionProcess: {
+        ...prev.admissionProcess,
+        steps: prev.admissionProcess.steps.filter((_, i) => i !== index),
+      },
+    }));
+    toast.success("Step removed", { position: "bottom-right" });
+  };
+
+  // Apply option helpers
+  const [optionModal, setOptionModal] = useState<"online" | "offline" | null>(null);
+  const [optionDraft, setOptionDraft] = useState<{
+    title: string;
+    description: string;
+    buttonText: string;
+  }>({ title: "", description: "", buttonText: "" });
+
+  const openEditOption = (key: "online" | "offline") => {
+    setOptionDraft({ ...content.applyOptions[`${key}Option`] });
+    setOptionModal(key);
+  };
+
+  const closeOptionModal = () => setOptionModal(null);
+
+  const saveOption = () => {
+    if (!optionModal) return;
+    setContent((prev) => ({
+      ...prev,
+      applyOptions: {
+        ...prev.applyOptions,
+        [`${optionModal}Option`]: { ...optionDraft },
+      },
+    }));
+    closeOptionModal();
   };
 
   // Documents helpers
@@ -253,6 +435,12 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
                 />
               </div>
             </div>
+            <SectionSaveButton
+              id="hero"
+              saving={savingSection === "hero"}
+              error={sectionErrors.hero}
+              onSave={saveSection}
+            />
           </div>
         )}
       </section>
@@ -294,59 +482,75 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
                   <label className="block text-sm font-semibold text-gray-700">Process Steps</label>
                   <button
                     type="button"
-                    onClick={addProcessStep}
+                    onClick={openAddStep}
                     className="admin-btn admin-btn--sm"
                   >
                     <Plus size={16} /> Add Step
                   </button>
                 </div>
-                <div className="space-y-3">
-                  {content.admissionProcess.steps.map((step, idx) => (
-                    <div key={idx} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                      <div className="flex items-start justify-between mb-3">
-                        <span className="text-xs font-semibold text-gray-500">Step {idx + 1}</span>
-                        <button
-                          type="button"
-                          onClick={() => removeProcessStep(idx)}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                      <div className="space-y-3">
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Number</label>
-                          <input
-                            type="text"
-                            value={step.number}
-                            onChange={(e) => updateProcessStep(idx, "number", e.target.value)}
-                            className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Title</label>
-                          <input
-                            type="text"
-                            value={step.title}
-                            onChange={(e) => updateProcessStep(idx, "title", e.target.value)}
-                            className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Description</label>
-                          <textarea
-                            value={step.description}
-                            onChange={(e) => updateProcessStep(idx, "description", e.target.value)}
-                            rows={2}
-                            className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                {content.admissionProcess.steps.length === 0 ? (
+                  <p className="text-sm text-[var(--admin-muted)]">
+                    No steps yet. Click &quot;Add Step&quot; to create one.
+                  </p>
+                ) : (
+                  <div className="pp-table-wrap rounded-lg border border-gray-200">
+                    <Table className="table-fixed">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-12 bg-gray-50">#</TableHead>
+                          <TableHead className="w-20 truncate bg-gray-50">NUMBER</TableHead>
+                          <TableHead className="truncate bg-gray-50">TITLE</TableHead>
+                          <TableHead className="bg-gray-50">DESCRIPTION</TableHead>
+                          <TableHead className="w-28 text-right bg-gray-50">ACTIONS</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {content.admissionProcess.steps.map((step, idx) => (
+                          <TableRow key={idx}>
+                            <TableCell className="w-12 py-2.5">{idx + 1}</TableCell>
+                            <TableCell className="w-20 py-2.5 text-sm text-gray-500">
+                              {step.number}
+                            </TableCell>
+                            <TableCell className="truncate py-2.5 text-sm font-semibold">
+                              {step.title}
+                            </TableCell>
+                            <TableCell className="cell-ellipsis py-2.5 text-sm text-gray-500">
+                              {step.description ? stripHtml(step.description) : "—"}
+                            </TableCell>
+                            <TableCell className="py-2.5">
+                              <div className="row-actions justify-end">
+                                <button
+                                  type="button"
+                                  className="act-btn"
+                                  onClick={() => openEditStep(idx)}
+                                  title="Edit step"
+                                >
+                                  <Pencil size={15} />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="act-btn danger"
+                                  onClick={() => removeProcessStep(idx)}
+                                  title="Remove step"
+                                >
+                                  <Trash2 size={15} />
+                                </button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
               </div>
             </div>
+            <SectionSaveButton
+              id="process"
+              saving={savingSection === "process"}
+              error={sectionErrors.process}
+              onSave={saveSection}
+            />
           </div>
         )}
       </section>
@@ -384,11 +588,10 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Description</label>
-                <textarea
-                  value={content.applyOptions.description}
-                  onChange={(e) => setContent({ ...content, applyOptions: { ...content.applyOptions, description: e.target.value } })}
-                  rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                <RichTextEditor
+                  content={content.applyOptions.description}
+                  onChange={(html) => setContent({ ...content, applyOptions: { ...content.applyOptions, description: html } })}
+                  placeholder="Start filling up the online application..."
                 />
               </div>
               <div>
@@ -423,71 +626,57 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
               </div>
 
               <div className="border-t border-gray-200 pt-4 mt-4">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">Online Option</h4>
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Title</label>
-                    <input
-                      type="text"
-                      value={content.applyOptions.onlineOption.title}
-                      onChange={(e) => setContent({ ...content, applyOptions: { ...content.applyOptions, onlineOption: { ...content.applyOptions.onlineOption, title: e.target.value } } })}
-                      className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Description</label>
-                    <textarea
-                      value={content.applyOptions.onlineOption.description}
-                      onChange={(e) => setContent({ ...content, applyOptions: { ...content.applyOptions, onlineOption: { ...content.applyOptions.onlineOption, description: e.target.value } } })}
-                      rows={2}
-                      className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Button Text</label>
-                    <input
-                      type="text"
-                      value={content.applyOptions.onlineOption.buttonText}
-                      onChange={(e) => setContent({ ...content, applyOptions: { ...content.applyOptions, onlineOption: { ...content.applyOptions.onlineOption, buttonText: e.target.value } } })}
-                      className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="border-t border-gray-200 pt-4 mt-4">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">Offline Option</h4>
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Title</label>
-                    <input
-                      type="text"
-                      value={content.applyOptions.offlineOption.title}
-                      onChange={(e) => setContent({ ...content, applyOptions: { ...content.applyOptions, offlineOption: { ...content.applyOptions.offlineOption, title: e.target.value } } })}
-                      className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Description</label>
-                    <textarea
-                      value={content.applyOptions.offlineOption.description}
-                      onChange={(e) => setContent({ ...content, applyOptions: { ...content.applyOptions, offlineOption: { ...content.applyOptions.offlineOption, description: e.target.value } } })}
-                      rows={2}
-                      className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Button Text</label>
-                    <input
-                      type="text"
-                      value={content.applyOptions.offlineOption.buttonText}
-                      onChange={(e) => setContent({ ...content, applyOptions: { ...content.applyOptions, offlineOption: { ...content.applyOptions.offlineOption, buttonText: e.target.value } } })}
-                      className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">Apply Options</h4>
+                <div className="pp-table-wrap rounded-lg border border-gray-200">
+                  <Table className="table-fixed">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12 bg-gray-50">#</TableHead>
+                        <TableHead className="w-1/3 truncate bg-gray-50">TITLE</TableHead>
+                        <TableHead className="truncate bg-gray-50">BUTTON TEXT</TableHead>
+                        <TableHead className="w-28 text-right bg-gray-50">ACTIONS</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {(
+                        [
+                          { key: "online", label: content.applyOptions.onlineOption.title || "Online", buttonText: content.applyOptions.onlineOption.buttonText },
+                          { key: "offline", label: content.applyOptions.offlineOption.title || "Offline", buttonText: content.applyOptions.offlineOption.buttonText },
+                        ] as const
+                      ).map((opt, idx) => (
+                        <TableRow key={opt.key}>
+                          <TableCell className="w-12 py-2.5">{idx + 1}</TableCell>
+                          <TableCell className="truncate py-2.5 text-sm font-semibold">
+                            {opt.label}
+                          </TableCell>
+                          <TableCell className="truncate py-2.5 text-sm text-gray-500">
+                            {opt.buttonText || "—"}
+                          </TableCell>
+                          <TableCell className="py-2.5">
+                            <div className="row-actions justify-end">
+                              <button
+                                type="button"
+                                className="act-btn"
+                                onClick={() => openEditOption(opt.key)}
+                                title={`Edit ${opt.key} option`}
+                              >
+                                <Pencil size={15} />
+                              </button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
               </div>
             </div>
+            <SectionSaveButton
+              id="apply"
+              saving={savingSection === "apply"}
+              error={sectionErrors.apply}
+              onSave={saveSection}
+            />
           </div>
         )}
       </section>
@@ -580,6 +769,12 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
                 </div>
               </div>
             </div>
+            <SectionSaveButton
+              id="documents"
+              saving={savingSection === "documents"}
+              error={sectionErrors.documents}
+              onSave={saveSection}
+            />
           </div>
         )}
       </section>
@@ -597,6 +792,12 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
         {expandedSections.has("form") && (
           <div className="pp-section__body">
             <ApplicationFormSection content={content} setContent={setContent} />
+            <SectionSaveButton
+              id="form"
+              saving={savingSection === "form"}
+              error={sectionErrors.form}
+              onSave={saveSection}
+            />
           </div>
         )}
       </section>
@@ -669,6 +870,12 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
                 />
               </div>
             </div>
+            <SectionSaveButton
+              id="bank"
+              saving={savingSection === "bank"}
+              error={sectionErrors.bank}
+              onSave={saveSection}
+            />
           </div>
         )}
       </section>
@@ -714,6 +921,12 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
                 />
               </div>
             </div>
+            <SectionSaveButton
+              id="success"
+              saving={savingSection === "success"}
+              error={sectionErrors.success}
+              onSave={saveSection}
+            />
           </div>
         )}
       </section>
@@ -742,11 +955,9 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Description</label>
-                <textarea
-                  value={content.needHelp.description}
-                  onChange={(e) => setContent({ ...content, needHelp: { ...content.needHelp, description: e.target.value } })}
-                  rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                <RichTextEditor
+                  content={content.needHelp.description}
+                  onChange={(html) => setContent({ ...content, needHelp: { ...content.needHelp, description: html } })}
                   placeholder="For any queries or technical assistance..."
                 />
               </div>
@@ -771,6 +982,12 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
                 />
               </div>
             </div>
+            <SectionSaveButton
+              id="needhelp"
+              saving={savingSection === "needhelp"}
+              error={sectionErrors.needhelp}
+              onSave={saveSection}
+            />
           </div>
         )}
       </section>
@@ -809,11 +1026,10 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Description</label>
-                <textarea
-                  value={content.cta.description}
-                  onChange={(e) => setContent({ ...content, cta: { ...content.cta, description: e.target.value } })}
-                  rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                <RichTextEditor
+                  content={content.cta.description}
+                  onChange={(html) => setContent({ ...content, cta: { ...content.cta, description: html } })}
+                  placeholder="Applications are open for the upcoming intake..."
                 />
               </div>
               
@@ -867,6 +1083,12 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
                 </div>
               </div>
             </div>
+            <SectionSaveButton
+              id="cta"
+              saving={savingSection === "cta"}
+              error={sectionErrors.cta}
+              onSave={saveSection}
+            />
           </div>
         )}
       </section>
@@ -958,6 +1180,12 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
                 </div>
               </div>
             </div>
+            <SectionSaveButton
+              id="seo"
+              saving={savingSection === "seo"}
+              error={sectionErrors.seo}
+              onSave={saveSection}
+            />
           </div>
         )}
       </section>
@@ -973,6 +1201,172 @@ export default function AdmissionPageEditor({ initialContent }: AdmissionPageEdi
           {saving ? "Saving..." : "Save Changes"}
         </button>
       </div>
+
+      <Dialog
+        open={stepModal !== null}
+        onOpenChange={(open) => !open && closeStepModal()}
+      >
+        <DialogContent
+          showCloseButton={false}
+          className="news-modal w-[min(100%,520px)] sm:max-w-[520px] max-h-[90vh] overflow-y-auto flex flex-col gap-0 rounded-[16px] p-0 ring-0 outline-none"
+        >
+          <div className="modal__head">
+            <DialogTitle className="m-0 text-[1.05rem] font-normal">
+              {stepModal?.mode === "edit" ? "Edit Step" : "Add Step"}
+            </DialogTitle>
+            <button
+              type="button"
+              className="admin-icon-btn"
+              aria-label="Close"
+              onClick={closeStepModal}
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="modal__body">
+            <div className="form-grid">
+              <div className="field">
+                <label htmlFor="step-number">Number</label>
+                <input
+                  id="step-number"
+                  type="text"
+                  value={stepDraft.number}
+                  onChange={(e) =>
+                    setStepDraft((d) => ({ ...d, number: e.target.value }))
+                  }
+                  placeholder="1"
+                />
+              </div>
+              <div className="field field--full">
+                <label htmlFor="step-title">
+                  Title <span className="req">*</span>
+                </label>
+                <input
+                  id="step-title"
+                  type="text"
+                  value={stepDraft.title}
+                  onChange={(e) =>
+                    setStepDraft((d) => ({ ...d, title: e.target.value }))
+                  }
+                  placeholder="Fill and submit the application form"
+                />
+              </div>
+              <div className="field field--full">
+                <label htmlFor="step-description">Description</label>
+                <RichTextEditor
+                  content={stepDraft.description}
+                  onChange={(html) =>
+                    setStepDraft((d) => ({ ...d, description: html }))
+                  }
+                  placeholder="Visit the admissions portal and complete the online application..."
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="modal__foot">
+            <button
+              type="button"
+              className="admin-btn"
+              onClick={closeStepModal}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="admin-btn admin-btn--primary"
+              onClick={saveStep}
+              disabled={!stepDraft.title.trim()}
+            >
+              {stepModal?.mode === "edit" ? "Update" : "Add"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={optionModal !== null}
+        onOpenChange={(open) => !open && closeOptionModal()}
+      >
+        <DialogContent
+          showCloseButton={false}
+          className="news-modal w-[min(100%,520px)] sm:max-w-[520px] max-h-[90vh] overflow-y-auto flex flex-col gap-0 rounded-[16px] p-0 ring-0 outline-none"
+        >
+          <div className="modal__head">
+            <DialogTitle className="m-0 text-[1.05rem] font-normal">
+              Edit {optionModal === "offline" ? "Offline" : "Online"} Option
+            </DialogTitle>
+            <button
+              type="button"
+              className="admin-icon-btn"
+              aria-label="Close"
+              onClick={closeOptionModal}
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="modal__body">
+            <div className="form-grid">
+              <div className="field field--full">
+                <label htmlFor="option-title">
+                  Title <span className="req">*</span>
+                </label>
+                <input
+                  id="option-title"
+                  type="text"
+                  value={optionDraft.title}
+                  onChange={(e) =>
+                    setOptionDraft((d) => ({ ...d, title: e.target.value }))
+                  }
+                  placeholder="Apply online"
+                />
+              </div>
+              <div className="field field--full">
+                <label htmlFor="option-description">Description</label>
+                <RichTextEditor
+                  content={optionDraft.description}
+                  onChange={(html) =>
+                    setOptionDraft((d) => ({ ...d, description: html }))
+                  }
+                  placeholder="Fill the online form and submit with required documents..."
+                />
+              </div>
+              <div className="field field--full">
+                <label htmlFor="option-button-text">Button Text</label>
+                <input
+                  id="option-button-text"
+                  type="text"
+                  value={optionDraft.buttonText}
+                  onChange={(e) =>
+                    setOptionDraft((d) => ({ ...d, buttonText: e.target.value }))
+                  }
+                  placeholder="Apply Online"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="modal__foot">
+            <button
+              type="button"
+              className="admin-btn"
+              onClick={closeOptionModal}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="admin-btn admin-btn--primary"
+              onClick={saveOption}
+              disabled={!optionDraft.title.trim()}
+            >
+              Save
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

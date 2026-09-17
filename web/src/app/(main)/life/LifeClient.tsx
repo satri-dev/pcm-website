@@ -63,7 +63,11 @@ export default function LifeClient({
       <div className="feature reveal" style={{ transitionDelay: `${i * 60}ms` }} key={card.title || i}>
         <div className="feature__ic">{icons[i % icons.length]}</div>
         <h3>{card.title}</h3>
-        <p>{card.desc}</p>
+        {/^<[a-z]+[\s>]/i.test(card.desc.trim()) ? (
+          <div dangerouslySetInnerHTML={{ __html: card.desc }} />
+        ) : (
+          <p>{card.desc}</p>
+        )}
       </div>
     ));
 

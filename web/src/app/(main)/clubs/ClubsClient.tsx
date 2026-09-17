@@ -98,7 +98,14 @@ export default function ClubsClient({
           <div className="reveal">
             <span className="eyebrow">{settings.whyEyebrow}</span>
             <h2 className="section-title">{settings.whyTitle}</h2>
-            <p style={{ marginTop: "1rem" }}>{settings.whyParagraph}</p>
+            {/^<[a-z]+[\s>]/i.test(settings.whyParagraph.trim()) ? (
+              <div
+                style={{ marginTop: "1rem" }}
+                dangerouslySetInnerHTML={{ __html: settings.whyParagraph }}
+              />
+            ) : (
+              <p style={{ marginTop: "1rem" }}>{settings.whyParagraph}</p>
+            )}
             <ul className="checklist" style={{ marginTop: "1.2rem" }}>
               {settings.whyChecklist.map((item) => (
                 <li key={item}>
