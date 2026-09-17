@@ -177,6 +177,7 @@ export default function AboutClient({
                   return isBlock ? (
                     <div
                       key={i}
+                      className="rich-body"
                       style={style}
                       dangerouslySetInnerHTML={{ __html: p }}
                     />
@@ -255,6 +256,7 @@ export default function AboutClient({
                   return isBlock ? (
                     <div
                       key={i}
+                      className="rich-body"
                       style={style}
                       dangerouslySetInnerHTML={{ __html: p }}
                     />
@@ -305,6 +307,7 @@ export default function AboutClient({
                   {card.description &&
                   /^<[a-z]+[\s>]/i.test(card.description.trim()) ? (
                     <div
+                      className="rich-body"
                       dangerouslySetInnerHTML={{ __html: card.description }}
                     />
                   ) : (
@@ -344,6 +347,7 @@ export default function AboutClient({
                     {item.description &&
                     /^<[a-z]+[\s>]/i.test(item.description.trim()) ? (
                       <div
+                        className="rich-body"
                         dangerouslySetInnerHTML={{ __html: item.description }}
                       />
                     ) : (

@@ -4,9 +4,9 @@ import { useState } from "react";
 import { Save, Link2 } from "lucide-react";
 import {
   TESTIMONIAL_PAGE_SETTINGS_DEFAULTS,
-  type TestimonialFormCopy,
   type TestimonialPageSettings,
 } from "@/types/testimonial-page-settings";
+import TestimonialFormCopyManager from "@/app/admin/pages/_components/testimonial-form-copy-manager";
 
 const API_BASE = "/api/admin/pages/testimonials-settings";
 
@@ -44,19 +44,15 @@ export default function TestimonialPageSettings({
     value: TestimonialPageSettings[K]
   ) => setForm((prev) => ({ ...prev, [key]: value }));
 
-  const setFormKey = <K extends keyof TestimonialFormCopy>(
-    key: K,
-    value: TestimonialFormCopy[K]
-  ) => setForm((prev) => ({ ...prev, form: { ...prev.form, [key]: value } }));
-
-  const handleSave = async () => {
+  const handleSave = async (overrides?: Partial<TestimonialPageSettings>) => {
     setSaving(true);
     setMessage("");
     try {
+      const payload = { ...form, ...overrides };
       const res = await fetch(API_BASE, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -65,6 +61,7 @@ export default function TestimonialPageSettings({
       setMessage("Saved. The public /testimonials page now reflects these changes.");
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Save failed");
+      throw err;
     } finally {
       setSaving(false);
     }
@@ -347,182 +344,12 @@ export default function TestimonialPageSettings({
           <h3>Add Testimonial Form Copy</h3>
         </div>
         <div className="admin-panel__body p-6 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="block">
-              {fieldLabel("Modal Title")}
-              <input
-                className={INPUT}
-                value={form.form.modalTitle}
-                onChange={(e) => setFormKey("modalTitle", e.target.value)}
-              />
-            </label>
-            <label className="block">
-              {fieldLabel("Modal Description")}
-              <textarea
-                rows={2}
-                className={INPUT}
-                value={form.form.modalDescription}
-                onChange={(e) => setFormKey("modalDescription", e.target.value)}
-              />
-            </label>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <label className="block">
-              {fieldLabel("Name Label")}
-              <input
-                className={INPUT}
-                value={form.form.nameLabel}
-                onChange={(e) => setFormKey("nameLabel", e.target.value)}
-              />
-            </label>
-            <label className="block">
-              {fieldLabel("Program Label")}
-              <input
-                className={INPUT}
-                value={form.form.programLabel}
-                onChange={(e) => setFormKey("programLabel", e.target.value)}
-              />
-            </label>
-            <label className="block">
-              {fieldLabel("Batch Label")}
-              <input
-                className={INPUT}
-                value={form.form.batchLabel}
-                onChange={(e) => setFormKey("batchLabel", e.target.value)}
-              />
-            </label>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="block">
-              {fieldLabel("Position Label")}
-              <input
-                className={INPUT}
-                value={form.form.positionLabel}
-                onChange={(e) => setFormKey("positionLabel", e.target.value)}
-              />
-            </label>
-            <label className="block">
-              {fieldLabel("Photo Label")}
-              <input
-                className={INPUT}
-                value={form.form.photoLabel}
-                onChange={(e) => setFormKey("photoLabel", e.target.value)}
-              />
-            </label>
-          </div>
-          <label className="block">
-            {fieldLabel("Content Label")}
-            <input
-              className={INPUT}
-              value={form.form.contentLabel}
-              onChange={(e) => setFormKey("contentLabel", e.target.value)}
-            />
-          </label>
-          <label className="block">
-            {fieldLabel("Submit Button Label")}
-            <input
-              className={INPUT}
-              value={form.form.submitLabel}
-              onChange={(e) => setFormKey("submitLabel", e.target.value)}
-            />
-          </label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="block">
-              {fieldLabel("Submitting Label")}
-              <input
-                className={INPUT}
-                value={form.form.submittingLabel}
-                onChange={(e) => setFormKey("submittingLabel", e.target.value)}
-              />
-            </label>
-            <label className="block">
-              {fieldLabel("Cancel Label")}
-              <input
-                className={INPUT}
-                value={form.form.cancelLabel}
-                onChange={(e) => setFormKey("cancelLabel", e.target.value)}
-              />
-            </label>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="block">
-              {fieldLabel("Upload Image Label")}
-              <input
-                className={INPUT}
-                value={form.form.uploadLabel}
-                onChange={(e) => setFormKey("uploadLabel", e.target.value)}
-              />
-            </label>
-            <label className="block">
-              {fieldLabel("Remove Photo Label")}
-              <input
-                className={INPUT}
-                value={form.form.removePhotoLabel}
-                onChange={(e) => setFormKey("removePhotoLabel", e.target.value)}
-              />
-            </label>
-          </div>
-          <label className="block">
-            {fieldLabel("No Photo Selected Text")}
-            <input
-              className={INPUT}
-              value={form.form.noPhotoText}
-              onChange={(e) => setFormKey("noPhotoText", e.target.value)}
-            />
-          </label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="block">
-              {fieldLabel("Required Name Error")}
-              <input
-                className={INPUT}
-                value={form.form.requiredName}
-                onChange={(e) => setFormKey("requiredName", e.target.value)}
-              />
-            </label>
-            <label className="block">
-              {fieldLabel("Required Content Error")}
-              <input
-                className={INPUT}
-                value={form.form.requiredContent}
-                onChange={(e) => setFormKey("requiredContent", e.target.value)}
-              />
-            </label>
-          </div>
-          <label className="block">
-            {fieldLabel("Submit Error")}
-            <input
-              className={INPUT}
-              value={form.form.submitError}
-              onChange={(e) => setFormKey("submitError", e.target.value)}
-            />
-          </label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="block">
-              {fieldLabel("Success Title")}
-              <input
-                className={INPUT}
-                value={form.form.successTitle}
-                onChange={(e) => setFormKey("successTitle", e.target.value)}
-              />
-            </label>
-            <label className="block">
-              {fieldLabel("Success Done Label")}
-              <input
-                className={INPUT}
-                value={form.form.successDone}
-                onChange={(e) => setFormKey("successDone", e.target.value)}
-              />
-            </label>
-          </div>
-          <label className="block">
-            {fieldLabel("Success Text")}
-            <textarea
-              rows={3}
-              className={INPUT}
-              value={form.form.successText}
-              onChange={(e) => setFormKey("successText", e.target.value)}
-            />
-          </label>
+          <TestimonialFormCopyManager
+            formCopy={form.form}
+            onSave={async (next) => {
+              await handleSave({ form: next });
+            }}
+          />
         </div>
       </div>
 
@@ -600,7 +427,7 @@ export default function TestimonialPageSettings({
       <div className="flex items-center gap-4">
         <button
           type="button"
-          onClick={handleSave}
+          onClick={() => handleSave()}
           disabled={saving}
           className="admin-btn admin-btn--primary"
         >
