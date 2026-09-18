@@ -41,7 +41,9 @@ const IMAGE_URL_RE =
 function paragraphBlocks(html: string): string[] {
   const trimmed = html.trim();
   if (!trimmed) return [];
-  const blocks = trimmed.match(/<p[^>]*>[\s\S]*?<\/p>/gi);
+  const blocks = trimmed.match(
+    /<(p|h[1-6]|ul|ol|blockquote)(?:\s[^>]*)?>[\s\S]*?<\/\1>/gi
+  );
   if (blocks && blocks.length) {
     return blocks;
   }

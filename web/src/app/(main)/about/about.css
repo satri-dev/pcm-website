@@ -91,6 +91,18 @@
   list-style: none;
 }
 
+.pcm-about .rich-body ul,
+.pcm-about .rich-body ol {
+  list-style: revert;
+  padding-left: 1.4rem;
+  margin: 0.5rem 0 1rem;
+}
+.pcm-about .rich-body ul { list-style: disc; }
+.pcm-about .rich-body ol { list-style: decimal; }
+.pcm-about .rich-body li { margin: 0.3rem 0; }
+.pcm-about .rich-body li ul,
+.pcm-about .rich-body li ol { margin: 0.3rem 0; }
+
 .pcm-about a {
   color: inherit;
   text-decoration: none;
