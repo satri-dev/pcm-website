@@ -48,22 +48,38 @@ const baseAllowedTags = [
   "img",
 ];
 
-export function safeImg(src: string | undefined | null, fallback = FALLBACK): string {
-  if (!src || typeof src !== "string") return fallback;
-  const s = src.trim();
-  if (!s || (!s.startsWith("/") && !s.startsWith("http"))) return fallback;
-  return s;
+const allowedAttributes: sanitizeHtml.IOptions["allowedAttributes"] = {
+  a: ["href", "target", "rel", "title", "class"],
+  img: ["src", "alt", "title", "width", "height", "class"],
+  span: ["class"],
+  p: ["class"],
+  code: ["class"],
+  pre: ["class"],
+  h1: ["class"],
+  h2: ["class"],
+  h3: ["class"],
+  h4: ["class"],
+  li: ["class"],
+  ul: ["class"],
+  ol: ["class"],
+};
+
+function transformTags(base: sanitizeHtml.IOptions["transformTags"]) {
+  const result: NonNullable<sanitizeHtml.IOptions["transformTags"]> = { ...base };
+  // Force safe targets on any link that opens in a new tab.
+  result.a = (tagName, attribs) => {
+    const attrs = { ...attribs };
+    if (attrs.target) attrs.target = "_blank";
+    if (attrs.target) attrs.rel = "noopener noreferrer nofollow";
+    return { tagName, attribs: attrs };
+  };
+  return result;
 }
 
-export function safeHref(href: string | undefined | null, fallback = "/"): string {
-  if (!href || typeof href !== "string") return fallback;
-  const s = href.trim();
-  if (!s || (!s.startsWith("/") && !s.startsWith("http"))) return fallback;
-  return s;
-}
-
-/**
- * Caps a string to a maximum length. Returns empty string if value is falsy.
+/*
+ * Sanitize untrusted rich-text HTML before it is stored or rendered.
+ * Covers the tag set produced by the TipTap rich text editor used across the
+ * site (bold/italic/underline/lists/blockquote/headings/links).
  */
 export function sanitizeHtmlContent(html: unknown): string {
   if (typeof html !== "string" || html.length === 0) return typeof html === "string" ? html : "";
@@ -79,25 +95,13 @@ export function sanitizeHtmlContent(html: unknown): string {
 }
 
 /**
- * Options for sanitizing untrusted objects.
- */
-export interface SanitizeOptions {
-  /** Maximum recursion depth (default: 10) */
-  maxDepth?: number;
-  /** Maximum number of entries in arrays/objects (default: 100) */
-  maxEntries?: number;
-  /** Maximum string length (default: 10000) */
-  maxStringLength?: number;
-}
-
-/**
- * Recursively sanitizes an untrusted object by capping all string values.
- * Useful for handling user-submitted JSON data.
+ * Recursively removes Mongo-DSL-shaped keys (leading "$" or containing ".")
+ * from untrusted objects before they are persisted, and bounds the depth and
+ * entry count to prevent pathological payloads.
  */
 export function sanitizeUntrustedObject(
-  obj: unknown,
-  options: number | SanitizeOptions = 10000,
-  currentDepth = 0
+  value: unknown,
+  options: { maxDepth?: number; maxEntries?: number } = {}
 ): unknown {
   const { maxDepth = 5, maxEntries = 300 } = options;
   function clean(v: unknown, depth: number, budget: { left: number }): unknown {
