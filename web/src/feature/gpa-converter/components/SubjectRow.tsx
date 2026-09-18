@@ -25,14 +25,15 @@ export default function SubjectRow({ subject, result, index, canRemove, onChange
 
   const thFull  = parseFloat(subject.theoryFullMarks) || 0;
   const prFull  = parseFloat(subject.practicalFullMarks) || 0;
-  const totalFull = thFull + prFull;
 
   const thObt   = parseFloat(subject.theoryObtained);
   const prObt   = parseFloat(subject.practicalObtained) || 0;
-  const totalObt = thObt + prObt;
-  const overMax  = !isNaN(thObt) && totalFull > 0 && totalObt > totalFull;
 
   const hasPractical = prFull > 0;
+
+  // Highlight inputs that are below their individual pass mark (after calculate)
+  const theoryBelowPass    = hasResult && result.failedPassMark && !isNaN(thObt) && thFull > 0 && thObt < thFull * 0.4;
+  const practicalBelowPass = hasResult && result.failedPassMark && hasPractical && prObt < prFull * 0.4;
 
   return (
     <div className="gpa-row">
@@ -103,13 +104,19 @@ export default function SubjectRow({ subject, result, index, canRemove, onChange
           <input
             id={`to-${subject.id}`}
             type="number"
-            className={`gpa-input${overMax ? " gpa-input--error" : ""}`}
+            className={`gpa-input${theoryBelowPass ? " gpa-input--error" : ""}`}
             placeholder="e.g. 45"
             min="0"
             max={thFull > 0 ? thFull : undefined}
             value={subject.theoryObtained}
-            onChange={(e) => onChange(subject.id, "theoryObtained", e.target.value)}
-            aria-invalid={overMax}
+            onChange={(e) => {
+              const raw = parseFloat(e.target.value);
+              const clamped = !isNaN(raw) && thFull > 0 && raw > thFull
+                ? String(thFull)
+                : e.target.value;
+              onChange(subject.id, "theoryObtained", clamped);
+            }}
+            aria-invalid={theoryBelowPass}
           />
         </div>
 
@@ -119,14 +126,21 @@ export default function SubjectRow({ subject, result, index, canRemove, onChange
           <input
             id={`po-${subject.id}`}
             type="number"
-            className="gpa-input"
+            className={`gpa-input${practicalBelowPass ? " gpa-input--error" : ""}`}
             placeholder="0"
             min="0"
             max={prFull > 0 ? prFull : undefined}
             value={subject.practicalObtained}
             disabled={!hasPractical}
-            onChange={(e) => onChange(subject.id, "practicalObtained", e.target.value)}
+            onChange={(e) => {
+              const raw = parseFloat(e.target.value);
+              const clamped = !isNaN(raw) && prFull > 0 && raw > prFull
+                ? String(prFull)
+                : e.target.value;
+              onChange(subject.id, "practicalObtained", clamped);
+            }}
             style={!hasPractical ? { opacity: 0.4, cursor: "not-allowed" } : undefined}
+            aria-invalid={practicalBelowPass}
           />
         </div>
 
@@ -137,18 +151,12 @@ export default function SubjectRow({ subject, result, index, canRemove, onChange
             <span
               className="gpa-grade-badge"
               style={{ background: gradeColor }}
-              aria-label={`Grade ${result.grade}, ${result.percentage.toFixed(1)}%`}
+              aria-label={`Grade ${result.grade}`}
             >
               {result.grade}
-              <small>{result.percentage.toFixed(1)}%</small>
             </span>
           ) : (
             <span className="gpa-grade-badge gpa-grade-badge--empty">—</span>
-          )}
-          {overMax && (
-            <span className="gpa-field-error" role="alert" style={{ fontSize: ".7rem" }}>
-              Exceeds total
-            </span>
           )}
         </div>
       </div>

@@ -23,22 +23,52 @@ const CheckIcon = () => (
 
 /* ── data ── */
 const examples = [
-  { type: "na",  gets: "न",  hint: "n + a" },
-  { type: "ma",  gets: "म",  hint: "m + a" },
-  { type: "ka",  gets: "क",  hint: "k sound" },
-  { type: "kha", gets: "ख",  hint: "aspirated k" },
-  { type: "ga",  gets: "ग",  hint: "g sound" },
-  { type: "cha", gets: "च",  hint: "ch sound" },
-  { type: "ta",  gets: "त",  hint: "soft t" },
-  { type: "Ta",  gets: "ट",  hint: "hard T" },
-  { type: "da",  gets: "द",  hint: "soft d" },
-  { type: "Da",  gets: "ड",  hint: "hard D" },
-  { type: "sha", gets: "श",  hint: "sh sound" },
-  { type: "sa",  gets: "स",  hint: "s sound" },
-  { type: "ra",  gets: "र",  hint: "r sound" },
-  { type: "la",  gets: "ल",  hint: "l sound" },
-  { type: "ha",  gets: "ह",  hint: "h sound" },
-  { type: "ya",  gets: "य",  hint: "y sound" },
+  { type: "a",    gets: "अ",  hint: "short a" },
+  { type: "aa",   gets: "आ",  hint: "long aa" },
+  { type: "i",    gets: "इ",  hint: "short i" },
+  { type: "ii",   gets: "ई",  hint: "long ii" },
+  { type: "u",    gets: "उ",  hint: "short u" },
+  { type: "uu",   gets: "ऊ",  hint: "long uu" },
+  { type: "e",    gets: "ए",  hint: "e sound" },
+  { type: "ai",   gets: "ऐ",  hint: "ai sound" },
+  { type: "o",    gets: "ओ",  hint: "o sound" },
+  { type: "au",   gets: "औ",  hint: "au sound" },
+  { type: "ka",   gets: "क",  hint: "k sound" },
+  { type: "kha",  gets: "ख",  hint: "aspirated k" },
+  { type: "ga",   gets: "ग",  hint: "g sound" },
+  { type: "gha",  gets: "घ",  hint: "aspirated g" },
+  { type: "nga",  gets: "ङ",  hint: "ng sound" },
+  { type: "cha",  gets: "च",  hint: "ch sound" },
+  { type: "chha", gets: "छ",  hint: "aspirated ch" },
+  { type: "ja",   gets: "ज",  hint: "j sound" },
+  { type: "jha",  gets: "झ",  hint: "aspirated j" },
+  { type: "nya",  gets: "ञ",  hint: "nya sound" },
+  { type: "Ta",   gets: "ट",  hint: "hard T (uppercase)" },
+  { type: "Tha",  gets: "ठ",  hint: "hard Th (uppercase)" },
+  { type: "Da",   gets: "ड",  hint: "hard D (uppercase)" },
+  { type: "Dha",  gets: "ढ",  hint: "hard Dh (uppercase)" },
+  { type: "Na",   gets: "ण",  hint: "hard N (uppercase)" },
+  { type: "ta",   gets: "त",  hint: "soft t" },
+  { type: "tha",  gets: "थ",  hint: "aspirated t" },
+  { type: "da",   gets: "द",  hint: "soft d" },
+  { type: "dha",  gets: "ध",  hint: "aspirated d" },
+  { type: "na",   gets: "न",  hint: "n sound" },
+  { type: "pa",   gets: "प",  hint: "p sound" },
+  { type: "pha",  gets: "फ",  hint: "ph sound" },
+  { type: "ba",   gets: "ब",  hint: "b sound" },
+  { type: "bha",  gets: "भ",  hint: "bh sound" },
+  { type: "ma",   gets: "म",  hint: "m sound" },
+  { type: "ya",   gets: "य",  hint: "y sound" },
+  { type: "ra",   gets: "र",  hint: "r sound" },
+  { type: "la",   gets: "ल",  hint: "l sound" },
+  { type: "va",   gets: "व",  hint: "v / w sound" },
+  { type: "sha",  gets: "श",  hint: "sh (lowercase)" },
+  { type: "Sha",  gets: "ष",  hint: "Sh (uppercase)" },
+  { type: "sa",   gets: "स",  hint: "s sound" },
+  { type: "ha",   gets: "ह",  hint: "h sound" },
+  { type: "ksh",  gets: "क्ष", hint: "conjunct ksh" },
+  { type: "tr",   gets: "त्र", hint: "conjunct tr" },
+  { type: "jny",  gets: "ज्ञ", hint: "conjunct jny" },
 ];
 
 const rules = [
@@ -60,8 +90,15 @@ const rules = [
     label: "Rule 3",
     heading: "Hard consonant = Uppercase letter",
     example: "t → त   but   T → ट",
-    detail: "Uppercase T, D, Th, Dh give the hard retroflex sounds unique to Nepali.",
+    detail: "Uppercase T, D, Th, Dh give the hard retroflex sounds unique to Nepali. Same for sh vs Sh.",
     more: ["d → द  /  D → ड", "th → थ  /  Th → ठ", "dh → ध  /  Dh → ढ", "sh → श  /  Sh → ष"],
+  },
+  {
+    label: "Special",
+    heading: "Conjunct letters & extras",
+    example: "ksh → क्ष   jny → ज्ञ",
+    detail: "Some letters need a specific combo. nga, nya, ksh, jny are typed as shown.",
+    more: ["nga → ङ", "nya → ञ", "ksh → क्ष", "jny → ज्ञ", "ph → फ", "v → व"],
   },
 ];
 
@@ -103,7 +140,7 @@ export default function RomanizationGuide() {
             <p className="text-[.68rem] font-bold uppercase tracking-widest text-[#718096] dark:text-[#8b95ab] mb-2.5">
               Quick examples — try typing these
             </p>
-            <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
+            <div className="grid grid-cols-5 sm:grid-cols-8 lg:grid-cols-10 gap-1.5">
               {examples.map((ex, i) => (
                 <div
                   key={i}
@@ -120,9 +157,6 @@ export default function RomanizationGuide() {
                   >
                     {ex.gets}
                   </span>
-                  <span className="text-[.58rem] text-[#718096] dark:text-[#8b95ab] text-center leading-tight hidden sm:block">
-                    {ex.hint}
-                  </span>
                 </div>
               ))}
             </div>
@@ -133,7 +167,7 @@ export default function RomanizationGuide() {
             <p className="text-[.68rem] font-bold uppercase tracking-widest text-[#718096] dark:text-[#8b95ab] mb-2.5">
               The 3 rules
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {rules.map((r, i) => (
                 <div
                   key={i}

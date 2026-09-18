@@ -28,6 +28,10 @@ export interface SubjectResult {
   grade: string;
   gradePoint: number;
   gradePoints: number;      // creditHours × gradePoint
+  /** True when student failed to score 40% in theory OR practical (overrides combined grade to F) */
+  failedPassMark: boolean;
+  /** Which component(s) caused the fail, for display purposes */
+  failReason?: string;
 }
 
 export interface GpaResult {

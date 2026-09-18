@@ -41,6 +41,9 @@ export default function GradingScaleTable() {
         Percentage = (Obtained Marks ÷ Total Full Marks) × 100.
         Total Full Marks = Theory Full Marks + Practical/Internal Marks.
       </p>
+      <p className="gpa-scale-rule" role="note">
+        ⚠ <strong>Pass Mark Rule:</strong> A minimum of 40% must be scored in theory and practical <em>separately</em>. Failing either component results in grade F, regardless of the combined total.
+      </p>
     </div>
   );
 }

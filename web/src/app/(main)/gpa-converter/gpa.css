@@ -295,10 +295,10 @@
 
 /* ── Grade badge ── */
 .pcm-gpa .gpa-grade-badge {
-  display:inline-flex; flex-direction:column; align-items:center;
-  min-width:52px; padding:.3rem .6rem;
+  display:inline-flex; align-items:center; justify-content:center;
+  width: 48px; height: 48px;
   border-radius:var(--r-sm); color:#fff;
-  font-weight:800; font-size:.95rem; line-height:1.1;
+  font-weight:800; font-size:1.05rem; line-height:1;
 }
 .pcm-gpa .gpa-grade-badge small {
   font-size:.68rem; font-weight:600; opacity:.9; margin-top:.1rem;
@@ -544,3 +544,77 @@
 @media (prefers-reduced-motion:reduce) {
   .pcm-gpa .reveal { opacity:1; transform:none; transition:none; }
 }
+
+/* ── Fail alert (result card) ── */
+.pcm-gpa .gpa-fail-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: .65rem;
+  padding: .75rem 1rem;
+  margin-bottom: 1rem;
+  background: rgba(229,62,62,.08);
+  border: 1.5px solid rgba(229,62,62,.35);
+  border-radius: var(--r-sm);
+  font-size: .82rem;
+  color: #c53030;
+}
+.dark .pcm-gpa .gpa-fail-alert {
+  background: rgba(229,62,62,.12);
+  border-color: rgba(229,62,62,.4);
+  color: #fc8181;
+}
+.pcm-gpa .gpa-fail-alert__icon {
+  font-size: 1rem;
+  flex: none;
+  line-height: 1.4;
+}
+.pcm-gpa .gpa-fail-alert strong { display: block; margin-bottom: .2rem; }
+.pcm-gpa .gpa-fail-alert p { margin: 0; opacity: .85; }
+
+/* ── Breakdown row — fail state ── */
+.pcm-gpa .gpa-breakdown-row--fail {
+  background: rgba(229,62,62,.05);
+  border-radius: 4px;
+  padding-inline: .35rem;
+}
+.pcm-gpa .gpa-breakdown-fail-tag {
+  display: inline-block;
+  margin-left: .35rem;
+  padding: .05rem .35rem;
+  background: #e53e3e;
+  color: #fff;
+  border-radius: 3px;
+  font-size: .6rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  vertical-align: middle;
+}
+
+/* ── Fail reason text below grade badge (SubjectRow) ── */
+.pcm-gpa .gpa-fail-reason {
+  display: block;
+  font-size: .68rem;
+  color: #e53e3e;
+  font-weight: 600;
+  margin-top: .2rem;
+  line-height: 1.4;
+  max-width: 140px;
+}
+
+/* ── Pass mark rule note (grading scale table) ── */
+.pcm-gpa .gpa-scale-rule {
+  margin-top: .75rem;
+  padding: .65rem 1rem;
+  background: rgba(245,158,11,.08);
+  border-left: 3px solid #f59e0b;
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  font-size: .82rem;
+  color: var(--body-c);
+  line-height: 1.6;
+}
+.dark .pcm-gpa .gpa-scale-rule {
+  background: rgba(245,158,11,.1);
+  border-color: #d97706;
+}
+.pcm-gpa .gpa-scale-rule strong { color: #92400e; }
+.dark .pcm-gpa .gpa-scale-rule strong { color: #fcd34d; }
