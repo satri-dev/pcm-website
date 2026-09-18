@@ -5,13 +5,26 @@ import { getDb } from "@/core/lib/db";
 import { PAGE_CONTENT_COLLECTION } from "@/types/page-content";
 import { CACHE_TAGS } from "@/lib/cache-tags";
 
+const CONTACT_SECTIONS = [
+  "hero",
+  "contactDetails",
+  "contactForm",
+  "mapEmbed",
+  "cta",
+  "seo",
+] as const;
+
 export async function PUT(request: NextRequest) {
   const guard = await requireApiSession(["admin", "editor"]);
   if (!guard.ok) return guard.response;
 
   try {
     const body = await request.json();
-    const { content } = body;
+    const { content, section } = body as { content?: Record<string, unknown>; section?: string };
+
+    if (section && !CONTACT_SECTIONS.includes(section as (typeof CONTACT_SECTIONS)[number])) {
+      return NextResponse.json({ error: "Invalid section" }, { status: 400 });
+    }
 
     if (!content) {
       return NextResponse.json({ error: "Content is required" }, { status: 400 });
@@ -20,23 +33,40 @@ export async function PUT(request: NextRequest) {
     const db = await getDb();
     const collection = db.collection(PAGE_CONTENT_COLLECTION);
 
-    // Upsert the contact page content
-    await collection.updateOne(
-      { slug: "contact" },
-      {
-        $set: {
-          slug: "contact",
-          content,
-          updatedAt: new Date(),
+    if (section) {
+      const existing = await collection.findOne({ slug: "contact" });
+      const merged = { ...(existing?.content || {}), [section]: content };
+      await collection.updateOne(
+        { slug: "contact" },
+        {
+          $set: {
+            slug: "contact",
+            content: merged,
+            updatedAt: new Date(),
+          },
+          $setOnInsert: {
+            createdAt: new Date(),
+          },
         },
-        $setOnInsert: {
-          createdAt: new Date(),
+        { upsert: true }
+      );
+    } else {
+      await collection.updateOne(
+        { slug: "contact" },
+        {
+          $set: {
+            slug: "contact",
+            content,
+            updatedAt: new Date(),
+          },
+          $setOnInsert: {
+            createdAt: new Date(),
+          },
         },
-      },
-      { upsert: true }
-    );
+        { upsert: true }
+      );
+    }
 
-    // Invalidate contact page cache
     revalidateTag(CACHE_TAGS.pageContent("contact"), "max");
 
     return NextResponse.json({

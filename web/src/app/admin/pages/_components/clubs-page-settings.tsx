@@ -2,11 +2,11 @@
 
 import { useState, type ReactNode } from "react";
 import { Save, Link2 } from "lucide-react";
-import ImageUpload from "@/components/cloudinary/ImageUpload";
 import {
   CLUBS_PAGE_SETTINGS_DEFAULTS,
   type ClubsPageSettings,
 } from "@/types/clubs-page-settings";
+import WhyJoinManager, { type WhyJoinData } from "./clubs-why-join-manager";
 
 const API_BASE = "/api/admin/pages/clubs-settings";
 
@@ -38,23 +38,15 @@ export default function ClubsPageSettings({
     value: ClubsPageSettings[K]
   ) => setForm((prev) => ({ ...prev, [key]: value }));
 
-  const setChecklist = (value: string) =>
-    set(
-      "whyChecklist",
-      value
-        .split("\n")
-        .map((l) => l.trim())
-        .filter(Boolean)
-    );
-
-  const handleSave = async () => {
+  const handleSave = async (overrides?: Partial<ClubsPageSettings>) => {
     setSaving(true);
     setMessage("");
     try {
+      const payload = { ...form, ...overrides };
       const res = await fetch(API_BASE, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -63,6 +55,7 @@ export default function ClubsPageSettings({
       setMessage("Saved. The public /clubs page now reflects these changes.");
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Save failed");
+      throw err;
     } finally {
       setSaving(false);
     }
@@ -177,82 +170,38 @@ export default function ClubsPageSettings({
           <h3>Why Join — Split Section</h3>
         </div>
         <div className="admin-panel__body p-6 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="block">
-              {fieldLabel("Eyebrow")}
-              <input
-                className={INPUT}
-                value={form.whyEyebrow}
-                onChange={(e) => set("whyEyebrow", e.target.value)}
-              />
-            </label>
-            <label className="block">
-              {fieldLabel("Title")}
-              <input
-                className={INPUT}
-                value={form.whyTitle}
-                onChange={(e) => set("whyTitle", e.target.value)}
-              />
-            </label>
-          </div>
-          <label className="block">
-            {fieldLabel("Paragraph")}
-            <textarea
-              rows={4}
-              className={INPUT}
-              value={form.whyParagraph}
-              onChange={(e) => set("whyParagraph", e.target.value)}
-            />
-          </label>
-          <label className="block">
-            {fieldLabel("Checklist — one item per line")}
-            <textarea
-              rows={4}
-              className={INPUT}
-              value={form.whyChecklist.join("\n")}
-              onChange={(e) => setChecklist(e.target.value)}
-            />
-          </label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="block">
-              {fieldLabel("Badge Value")}
-              <input
-                className={INPUT}
-                value={form.whyBadgeValue}
-                onChange={(e) => set("whyBadgeValue", e.target.value)}
-              />
-            </label>
-            <label className="block">
-              {fieldLabel("Badge Label")}
-              <input
-                className={INPUT}
-                value={form.whyBadgeLabel}
-                onChange={(e) => set("whyBadgeLabel", e.target.value)}
-              />
-            </label>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="block">
-              {fieldLabel("Image URL")}
-              <input
-                className={INPUT}
-                value={form.whyImage}
-                onChange={(e) => set("whyImage", e.target.value)}
-              />
-            </label>
-            <label className="block">
-              {fieldLabel("Image Alt Text")}
-              <input
-                className={INPUT}
-                value={form.whyImageAlt}
-                onChange={(e) => set("whyImageAlt", e.target.value)}
-              />
-            </label>
-          </div>
-          <div>
-            {fieldLabel("Or upload a new image")}
-            <ImageUpload onUpload={(r) => set("whyImage", r.secure_url)} />
-          </div>
+          <WhyJoinManager
+            data={{
+              whyEyebrow: form.whyEyebrow,
+              whyTitle: form.whyTitle,
+              whyParagraph: form.whyParagraph,
+              whyChecklist: form.whyChecklist,
+              whyImage: form.whyImage,
+              whyImageAlt: form.whyImageAlt,
+              whyBadgeValue: form.whyBadgeValue,
+              whyBadgeLabel: form.whyBadgeLabel,
+            }}
+            onSave={async (draft: WhyJoinData) => {
+              set("whyEyebrow", draft.whyEyebrow);
+              set("whyTitle", draft.whyTitle);
+              set("whyParagraph", draft.whyParagraph);
+              set("whyChecklist", draft.whyChecklist);
+              set("whyImage", draft.whyImage);
+              set("whyImageAlt", draft.whyImageAlt);
+              set("whyBadgeValue", draft.whyBadgeValue);
+              set("whyBadgeLabel", draft.whyBadgeLabel);
+              await handleSave({
+                whyEyebrow: draft.whyEyebrow,
+                whyTitle: draft.whyTitle,
+                whyParagraph: draft.whyParagraph,
+                whyChecklist: draft.whyChecklist,
+                whyImage: draft.whyImage,
+                whyImageAlt: draft.whyImageAlt,
+                whyBadgeValue: draft.whyBadgeValue,
+                whyBadgeLabel: draft.whyBadgeLabel,
+              });
+            }}
+          />
         </div>
       </div>
 
@@ -368,7 +317,7 @@ export default function ClubsPageSettings({
       <div className="flex items-center gap-4">
         <button
           type="button"
-          onClick={handleSave}
+          onClick={() => handleSave()}
           disabled={saving}
           className="admin-btn admin-btn--primary"
         >

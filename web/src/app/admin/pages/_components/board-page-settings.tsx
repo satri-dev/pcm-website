@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Save, Link2, Plus, Trash2 } from "lucide-react";
-import ImageUpload from "@/components/cloudinary/ImageUpload";
+import { Save, Link2 } from "lucide-react";
 import {
   BOARD_PAGE_SETTINGS_DEFAULTS,
   type BoardPageSettings,
 } from "@/types/board-page-settings";
+import BoardPromiseManager, {
+  type BoardPromiseData,
+} from "./board-promise-manager";
 
 const API_BASE = "/api/admin/pages/board-settings";
 
@@ -38,21 +40,15 @@ export default function BoardPageSettings({
     value: BoardPageSettings[K]
   ) => setForm((prev) => ({ ...prev, [key]: value }));
 
-  const addParagraph = (key: "promiseParagraphs") => {
-    set(key, [...form[key], ""]);
-  };
-  const addChecklist = () => {
-    set("promiseChecklist", [...form.promiseChecklist, ""]);
-  };
-
-  const handleSave = async () => {
+  const handleSave = async (overrides?: Partial<BoardPageSettings>) => {
     setSaving(true);
     setMessage("");
     try {
+      const payload = { ...form, ...overrides };
       const res = await fetch(API_BASE, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -63,6 +59,7 @@ export default function BoardPageSettings({
       );
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Save failed");
+      throw err;
     } finally {
       setSaving(false);
     }
@@ -218,158 +215,41 @@ export default function BoardPageSettings({
       {/* ── Our promise ── */}
       <div className="admin-panel">
         <div className="admin-panel__head">
-          <h3>Our Promise — Split</h3>
+          <h3 className="font-bold">Our Promise — Split</h3>
         </div>
         <div className="admin-panel__body p-6 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="block">
-              {fieldLabel("Eyebrow")}
-              <input
-                className={INPUT}
-                value={form.promiseEyebrow}
-                onChange={(e) => set("promiseEyebrow", e.target.value)}
-              />
-            </label>
-            <label className="block">
-              {fieldLabel("Title")}
-              <input
-                className={INPUT}
-                value={form.promiseTitle}
-                onChange={(e) => set("promiseTitle", e.target.value)}
-              />
-            </label>
-          </div>
-
-          <div>
-            {fieldLabel("Paragraphs")}
-            <div className="space-y-2">
-              {form.promiseParagraphs.map((p, i) => (
-                <div key={i} className="flex gap-2">
-                  <textarea
-                    rows={2}
-                    className={INPUT}
-                    value={p}
-                    onChange={(e) =>
-                      set(
-                        "promiseParagraphs",
-                        form.promiseParagraphs.map((x, idx) =>
-                          idx === i ? e.target.value : x
-                        )
-                      )
-                    }
-                  />
-                  <button
-                    type="button"
-                    className="admin-icon-btn danger shrink-0 self-start"
-                    aria-label="Remove paragraph"
-                    onClick={() =>
-                      set(
-                        "promiseParagraphs",
-                        form.promiseParagraphs.filter((_, idx) => idx !== i)
-                      )
-                    }
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
-            <button
-              type="button"
-              className="admin-btn admin-btn--sm mt-2"
-              onClick={() => addParagraph("promiseParagraphs")}
-            >
-              <Plus size={14} /> Add Paragraph
-            </button>
-          </div>
-
-          <div>
-            {fieldLabel("Checklist Items")}
-            <div className="space-y-2">
-              {form.promiseChecklist.map((c, i) => (
-                <div key={i} className="flex gap-2">
-                  <input
-                    className={INPUT}
-                    value={c}
-                    onChange={(e) =>
-                      set(
-                        "promiseChecklist",
-                        form.promiseChecklist.map((x, idx) =>
-                          idx === i ? e.target.value : x
-                        )
-                      )
-                    }
-                  />
-                  <button
-                    type="button"
-                    className="admin-icon-btn danger shrink-0 self-start"
-                    aria-label="Remove checklist item"
-                    onClick={() =>
-                      set(
-                        "promiseChecklist",
-                        form.promiseChecklist.filter((_, idx) => idx !== i)
-                      )
-                    }
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
-            <button
-              type="button"
-              className="admin-btn admin-btn--sm mt-2"
-              onClick={addChecklist}
-            >
-              <Plus size={14} /> Add Checklist Item
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="block">
-              {fieldLabel("Image URL")}
-              <input
-                className={INPUT}
-                value={form.promiseImageSrc}
-                onChange={(e) => set("promiseImageSrc", e.target.value)}
-              />
-            </label>
-            <label className="block">
-              {fieldLabel("Image Alt Text")}
-              <input
-                className={INPUT}
-                value={form.promiseImageAlt}
-                onChange={(e) => set("promiseImageAlt", e.target.value)}
-              />
-            </label>
-          </div>
-          <div>
-            {fieldLabel("Or upload a new image")}
-            <ImageUpload
-              onUpload={(r) => {
-                set("promiseImageSrc", r.secure_url);
-                set("promiseImageAlt", "The PCM campus in Nadipur");
-              }}
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="block">
-              {fieldLabel("Badge Value")}
-              <input
-                className={INPUT}
-                value={form.promiseBadgeValue}
-                onChange={(e) => set("promiseBadgeValue", e.target.value)}
-              />
-            </label>
-            <label className="block">
-              {fieldLabel("Badge Label")}
-              <input
-                className={INPUT}
-                value={form.promiseBadgeLabel}
-                onChange={(e) => set("promiseBadgeLabel", e.target.value)}
-              />
-            </label>
-          </div>
+          <BoardPromiseManager
+            data={{
+              promiseEyebrow: form.promiseEyebrow,
+              promiseTitle: form.promiseTitle,
+              promiseParagraphs: form.promiseParagraphs,
+              promiseChecklist: form.promiseChecklist,
+              promiseImageSrc: form.promiseImageSrc,
+              promiseImageAlt: form.promiseImageAlt,
+              promiseBadgeValue: form.promiseBadgeValue,
+              promiseBadgeLabel: form.promiseBadgeLabel,
+            }}
+            onSave={async (draft: BoardPromiseData) => {
+              set("promiseEyebrow", draft.promiseEyebrow);
+              set("promiseTitle", draft.promiseTitle);
+              set("promiseParagraphs", draft.promiseParagraphs);
+              set("promiseChecklist", draft.promiseChecklist);
+              set("promiseImageSrc", draft.promiseImageSrc);
+              set("promiseImageAlt", draft.promiseImageAlt);
+              set("promiseBadgeValue", draft.promiseBadgeValue);
+              set("promiseBadgeLabel", draft.promiseBadgeLabel);
+              await handleSave({
+                promiseEyebrow: draft.promiseEyebrow,
+                promiseTitle: draft.promiseTitle,
+                promiseParagraphs: draft.promiseParagraphs,
+                promiseChecklist: draft.promiseChecklist,
+                promiseImageSrc: draft.promiseImageSrc,
+                promiseImageAlt: draft.promiseImageAlt,
+                promiseBadgeValue: draft.promiseBadgeValue,
+                promiseBadgeLabel: draft.promiseBadgeLabel,
+              });
+            }}
+          />
         </div>
       </div>
 
@@ -439,7 +319,7 @@ export default function BoardPageSettings({
       <div className="flex items-center gap-4">
         <button
           type="button"
-          onClick={handleSave}
+          onClick={() => handleSave()}
           disabled={saving}
           className="admin-btn admin-btn--primary"
         >

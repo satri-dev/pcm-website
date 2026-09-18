@@ -1,9 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, ChevronDown } from "lucide-react";
+import { CheckCircle2, ChevronDown, Pencil, X } from "lucide-react";
 import { toast } from "sonner";
 import type { ContactPageContent } from "@/types/page-content";
+import { SectionSaveButton } from "../../_components/section-save-button";
+import RichTextEditor from "@/app/admin/_components/editor/rich-text-editor";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface ContactPageEditorProps {
   initialContent: ContactPageContent;
@@ -19,10 +34,22 @@ const SECTIONS = [
 ];
 const ALL_SECTION_IDS = SECTIONS.map((s) => s.id);
 
+// Maps a UI section id to the key it lives under in ContactPageContent
+const SECTION_TO_KEY: Record<string, keyof ContactPageContent> = {
+  hero: "hero",
+  details: "contactDetails",
+  form: "contactForm",
+  map: "mapEmbed",
+  cta: "cta",
+  seo: "seo",
+};
+
 export default function ContactPageEditor({ initialContent }: ContactPageEditorProps) {
   const [content, setContent] = useState<ContactPageContent>(initialContent);
   const [saving, setSaving] = useState(false);
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(ALL_SECTION_IDS));
+  const [savingSection, setSavingSection] = useState<string | null>(null);
+  const [sectionErrors, setSectionErrors] = useState<Record<string, string>>({});
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
   const toggleSection = (id: string) => {
     setExpandedSections((prev) => {
@@ -66,55 +93,136 @@ export default function ContactPageEditor({ initialContent }: ContactPageEditorP
     }
   };
 
-  const updateSubjectOption = (index: number, value: string) => {
-    const newOptions = [...content.contactForm.fields.subject.options];
-    newOptions[index] = value;
-    setContent({
-      ...content,
-      contactForm: {
-        ...content.contactForm,
-        fields: {
-          ...content.contactForm.fields,
-          subject: {
-            ...content.contactForm.fields.subject,
-            options: newOptions,
-          },
-        },
-      },
-    });
+  const saveSection = async (sectionId: string) => {
+    const dataKey = SECTION_TO_KEY[sectionId];
+    setSavingSection(sectionId);
+    setSectionErrors((prev) => ({ ...prev, [sectionId]: "" }));
+
+    try {
+      const response = await fetch("/api/admin/pages/contact", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          section: dataKey,
+          content: content[dataKey],
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to save");
+      }
+
+      const sectionTitle = SECTIONS.find((s) => s.id === sectionId)?.title;
+      toast.success(`${sectionTitle ?? "Section"} saved successfully!`);
+    } catch (error) {
+      const errorMsg =
+        error instanceof Error ? error.message : "Failed to save changes";
+      setSectionErrors((prev) => ({ ...prev, [sectionId]: errorMsg }));
+      toast.error(errorMsg);
+    } finally {
+      setSavingSection(null);
+    }
   };
 
-  const addSubjectOption = () => {
-    setContent({
-      ...content,
-      contactForm: {
-        ...content.contactForm,
-        fields: {
-          ...content.contactForm.fields,
-          subject: {
-            ...content.contactForm.fields.subject,
-            options: [...content.contactForm.fields.subject.options, "New Option"],
-          },
-        },
-      },
+  const [contactInfoModal, setContactInfoModal] = useState<
+    "address" | "phone" | "email" | "hours" | null
+  >(null);
+  const [contactInfoDraft, setContactInfoDraft] = useState({
+    label: "",
+    value: "",
+    mapUrl: "",
+    tel: "",
+  });
+
+  const openEditContactInfo = (key: "address" | "phone" | "email" | "hours") => {
+    const data = content.contactDetails[key];
+    setContactInfoDraft({
+      label: data.label,
+      value: data.value,
+      mapUrl: "mapUrl" in data ? (data.mapUrl ?? "") : "",
+      tel: "tel" in data ? (data.tel ?? "") : "",
     });
+    setContactInfoModal(key);
   };
 
-  const removeSubjectOption = (index: number) => {
-    const newOptions = content.contactForm.fields.subject.options.filter((_, i) => i !== index);
+  const closeContactInfoModal = () => setContactInfoModal(null);
+
+  const saveContactInfo = () => {
+    if (!contactInfoModal) return;
+    const key = contactInfoModal;
+    const base = { label: contactInfoDraft.label, value: contactInfoDraft.value };
+    setContent({
+      ...content,
+      contactDetails: {
+        ...content.contactDetails,
+        [key]:
+          key === "address"
+            ? { ...base, mapUrl: contactInfoDraft.mapUrl }
+            : key === "phone"
+              ? { ...base, tel: contactInfoDraft.tel }
+              : base,
+      },
+    });
+    closeContactInfoModal();
+  };
+
+  const [formFieldModal, setFormFieldModal] = useState<
+    "name" | "phone" | "email" | "subject" | "message" | null
+  >(null);
+  const [formFieldDraft, setFormFieldDraft] = useState<{
+    label: string;
+    placeholder: string;
+    options: string[];
+  }>({ label: "", placeholder: "", options: [] });
+
+  const openEditFormField = (key: "name" | "phone" | "email" | "subject" | "message") => {
+    const field = content.contactForm.fields[key];
+    setFormFieldDraft({
+      label: field.label,
+      placeholder: "placeholder" in field ? field.placeholder : "",
+      options: "options" in field ? [...field.options] : [],
+    });
+    setFormFieldModal(key);
+  };
+
+  const closeFormFieldModal = () => setFormFieldModal(null);
+
+  const updateDraftOption = (index: number, value: string) => {
+    setFormFieldDraft((d) => ({
+      ...d,
+      options: d.options.map((o, i) => (i === index ? value : o)),
+    }));
+  };
+
+  const addDraftOption = () => {
+    setFormFieldDraft((d) => ({ ...d, options: [...d.options, "New Option"] }));
+  };
+
+  const removeDraftOption = (index: number) => {
+    setFormFieldDraft((d) => ({
+      ...d,
+      options: d.options.filter((_, i) => i !== index),
+    }));
+  };
+
+  const saveFormField = () => {
+    if (!formFieldModal) return;
+    const key = formFieldModal;
     setContent({
       ...content,
       contactForm: {
         ...content.contactForm,
         fields: {
           ...content.contactForm.fields,
-          subject: {
-            ...content.contactForm.fields.subject,
-            options: newOptions,
-          },
+          [key]:
+            key === "subject"
+              ? { label: formFieldDraft.label, options: formFieldDraft.options }
+              : { label: formFieldDraft.label, placeholder: formFieldDraft.placeholder },
         },
       },
     });
+    closeFormFieldModal();
   };
 
   return (
@@ -170,6 +278,12 @@ export default function ContactPageEditor({ initialContent }: ContactPageEditorP
             />
           </div>
         </div>
+        <SectionSaveButton
+          id="hero"
+          saving={savingSection === "hero"}
+          error={sectionErrors.hero}
+          onSave={saveSection}
+        />
         </div>
         )}
       </section>
@@ -208,224 +322,70 @@ export default function ContactPageEditor({ initialContent }: ContactPageEditorP
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Section Body</label>
-            <textarea
-              value={content.contactDetails.sectionBody}
-              onChange={(e) =>
+            <RichTextEditor
+              content={content.contactDetails.sectionBody}
+              onChange={(html) =>
                 setContent({
                   ...content,
-                  contactDetails: { ...content.contactDetails, sectionBody: e.target.value },
+                  contactDetails: { ...content.contactDetails, sectionBody: html },
                 })
               }
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
             />
           </div>
 
-          {/* Address */}
+          {/* Contact Info Items */}
           <div className="border-t pt-4">
-            <h3 className="font-medium mb-2">Address</h3>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Label</label>
-                <input
-                  type="text"
-                  value={content.contactDetails.address.label}
-                  onChange={(e) =>
-                    setContent({
-                      ...content,
-                      contactDetails: {
-                        ...content.contactDetails,
-                        address: { ...content.contactDetails.address, label: e.target.value },
-                      },
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Value</label>
-                <input
-                  type="text"
-                  value={content.contactDetails.address.value}
-                  onChange={(e) =>
-                    setContent({
-                      ...content,
-                      contactDetails: {
-                        ...content.contactDetails,
-                        address: { ...content.contactDetails.address, value: e.target.value },
-                      },
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Map URL</label>
-                <input
-                  type="text"
-                  value={content.contactDetails.address.mapUrl}
-                  onChange={(e) =>
-                    setContent({
-                      ...content,
-                      contactDetails: {
-                        ...content.contactDetails,
-                        address: { ...content.contactDetails.address, mapUrl: e.target.value },
-                      },
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  placeholder="https://maps.google.com/?q=..."
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Phone */}
-          <div className="border-t pt-4">
-            <h3 className="font-medium mb-2">Phone</h3>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Label</label>
-                <input
-                  type="text"
-                  value={content.contactDetails.phone.label}
-                  onChange={(e) =>
-                    setContent({
-                      ...content,
-                      contactDetails: {
-                        ...content.contactDetails,
-                        phone: { ...content.contactDetails.phone, label: e.target.value },
-                      },
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Display Value
-                </label>
-                <input
-                  type="text"
-                  value={content.contactDetails.phone.value}
-                  onChange={(e) =>
-                    setContent({
-                      ...content,
-                      contactDetails: {
-                        ...content.contactDetails,
-                        phone: { ...content.contactDetails.phone, value: e.target.value },
-                      },
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  placeholder="(061) 544761, 570124"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tel Link (numbers only)
-                </label>
-                <input
-                  type="text"
-                  value={content.contactDetails.phone.tel}
-                  onChange={(e) =>
-                    setContent({
-                      ...content,
-                      contactDetails: {
-                        ...content.contactDetails,
-                        phone: { ...content.contactDetails.phone, tel: e.target.value },
-                      },
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  placeholder="061544761"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Email */}
-          <div className="border-t pt-4">
-            <h3 className="font-medium mb-2">Email</h3>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Label</label>
-                <input
-                  type="text"
-                  value={content.contactDetails.email.label}
-                  onChange={(e) =>
-                    setContent({
-                      ...content,
-                      contactDetails: {
-                        ...content.contactDetails,
-                        email: { ...content.contactDetails.email, label: e.target.value },
-                      },
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Value</label>
-                <input
-                  type="email"
-                  value={content.contactDetails.email.value}
-                  onChange={(e) =>
-                    setContent({
-                      ...content,
-                      contactDetails: {
-                        ...content.contactDetails,
-                        email: { ...content.contactDetails.email, value: e.target.value },
-                      },
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Hours */}
-          <div className="border-t pt-4">
-            <h3 className="font-medium mb-2">Opening Hours</h3>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Label</label>
-                <input
-                  type="text"
-                  value={content.contactDetails.hours.label}
-                  onChange={(e) =>
-                    setContent({
-                      ...content,
-                      contactDetails: {
-                        ...content.contactDetails,
-                        hours: { ...content.contactDetails.hours, label: e.target.value },
-                      },
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Value</label>
-                <input
-                  type="text"
-                  value={content.contactDetails.hours.value}
-                  onChange={(e) =>
-                    setContent({
-                      ...content,
-                      contactDetails: {
-                        ...content.contactDetails,
-                        hours: { ...content.contactDetails.hours, value: e.target.value },
-                      },
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
-              </div>
+            <h3 className="font-medium mb-3">Contact Details Items</h3>
+            <div className="pp-table-wrap rounded-lg border border-[var(--admin-line)]">
+              <Table className="table-fixed">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12 bg-[var(--admin-surface-2)]">#</TableHead>
+                    <TableHead className="w-1/3 truncate bg-[var(--admin-surface-2)]">ITEM</TableHead>
+                    <TableHead className="bg-[var(--admin-surface-2)]">VALUE</TableHead>
+                    <TableHead className="w-28 text-right bg-[var(--admin-surface-2)]">ACTIONS</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {[
+                    { key: "address" as const, title: "Address" },
+                    { key: "phone" as const, title: "Phone" },
+                    { key: "email" as const, title: "Email" },
+                    { key: "hours" as const, title: "Opening Hours" },
+                  ].map((item, idx) => (
+                    <TableRow key={item.key}>
+                      <TableCell className="w-12 py-2.5">{idx + 1}</TableCell>
+                      <TableCell className="truncate py-2.5 text-sm font-semibold">
+                        {item.title}
+                      </TableCell>
+                      <TableCell className="cell-ellipsis py-2.5 text-sm text-[var(--admin-muted)]">
+                        {content.contactDetails[item.key].value}
+                      </TableCell>
+                      <TableCell className="py-2.5">
+                        <div className="row-actions justify-end">
+                          <button
+                            type="button"
+                            className="act-btn"
+                            onClick={() => openEditContactInfo(item.key)}
+                            title={`Edit ${item.title}`}
+                          >
+                            <Pencil size={15} />
+                          </button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           </div>
         </div>
+        <SectionSaveButton
+          id="details"
+          saving={savingSection === "details"}
+          error={sectionErrors.details}
+          onSave={saveSection}
+        />
         </div>
         )}
       </section>
@@ -461,239 +421,62 @@ export default function ContactPageEditor({ initialContent }: ContactPageEditorP
           {/* Form Fields */}
           <div className="border-t pt-4">
             <h3 className="font-medium mb-3">Form Fields</h3>
-
-            {/* Name Field */}
-            <div className="mb-4 p-3 bg-gray-50 rounded">
-              <h4 className="text-sm font-medium mb-2">Name Field</h4>
-              <div className="space-y-2">
-                <input
-                  type="text"
-                  value={content.contactForm.fields.name.label}
-                  onChange={(e) =>
-                    setContent({
-                      ...content,
-                      contactForm: {
-                        ...content.contactForm,
-                        fields: {
-                          ...content.contactForm.fields,
-                          name: { ...content.contactForm.fields.name, label: e.target.value },
-                        },
-                      },
-                    })
-                  }
-                  placeholder="Label"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                />
-                <input
-                  type="text"
-                  value={content.contactForm.fields.name.placeholder}
-                  onChange={(e) =>
-                    setContent({
-                      ...content,
-                      contactForm: {
-                        ...content.contactForm,
-                        fields: {
-                          ...content.contactForm.fields,
-                          name: {
-                            ...content.contactForm.fields.name,
-                            placeholder: e.target.value,
-                          },
-                        },
-                      },
-                    })
-                  }
-                  placeholder="Placeholder"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                />
-              </div>
-            </div>
-
-            {/* Phone Field */}
-            <div className="mb-4 p-3 bg-gray-50 rounded">
-              <h4 className="text-sm font-medium mb-2">Phone Field</h4>
-              <div className="space-y-2">
-                <input
-                  type="text"
-                  value={content.contactForm.fields.phone.label}
-                  onChange={(e) =>
-                    setContent({
-                      ...content,
-                      contactForm: {
-                        ...content.contactForm,
-                        fields: {
-                          ...content.contactForm.fields,
-                          phone: { ...content.contactForm.fields.phone, label: e.target.value },
-                        },
-                      },
-                    })
-                  }
-                  placeholder="Label"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                />
-                <input
-                  type="text"
-                  value={content.contactForm.fields.phone.placeholder}
-                  onChange={(e) =>
-                    setContent({
-                      ...content,
-                      contactForm: {
-                        ...content.contactForm,
-                        fields: {
-                          ...content.contactForm.fields,
-                          phone: {
-                            ...content.contactForm.fields.phone,
-                            placeholder: e.target.value,
-                          },
-                        },
-                      },
-                    })
-                  }
-                  placeholder="Placeholder"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                />
-              </div>
-            </div>
-
-            {/* Email Field */}
-            <div className="mb-4 p-3 bg-gray-50 rounded">
-              <h4 className="text-sm font-medium mb-2">Email Field</h4>
-              <div className="space-y-2">
-                <input
-                  type="text"
-                  value={content.contactForm.fields.email.label}
-                  onChange={(e) =>
-                    setContent({
-                      ...content,
-                      contactForm: {
-                        ...content.contactForm,
-                        fields: {
-                          ...content.contactForm.fields,
-                          email: { ...content.contactForm.fields.email, label: e.target.value },
-                        },
-                      },
-                    })
-                  }
-                  placeholder="Label"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                />
-                <input
-                  type="text"
-                  value={content.contactForm.fields.email.placeholder}
-                  onChange={(e) =>
-                    setContent({
-                      ...content,
-                      contactForm: {
-                        ...content.contactForm,
-                        fields: {
-                          ...content.contactForm.fields,
-                          email: {
-                            ...content.contactForm.fields.email,
-                            placeholder: e.target.value,
-                          },
-                        },
-                      },
-                    })
-                  }
-                  placeholder="Placeholder"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                />
-              </div>
-            </div>
-
-            {/* Subject Field */}
-            <div className="mb-4 p-3 bg-gray-50 rounded">
-              <h4 className="text-sm font-medium mb-2">Subject Field</h4>
-              <input
-                type="text"
-                value={content.contactForm.fields.subject.label}
-                onChange={(e) =>
-                  setContent({
-                    ...content,
-                    contactForm: {
-                      ...content.contactForm,
-                      fields: {
-                        ...content.contactForm.fields,
-                        subject: { ...content.contactForm.fields.subject, label: e.target.value },
-                      },
-                    },
-                  })
-                }
-                placeholder="Label"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm mb-2"
-              />
-              <div className="space-y-2">
-                <label className="block text-xs font-medium text-gray-600">Options</label>
-                {content.contactForm.fields.subject.options.map((option, index) => (
-                  <div key={index} className="flex gap-2">
-                    <input
-                      type="text"
-                      value={option}
-                      onChange={(e) => updateSubjectOption(index, e.target.value)}
-                      className="flex-1 px-3 py-1 border border-gray-300 rounded-md text-sm"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeSubjectOption(index)}
-                      className="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 text-sm"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={addSubjectOption}
-                  className="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-sm"
-                >
-                  + Add Option
-                </button>
-              </div>
-            </div>
-
-            {/* Message Field */}
-            <div className="mb-4 p-3 bg-gray-50 rounded">
-              <h4 className="text-sm font-medium mb-2">Message Field</h4>
-              <div className="space-y-2">
-                <input
-                  type="text"
-                  value={content.contactForm.fields.message.label}
-                  onChange={(e) =>
-                    setContent({
-                      ...content,
-                      contactForm: {
-                        ...content.contactForm,
-                        fields: {
-                          ...content.contactForm.fields,
-                          message: { ...content.contactForm.fields.message, label: e.target.value },
-                        },
-                      },
-                    })
-                  }
-                  placeholder="Label"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                />
-                <input
-                  type="text"
-                  value={content.contactForm.fields.message.placeholder}
-                  onChange={(e) =>
-                    setContent({
-                      ...content,
-                      contactForm: {
-                        ...content.contactForm,
-                        fields: {
-                          ...content.contactForm.fields,
-                          message: {
-                            ...content.contactForm.fields.message,
-                            placeholder: e.target.value,
-                          },
-                        },
-                      },
-                    })
-                  }
-                  placeholder="Placeholder"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                />
-              </div>
+            <div className="pp-table-wrap rounded-lg border border-[var(--admin-line)]">
+              <Table className="table-fixed">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12 bg-[var(--admin-surface-2)]">#</TableHead>
+                    <TableHead className="w-1/3 truncate bg-[var(--admin-surface-2)]">FIELD</TableHead>
+                    <TableHead className="bg-[var(--admin-surface-2)]">LABEL</TableHead>
+                    <TableHead className="bg-[var(--admin-surface-2)]">PLACEHOLDER / OPTIONS</TableHead>
+                    <TableHead className="w-28 text-right bg-[var(--admin-surface-2)]">ACTIONS</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {[
+                    { key: "name" as const, title: "Name Field" },
+                    { key: "phone" as const, title: "Phone Field" },
+                    { key: "email" as const, title: "Email Field" },
+                    { key: "subject" as const, title: "Subject Field" },
+                    { key: "message" as const, title: "Message Field" },
+                  ].map((item, idx) => {
+                    const field = content.contactForm.fields[item.key];
+                    const isSubject = item.key === "subject";
+                    const optionsCount =
+                      field && "options" in field ? field.options.length : 0;
+                    const placeholder =
+                      field && "placeholder" in field ? field.placeholder : "";
+                    return (
+                      <TableRow key={item.key}>
+                        <TableCell className="w-12 py-2.5">{idx + 1}</TableCell>
+                        <TableCell className="truncate py-2.5 text-sm font-semibold">
+                          {item.title}
+                        </TableCell>
+                        <TableCell className="cell-ellipsis py-2.5 text-sm text-[var(--admin-ink)]">
+                          {field.label}
+                        </TableCell>
+                        <TableCell className="cell-ellipsis py-2.5 text-sm text-[var(--admin-muted)]">
+                          {isSubject
+                            ? `${optionsCount} option${optionsCount === 1 ? "" : "s"}`
+                            : placeholder}
+                        </TableCell>
+                        <TableCell className="py-2.5">
+                          <div className="row-actions justify-end">
+                            <button
+                              type="button"
+                              className="act-btn"
+                              onClick={() => openEditFormField(item.key)}
+                              title={`Edit ${item.title}`}
+                            >
+                              <Pencil size={15} />
+                            </button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             </div>
           </div>
 
@@ -744,6 +527,12 @@ export default function ContactPageEditor({ initialContent }: ContactPageEditorP
             />
           </div>
         </div>
+        <SectionSaveButton
+          id="form"
+          saving={savingSection === "form"}
+          error={sectionErrors.form}
+          onSave={saveSection}
+        />
         </div>
         )}
       </section>
@@ -796,6 +585,12 @@ export default function ContactPageEditor({ initialContent }: ContactPageEditorP
             </p>
           </div>
         </div>
+        <SectionSaveButton
+          id="map"
+          saving={savingSection === "map"}
+          error={sectionErrors.map}
+          onSave={saveSection}
+        />
         </div>
         )}
       </section>
@@ -936,6 +731,12 @@ export default function ContactPageEditor({ initialContent }: ContactPageEditorP
             </div>
           </div>
         </div>
+        <SectionSaveButton
+          id="cta"
+          saving={savingSection === "cta"}
+          error={sectionErrors.cta}
+          onSave={saveSection}
+        />
         </div>
         )}
       </section>
@@ -1015,6 +816,12 @@ export default function ContactPageEditor({ initialContent }: ContactPageEditorP
             </p>
           </div>
         </div>
+        <SectionSaveButton
+          id="seo"
+          saving={savingSection === "seo"}
+          error={sectionErrors.seo}
+          onSave={saveSection}
+        />
         </div>
         )}
       </section>
@@ -1029,6 +836,225 @@ export default function ContactPageEditor({ initialContent }: ContactPageEditorP
           {saving ? "Saving..." : "Save Changes"}
         </button>
       </div>
+
+      <Dialog
+        open={contactInfoModal !== null}
+        onOpenChange={(open) => !open && closeContactInfoModal()}
+      >
+        <DialogContent
+          showCloseButton={false}
+          className="news-modal w-[min(100%,520px)] sm:max-w-[520px] max-h-[90vh] overflow-y-auto flex flex-col gap-0 rounded-[16px] p-0 ring-0 outline-none"
+        >
+          <div className="modal__head">
+            <DialogTitle className="m-0 text-[1.05rem] font-normal">
+              Edit{" "}
+              {contactInfoModal === "address"
+                ? "Address"
+                : contactInfoModal === "phone"
+                  ? "Phone"
+                  : contactInfoModal === "email"
+                    ? "Email"
+                    : "Opening Hours"}
+            </DialogTitle>
+            <button
+              type="button"
+              className="admin-icon-btn"
+              aria-label="Close"
+              onClick={closeContactInfoModal}
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="modal__body">
+            <div className="form-grid">
+              <div className="field field--full">
+                <label htmlFor="contact-info-label">Label</label>
+                <input
+                  id="contact-info-label"
+                  type="text"
+                  value={contactInfoDraft.label}
+                  onChange={(e) =>
+                    setContactInfoDraft((d) => ({ ...d, label: e.target.value }))
+                  }
+                />
+              </div>
+              <div className="field field--full">
+                <label htmlFor="contact-info-value">
+                  {contactInfoModal === "phone" ? "Display Value" : "Value"}
+                </label>
+                <input
+                  id="contact-info-value"
+                  type={contactInfoModal === "email" ? "email" : "text"}
+                  value={contactInfoDraft.value}
+                  onChange={(e) =>
+                    setContactInfoDraft((d) => ({ ...d, value: e.target.value }))
+                  }
+                />
+              </div>
+              {contactInfoModal === "address" && (
+                <div className="field field--full">
+                  <label htmlFor="contact-info-mapurl">Map URL</label>
+                  <input
+                    id="contact-info-mapurl"
+                    type="text"
+                    value={contactInfoDraft.mapUrl}
+                    onChange={(e) =>
+                      setContactInfoDraft((d) => ({ ...d, mapUrl: e.target.value }))
+                    }
+                    placeholder="https://maps.google.com/?q=..."
+                  />
+                  <p className="text-xs text-[var(--admin-muted)]">
+                    Used for the &quot;Get Directions&quot; link on the contact page.
+                  </p>
+                </div>
+              )}
+              {contactInfoModal === "phone" && (
+                <div className="field field--full">
+                  <label htmlFor="contact-info-tel">Tel Link (numbers only)</label>
+                  <input
+                    id="contact-info-tel"
+                    type="text"
+                    value={contactInfoDraft.tel}
+                    onChange={(e) =>
+                      setContactInfoDraft((d) => ({ ...d, tel: e.target.value }))
+                    }
+                    placeholder="061544761"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="modal__foot">
+            <button
+              type="button"
+              className="admin-btn"
+              onClick={closeContactInfoModal}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="admin-btn admin-btn--primary"
+              onClick={saveContactInfo}
+              disabled={!contactInfoDraft.label.trim() || !contactInfoDraft.value.trim()}
+            >
+              Save
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={formFieldModal !== null}
+        onOpenChange={(open) => !open && closeFormFieldModal()}
+      >
+        <DialogContent
+          showCloseButton={false}
+          className="news-modal w-[min(100%,520px)] sm:max-w-[520px] max-h-[90vh] overflow-y-auto flex flex-col gap-0 rounded-[16px] p-0 ring-0 outline-none"
+        >
+          <div className="modal__head">
+            <DialogTitle className="m-0 text-[1.05rem] font-normal">
+              Edit{" "}
+              {formFieldModal === "name"
+                ? "Name Field"
+                : formFieldModal === "phone"
+                  ? "Phone Field"
+                  : formFieldModal === "email"
+                    ? "Email Field"
+                    : formFieldModal === "subject"
+                      ? "Subject Field"
+                      : "Message Field"}
+            </DialogTitle>
+            <button
+              type="button"
+              className="admin-icon-btn"
+              aria-label="Close"
+              onClick={closeFormFieldModal}
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="modal__body">
+            <div className="form-grid">
+              <div className="field field--full">
+                <label htmlFor="form-field-label">Label</label>
+                <input
+                  id="form-field-label"
+                  type="text"
+                  value={formFieldDraft.label}
+                  onChange={(e) =>
+                    setFormFieldDraft((d) => ({ ...d, label: e.target.value }))
+                  }
+                />
+              </div>
+              {formFieldModal === "subject" ? (
+                <div className="field field--full">
+                  <label>Options</label>
+                  <div className="space-y-2">
+                    {formFieldDraft.options.map((option, index) => (
+                      <div key={index} className="flex gap-2">
+                        <input
+                          type="text"
+                          value={option}
+                          onChange={(e) => updateDraftOption(index, e.target.value)}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeDraftOption(index)}
+                          className="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 text-sm"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={addDraftOption}
+                      className="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-sm"
+                    >
+                      + Add Option
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="field field--full">
+                  <label htmlFor="form-field-placeholder">Placeholder</label>
+                  <input
+                    id="form-field-placeholder"
+                    type="text"
+                    value={formFieldDraft.placeholder}
+                    onChange={(e) =>
+                      setFormFieldDraft((d) => ({ ...d, placeholder: e.target.value }))
+                    }
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="modal__foot">
+            <button
+              type="button"
+              className="admin-btn"
+              onClick={closeFormFieldModal}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="admin-btn admin-btn--primary"
+              onClick={saveFormField}
+              disabled={!formFieldDraft.label.trim()}
+            >
+              Save
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

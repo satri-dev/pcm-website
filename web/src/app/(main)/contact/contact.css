@@ -67,6 +67,15 @@
 }
 .pcm-contact p   { margin:0; }
 .pcm-contact a   { color:inherit; text-decoration:none; }
+.pcm-contact .rich-body ul,
+.pcm-contact .rich-body ol { list-style: revert; padding-left: 1.4rem; margin: .5rem 0 1rem; }
+.pcm-contact .rich-body ul { list-style: disc; }
+.pcm-contact .rich-body ol { list-style: decimal; }
+.pcm-contact .rich-body li { margin: .3rem 0; }
+.pcm-contact .rich-body li ul,
+.pcm-contact .rich-body li ol { margin: .3rem 0; }
+.pcm-contact .rich-body p { margin: 0 0 .75rem; }
+.pcm-contact .rich-body strong { font-weight: 700; }
 .pcm-contact img,.pcm-contact svg { display:block; max-width:100%; }
 .pcm-contact :focus-visible { outline:2px solid var(--gold-400); outline-offset:3px; border-radius:4px; }
 

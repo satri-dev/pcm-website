@@ -169,11 +169,24 @@ export default function AboutClient({
             <div className="reveal">
               <span className="eyebrow">{settings.whoEyebrow}</span>
               <h2 className="section-title">{settings.whoTitle}</h2>
-              {settings.whoParagraphs.map((p, i) => (
-                <p key={i} style={i === 0 ? { marginTop: "1rem" } : undefined}>
-                  {p}
-                </p>
-              ))}
+              {settings.whoParagraphs
+                .filter((p) => p && p.trim())
+                .map((p, i) => {
+                  const isBlock = /^<[a-z]+[\s>]/i.test(p.trim());
+                  const style = i === 0 ? { marginTop: "1rem" } : { marginTop: "0.85rem" };
+                  return isBlock ? (
+                    <div
+                      key={i}
+                      className="rich-body"
+                      style={style}
+                      dangerouslySetInnerHTML={{ __html: p }}
+                    />
+                  ) : (
+                    <p key={i} style={style}>
+                      {p}
+                    </p>
+                  );
+                })}
               {settings.whoPills.length > 0 && (
                 <div className="pill-row" style={{ marginTop: "1.4rem" }}>
                   {settings.whoPills.map((pill) => (
@@ -235,11 +248,24 @@ export default function AboutClient({
             <div className="reveal">
               <span className="eyebrow">{settings.whyEyebrow}</span>
               <h2 className="section-title">{settings.whyTitle}</h2>
-              {settings.whyParagraphs.map((p, i) => (
-                <p key={i} style={i === 0 ? { marginTop: "1rem" } : undefined}>
-                  {p}
-                </p>
-              ))}
+              {settings.whyParagraphs
+                .filter((p) => p && p.trim())
+                .map((p, i) => {
+                  const isBlock = /^<[a-z]+[\s>]/i.test(p.trim());
+                  const style = i === 0 ? { marginTop: "1rem" } : { marginTop: "0.85rem" };
+                  return isBlock ? (
+                    <div
+                      key={i}
+                      className="rich-body"
+                      style={style}
+                      dangerouslySetInnerHTML={{ __html: p }}
+                    />
+                  ) : (
+                    <p key={i} style={style}>
+                      {p}
+                    </p>
+                  );
+                })}
               <Link className="btn btn-primary" href={settings.whyCtaHref}>
                 {settings.whyCtaLabel}{" "}
                 <svg
@@ -278,7 +304,15 @@ export default function AboutClient({
                     {vmvIcons[card.iconType]}
                   </div>
                   <h3>{card.title}</h3>
-                  <p>{card.description}</p>
+                  {card.description &&
+                  /^<[a-z]+[\s>]/i.test(card.description.trim()) ? (
+                    <div
+                      className="rich-body"
+                      dangerouslySetInnerHTML={{ __html: card.description }}
+                    />
+                  ) : (
+                    <p>{card.description}</p>
+                  )}
                 </div>
               ))}
             </div>
@@ -310,7 +344,15 @@ export default function AboutClient({
                   </div>
                   <div>
                     <h4>{item.title}</h4>
-                    <p>{item.description}</p>
+                    {item.description &&
+                    /^<[a-z]+[\s>]/i.test(item.description.trim()) ? (
+                      <div
+                        className="rich-body"
+                        dangerouslySetInnerHTML={{ __html: item.description }}
+                      />
+                    ) : (
+                      <p>{item.description}</p>
+                    )}
                   </div>
                 </li>
               ))}

@@ -344,6 +344,18 @@
   border-color: var(--admin-gold);
 }
 
+/* ---------- Table cell ellipsis ---------- */
+.cell-ellipsis {
+  max-width: 420px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pp-table-wrap [data-slot="table-container"] {
+  overflow-x: visible;
+}
+
 /* ---------- Dashboard grid ---------- */
 .admin-dashboard { display: grid; gap: 1.25rem; }
 
@@ -624,6 +636,14 @@
 .ProseMirror ol {
   padding-left: 1.5rem;
   margin: 0.75rem 0;
+}
+
+.ProseMirror ul {
+  list-style: disc;
+}
+
+.ProseMirror ol {
+  list-style: decimal;
 }
 
 .ProseMirror li {
@@ -1047,6 +1067,22 @@
 @keyframes ppFadeIn {
   from { opacity: 0; transform: translateY(-2px); }
   to { opacity: 1; transform: none; }
+}
+
+/* Per-section save row (bottom right) */
+.pp-section__save {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--admin-line);
+}
+.pp-section__save-error {
+  margin-right: auto;
+  font-size: 0.78rem;
+  color: #dc2626;
 }
 
 /* Reusable card for repeatable items */

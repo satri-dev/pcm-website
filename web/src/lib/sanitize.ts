@@ -2,7 +2,51 @@
 // Shared helpers to sanitize URLs from database records that may contain
 // placeholder/test data instead of valid image paths.
 
+import sanitizeHtml from "sanitize-html";
+
 const FALLBACK = "/images/hero-1.jpg";
+
+export function safeImg(src: string | undefined | null, fallback = FALLBACK): string {
+  if (!src || typeof src !== "string") return fallback;
+  const s = src.trim();
+  if (!s || (!s.startsWith("/") && !s.startsWith("http"))) return fallback;
+  return s;
+}
+
+export function safeHref(href: string | undefined | null, fallback = "/"): string {
+  if (!href || typeof href !== "string") return fallback;
+  const s = href.trim();
+  if (!s || (!s.startsWith("/") && !s.startsWith("http"))) return fallback;
+  return s;
+}
+
+const baseAllowedTags = [
+  "p",
+  "br",
+  "hr",
+  "strong",
+  "b",
+  "em",
+  "i",
+  "u",
+  "s",
+  "strike",
+  "blockquote",
+  "pre",
+  "code",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "ul",
+  "ol",
+  "li",
+  "a",
+  "span",
+  "img",
+];
 
 export function safeImg(src: string | undefined | null, fallback = FALLBACK): string {
   if (!src || typeof src !== "string") return fallback;
@@ -21,29 +65,17 @@ export function safeHref(href: string | undefined | null, fallback = "/"): strin
 /**
  * Caps a string to a maximum length. Returns empty string if value is falsy.
  */
-export function capString(value: string, maxLength: number): string {
-  if (!value) return "";
-  return value.length > maxLength ? value.slice(0, maxLength) : value;
-}
-
-/**
- * Basic HTML sanitization - strips script tags and dangerous attributes.
- * For production, consider using a library like DOMPurify on the server.
- */
-export function sanitizeHtmlContent(html: string): string {
-  if (!html || typeof html !== "string") return "";
-  
-  // Remove script tags and their content
-  let sanitized = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "");
-  
-  // Remove event handlers (onclick, onerror, etc.)
-  sanitized = sanitized.replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, "");
-  sanitized = sanitized.replace(/\s*on\w+\s*=\s*[^\s>]*/gi, "");
-  
-  // Remove javascript: protocol
-  sanitized = sanitized.replace(/javascript:/gi, "");
-  
-  return sanitized.trim();
+export function sanitizeHtmlContent(html: unknown): string {
+  if (typeof html !== "string" || html.length === 0) return typeof html === "string" ? html : "";
+  return sanitizeHtml(html, {
+    allowedTags: baseAllowedTags,
+    allowedAttributes,
+    allowedSchemes: ["http", "https", "mailto", "tel"],
+    allowedSchemesByTag: { img: ["http", "https"] },
+    disallowedTagsMode: "discard",
+    transformTags: transformTags({}),
+    allowVulnerableTags: false,
+  });
 }
 
 /**
@@ -67,49 +99,44 @@ export function sanitizeUntrustedObject(
   options: number | SanitizeOptions = 10000,
   currentDepth = 0
 ): unknown {
-  // Normalize options
-  const opts: Required<SanitizeOptions> = typeof options === "number"
-    ? { maxDepth: 10, maxEntries: 100, maxStringLength: options }
-    : {
-        maxDepth: options.maxDepth ?? 10,
-        maxEntries: options.maxEntries ?? 100,
-        maxStringLength: options.maxStringLength ?? 10000,
-      };
-
-  // Guard against deep recursion
-  if (currentDepth >= opts.maxDepth) {
-    return undefined;
-  }
-
-  if (obj === null || obj === undefined) {
-    return obj;
-  }
-  
-  if (typeof obj === "string") {
-    return capString(obj, opts.maxStringLength);
-  }
-  
-  if (typeof obj === "number" || typeof obj === "boolean") {
-    return obj;
-  }
-  
-  if (Array.isArray(obj)) {
-    return obj
-      .slice(0, opts.maxEntries)
-      .map((item) => sanitizeUntrustedObject(item, opts, currentDepth + 1));
-  }
-  
-  if (typeof obj === "object") {
-    const sanitized: Record<string, unknown> = {};
-    const entries = Object.entries(obj).slice(0, opts.maxEntries);
-    
-    for (const [key, value] of entries) {
-      const safeKey = capString(key, 200);
-      sanitized[safeKey] = sanitizeUntrustedObject(value, opts, currentDepth + 1);
+  const { maxDepth = 5, maxEntries = 300 } = options;
+  function clean(v: unknown, depth: number, budget: { left: number }): unknown {
+    if (depth > maxDepth || budget.left <= 0) {
+      if (typeof v === "string") return v.slice(0, 10_000);
+      return undefined;
     }
-    
-    return sanitized;
+    if (Array.isArray(v)) {
+      const out: unknown[] = [];
+      for (const item of v) {
+        if (budget.left <= 0) break;
+        budget.left -= 1;
+        const cleaned = clean(item, depth + 1, budget);
+        if (cleaned !== undefined && cleaned !== null) out.push(cleaned);
+      }
+      return out;
+    }
+    if (v && typeof v === "object") {
+      const out: Record<string, unknown> = {};
+      for (const [key, val] of Object.entries(v as Record<string, unknown>)) {
+        if (budget.left <= 0) break;
+        if (key.startsWith("$") || key.includes(".")) continue;
+        budget.left -= 1;
+        const cleaned = clean(val, depth + 1, budget);
+        if (cleaned !== undefined) out[key] = cleaned;
+      }
+      return out;
+    }
+    if (typeof v === "string") return v.slice(0, 100_000);
+    return v;
   }
-  
-  return obj;
+  const budget = { left: maxEntries };
+  return clean(value, 0, budget);
+}
+
+/**
+ * Bound + shape-check an untrusted text value.
+ */
+export function capString(value: unknown, maxLength: number): string {
+  if (typeof value !== "string") return "";
+  return value.slice(0, maxLength);
 }

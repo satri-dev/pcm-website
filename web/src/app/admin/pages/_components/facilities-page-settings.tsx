@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Save, Link2, Plus, Trash2 } from "lucide-react";
-import ImageUpload from "@/components/cloudinary/ImageUpload";
+import { Save, Link2 } from "lucide-react";
 import {
   FACILITIES_PAGE_SETTINGS_DEFAULTS,
   type FacilitiesPageSettings,
 } from "@/types/facilities-page-settings";
+import FacilitiesDesignedManager, {
+  type FacilitiesDesignedData,
+} from "./facilities-designed-manager";
 
 const API_BASE = "/api/admin/pages/facilities-settings";
 
@@ -38,14 +40,15 @@ export default function FacilitiesPageSettings({
     value: FacilitiesPageSettings[K]
   ) => setForm((prev) => ({ ...prev, [key]: value }));
 
-  const handleSave = async () => {
+  const handleSave = async (overrides?: Partial<FacilitiesPageSettings>) => {
     setSaving(true);
     setMessage("");
     try {
+      const payload = { ...form, ...overrides };
       const res = await fetch(API_BASE, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -56,19 +59,11 @@ export default function FacilitiesPageSettings({
       );
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Save failed");
+      throw err;
     } finally {
       setSaving(false);
     }
   };
-
-  const setChecklist = (value: string) =>
-    set(
-      "designedChecklist",
-      value
-        .split("\n")
-        .map((l) => l.trim())
-        .filter(Boolean)
-    );
 
   return (
     <main className="p-6 space-y-6">
@@ -244,84 +239,38 @@ export default function FacilitiesPageSettings({
           <h3>Designed for Learning — Split Section</h3>
         </div>
         <div className="admin-panel__body p-6 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="block">
-              {fieldLabel("Eyebrow")}
-              <input
-                className={INPUT}
-                value={form.designedEyebrow}
-                onChange={(e) => set("designedEyebrow", e.target.value)}
-              />
-            </label>
-            <label className="block">
-              {fieldLabel("Title")}
-              <input
-                className={INPUT}
-                value={form.designedTitle}
-                onChange={(e) => set("designedTitle", e.target.value)}
-              />
-            </label>
-          </div>
-          <label className="block">
-            {fieldLabel("Paragraph")}
-            <textarea
-              rows={4}
-              className={INPUT}
-              value={form.designedParagraph}
-              onChange={(e) => set("designedParagraph", e.target.value)}
-            />
-          </label>
-          <label className="block">
-            {fieldLabel("Checklist — one item per line")}
-            <textarea
-              rows={4}
-              className={INPUT}
-              value={form.designedChecklist.join("\n")}
-              onChange={(e) => setChecklist(e.target.value)}
-            />
-          </label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="block">
-              {fieldLabel("Badge Value")}
-              <input
-                className={INPUT}
-                value={form.designedBadgeValue}
-                onChange={(e) => set("designedBadgeValue", e.target.value)}
-              />
-            </label>
-            <label className="block">
-              {fieldLabel("Badge Label")}
-              <input
-                className={INPUT}
-                value={form.designedBadgeLabel}
-                onChange={(e) => set("designedBadgeLabel", e.target.value)}
-              />
-            </label>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="block">
-              {fieldLabel("Image URL")}
-              <input
-                className={INPUT}
-                value={form.designedImage}
-                onChange={(e) => set("designedImage", e.target.value)}
-              />
-            </label>
-            <label className="block">
-              {fieldLabel("Image Alt Text")}
-              <input
-                className={INPUT}
-                value={form.designedImageAlt}
-                onChange={(e) => set("designedImageAlt", e.target.value)}
-              />
-            </label>
-          </div>
-          <div>
-            {fieldLabel("Or upload a new image")}
-            <ImageUpload
-              onUpload={(r) => set("designedImage", r.secure_url)}
-            />
-          </div>
+          <FacilitiesDesignedManager
+            data={{
+              designedEyebrow: form.designedEyebrow,
+              designedTitle: form.designedTitle,
+              designedParagraph: form.designedParagraph,
+              designedChecklist: form.designedChecklist,
+              designedImage: form.designedImage,
+              designedImageAlt: form.designedImageAlt,
+              designedBadgeValue: form.designedBadgeValue,
+              designedBadgeLabel: form.designedBadgeLabel,
+            }}
+            onSave={async (draft: FacilitiesDesignedData) => {
+              set("designedEyebrow", draft.designedEyebrow);
+              set("designedTitle", draft.designedTitle);
+              set("designedParagraph", draft.designedParagraph);
+              set("designedChecklist", draft.designedChecklist);
+              set("designedImage", draft.designedImage);
+              set("designedImageAlt", draft.designedImageAlt);
+              set("designedBadgeValue", draft.designedBadgeValue);
+              set("designedBadgeLabel", draft.designedBadgeLabel);
+              await handleSave({
+                designedEyebrow: draft.designedEyebrow,
+                designedTitle: draft.designedTitle,
+                designedParagraph: draft.designedParagraph,
+                designedChecklist: draft.designedChecklist,
+                designedImage: draft.designedImage,
+                designedImageAlt: draft.designedImageAlt,
+                designedBadgeValue: draft.designedBadgeValue,
+                designedBadgeLabel: draft.designedBadgeLabel,
+              });
+            }}
+          />
         </div>
       </div>
 
@@ -391,7 +340,7 @@ export default function FacilitiesPageSettings({
       <div className="flex items-center gap-4">
         <button
           type="button"
-          onClick={handleSave}
+          onClick={() => handleSave()}
           disabled={saving}
           className="admin-btn admin-btn--primary"
         >

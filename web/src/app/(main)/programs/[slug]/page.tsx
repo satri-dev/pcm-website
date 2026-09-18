@@ -68,31 +68,36 @@ export async function generateMetadata({
     dbProgram?.image || programPage?.hero?.image || "/images/hero-1.jpg";
   const canonical = getCanonicalUrl(`/programs/${slug}`);
 
-  // SEO keywords
-  const keywords = [
-    name,
-    `${name} in Pokhara`,
-    `${dbProgram?.code || ""} Pokhara`,
-    "Pokhara College of Management",
-    "PCM Pokhara",
-    "Pokhara University",
-  ].filter(Boolean);
+  // SEO keywords — use admin overrides when present
+  const seoKeywords = programPage?.seo?.keywords?.length
+    ? programPage.seo.keywords
+    : [
+        name,
+        `${name} in Pokhara`,
+        `${dbProgram?.code || ""} Pokhara`,
+        "Pokhara College of Management",
+        "PCM Pokhara",
+        "Pokhara University",
+      ].filter(Boolean);
+
+  const seoTitle = programPage?.seo?.title || `${name} | Programs | PCM Pokhara`;
+  const seoDescription = programPage?.seo?.description || intro;
 
   return {
-    title: `${name} | Programs | PCM Pokhara`,
-    description: intro,
-    keywords,
+    title: seoTitle,
+    description: seoDescription,
+    keywords: seoKeywords,
     alternates: { canonical },
     openGraph: createOpenGraphMetadata({
-      title: name,
-      description: intro,
+      title: programPage?.seo?.title || name,
+      description: seoDescription,
       url: canonical,
       image,
       type: "website",
     }),
     twitter: createTwitterMetadata({
-      title: name,
-      description: intro,
+      title: programPage?.seo?.title || name,
+      description: seoDescription,
       image,
     }),
   };
@@ -401,17 +406,28 @@ export default async function ProgramPage({
             <h2 className="section-title" style={{ marginTop: "0.5rem" }}>
               {displayData.overviewTitle}
             </h2>
-            {displayData.overviewBody.map((para: string, i: number) => (
-              <p
-                key={i}
-                style={{
-                  marginTop: i === 0 ? "1rem" : "0.75rem",
-                  color: "var(--body-c)",
-                }}
-              >
-                {para}
-              </p>
-            ))}
+            {typeof displayData.overviewBody === "string"
+              ? (displayData.overviewBody && (
+                  <div
+                    className="rich-body"
+                    style={{
+                      marginTop: "1rem",
+                      color: "var(--body-c)",
+                    }}
+                    dangerouslySetInnerHTML={{ __html: displayData.overviewBody }}
+                  />
+                ))
+              : displayData.overviewBody.map((para: string, i: number) => (
+                  <p
+                    key={i}
+                    style={{
+                      marginTop: i === 0 ? "1rem" : "0.75rem",
+                      color: "var(--body-c)",
+                    }}
+                  >
+                    {para}
+                  </p>
+                ))}
 
             {/* Growth Section (if exists in CMS) */}
             {displayData.growthSection?.title &&
@@ -433,15 +449,29 @@ export default async function ProgramPage({
                             >
                               {item.title}
                             </h4>
-                            <p
-                              style={{
-                                fontSize: "0.9rem",
-                                color: "var(--muted-c)",
-                                marginTop: "0.2rem",
-                              }}
-                            >
-                              {item.description}
-                            </p>
+                            {/<[a-zA-Z][^>]*>/.test(item.description || "") ? (
+                              <div
+                                className="rich-body"
+                                style={{
+                                  fontSize: "0.9rem",
+                                  color: "var(--muted-c)",
+                                  marginTop: "0.2rem",
+                                }}
+                                dangerouslySetInnerHTML={{
+                                  __html: item.description,
+                                }}
+                              />
+                            ) : (
+                              <p
+                                style={{
+                                  fontSize: "0.9rem",
+                                  color: "var(--muted-c)",
+                                  marginTop: "0.2rem",
+                                }}
+                              >
+                                {item.description}
+                              </p>
+                            )}
                           </div>
                         </li>
                       ),
@@ -464,15 +494,27 @@ export default async function ProgramPage({
                         <h4 style={{ fontSize: "1rem", color: "var(--navy)" }}>
                           {c.title}
                         </h4>
-                        <p
-                          style={{
-                            fontSize: "0.9rem",
-                            color: "var(--muted-c)",
-                            marginTop: "0.2rem",
-                          }}
-                        >
-                          {c.description}
-                        </p>
+                        {/<[a-zA-Z][^>]*>/.test(c.description || "") ? (
+                            <div
+                              className="rich-body"
+                              style={{
+                                fontSize: "0.9rem",
+                                color: "var(--muted-c)",
+                                marginTop: "0.2rem",
+                              }}
+                              dangerouslySetInnerHTML={{ __html: c.description }}
+                            />
+                          ) : (
+                            <p
+                              style={{
+                                fontSize: "0.9rem",
+                                color: "var(--muted-c)",
+                                marginTop: "0.2rem",
+                              }}
+                            >
+                              {c.description}
+                            </p>
+                          )}
                       </div>
                     </li>
                   ))}
@@ -524,15 +566,27 @@ export default async function ProgramPage({
                         <h4 style={{ fontSize: "1rem", color: "var(--navy)" }}>
                           {req.title}
                         </h4>
-                        <p
-                          style={{
-                            fontSize: "0.9rem",
-                            color: "var(--muted-c)",
-                            marginTop: "0.2rem",
-                          }}
-                        >
-                          {req.detail}
-                        </p>
+                        {/<[a-zA-Z][^>]*>/.test(req.detail || "") ? (
+                          <div
+                            className="rich-body"
+                            style={{
+                              fontSize: "0.9rem",
+                              color: "var(--muted-c)",
+                              marginTop: "0.2rem",
+                            }}
+                            dangerouslySetInnerHTML={{ __html: req.detail }}
+                          />
+                        ) : (
+                          <p
+                            style={{
+                              fontSize: "0.9rem",
+                              color: "var(--muted-c)",
+                              marginTop: "0.2rem",
+                            }}
+                          >
+                            {req.detail}
+                          </p>
+                        )}
                       </div>
                     </li>
                   ))}
@@ -633,9 +687,20 @@ export default async function ProgramPage({
               <h2 className="section-title">
                 {displayData.curriculumSection.title}
               </h2>
-              <p className="section-sub">
-                {displayData.curriculumSection.description}
-              </p>
+              <div className="section-sub">
+                {/<[a-zA-Z][^>]*>/.test(
+                  displayData.curriculumSection.description || ""
+                ) ? (
+                  <div
+                    className="rich-body"
+                    dangerouslySetInnerHTML={{
+                      __html: displayData.curriculumSection.description,
+                    }}
+                  />
+                ) : (
+                  displayData.curriculumSection.description
+                )}
+              </div>
             </div>
             <div style={{ marginTop: "2.2rem" }}>
               <CurriculumTabs
@@ -677,9 +742,20 @@ export default async function ProgramPage({
                 <div className="leader-card__role">
                   {displayData.coordinator.role}
                 </div>
-                <p className="leader-card__text">
-                  {displayData.coordinator.quote}
-                </p>
+                {/<[a-zA-Z][^>]*>/.test(
+                    displayData.coordinator.quote || ""
+                  ) ? (
+                    <div
+                      className="leader-card__text rich-body"
+                      dangerouslySetInnerHTML={{
+                        __html: displayData.coordinator.quote,
+                      }}
+                    />
+                  ) : (
+                    <p className="leader-card__text">
+                      {displayData.coordinator.quote}
+                    </p>
+                  )}
                 <Link
                   className="link-arrow"
                   style={{
